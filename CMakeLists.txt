@@ -1,0 +1,44 @@
+project(master)
+cmake_minimum_required(VERSION 3.10)
+
+find_package(Threads)
+
+link_directories("/opt/openrobots/lib/")
+include_directories("/opt/openrobots/include/")
+
+# Enable C++17
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+find_package (Eigen3 3 REQUIRED NO_MODULE)
+
+add_library(libplaco
+    # src/placo/footsteps/footsteps_planner.cpp
+    src/placo/utils.cpp
+)
+
+target_include_directories(libplaco PUBLIC 
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src> 
+  ${CMAKE_CURRENT_BINARY_DIR})
+
+target_link_libraries(libplaco PUBLIC
+    RhIO
+    CLI11::CLI11
+    Eigen3::Eigen
+    Threads::Threads
+    pinocchio
+    eigenpy
+    rhoban_utils
+    libzmq
+    cppzmq
+    eiquadprog
+  ${PROTOBUF_LIBRARIES}
+)
+
+find_package(PythonLibs 3.8 REQUIRED)
+find_package(Boost COMPONENTS python REQUIRED)
+
+add_library(placo MODULE bindings/module.cpp)
+target_link_libraries(placo ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} libplaco)
+target_include_directories(placo PRIVATE ${PYTHON_INCLUDE_DIRS})

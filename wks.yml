@@ -1,0 +1,6 @@
+deps:
+  - rhoban/utils#cmake_only
+  - rhobandeps/cppzmq
+  - rhoban/rhio#wks
+  - rhobandeps/soem
+  - CLIUtils/CLI11@v1.9.1
