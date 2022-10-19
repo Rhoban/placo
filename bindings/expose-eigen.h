@@ -10,5 +10,6 @@
  * frame.R: rotation matrix (read/write)
  * frame.t: translation part (read/write)
  * frame.mat: 4x4 matrix (read/write)
+ * frame.inv: transformation inverse
  */
 void exposeAffine3d();

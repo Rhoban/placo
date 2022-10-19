@@ -31,6 +31,8 @@ void exposeAffine3d() {
           +[](const Eigen::Affine3d &a) { return (Eigen::Matrix3d)a.linear(); },
           +[](Eigen::Affine3d &a, const Eigen::Matrix3d &m) { a.linear() = m; })
       .def(
+          "inv", +[](const Eigen::Affine3d &a) { return a.inverse(); })
+      .def(
           "__repr__",
           +[](const Eigen::Affine3d &a) {
             std::ostringstream oss;
@@ -40,6 +42,5 @@ void exposeAffine3d() {
             return oss.str();
           })
       .def(self * other<Eigen::Vector3d>())
-      .def(self * self)
-      ;
+      .def(self * self);
 }

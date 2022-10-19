@@ -16,3 +16,6 @@ print(frame * np.array([1, 2, 3]))
 
 print("* Two frames multiplication: ")
 print(frame * frame)
+
+print("* A frame times its inverse")
+print(frame * frame.inv())
