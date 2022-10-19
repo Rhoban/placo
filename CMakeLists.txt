@@ -36,6 +36,8 @@ target_link_libraries(libplaco PUBLIC
   ${PROTOBUF_LIBRARIES}
 )
 
+set(CMAKE_SHARED_MODULE_PREFIX "")
+
 find_package(PythonLibs 3.8 REQUIRED)
 find_package(Boost COMPONENTS python REQUIRED)
 

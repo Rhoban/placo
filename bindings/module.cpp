@@ -4,8 +4,9 @@
 
 BOOST_PYTHON_MODULE(placo) {
   using namespace boost::python;
-  eigenpy::enableEigenPy();
   
+  eigenpy::enableEigenPy();
+
   def("average_frames", &placo::average_frames);
   def("frame_yaw", &placo::frame_yaw);
 }
