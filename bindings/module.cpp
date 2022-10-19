@@ -1,12 +1,19 @@
-#include <eigenpy/eigenpy.hpp>
-#include <boost/python.hpp>
+#include <pinocchio/fwd.hpp>
+
 #include "placo/utils.h"
+#include <Eigen/Dense>
+#include <boost/python.hpp>
+#include <eigenpy/eigenpy.hpp>
+#include <ostream>
+#include <pinocchio/bindings/python/spatial/se3.hpp>
+
+#include "expose-eigen.h"
+#include "expose-utils.h"
 
 BOOST_PYTHON_MODULE(placo) {
   using namespace boost::python;
-  
-  eigenpy::enableEigenPy();
 
-  def("average_frames", &placo::average_frames);
-  def("frame_yaw", &placo::frame_yaw);
+  eigenpy::enableEigenPy();
+  exposeAffine3d();
+  exposeUtils();
 }

@@ -1,4 +1,4 @@
-project(master)
+project(placo)
 cmake_minimum_required(VERSION 3.10)
 
 find_package(Threads)
@@ -38,9 +38,13 @@ target_link_libraries(libplaco PUBLIC
 
 set(CMAKE_SHARED_MODULE_PREFIX "")
 
-find_package(PythonLibs 3.8 REQUIRED)
+find_package(PythonLibs 3.10 REQUIRED)
 find_package(Boost COMPONENTS python REQUIRED)
 
-add_library(placo MODULE bindings/module.cpp)
+add_library(placo MODULE 
+    bindings/module.cpp
+    bindings/expose-eigen.cpp
+    bindings/expose-utils.cpp
+)
 target_link_libraries(placo ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} libplaco)
 target_include_directories(placo PRIVATE ${PYTHON_INCLUDE_DIRS})
