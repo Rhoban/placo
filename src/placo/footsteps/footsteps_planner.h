@@ -7,27 +7,26 @@
 namespace placo {
 class FootstepsPlanner {
 public:
-  enum Side {
-    Left = 0,
-    Right
-  }
+  /**
+   * @brief Which side the foot is
+   */
+  enum Side { Left = 0, Right };
 
-  // A footstep is the position of one foot on the ground
+  /**
+   * @brief A footstep is the position of a specific foot on the ground
+   */
   struct Footstep {
+    Footstep(double foot_width, double foot_length);
+    double foot_width;
+    double foot_length;
     Side side;
     Eigen::Affine3d frame;
     std::vector<Eigen::Vector2d> polygon;
     bool computed_polygon = false;
-    const std::vector<Eigen::Vector2d> &support_polygon();
-  };
 
-  // Structure containing the configuration of the feet for planning
-  struct FootstepConfiguration {
-    Eigen::Affine3d initial_right_foot;
-    Eigen::Affine3d initial_left_foot;
-
-    Eigen::Affine3d target_right_foot;
-    Eigen::Affine3d target_left_foot;
+    bool operator==(const Footstep &other);
+    
+    std::vector<Eigen::Vector2d> support_polygon();
   };
 
   // A support can be one or two feet supporting the robot (it is
@@ -38,38 +37,43 @@ public:
     bool computed_polygon = false;
     Eigen::Affine3d frame();
     Eigen::Affine3d frame(Side);
-    const std::vector<Eigen::Vector2d> &support_polygon();
+    std::vector<Eigen::Vector2d> support_polygon();
   };
 
-  FootstepsPlanner(Eigen::Affine3d T_world_right, double foots_spacing);
+  FootstepsPlanner(Side initial_side, Eigen::Affine3d T_world_left,
+                   Eigen::Affine3d T_world_right, double feet_spacing);
+
+  FootstepsPlanner(std::string initial_side, Eigen::Affine3d T_world_left,
+                   Eigen::Affine3d T_world_right, double feet_spacing);
 
   // Plans footsteps to bring the robot to the target position and orientation
   // This returns a vector of footsteps indicating where which foot will be
   // placed on the ground sequentially The starting (current) configuration is
   // not included here
-  std::vector<Footstep> plan(Eigen::Affine3d target, bool debug = false);
-  std::vector<Footstep> plan(Eigen::Affine3d target_left,
-                             Eigen::Affine3d target_right, bool debug = false);
-  std::vector<Footstep> plan(Side side, Eigen::Affine3d frame,
-                             bool debug = false);
+  std::vector<Footstep> plan(Eigen::Affine3d T_world_targetLeft,
+                             Eigen::Affine3d T_world_targetRight);
 
   // Make sequential double / single support phases from a footsteps plan
   // The starting (current) configuration is included as the first item
   std::vector<Support> make_supports(const std::vector<Footstep> &footsteps);
 
-  void set_initial(Eigen::Vector3d initial);
+  // Dimension of the accessibility window for the opposite foot
+  double accessibility_width = 0.05;
+  double accessibility_length = 0.1;
+  double accessibility_yaw = 0.2;
 
-  // Defines the steps of the 2 feet ( put -1 in y to place the left foot at a
-  // footstep_spacing distance from the right )
-  void set_initial(Eigen::Vector3d initial_right, Eigen::Vector3d initial_left);
-  void set_support(Side side);
+  // Distance where the robot walks forward instead of aligning with target
+  double place_threshold = 0.5;
 
-  double foots_spacing;
+  // Foot dimensions
+  double foot_width = 0.1;
+  double foot_length = 0.15;
 
 protected:
-  Eigen::Affine3d initial_pos;
-  FootstepConfiguration configuration_foots;
-
-  Side side_support = Left;
+  // Frames for initial and target feet placements
+  Side initial_side;
+  Eigen::Affine3d T_world_left;
+  Eigen::Affine3d T_world_right;
+  double feet_spacing;
 };
 } // namespace placo

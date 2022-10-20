@@ -14,7 +14,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 find_package (Eigen3 3 REQUIRED NO_MODULE)
 
 add_library(libplaco
-    # src/placo/footsteps/footsteps_planner.cpp
+    src/placo/footsteps/footsteps_planner.cpp
     src/placo/utils.cpp
 )
 
@@ -42,9 +42,10 @@ find_package(PythonLibs REQUIRED)
 find_package(Boost COMPONENTS python REQUIRED)
 
 add_library(placo MODULE 
-    bindings/module.cpp
     bindings/expose-eigen.cpp
     bindings/expose-utils.cpp
+    bindings/expose-footsteps.cpp
+    bindings/module.cpp
 )
 target_link_libraries(placo ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} libplaco)
 target_include_directories(placo PRIVATE ${PYTHON_INCLUDE_DIRS})

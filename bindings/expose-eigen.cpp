@@ -1,6 +1,8 @@
-#include "expose-eigen.h"
+#include "module.h"
 #include <Eigen/Dense>
 #include <boost/python.hpp>
+#include "expose-utils.hpp"
+#include <eigenpy/eigenpy.hpp>
 
 using namespace boost::python;
 
@@ -43,4 +45,14 @@ void exposeAffine3d() {
           })
       .def(self * other<Eigen::Vector3d>())
       .def(self * self);
+
+    // Vectors of points
+    exposeStdVector<Eigen::Vector2d>("std::vector<Vector2d>");
+    exposeStdVector<Eigen::Vector3d>("std::vector<Vector3d>");
+
+    eigenpy::enableEigenPy();
+
+    // Ensuring types are exposed
+    eigenpy::exposeType<Eigen::Vector2d>();
+    eigenpy::exposeType<Eigen::Vector3d>();
 }

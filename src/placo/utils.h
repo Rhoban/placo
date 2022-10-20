@@ -21,4 +21,11 @@ Eigen::Affine3d interpolate_frames(Eigen::Affine3d frameA,
  * @return a scalar angle [rad]
  */
 double frame_yaw(Eigen::Matrix3d rotation);
+
+/**
+ * @brief Makes an Affine3d from a 4x4 matrix (for python bindings)
+ * @param matrix the 4x4 matrix
+ * @return The Affine3d
+ */
+Eigen::Affine3d frame(Eigen::Matrix4d matrix);
 } // namespace placo

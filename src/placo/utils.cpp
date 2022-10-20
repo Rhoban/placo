@@ -22,4 +22,10 @@ double frame_yaw(Eigen::Matrix3d rotation) {
 
   return atan2(xInNewFrame.y(), xInNewFrame.x());
 }
+
+Eigen::Affine3d frame(Eigen::Matrix4d matrix) {
+  Eigen::Affine3d result;
+  result.matrix() = matrix;
+  return result;
+}
 } // namespace placo
