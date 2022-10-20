@@ -38,7 +38,7 @@ target_link_libraries(libplaco PUBLIC
 
 set(CMAKE_SHARED_MODULE_PREFIX "")
 
-find_package(PythonLibs 3.10 REQUIRED)
+find_package(PythonLibs REQUIRED)
 find_package(Boost COMPONENTS python REQUIRED)
 
 add_library(placo MODULE 
