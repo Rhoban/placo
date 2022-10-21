@@ -57,6 +57,9 @@ public:
   // The starting (current) configuration is included as the first item
   std::vector<Support> make_supports(const std::vector<Footstep> &footsteps);
 
+  // Maximum steps to plan
+  int max_steps = 100;
+
   // Dimension of the accessibility window for the opposite foot
   double accessibility_width = 0.05;
   double accessibility_length = 0.1;

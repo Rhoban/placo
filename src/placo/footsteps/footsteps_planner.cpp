@@ -24,8 +24,7 @@ namespace placo {
 FootstepsPlanner::Footstep::Footstep(double foot_width, double foot_length)
     : foot_width(foot_width), foot_length(foot_length) {}
 
-std::vector<Eigen::Vector2d>
-FootstepsPlanner::Footstep::support_polygon() {
+std::vector<Eigen::Vector2d> FootstepsPlanner::Footstep::support_polygon() {
   if (!computed_polygon) {
     // Making a clockwise polygon
     std::vector<std::pair<double, double>> contour = {
@@ -54,8 +53,7 @@ FootstepsPlanner::Footstep::support_polygon() {
  *
  * @return New polygon contained in Support
  */
-std::vector<Eigen::Vector2d>
-FootstepsPlanner::Support::support_polygon() {
+std::vector<Eigen::Vector2d> FootstepsPlanner::Support::support_polygon() {
   if (!computed_polygon) {
     b_polygon poly, hull;
     for (auto &footstep : footsteps) {
@@ -129,9 +127,7 @@ FootstepsPlanner::FootstepsPlanner(std::string initial_side,
       T_world_left(T_world_left), T_world_right(T_world_right),
       feet_spacing(feet_spacing) {}
 
-
-bool FootstepsPlanner::Footstep::operator==(const Footstep &other)
-{
+bool FootstepsPlanner::Footstep::operator==(const Footstep &other) {
   return side == other.side && frame.isApprox(other.frame);
 }
 
@@ -161,7 +157,17 @@ FootstepsPlanner::plan(Eigen::Affine3d T_world_targetLeft,
   bool right_arrived = false;
   int steps = 0;
 
-  while (!left_arrived || !right_arrived) {
+  // Including initial footsteps, which are current frames
+  FootstepsPlanner::Footstep footstep(foot_width, foot_length);
+  footstep.side = support_side == Side::Left ? Side::Right : Side::Left;
+  footstep.frame = support_side == Side::Left ? T_world_right : T_world_left;
+  footsteps.push_back(footstep);
+
+  footstep.side = support_side;
+  footstep.frame = support_side == Side::Left ? T_world_left : T_world_right;
+  footsteps.push_back(footstep);
+
+  while ((!left_arrived || !right_arrived) && steps < max_steps) {
     steps += 1;
 
     bool arrived = true;
