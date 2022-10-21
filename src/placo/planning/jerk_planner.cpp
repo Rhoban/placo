@@ -8,7 +8,23 @@
 using namespace std;
 
 namespace placo {
-int JerkPlanner::Constraint::nb_constraints() { return A.rows(); }
+int JerkPlanner::ConstraintMatrices::nb_constraints() { return A.rows(); }
+
+JerkPlanner::Constraint::Constraint(JerkPlanner &planner) : planner(planner) {}
+
+bool JerkPlanner::Constraint::is_active() {
+  // std::cout << planner.active_set << std::endl;
+  // std::cout << "Size: " << (int)planner.set_size << std::endl;
+  // std::cout << "Range:" << first_row << "/" << last_row << std::endl;
+  for (int k = 0; k < planner.set_size; k++) {
+    int i = planner.active_set[k];
+    if (i >= first_row && i < last_row) {
+      return true;
+    }
+  }
+
+  return false;
+}
 
 int JerkPlanner::JerkTrajectory::get_offset(double t) const {
   int k = floor(t / dt);
@@ -115,10 +131,10 @@ Eigen::MatrixXd JerkPlanner::get_transition_matrix(int step) {
   return transition_matrix;
 }
 
-JerkPlanner::Constraint
+JerkPlanner::ConstraintMatrices
 JerkPlanner::make_constraint(int step, JerkPlanner::ConstraintType type,
                              Eigen::Vector2d value) {
-  Constraint constraint;
+  ConstraintMatrices constraint;
 
   // Initializing A and b matrices
   constraint.A = Eigen::MatrixXd(2, N * 2);
@@ -174,35 +190,63 @@ JerkPlanner::make_constraint(int step, JerkPlanner::ConstraintType type,
 
 void JerkPlanner::add_equality_constraint(int step, Eigen::Vector2d value,
                                           JerkPlanner::ConstraintType type) {
-  equalities.push_back(make_constraint(step, type, value));
+  _push_equality(make_constraint(step, type, value));
 }
 
-void JerkPlanner::add_inequality_constraint(int step, Eigen::Vector2d value,
-                                            JerkPlanner::ConstraintType type, bool lower) {
-  auto constraint = make_constraint(step, type, value);
-  if (lower) {
-    constraint.A = -constraint.A;
-    constraint.b = -constraint.b;
-  }
-  inequalities.push_back(constraint);
-}
-
-void JerkPlanner::add_limit_constraint(double limit,
+JerkPlanner::Constraint
+JerkPlanner::add_greater_than_constraint(int step, Eigen::Vector2d value,
                                        JerkPlanner::ConstraintType type) {
+
+  Constraint range(*this);
+  range.first_row = inequalities_count;
+  auto constraint = make_constraint(step, type, value);
+  _push_inequality(constraint);
+
+  range.last_row = inequalities_count;
+  return range;
+}
+
+JerkPlanner::Constraint
+JerkPlanner::add_lower_than_constraint(int step, Eigen::Vector2d value,
+                                       JerkPlanner::ConstraintType type) {
+
+  Constraint range(*this);
+  range.first_row = inequalities_count;
+  auto constraint = make_constraint(step, type, value);
+  constraint.A = -constraint.A;
+  constraint.b = -constraint.b;
+  _push_inequality(constraint);
+
+  range.last_row = inequalities_count;
+  return range;
+}
+
+JerkPlanner::Constraint
+JerkPlanner::add_limit_constraint(double limit,
+                                  JerkPlanner::ConstraintType type) {
+  Constraint range(*this);
+  range.first_row = inequalities_count;
+
   for (int step = 0; step < N; step++) {
     // Ax <= b
-    add_inequality_constraint(step, Eigen::Vector2d(limit, limit), type, true);
+    add_lower_than_constraint(step, Eigen::Vector2d(limit, limit), type);
 
     // Ax >= -b
-    add_inequality_constraint(step, -Eigen::Vector2d(limit, limit), type);
+    add_greater_than_constraint(step, -Eigen::Vector2d(limit, limit), type);
   }
+
+  range.last_row = inequalities_count;
+  return range;
 }
 
-void JerkPlanner::add_inequality_polygon_constraint(
+JerkPlanner::Constraint JerkPlanner::add_polygon_constraint(
     int step, std::vector<Eigen::Vector2d> polygon,
     JerkPlanner::ConstraintType type, double margin) {
-  Constraint inequality;
-  Constraint Ab_matrices = make_constraint(step, type);
+  Constraint range(*this);
+  range.first_row = inequalities_count;
+
+  ConstraintMatrices inequality;
+  ConstraintMatrices Ab_matrices = make_constraint(step, type);
 
   inequality.A = Eigen::MatrixXd(polygon.size(), N * 2);
   inequality.A.setZero();
@@ -227,24 +271,17 @@ void JerkPlanner::add_inequality_polygon_constraint(
     inequality.b(i, 0) -= A.dot(n) + margin;
   }
 
-  inequalities.push_back(inequality);
+  _push_inequality(inequality);
+
+  range.last_row = inequalities_count;
+  return range;
 }
 
-int JerkPlanner::nb_constraints(std::vector<Constraint> &constraints) {
-  int nb = 0;
-  for (auto &constraint : constraints) {
-    nb += constraint.nb_constraints();
-  }
-
-  return nb;
-}
-
-void JerkPlanner::stack_constraints(std::vector<Constraint> &constraints,
-                                    Eigen::MatrixXd &As, Eigen::VectorXd &bs) {
-  int n = nb_constraints(constraints);
-
-  As = Eigen::MatrixXd(n, N * 2);
-  bs = Eigen::VectorXd(n);
+void JerkPlanner::stack_constraints(
+    std::vector<ConstraintMatrices> &constraints, int constraints_count,
+    Eigen::MatrixXd &As, Eigen::VectorXd &bs) {
+  As = Eigen::MatrixXd(constraints_count, N * 2);
+  bs = Eigen::VectorXd(constraints_count);
 
   int k = 0;
   for (auto &constraint : constraints) {
@@ -266,17 +303,15 @@ JerkPlanner::JerkTrajectory2D JerkPlanner::plan() {
   // Stacking equality constraints
   Eigen::MatrixXd CE;
   Eigen::VectorXd ce0;
-  stack_constraints(equalities, CE, ce0);
+  stack_constraints(equalities, equalities_count, CE, ce0);
 
   // Stacking inequality constraints
   Eigen::MatrixXd CI;
   Eigen::VectorXd ci0;
-  stack_constraints(inequalities, CI, ci0);
+  stack_constraints(inequalities, inequalities_count, CI, ci0);
 
   Eigen::VectorXd jerks(N * 2);
   jerks.setZero();
-  Eigen::VectorXi active_set;
-  size_t set_size;
 
   double result = eiquadprog::solvers::solve_quadprog(
       G, g0, CE.transpose(), ce0, CI.transpose(), ci0, jerks, active_set,
@@ -309,4 +344,15 @@ JerkPlanner::JerkTrajectory2D JerkPlanner::plan() {
 
   return trajectory;
 }
+
+void JerkPlanner::_push_equality(ConstraintMatrices constraint) {
+  equalities.push_back(constraint);
+  equalities_count += constraint.nb_constraints();
+}
+
+void JerkPlanner::_push_inequality(ConstraintMatrices constraint) {
+  inequalities.push_back(constraint);
+  inequalities_count += constraint.nb_constraints();
+}
+
 } // namespace placo

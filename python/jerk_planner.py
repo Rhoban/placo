@@ -3,25 +3,46 @@ import time
 import matplotlib.pyplot as plt
 import placo
 from placo import ConstraintType
-import tf
 import numpy as np
-import argparse
 
 dt = 0.1
+
 jerk_planner = placo.JerkPlanner(100, np.array([0., 0., 0., 0., 0., 0.]), dt, 0.)
 jerk_planner.add_equality_constraint(100, np.array([1., 1]), ConstraintType.position)
 jerk_planner.add_equality_constraint(100, np.array([0., 0]), ConstraintType.velocity)
 jerk_planner.add_equality_constraint(100, np.array([0., 0]), ConstraintType.acceleration)
 
-polygon = np.array([
+limits = jerk_planner.add_limit_constraint(.35, ConstraintType.velocity)
+
+ineq = jerk_planner.add_lower_than_constraint(75, np.array([10, .5]), ConstraintType.position)
+
+polygon1 = np.array([
     [-1, 0.5],
     [-.5, 1],
     [-.5, 0.65],
 ])
 
-jerk_planner.add_inequality_polygon_constraint(50, polygon, ConstraintType.position, 0.1)
+constraint1 = jerk_planner.add_polygon_constraint(50, polygon1, ConstraintType.position, 0.1)
 
+polygon2 = np.array([
+    [-1.5, 0.25],
+    [-.5, 1.5],
+    [-.25, 0.25],
+])
+
+constraint2 = jerk_planner.add_polygon_constraint(50, polygon2, ConstraintType.position, 0.1)
+
+print(jerk_planner)
+
+start = time.time()
 trajectory = jerk_planner.plan()
+elapsed = time.time() - start
+
+print(f"Computation time: {elapsed}")
+print("Limits: ", limits.is_active())
+print("Ineq: ", ineq.is_active())
+print("Constraint for polygon1: ", constraint1.is_active())
+print("Constraint for polygon2: ", constraint2.is_active())
 
 # Gathering 100 data points along the trajectory
 ts = np.linspace(0, trajectory.duration(), 100)
@@ -39,8 +60,13 @@ for name, axis in ['x', 0], ['y', 1]:
 # Plotting 2D trajectory
 plt.scatter(data.T[0][0], data.T[1][0])
 
-polygon = np.concatenate((polygon, [polygon[0]]))
-plt.plot(polygon.T[0], polygon.T[1], c='red')
+polygon1 = np.concatenate((polygon1, [polygon1[0]]))
+plt.plot(polygon1.T[0], polygon1.T[1], c='red')
+
+polygon2 = np.concatenate((polygon2, [polygon2[0]]))
+plt.plot(polygon2.T[0], polygon2.T[1], c='orange')
+
+plt.scatter(data.T[0][0][50:51], data.T[1][0][50:51], c='green')
 
 plt.grid()
 plt.axis("equal")
