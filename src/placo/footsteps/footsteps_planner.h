@@ -25,50 +25,73 @@ public:
     bool computed_polygon = false;
 
     bool operator==(const Footstep &other);
-    
+
     std::vector<Eigen::Vector2d> support_polygon();
   };
 
-  // A support can be one or two feet supporting the robot (it is
-  // a vector of footsteps)
+  /**
+   * @brief A support is a set of footsteps (can be one or two foot on the
+   * ground)
+   */
   struct Support {
     std::vector<Footstep> footsteps;
     std::vector<Eigen::Vector2d> polygon;
     bool computed_polygon = false;
-    Eigen::Affine3d frame();
-    Eigen::Affine3d frame(Side);
     std::vector<Eigen::Vector2d> support_polygon();
+
+    /**
+     * @brief Returns the frame for the support. It will be the (interpolated)
+     * average of footsteps frames
+     * @return a frame
+     */
+    Eigen::Affine3d frame();
+
+    /**
+     * @brief Returns the frame for a given side (if present)
+     * @param side the side we want the frame (left or right foot)
+     * @return a frame
+     */
+    Eigen::Affine3d frame(Side side);
 
     bool operator==(const Support &other);
   };
 
+  /**
+   * @brief Initializes the solver
+   * @param initial_side side that is initially supporting the robot
+   * @param T_world_left frame of the initial left foot
+   * @param T_world_right frame of the initial right foot
+   * @param feet_spacing spacing between feet
+   */
   FootstepsPlanner(Side initial_side, Eigen::Affine3d T_world_left,
                    Eigen::Affine3d T_world_right, double feet_spacing);
 
+  /**
+   * @brief This constructors allow the initial_side to be a string (useful for
+   * Python bindings)
+   */
   FootstepsPlanner(std::string initial_side, Eigen::Affine3d T_world_left,
                    Eigen::Affine3d T_world_right, double feet_spacing);
 
-  // Plans footsteps to bring the robot to the target position and orientation
-  // This returns a vector of footsteps indicating where which foot will be
-  // placed on the ground sequentially The starting (current) configuration is
-  // not included here
-  std::vector<Footstep> plan(Eigen::Affine3d T_world_targetLeft,
-                             Eigen::Affine3d T_world_targetRight);
+  /**
+   * @brief Plan the footsteps
+   * @param T_world_targetLeft target frame for left foot
+   * @param T_world_targetRight target frame for right foot
+   * @return vector of footsteps to apply. It starts with initial footsteps
+   * (the first is the current flying foot, the second the current support foot)
+   * and ends with the footsteps that reached the given target
+   */
+  virtual std::vector<Footstep> plan(Eigen::Affine3d T_world_targetLeft,
+                                     Eigen::Affine3d T_world_targetRight) = 0;
 
-  // Make sequential double / single support phases from a footsteps plan
-  // The starting (current) configuration is included as the first item
-  std::vector<Support> make_double_supports(const std::vector<Footstep> &footsteps);
-
-  // Maximum steps to plan
-  int max_steps = 100;
-
-  // Dimension of the accessibility window for the opposite foot
-  double accessibility_width = 0.05;
-  double accessibility_length = 0.1;
-  double accessibility_yaw = 0.2;
-
-  // Distance where the robot walks forward instead of aligning with target
-  double place_threshold = 0.5;
+  /**
+   * @brief From planned footsteps, this method adds the double support phases
+   * @param footsteps a vector of footsteps ad produces by plan
+   * @return vector of supports to use. It starts with initial double supports,
+   * and add double support phases between footsteps.
+   */
+  std::vector<Support>
+  make_double_supports(const std::vector<Footstep> &footsteps);
 
   // Foot dimensions
   double foot_width = 0.1;

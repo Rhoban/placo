@@ -3,6 +3,7 @@
 #include "expose-utils.hpp"
 #include "module.h"
 #include "placo/footsteps/footsteps_planner.h"
+#include "placo/footsteps/footsteps_planner_naive.h"
 #include <Eigen/Dense>
 #include <boost/python.hpp>
 
@@ -23,11 +24,11 @@ void exposeFootsteps() {
       .def("support_polygon", &FootstepsPlanner::Support::support_polygon)
       .add_property("footsteps", &FootstepsPlanner::Support::footsteps);
 
-  class_<FootstepsPlanner>(
-      "FootstepsPlanner",
+  class_<FootstepsPlannerNaive>(
+      "FootstepsPlannerNaive",
       init<std::string, Eigen::Affine3d, Eigen::Affine3d, double>())
-      .def("plan", &FootstepsPlanner::plan)
-      .def("make_double_supports", &FootstepsPlanner::make_double_supports);
+      .def("plan", &FootstepsPlannerNaive::plan)
+      .def("make_double_supports", &FootstepsPlannerNaive::make_double_supports);
 
   // Exposing vector of footsteps
   exposeStdVector<FootstepsPlanner::Footstep>("Footsteps");

@@ -70,10 +70,15 @@ if __name__ == "__main__":
     T_world_targetRight = T_world_center @ T_center_right
 
     start = time.time()
-    planner = placo.FootstepsPlanner("left", placo.frame(T_center_left), placo.frame(T_center_right), feet_spacing)
+
+    # Currently, the naive planner is the only one implemented
+    planner = placo.FootstepsPlannerNaive("left", placo.frame(T_center_left), placo.frame(T_center_right), feet_spacing)
     footsteps = planner.plan(placo.frame(T_world_targetLeft), placo.frame(T_world_targetRight))
+
+    # If using double support, transform the result in supports instead of footsteps
     if args.double_supports:
         footsteps = planner.make_double_supports(footsteps)
+        
     elapsed = time.time() - start
 
     print(f"{len(footsteps)} steps, computation time: {elapsed}s.")
