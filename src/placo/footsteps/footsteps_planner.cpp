@@ -131,6 +131,19 @@ bool FootstepsPlanner::Footstep::operator==(const Footstep &other) {
   return side == other.side && frame.isApprox(other.frame);
 }
 
+bool FootstepsPlanner::Support::operator==(const Support &other) {
+  if (footsteps.size() != other.footsteps.size()) {
+    return false;
+  }
+  for (int k = 0; k < footsteps.size(); k++) {
+    if (!(footsteps[k] == other.footsteps[k])) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 /**
  * @brief Plans footsteps to bring the robot to the target position and
  * orientation
@@ -274,49 +287,25 @@ FootstepsPlanner::plan(Eigen::Affine3d T_world_targetLeft,
  * phases
  */
 std::vector<FootstepsPlanner::Support>
-FootstepsPlanner::make_supports(const std::vector<Footstep> &footsteps) {
+FootstepsPlanner::make_double_supports(const std::vector<Footstep> &footsteps) {
   std::vector<FootstepsPlanner::Support> supports;
 
-  // // Building current (double) support
-  // Footstep left_footstep;
-  // Eigen::Affine3d left_initial;
-  // left_initial.translation() = initial_pos.translation();
-  // left_initial.translation().y() += foots_spacing;
-  // left_initial.linear() = initial_pos.linear();
+  // Creating the first (double-support) initial state
+  FootstepsPlanner::Support support;
+  support.footsteps = {footsteps[0], footsteps[1]};
+  supports.push_back(support);
 
-  // left_footstep.frame = configuration_foots.initial_left_foot;
-  // left_footstep.side = Side::Left;
+  // Adding single/double support phases
+  for (int step = 1; step < footsteps.size() - 1; step++) {
+    FootstepsPlanner::Support single_support;
+    single_support.footsteps = {footsteps[step]};
+    supports.push_back(single_support);
 
-  // Footstep right_footstep;
-  // right_footstep.frame = configuration_foots.initial_right_foot;
-  // right_footstep.side = Side::Right;
+    FootstepsPlanner::Support double_support;
+    double_support.footsteps = {footsteps[step], footsteps[step + 1]};
+    supports.push_back(double_support);
+  }
 
-  // Support current_support;
-  // current_support.footsteps.push_back(left_footstep);
-  // current_support.footsteps.push_back(right_footstep);
-  // supports.push_back(current_support);
-
-  // // Previous footstep
-  // Footstep last_footstep = left_footstep;
-  // if (side_support == Side::Right) {
-  //   last_footstep = right_footstep;
-  // }
-
-  // for (auto &footstep : footsteps) {
-  //   // The last footstep is now a support, the other leg is flying
-  //   Support single_phase;
-  //   single_phase.footsteps.push_back(last_footstep);
-  //   supports.push_back(single_phase);
-
-  //   // The new foostep is on the ground, a double support phase is occurring
-  //   Support double_phase;
-  //   double_phase.footsteps.push_back(last_footstep);
-  //   double_phase.footsteps.push_back(footstep);
-  //   supports.push_back(double_phase);
-
-  //   last_footstep = footstep;
-  // }
-
-  // return supports;
+  return supports;
 }
 } // namespace placo

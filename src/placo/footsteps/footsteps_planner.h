@@ -38,6 +38,8 @@ public:
     Eigen::Affine3d frame();
     Eigen::Affine3d frame(Side);
     std::vector<Eigen::Vector2d> support_polygon();
+
+    bool operator==(const Support &other);
   };
 
   FootstepsPlanner(Side initial_side, Eigen::Affine3d T_world_left,
@@ -55,7 +57,7 @@ public:
 
   // Make sequential double / single support phases from a footsteps plan
   // The starting (current) configuration is included as the first item
-  std::vector<Support> make_supports(const std::vector<Footstep> &footsteps);
+  std::vector<Support> make_double_supports(const std::vector<Footstep> &footsteps);
 
   // Maximum steps to plan
   int max_steps = 100;

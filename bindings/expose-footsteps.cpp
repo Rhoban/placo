@@ -19,16 +19,17 @@ void exposeFootsteps() {
       .add_property("frame", &FootstepsPlanner::Footstep::frame)
       .def("support_polygon", &FootstepsPlanner::Footstep::support_polygon);
 
-  class_<FootstepsPlanner::Support>("Support").def(
-      "support_polygon", &FootstepsPlanner::Support::support_polygon);
+  class_<FootstepsPlanner::Support>("Support")
+      .def("support_polygon", &FootstepsPlanner::Support::support_polygon)
+      .add_property("footsteps", &FootstepsPlanner::Support::footsteps);
 
   class_<FootstepsPlanner>(
       "FootstepsPlanner",
       init<std::string, Eigen::Affine3d, Eigen::Affine3d, double>())
-      .def("plan", &FootstepsPlanner::plan);
+      .def("plan", &FootstepsPlanner::plan)
+      .def("make_double_supports", &FootstepsPlanner::make_double_supports);
 
   // Exposing vector of footsteps
   exposeStdVector<FootstepsPlanner::Footstep>("Footsteps");
-  // class_<std::vector<FootstepsPlanner::Footstep>>("Footsteps")
-  //       .def(vector_indexing_suite<std::vector<FootstepsPlanner::Footstep>>());
+  exposeStdVector<FootstepsPlanner::Support>("Supports");
 }
