@@ -14,4 +14,5 @@ BOOST_PYTHON_MODULE(placo) {
   exposeAffine3d();
   exposeUtils();
   exposeFootsteps();
+  exposeJerkPlanner();
 }

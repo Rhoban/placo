@@ -1,3 +1,4 @@
+#include <iostream>
 #include "placo/utils.h"
 
 namespace placo {

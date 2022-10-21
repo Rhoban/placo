@@ -16,6 +16,7 @@ find_package (Eigen3 3 REQUIRED NO_MODULE)
 add_library(libplaco
     src/placo/footsteps/footsteps_planner.cpp
     src/placo/footsteps/footsteps_planner_naive.cpp
+    src/placo/planning/jerk_planner.cpp
     src/placo/utils.cpp
 )
 
@@ -46,6 +47,7 @@ add_library(placo MODULE
     bindings/expose-eigen.cpp
     bindings/expose-utils.cpp
     bindings/expose-footsteps.cpp
+    bindings/expose-jerk-planner.cpp
     bindings/module.cpp
 )
 target_link_libraries(placo ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} libplaco)

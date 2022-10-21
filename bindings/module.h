@@ -3,3 +3,4 @@
 void exposeUtils();
 void exposeAffine3d();
 void exposeFootsteps();
+void exposeJerkPlanner();

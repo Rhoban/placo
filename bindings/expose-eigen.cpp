@@ -47,12 +47,17 @@ void exposeAffine3d() {
       .def(self * self);
 
     // Vectors of points
-    exposeStdVector<Eigen::Vector2d>("std::vector<Vector2d>");
-    exposeStdVector<Eigen::Vector3d>("std::vector<Vector3d>");
+    exposeStdVector<Eigen::Vector2d>("vector_Vector2d");
+    exposeStdVector<Eigen::Vector3d>("vector_Vector3d");
 
     eigenpy::enableEigenPy();
 
     // Ensuring types are exposed
     eigenpy::exposeType<Eigen::Vector2d>();
     eigenpy::exposeType<Eigen::Vector3d>();
+    
+    // Enables eigen for specific matrix sizes
+    eigenpy::enableEigenPySpecific< Eigen::Matrix<double, 4, 1> >();
+    eigenpy::enableEigenPySpecific< Eigen::Matrix<double, 6, 1> >();
+    eigenpy::enableEigenPySpecific< Eigen::Matrix<double, 9, 1> >();
 }
