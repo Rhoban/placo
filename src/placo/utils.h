@@ -1,6 +1,6 @@
 #pragma once
 
-#include "pinocchio/spatial/se3.hpp"
+#include "pinocchio/multibody/geometry.hpp"
 #include <Eigen/Dense>
 
 namespace placo {
@@ -28,4 +28,19 @@ double frame_yaw(Eigen::Matrix3d rotation);
  * @return The Affine3d
  */
 Eigen::Affine3d frame(Eigen::Matrix4d matrix);
+
+/**
+ * @brief Takes a 3D transformation and ensure it is "flat" on the floor
+ * (setting z to 0 and keeping only yaw)
+ * @param transformation a 3D transformation
+ * @return a 3D transformation that lies on the floor (no pitch/roll and no z)
+ */
+Eigen::Affine3d flatten_on_floor(const Eigen::Affine3d &transformation);
+
+/**
+ * @brief Converts a pinocchio's SE3 transformation to Eigen Affine3d
+ * @param se3 pinocchio SE3 transformation
+ * @return Eigen affine3d
+ */
+Eigen::Affine3d pin_se3_to_eigen(const pinocchio::GeometryData::SE3 &se3);
 } // namespace placo

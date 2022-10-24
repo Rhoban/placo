@@ -17,6 +17,7 @@ add_library(libplaco
     src/placo/footsteps/footsteps_planner.cpp
     src/placo/footsteps/footsteps_planner_naive.cpp
     src/placo/planning/jerk_planner.cpp
+    src/placo/model/mobile_robot.cpp
     src/placo/utils.cpp
 )
 
@@ -37,6 +38,8 @@ target_link_libraries(libplaco PUBLIC
     eiquadprog
   ${PROTOBUF_LIBRARIES}
 )
+target_compile_definitions(libplaco PUBLIC -DMOTORS_CONFIGURATION_${MOTORS_CONFIGURATION}
+  -DPINOCCHIO_WITH_HPP_FCL)
 
 set(CMAKE_SHARED_MODULE_PREFIX "")
 
@@ -48,6 +51,7 @@ add_library(placo MODULE
     bindings/expose-utils.cpp
     bindings/expose-footsteps.cpp
     bindings/expose-jerk-planner.cpp
+    bindings/expose-mobile-robot.cpp
     bindings/module.cpp
 )
 target_link_libraries(placo ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} libplaco)

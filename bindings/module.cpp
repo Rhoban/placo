@@ -15,4 +15,5 @@ BOOST_PYTHON_MODULE(placo) {
   exposeUtils();
   exposeFootsteps();
   exposeJerkPlanner();
+  exposeMobileRobot();
 }
