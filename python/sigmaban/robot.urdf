@@ -1,0 +1,1392 @@
+<robot name="onshape">
+<link name="torso">
+<!-- Shapes for x_plate -->
+<collision>
+<origin xyz="0.057869 3.78163e-15 0.0595" rpy="1.5708 -3.71254e-15 1.5708" />
+<geometry>
+<box size="0.133 0.113 0.006" />
+</geometry>
+</collision>
+<!-- Shapes for x_plate -->
+<visual>
+<origin xyz="0.057869 3.78163e-15 0.0595" rpy="1.5708 -3.71254e-15 1.5708" />
+<geometry>
+<box size="0.133 0.113 0.006" />
+</geometry>
+<material name="x_plate_material">
+<color rgba="0.262745 0.282353 0.301961 1.0"/>
+</material>
+</visual>
+<!-- Shapes for mx-64at_ar -->
+<collision>
+<origin xyz="0.023419 -0.0464 -0.017" rpy="-3.14159 2.03946e-15 -1.5708" />
+<geometry>
+<box size="0.0402 0.0611 0.041" />
+</geometry>
+</collision>
+<!-- Shapes for mx-64at_ar -->
+<visual>
+<origin xyz="0.023419 -0.0464 -0.017" rpy="-3.14159 2.03946e-15 -1.5708" />
+<geometry>
+<box size="0.0402 0.0611 0.041" />
+</geometry>
+<material name="mx-64at_ar_material">
+<color rgba="0.168627 0.168627 0.168627 1.0"/>
+</material>
+</visual>
+<!-- Shapes for mx-64at_ar -->
+<collision>
+<origin xyz="0.013319 0.056 0.143" rpy="-1.5708 -1.5708 0" />
+<geometry>
+<box size="0.0402 0.0611 0.041" />
+</geometry>
+</collision>
+<!-- Shapes for mx-64at_ar -->
+<visual>
+<origin xyz="0.013319 0.056 0.143" rpy="-1.5708 -1.5708 0" />
+<geometry>
+<box size="0.0402 0.0611 0.041" />
+</geometry>
+<material name="mx-64at_ar_material">
+<color rgba="0.168627 0.168627 0.168627 1.0"/>
+</material>
+</visual>
+<!-- Shapes for x_plate -->
+<collision>
+<origin xyz="-0.057131 7.74724e-15 0.0595" rpy="1.5708 -1.21571e-15 1.5708" />
+<geometry>
+<box size="0.133 0.113 0.006" />
+</geometry>
+</collision>
+<!-- Shapes for x_plate -->
+<visual>
+<origin xyz="-0.057131 7.74724e-15 0.0595" rpy="1.5708 -1.21571e-15 1.5708" />
+<geometry>
+<box size="0.133 0.113 0.006" />
+</geometry>
+<material name="x_plate_material">
+<color rgba="0.262745 0.282353 0.301961 1.0"/>
+</material>
+</visual>
+<!-- Shapes for mx-64at_ar -->
+<collision>
+<origin xyz="0.023419 0.0464 -0.017" rpy="-3.14159 2.02561e-15 -1.5708" />
+<geometry>
+<box size="0.0402 0.0611 0.041" />
+</geometry>
+</collision>
+<!-- Shapes for mx-64at_ar -->
+<visual>
+<origin xyz="0.023419 0.0464 -0.017" rpy="-3.14159 2.02561e-15 -1.5708" />
+<geometry>
+<box size="0.0402 0.0611 0.041" />
+</geometry>
+<material name="mx-64at_ar_material">
+<color rgba="0.168627 0.168627 0.168627 1.0"/>
+</material>
+</visual>
+<!-- Shapes for mx-64at_ar -->
+<collision>
+<origin xyz="0.018319 5.1733e-15 0.136" rpy="4.02456e-16 1.06347e-14 -1.5708" />
+<geometry>
+<box size="0.0402 0.0611 0.041" />
+</geometry>
+</collision>
+<!-- Shapes for mx-64at_ar -->
+<visual>
+<origin xyz="0.018319 5.1733e-15 0.136" rpy="4.02456e-16 1.06347e-14 -1.5708" />
+<geometry>
+<box size="0.0402 0.0611 0.041" />
+</geometry>
+<material name="mx-64at_ar_material">
+<color rgba="0.168627 0.168627 0.168627 1.0"/>
+</material>
+</visual>
+<!-- Shapes for mx-64at_ar -->
+<collision>
+<origin xyz="0.013319 -0.056 0.143" rpy="1.5708 1.5708 0" />
+<geometry>
+<box size="0.0402 0.0611 0.041" />
+</geometry>
+</collision>
+<!-- Shapes for mx-64at_ar -->
+<visual>
+<origin xyz="0.013319 -0.056 0.143" rpy="1.5708 1.5708 0" />
+<geometry>
+<box size="0.0402 0.0611 0.041" />
+</geometry>
+<material name="mx-64at_ar_material">
+<color rgba="0.168627 0.168627 0.168627 1.0"/>
+</material>
+</visual>
+<inertial>
+<origin xyz="-0.00999148 0.0067075 0.0847028" rpy="0 0 0"/>
+<mass value="1.74256" />
+<inertia ixx="0.0252852" ixy="0.00212073"  ixz="0.00443286" iyy="0.0284607" iyz="-0.00204504" izz="0.0103505" />
+</inertial>
+</link>
+
+<link name="head_base">
+<inertial>
+<origin xyz="0 0 0" rpy="0 0 0" />
+<mass value="1e-9" />
+<inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
+</inertial>
+</link>
+<joint name="head_base_frame" type="fixed">
+<origin xyz="0.035869 2.87859e-15 0.1595" rpy="3.79641e-14 -9.95037e-15 -1.04223e-13" />
+<parent link="torso" />
+<child link="head_base" />
+<axis xyz="0 0 0"/>
+</joint>
+
+<link name="trunk">
+<inertial>
+<origin xyz="0 0 0" rpy="0 0 0" />
+<mass value="1e-9" />
+<inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
+</inertial>
+</link>
+<joint name="trunk_frame" type="fixed">
+<origin xyz="0.00586803 -3.83374e-15 -0.1015" rpy="2.59035e-15 -1.04919e-28 -6.69483e-15" />
+<parent link="torso" />
+<child link="trunk" />
+<axis xyz="0 0 0"/>
+</joint>
+
+<link name="u_shoulder">
+<!-- Shapes for u_base_64 -->
+<collision>
+<origin xyz="-3.44907e-33 -3.58215e-33 -0.003125" rpy="-1.13995e-30 1.09771e-30 2.34193e-31" />
+<geometry>
+<box size="0.049 0.03 0.00625" />
+</geometry>
+</collision>
+<!-- Shapes for u_base_64 -->
+<visual>
+<origin xyz="-3.44907e-33 -3.58215e-33 -0.003125" rpy="-1.13995e-30 1.09771e-30 2.34193e-31" />
+<geometry>
+<box size="0.049 0.03 0.00625" />
+</geometry>
+<material name="u_base_64_material">
+<color rgba="0.301961 0.301961 0.301961 1.0"/>
+</material>
+</visual>
+<inertial>
+<origin xyz="-1.43272e-15 -0.00566234 -0.0159676" rpy="0 0 0"/>
+<mass value="0.0570101" />
+<inertia ixx="2.21758e-05" ixy="-2.0788e-19"  ixz="9.33113e-19" iyy="4.03314e-05" iyz="-6.10703e-06" izz="3.58629e-05" />
+</inertial>
+</link>
+
+<link name="right_humerus">
+<!-- Shapes for mx-64at_ar -->
+<collision>
+<origin xyz="3.86334e-18 -0.01755 -0.0235" rpy="-7.07767e-16 -3.64573e-30 3.9443e-30" />
+<geometry>
+<box size="0.0402 0.0611 0.041" />
+</geometry>
+</collision>
+<!-- Shapes for mx-64at_ar -->
+<visual>
+<origin xyz="3.86334e-18 -0.01755 -0.0235" rpy="-7.07767e-16 -3.64573e-30 3.9443e-30" />
+<geometry>
+<box size="0.0402 0.0611 0.041" />
+</geometry>
+<material name="mx-64at_ar_material">
+<color rgba="0.168627 0.168627 0.168627 1.0"/>
+</material>
+</visual>
+<inertial>
+<origin xyz="-0.0219502 0.0714677 -0.0108756" rpy="0 0 0"/>
+<mass value="0.111948" />
+<inertia ixx="0.0132961" ixy="0.00182099"  ixz="0.000176204" iyy="0.000422203" iyz="-0.00128316" izz="0.0134217" />
+</inertial>
+</link>
+
+<link name="radius_v2">
+<!-- Shapes for hand -->
+<collision>
+<origin xyz="1.23405e-19 0.1276 0.042" rpy="3.14159 -1.38778e-17 1.5708" />
+<geometry>
+<cylinder length="0.003" radius="0.04" />
+</geometry>
+</collision>
+<collision>
+<origin xyz="4.21038e-18 0.0539756 0.042" rpy="3.14159 -1.38778e-17 1.5708" />
+<geometry>
+<box size="0.0775512 0.0412 0.003" />
+</geometry>
+</collision>
+<!-- Shapes for hand -->
+<visual>
+<origin xyz="1.23405e-19 0.1276 0.042" rpy="3.14159 -1.38778e-17 1.5708" />
+<geometry>
+<cylinder length="0.003" radius="0.04" />
+</geometry>
+<material name="hand_material">
+<color rgba="0.301961 0.301961 0.301961 1.0"/>
+</material>
+</visual>
+<visual>
+<origin xyz="4.21038e-18 0.0539756 0.042" rpy="3.14159 -1.38778e-17 1.5708" />
+<geometry>
+<box size="0.0775512 0.0412 0.003" />
+</geometry>
+<material name="hand_material">
+<color rgba="0.301961 0.301961 0.301961 1.0"/>
+</material>
+</visual>
+<!-- Shapes for hand -->
+<collision>
+<origin xyz="-1.45636e-16 0.1276 0.005" rpy="3.14159 -1.38778e-17 1.5708" />
+<geometry>
+<cylinder length="0.003" radius="0.04" />
+</geometry>
+</collision>
+<collision>
+<origin xyz="-1.49723e-16 0.0539756 0.005" rpy="3.14159 -1.38778e-17 1.5708" />
+<geometry>
+<box size="0.0775512 0.0412 0.003" />
+</geometry>
+</collision>
+<!-- Shapes for hand -->
+<visual>
+<origin xyz="-1.45636e-16 0.1276 0.005" rpy="3.14159 -1.38778e-17 1.5708" />
+<geometry>
+<cylinder length="0.003" radius="0.04" />
+</geometry>
+<material name="hand_material">
+<color rgba="0.301961 0.301961 0.301961 1.0"/>
+</material>
+</visual>
+<visual>
+<origin xyz="-1.49723e-16 0.0539756 0.005" rpy="3.14159 -1.38778e-17 1.5708" />
+<geometry>
+<box size="0.0775512 0.0412 0.003" />
+</geometry>
+<material name="hand_material">
+<color rgba="0.301961 0.301961 0.301961 1.0"/>
+</material>
+</visual>
+<!-- Shapes for mx-64at_ar -->
+<collision>
+<origin xyz="-6.93889e-18 0.01755 0.0235" rpy="-3.14159 -6.50521e-19 2.46519e-32" />
+<geometry>
+<box size="0.0402 0.0611 0.041" />
+</geometry>
+</collision>
+<!-- Shapes for mx-64at_ar -->
+<visual>
+<origin xyz="-6.93889e-18 0.01755 0.0235" rpy="-3.14159 -6.50521e-19 2.46519e-32" />
+<geometry>
+<box size="0.0402 0.0611 0.041" />
+</geometry>
+<material name="mx-64at_ar_material">
+<color rgba="0.168627 0.168627 0.168627 1.0"/>
+</material>
+</visual>
+<inertial>
+<origin xyz="-0.0555551 -0.0926698 0.0242347" rpy="0 0 0"/>
+<mass value="0.133609" />
+<inertia ixx="0.0208737" ixy="-0.00645757"  ixz="-3.89367e-05" iyy="0.00213187" iyz="-0.000108106" izz="0.0229272" />
+</inertial>
+</link>
+
+<joint name="right_elbow" type="revolute">
+<origin xyz="-0.0235 -0.142 -0.0025" rpy="3.14159 -1.5708 0" />
+<parent link="right_humerus" />
+<child link="radius_v2" />
+<axis xyz="0 0 1"/>
+<limit effort="10" velocity="6" />
+<joint_properties friction="0.0"/>
+</joint>
+
+<joint name="right_shoulder_roll" type="revolute">
+<origin xyz="-0.0235 -0.03 -0.035" rpy="-3.60822e-16 -1.5708 0" />
+<parent link="u_shoulder" />
+<child link="right_humerus" />
+<axis xyz="0 0 1"/>
+<limit effort="10" velocity="6" />
+<joint_properties friction="0.0"/>
+</joint>
+
+<joint name="right_shoulder_pitch" type="revolute">
+<origin xyz="0.030869 -0.0795 0.143" rpy="1.5708 -4.80171e-15 3.14159" />
+<parent link="torso" />
+<child link="u_shoulder" />
+<axis xyz="0 0 1"/>
+<limit effort="10" velocity="6" />
+<joint_properties friction="0.0"/>
+</joint>
+
+<link name="u_shoulder_2">
+<!-- Shapes for u_base_64 -->
+<collision>
+<origin xyz="-2.27423e-34 5.57678e-33 0.003125" rpy="-3.14159 -1.78032e-32 5.34125e-32" />
+<geometry>
+<box size="0.049 0.03 0.00625" />
+</geometry>
+</collision>
+<!-- Shapes for u_base_64 -->
+<visual>
+<origin xyz="-2.27423e-34 5.57678e-33 0.003125" rpy="-3.14159 -1.78032e-32 5.34125e-32" />
+<geometry>
+<box size="0.049 0.03 0.00625" />
+</geometry>
+<material name="u_base_64_material">
+<color rgba="0.301961 0.301961 0.301961 1.0"/>
+</material>
+</visual>
+<inertial>
+<origin xyz="3.4737e-17 0.00566234 0.0159676" rpy="0 0 0"/>
+<mass value="0.0570101" />
+<inertia ixx="2.21758e-05" ixy="6.89273e-20"  ixz="-6.51157e-20" iyy="4.03314e-05" iyz="-6.10703e-06" izz="3.58629e-05" />
+</inertial>
+</link>
+
+<link name="left_humerus">
+<!-- Shapes for mx-64at_ar -->
+<collision>
+<origin xyz="-3.65333e-18 -0.01755 -0.0235" rpy="-3.60822e-16 -1.5097e-15 1.06437e-17" />
+<geometry>
+<box size="0.0402 0.0611 0.041" />
+</geometry>
+</collision>
+<!-- Shapes for mx-64at_ar -->
+<visual>
+<origin xyz="-3.65333e-18 -0.01755 -0.0235" rpy="-3.60822e-16 -1.5097e-15 1.06437e-17" />
+<geometry>
+<box size="0.0402 0.0611 0.041" />
+</geometry>
+<material name="mx-64at_ar_material">
+<color rgba="0.168627 0.168627 0.168627 1.0"/>
+</material>
+</visual>
+<inertial>
+<origin xyz="-0.0663577 0.040272 -0.0134765" rpy="0 0 0"/>
+<mass value="0.111948" />
+<inertia ixx="0.00896054" ixy="0.00398528"  ixz="0.000410872" iyy="0.00197472" iyz="-0.000890955" izz="0.0107095" />
+</inertial>
+</link>
+
+<link name="radius_v2_2">
+<!-- Shapes for mx-64at_ar -->
+<collision>
+<origin xyz="1.27842e-17 -0.01755 -0.0235" rpy="2.21464e-15 -5.24479e-16 1.11022e-16" />
+<geometry>
+<box size="0.0402 0.0611 0.041" />
+</geometry>
+</collision>
+<!-- Shapes for mx-64at_ar -->
+<visual>
+<origin xyz="1.27842e-17 -0.01755 -0.0235" rpy="2.21464e-15 -5.24479e-16 1.11022e-16" />
+<geometry>
+<box size="0.0402 0.0611 0.041" />
+</geometry>
+<material name="mx-64at_ar_material">
+<color rgba="0.168627 0.168627 0.168627 1.0"/>
+</material>
+</visual>
+<!-- Shapes for hand -->
+<collision>
+<origin xyz="-4.71769e-17 -0.1276 -0.005" rpy="-4.90349e-16 1.58207e-15 -1.5708" />
+<geometry>
+<cylinder length="0.003" radius="0.04" />
+</geometry>
+</collision>
+<collision>
+<origin xyz="-7.57858e-17 -0.0539756 -0.005" rpy="-4.90349e-16 1.58207e-15 -1.5708" />
+<geometry>
+<box size="0.0775512 0.0412 0.003" />
+</geometry>
+</collision>
+<!-- Shapes for hand -->
+<visual>
+<origin xyz="-4.71769e-17 -0.1276 -0.005" rpy="-4.90349e-16 1.58207e-15 -1.5708" />
+<geometry>
+<cylinder length="0.003" radius="0.04" />
+</geometry>
+<material name="hand_material">
+<color rgba="0.301961 0.301961 0.301961 1.0"/>
+</material>
+</visual>
+<visual>
+<origin xyz="-7.57858e-17 -0.0539756 -0.005" rpy="-4.90349e-16 1.58207e-15 -1.5708" />
+<geometry>
+<box size="0.0775512 0.0412 0.003" />
+</geometry>
+<material name="hand_material">
+<color rgba="0.301961 0.301961 0.301961 1.0"/>
+</material>
+</visual>
+<!-- Shapes for hand -->
+<collision>
+<origin xyz="8.44286e-18 -0.1276 -0.042" rpy="-5.5728e-16 1.58207e-15 -1.5708" />
+<geometry>
+<cylinder length="0.003" radius="0.04" />
+</geometry>
+</collision>
+<collision>
+<origin xyz="-1.1992e-17 -0.0539756 -0.042" rpy="-5.5728e-16 1.58207e-15 -1.5708" />
+<geometry>
+<box size="0.0775512 0.0412 0.003" />
+</geometry>
+</collision>
+<!-- Shapes for hand -->
+<visual>
+<origin xyz="8.44286e-18 -0.1276 -0.042" rpy="-5.5728e-16 1.58207e-15 -1.5708" />
+<geometry>
+<cylinder length="0.003" radius="0.04" />
+</geometry>
+<material name="hand_material">
+<color rgba="0.301961 0.301961 0.301961 1.0"/>
+</material>
+</visual>
+<visual>
+<origin xyz="-1.1992e-17 -0.0539756 -0.042" rpy="-5.5728e-16 1.58207e-15 -1.5708" />
+<geometry>
+<box size="0.0775512 0.0412 0.003" />
+</geometry>
+<material name="hand_material">
+<color rgba="0.301961 0.301961 0.301961 1.0"/>
+</material>
+</visual>
+<inertial>
+<origin xyz="0.0700592 0.094197 -0.0524277" rpy="0 0 0"/>
+<mass value="0.133609" />
+<inertia ixx="0.0217141" ixy="-0.00821402"  ixz="0.00125156" iyy="0.00381576" iyz="0.00319635" izz="0.0244838" />
+</inertial>
+</link>
+
+<joint name="left_elbow" type="revolute">
+<origin xyz="0.0235 -0.142 -0.0025" rpy="-1.17212e-15 1.5708 0" />
+<parent link="left_humerus" />
+<child link="radius_v2_2" />
+<axis xyz="0 0 1"/>
+<limit effort="10" velocity="6" />
+<joint_properties friction="0.0"/>
+</joint>
+
+<joint name="left_shoulder_roll" type="revolute">
+<origin xyz="0.0235 0.03 0.035" rpy="-3.14159 -1.5708 0" />
+<parent link="u_shoulder_2" />
+<child link="left_humerus" />
+<axis xyz="0 0 1"/>
+<limit effort="10" velocity="6" />
+<joint_properties friction="0.0"/>
+</joint>
+
+<joint name="left_shoulder_pitch" type="revolute">
+<origin xyz="0.030869 0.0795 0.143" rpy="-1.5708 1.58669e-15 1.2761e-15" />
+<parent link="torso" />
+<child link="u_shoulder_2" />
+<axis xyz="0 0 1"/>
+<limit effort="10" velocity="6" />
+<joint_properties friction="0.0"/>
+</joint>
+
+<link name="u_hip_with_saver">
+<inertial>
+<origin xyz="-6.06619e-11 0.00126178 -0.0329138" rpy="0 0 0"/>
+<mass value="0.136031" />
+<inertia ixx="0.000102977" ixy="2.60314e-06"  ixz="9.67077e-14" iyy="8.62546e-05" iyz="-1.89063e-06" izz="6.45636e-05" />
+</inertial>
+</link>
+
+<link name="mx106_with_u_r">
+<!-- Shapes for inner -->
+<collision>
+<origin xyz="-0.01515 -0.00015 -0.0799438" rpy="-3.14159 3.27629e-15 1.5708" />
+<geometry>
+<box size="0.027 0.058 0.026" />
+</geometry>
+</collision>
+<!-- Shapes for inner -->
+<visual>
+<origin xyz="-0.01515 -0.00015 -0.0799438" rpy="-3.14159 3.27629e-15 1.5708" />
+<geometry>
+<box size="0.027 0.058 0.026" />
+</geometry>
+<material name="inner_material">
+<color rgba="0.647059 0.647059 0.647059 1.0"/>
+</material>
+</visual>
+<!-- Shapes for inner -->
+<collision>
+<origin xyz="-0.01515 -0.0005 -0.02025" rpy="-1.5708 -1.5708 0" />
+<geometry>
+<box size="0.027 0.058 0.026" />
+</geometry>
+</collision>
+<!-- Shapes for inner -->
+<visual>
+<origin xyz="-0.01515 -0.0005 -0.02025" rpy="-1.5708 -1.5708 0" />
+<geometry>
+<box size="0.027 0.058 0.026" />
+</geometry>
+<material name="inner_material">
+<color rgba="0.647059 0.647059 0.647059 1.0"/>
+</material>
+</visual>
+<inertial>
+<origin xyz="-0.016034 -0.00248551 -0.0424236" rpy="0 0 0"/>
+<mass value="0.136461" />
+<inertia ixx="0.000136893" ixy="1.29335e-06"  ixz="-7.23204e-06" iyy="0.000155727" iyz="7.54072e-06" izz="7.43891e-05" />
+</inertial>
+</link>
+
+<link name="thigh_horn_left">
+<!-- Shapes for thigh_free_left -->
+<collision>
+<origin xyz="-4.89295e-17 0.04 -0.0054" rpy="3.14159 2.22045e-16 2.28983e-16" />
+<geometry>
+<box size="0.03 0.08 0.003" />
+</geometry>
+</collision>
+<!-- Shapes for thigh_free_left -->
+<visual>
+<origin xyz="-4.89295e-17 0.04 -0.0054" rpy="3.14159 2.22045e-16 2.28983e-16" />
+<geometry>
+<box size="0.03 0.08 0.003" />
+</geometry>
+<material name="thigh_free_left_material">
+<color rgba="0.615686 0.811765 0.929412 1.0"/>
+</material>
+</visual>
+<!-- Shapes for thigh_horn -->
+<collision>
+<origin xyz="-1.44002e-16 0.04 0.0436" rpy="-3.14159 1.11022e-16 2.08167e-16" />
+<geometry>
+<box size="0.03 0.08 0.003" />
+</geometry>
+</collision>
+<!-- Shapes for thigh_horn -->
+<visual>
+<origin xyz="-1.44002e-16 0.04 0.0436" rpy="-3.14159 1.11022e-16 2.08167e-16" />
+<geometry>
+<box size="0.03 0.08 0.003" />
+</geometry>
+<material name="thigh_horn_material">
+<color rgba="0.615686 0.811765 0.929412 1.0"/>
+</material>
+</visual>
+<!-- Shapes for inner -->
+<collision>
+<origin xyz="0.00015 0.12485 0.0165" rpy="-3.14159 4.00461e-15 -3.14159" />
+<geometry>
+<box size="0.027 0.058 0.026" />
+</geometry>
+</collision>
+<!-- Shapes for inner -->
+<visual>
+<origin xyz="0.00015 0.12485 0.0165" rpy="-3.14159 4.00461e-15 -3.14159" />
+<geometry>
+<box size="0.027 0.058 0.026" />
+</geometry>
+<material name="inner_material">
+<color rgba="0.647059 0.647059 0.647059 1.0"/>
+</material>
+</visual>
+<inertial>
+<origin xyz="-9.36074e-05 0.0868627 0.0156903" rpy="0 0 0"/>
+<mass value="0.0845547" />
+<inertia ixx="0.000327329" ixy="2.3833e-08"  ixz="-1.25073e-09" iyy="3.62057e-05" iyz="-4.5674e-05" izz="0.000305877" />
+</inertial>
+</link>
+
+<link name="tibia_left_full">
+<!-- Shapes for tibia_horn_side -->
+<collision>
+<origin xyz="-0.065 1.53206e-14 0.0435" rpy="-1.21569e-14 1.98212e-14 -5.7138e-14" />
+<geometry>
+<box size="0.15 0.035 0.003" />
+</geometry>
+</collision>
+<!-- Shapes for tibia_horn_side -->
+<visual>
+<origin xyz="-0.065 1.53206e-14 0.0435" rpy="-1.21569e-14 1.98212e-14 -5.7138e-14" />
+<geometry>
+<box size="0.15 0.035 0.003" />
+</geometry>
+<material name="tibia_horn_side_material">
+<color rgba="0.615686 0.811765 0.929412 1.0"/>
+</material>
+</visual>
+<!-- Shapes for tibia_left -->
+<collision>
+<origin xyz="-0.065 -0.0025 -0.0085" rpy="3.0202e-31 -1.89657e-30 -1.00029e-29" />
+<geometry>
+<box size="0.15 0.035 0.003" />
+</geometry>
+</collision>
+<!-- Shapes for tibia_left -->
+<visual>
+<origin xyz="-0.065 -0.0025 -0.0085" rpy="3.0202e-31 -1.89657e-30 -1.00029e-29" />
+<geometry>
+<box size="0.15 0.035 0.003" />
+</geometry>
+<material name="tibia_left_material">
+<color rgba="0.615686 0.811765 0.929412 1.0"/>
+</material>
+</visual>
+<inertial>
+<origin xyz="-0.07 1.75867e-13 0.00139217" rpy="0 0 0"/>
+<mass value="0.0501468" />
+<inertia ixx="1.66507e-05" ixy="-2.44795e-12"  ixz="2.3181e-12" iyy="0.000261996" iyz="-3.38457e-16" izz="0.000247771" />
+</inertial>
+</link>
+
+<link name="mx106_with_u_l">
+<!-- Shapes for inner -->
+<collision>
+<origin xyz="0.01515 -0.0598438 0.01585" rpy="1.5708 -1.5708 0" />
+<geometry>
+<box size="0.027 0.058 0.026" />
+</geometry>
+</collision>
+<!-- Shapes for inner -->
+<visual>
+<origin xyz="0.01515 -0.0598438 0.01585" rpy="1.5708 -1.5708 0" />
+<geometry>
+<box size="0.027 0.058 0.026" />
+</geometry>
+<material name="inner_material">
+<color rgba="0.647059 0.647059 0.647059 1.0"/>
+</material>
+</visual>
+<!-- Shapes for inner -->
+<collision>
+<origin xyz="0.01515 0.00015 0.0165" rpy="-3.14159 4.55191e-15 -1.5708" />
+<geometry>
+<box size="0.027 0.058 0.026" />
+</geometry>
+</collision>
+<!-- Shapes for inner -->
+<visual>
+<origin xyz="0.01515 0.00015 0.0165" rpy="-3.14159 4.55191e-15 -1.5708" />
+<geometry>
+<box size="0.027 0.058 0.026" />
+</geometry>
+<material name="inner_material">
+<color rgba="0.647059 0.647059 0.647059 1.0"/>
+</material>
+</visual>
+<inertial>
+<origin xyz="0.016034 -0.0223173 0.0184793" rpy="0 0 0"/>
+<mass value="0.136461" />
+<inertia ixx="0.00013734" ixy="7.34023e-06"  ixz="1.30387e-06" iyy="8.1558e-05" iyz="-7.69662e-06" izz="0.000148196" />
+</inertial>
+</link>
+
+<link name="left_foot_asm">
+<!-- Shapes for cleat -->
+<collision>
+<origin xyz="0.052 -0.0325 -0.07563" rpy="-1.5708 -1.13431 -1.5708" />
+<geometry>
+<cylinder length="0.016" radius="0.008" />
+</geometry>
+</collision>
+<!-- Shapes for cleat -->
+<visual>
+<origin xyz="0.052 -0.0325 -0.07563" rpy="-1.5708 -1.13431 -1.5708" />
+<geometry>
+<cylinder length="0.016" radius="0.008" />
+</geometry>
+<material name="cleat_material">
+<color rgba="0.301961 0.290196 0.262745 1.0"/>
+</material>
+</visual>
+<!-- Shapes for cleat -->
+<collision>
+<origin xyz="0.052 0.0435 0.06597" rpy="-1.5708 -1.13431 -1.5708" />
+<geometry>
+<cylinder length="0.016" radius="0.008" />
+</geometry>
+</collision>
+<!-- Shapes for cleat -->
+<visual>
+<origin xyz="0.052 0.0435 0.06597" rpy="-1.5708 -1.13431 -1.5708" />
+<geometry>
+<cylinder length="0.016" radius="0.008" />
+</geometry>
+<material name="cleat_material">
+<color rgba="0.301961 0.290196 0.262745 1.0"/>
+</material>
+</visual>
+<!-- Shapes for cleat -->
+<collision>
+<origin xyz="0.052 -0.0325 0.06597" rpy="-1.5708 -1.13431 -1.5708" />
+<geometry>
+<cylinder length="0.016" radius="0.008" />
+</geometry>
+</collision>
+<!-- Shapes for cleat -->
+<visual>
+<origin xyz="0.052 -0.0325 0.06597" rpy="-1.5708 -1.13431 -1.5708" />
+<geometry>
+<cylinder length="0.016" radius="0.008" />
+</geometry>
+<material name="cleat_material">
+<color rgba="0.301961 0.290196 0.262745 1.0"/>
+</material>
+</visual>
+<!-- Shapes for cleat -->
+<collision>
+<origin xyz="0.052 0.0435 -0.07563" rpy="-1.5708 -1.13431 -1.5708" />
+<geometry>
+<cylinder length="0.016" radius="0.008" />
+</geometry>
+</collision>
+<!-- Shapes for cleat -->
+<visual>
+<origin xyz="0.052 0.0435 -0.07563" rpy="-1.5708 -1.13431 -1.5708" />
+<geometry>
+<cylinder length="0.016" radius="0.008" />
+</geometry>
+<material name="cleat_material">
+<color rgba="0.301961 0.290196 0.262745 1.0"/>
+</material>
+</visual>
+<!-- Shapes for foot_plate -->
+<collision>
+<origin xyz="0.0415 0.0055 -0.00483" rpy="-1.5708 -1.11022e-16 1.5708" />
+<geometry>
+<box size="0.092 0.1576 0.003" />
+</geometry>
+</collision>
+<!-- Shapes for foot_plate -->
+<visual>
+<origin xyz="0.0415 0.0055 -0.00483" rpy="-1.5708 -1.11022e-16 1.5708" />
+<geometry>
+<box size="0.092 0.1576 0.003" />
+</geometry>
+<material name="foot_plate_material">
+<color rgba="0.301961 0.301961 0.301961 1.0"/>
+</material>
+</visual>
+<inertial>
+<origin xyz="0.0312589 0.00414298 0.000817452" rpy="0 0 0"/>
+<mass value="0.32139" />
+<inertia ixx="0.00077343" ixy="-9.05502e-06"  ixz="-1.88816e-05" iyy="0.000967976" iyz="-7.02684e-06" izz="0.00047206" />
+</inertial>
+</link>
+
+<link name="left_foot_tip">
+<inertial>
+<origin xyz="0 0 0" rpy="0 0 0" />
+<mass value="1e-9" />
+<inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
+</inertial>
+</link>
+<joint name="left_foot_tip_frame" type="fixed">
+<origin xyz="0.06 5.34295e-16 -0.02033" rpy="-1.1592e-16 -1.5708 0" />
+<parent link="left_foot_asm" />
+<child link="left_foot_tip" />
+<axis xyz="0 0 0"/>
+</joint>
+
+<joint name="left_ankle_roll" type="revolute">
+<origin xyz="-2.77556e-16 0.0201 0.016" rpy="1.5708 2.85175e-15 -3.14159" />
+<parent link="mx106_with_u_l" />
+<child link="left_foot_asm" />
+<axis xyz="0 0 1"/>
+<limit effort="10" velocity="6" />
+<joint_properties friction="0.0"/>
+</joint>
+
+<joint name="left_ankle_pitch" type="revolute">
+<origin xyz="-0.14 9.42128e-15 4.65253e-15" rpy="7.77156e-16 -8.97018e-15 -5.39997e-14" />
+<parent link="tibia_left_full" />
+<child link="mx106_with_u_l" />
+<axis xyz="0 0 1"/>
+<limit effort="10" velocity="6" />
+<joint_properties friction="0.0"/>
+</joint>
+
+<joint name="left_knee" type="revolute">
+<origin xyz="-5.21284e-16 0.14 -0.001" rpy="5.28137e-15 7.03032e-15 -1.5708" />
+<parent link="thigh_horn_left" />
+<child link="tibia_left_full" />
+<axis xyz="0 0 1"/>
+<limit effort="10" velocity="6" />
+<joint_properties friction="0.0"/>
+</joint>
+
+<joint name="left_hip_pitch" type="revolute">
+<origin xyz="-1.66533e-16 0.016 -0.0201" rpy="1.5708 -1.5708 0" />
+<parent link="mx106_with_u_r" />
+<child link="thigh_horn_left" />
+<axis xyz="0 0 1"/>
+<limit effort="10" velocity="6" />
+<joint_properties friction="0.0"/>
+</joint>
+
+<joint name="left_hip_roll" type="revolute">
+<origin xyz="2.35922e-16 -0.0200991 -0.0604" rpy="1.5708 -1.5708 0" />
+<parent link="u_hip_with_saver" />
+<child link="mx106_with_u_r" />
+<axis xyz="0 0 1"/>
+<limit effort="10" velocity="6" />
+<joint_properties friction="0.0"/>
+</joint>
+
+<joint name="left_hip_yaw" type="revolute">
+<origin xyz="0.00586897 0.0464 -0.0411" rpy="-1.82465e-15 -3.03444e-15 1.5708" />
+<parent link="torso" />
+<child link="u_hip_with_saver" />
+<axis xyz="0 0 1"/>
+<limit effort="10" velocity="6" />
+<joint_properties friction="0.0"/>
+</joint>
+
+<link name="u_hip_with_saver_2">
+<inertial>
+<origin xyz="-6.06622e-11 0.00126178 -0.0329138" rpy="0 0 0"/>
+<mass value="0.136031" />
+<inertia ixx="0.000102977" ixy="2.60314e-06"  ixz="9.67075e-14" iyy="8.62546e-05" iyz="-1.89063e-06" izz="6.45636e-05" />
+</inertial>
+</link>
+
+<link name="mx106_with_u_l_2">
+<!-- Shapes for inner -->
+<collision>
+<origin xyz="-0.0149141 0.0005 -0.01995" rpy="1.5708 1.5708 0" />
+<geometry>
+<box size="0.027 0.058 0.026" />
+</geometry>
+</collision>
+<!-- Shapes for inner -->
+<visual>
+<origin xyz="-0.0149141 0.0005 -0.01995" rpy="1.5708 1.5708 0" />
+<geometry>
+<box size="0.027 0.058 0.026" />
+</geometry>
+<material name="inner_material">
+<color rgba="0.647059 0.647059 0.647059 1.0"/>
+</material>
+</visual>
+<!-- Shapes for inner -->
+<collision>
+<origin xyz="-0.0149141 -0.00015 -0.0799437" rpy="-3.14159 -3.79641e-16 1.5708" />
+<geometry>
+<box size="0.027 0.058 0.026" />
+</geometry>
+</collision>
+<!-- Shapes for inner -->
+<visual>
+<origin xyz="-0.0149141 -0.00015 -0.0799437" rpy="-3.14159 -3.79641e-16 1.5708" />
+<geometry>
+<box size="0.027 0.058 0.026" />
+</geometry>
+<material name="inner_material">
+<color rgba="0.647059 0.647059 0.647059 1.0"/>
+</material>
+</visual>
+<inertial>
+<origin xyz="-0.0157981 0.00247927 -0.0424173" rpy="0 0 0"/>
+<mass value="0.136461" />
+<inertia ixx="0.000136945" ixy="-1.33307e-06"  ixz="-7.23332e-06" iyy="0.000155756" iyz="-7.57143e-06" izz="7.43933e-05" />
+</inertial>
+</link>
+
+<link name="thigh_horn_right">
+<!-- Shapes for thigh_horn -->
+<collision>
+<origin xyz="1.91769e-16 0.04 -0.0434" rpy="-3.14159 1.77636e-15 -1.49186e-16" />
+<geometry>
+<box size="0.03 0.08 0.003" />
+</geometry>
+</collision>
+<!-- Shapes for thigh_horn -->
+<visual>
+<origin xyz="1.91769e-16 0.04 -0.0434" rpy="-3.14159 1.77636e-15 -1.49186e-16" />
+<geometry>
+<box size="0.03 0.08 0.003" />
+</geometry>
+<material name="thigh_horn_material">
+<color rgba="0.615686 0.811765 0.929412 1.0"/>
+</material>
+</visual>
+<!-- Shapes for inner -->
+<collision>
+<origin xyz="-0.00015 0.12485 -0.0165" rpy="3.20815e-16 8.32667e-16 6.29462e-16" />
+<geometry>
+<box size="0.027 0.058 0.026" />
+</geometry>
+</collision>
+<!-- Shapes for inner -->
+<visual>
+<origin xyz="-0.00015 0.12485 -0.0165" rpy="3.20815e-16 8.32667e-16 6.29462e-16" />
+<geometry>
+<box size="0.027 0.058 0.026" />
+</geometry>
+<material name="inner_material">
+<color rgba="0.647059 0.647059 0.647059 1.0"/>
+</material>
+</visual>
+<!-- Shapes for thigh_free_right -->
+<collision>
+<origin xyz="-7.03743e-17 0.036 0.0054" rpy="-9.13353e-16 2.16493e-15 2.44054e-30" />
+<geometry>
+<box size="0.03 0.08 0.003" />
+</geometry>
+</collision>
+<!-- Shapes for thigh_free_right -->
+<visual>
+<origin xyz="-7.03743e-17 0.036 0.0054" rpy="-9.13353e-16 2.16493e-15 2.44054e-30" />
+<geometry>
+<box size="0.03 0.08 0.003" />
+</geometry>
+<material name="thigh_free_right_material">
+<color rgba="0.615686 0.811765 0.929412 1.0"/>
+</material>
+</visual>
+<inertial>
+<origin xyz="-0.000103673 0.0868627 -0.0156903" rpy="0 0 0"/>
+<mass value="0.0845547" />
+<inertia ixx="0.000327329" ixy="4.67647e-08"  ixz="-6.41747e-09" iyy="3.62056e-05" iyz="4.56189e-05" izz="0.000305876" />
+</inertial>
+</link>
+
+<link name="tibia_right_full">
+<!-- Shapes for tibia_right -->
+<collision>
+<origin xyz="-0.065 0.0005 0.0085" rpy="-3.14159 1.84834e-32 5.99304e-31" />
+<geometry>
+<box size="0.15 0.035 0.003" />
+</geometry>
+</collision>
+<!-- Shapes for tibia_right -->
+<visual>
+<origin xyz="-0.065 0.0005 0.0085" rpy="-3.14159 1.84834e-32 5.99304e-31" />
+<geometry>
+<box size="0.15 0.035 0.003" />
+</geometry>
+<material name="tibia_right_material">
+<color rgba="0.615686 0.811765 0.929412 1.0"/>
+</material>
+</visual>
+<!-- Shapes for tibia_horn_side -->
+<collision>
+<origin xyz="-0.065 1.07658e-14 -0.0435" rpy="4.94604e-14 -1.69754e-13 3.12078e-14" />
+<geometry>
+<box size="0.15 0.035 0.003" />
+</geometry>
+</collision>
+<!-- Shapes for tibia_horn_side -->
+<visual>
+<origin xyz="-0.065 1.07658e-14 -0.0435" rpy="4.94604e-14 -1.69754e-13 3.12078e-14" />
+<geometry>
+<box size="0.15 0.035 0.003" />
+</geometry>
+<material name="tibia_horn_side_material">
+<color rgba="0.615686 0.811765 0.929412 1.0"/>
+</material>
+</visual>
+<inertial>
+<origin xyz="-0.07 -1.75992e-13 -0.00139217" rpy="0 0 0"/>
+<mass value="0.0501468" />
+<inertia ixx="1.66507e-05" ixy="-2.44799e-12"  ixz="-2.318e-12" iyy="0.000261996" iyz="-3.3315e-16" izz="0.000247771" />
+</inertial>
+</link>
+
+<link name="mx106_with_u_r_2">
+<!-- Shapes for inner -->
+<collision>
+<origin xyz="0.01515 -0.00015 -0.0165" rpy="8.01847e-17 -1.11022e-15 1.5708" />
+<geometry>
+<box size="0.027 0.058 0.026" />
+</geometry>
+</collision>
+<!-- Shapes for inner -->
+<visual>
+<origin xyz="0.01515 -0.00015 -0.0165" rpy="8.01847e-17 -1.11022e-15 1.5708" />
+<geometry>
+<box size="0.027 0.058 0.026" />
+</geometry>
+<material name="inner_material">
+<color rgba="0.647059 0.647059 0.647059 1.0"/>
+</material>
+</visual>
+<!-- Shapes for inner -->
+<collision>
+<origin xyz="0.01515 -0.0598438 -0.01615" rpy="1.5708 -1.5708 0" />
+<geometry>
+<box size="0.027 0.058 0.026" />
+</geometry>
+</collision>
+<!-- Shapes for inner -->
+<visual>
+<origin xyz="0.01515 -0.0598438 -0.01615" rpy="1.5708 -1.5708 0" />
+<geometry>
+<box size="0.027 0.058 0.026" />
+</geometry>
+<material name="inner_material">
+<color rgba="0.647059 0.647059 0.647059 1.0"/>
+</material>
+</visual>
+<inertial>
+<origin xyz="0.016034 -0.0223236 -0.0184855" rpy="0 0 0"/>
+<mass value="0.136461" />
+<inertia ixx="0.000137327" ixy="7.29011e-06"  ixz="-1.30515e-06" iyy="8.15244e-05" iyz="7.425e-06" izz="0.000148158" />
+</inertial>
+</link>
+
+<link name="right_foot_asm">
+<!-- Shapes for cleat -->
+<collision>
+<origin xyz="0.052 -0.0435 -0.07563" rpy="1.5708 -1.51133 1.5708" />
+<geometry>
+<cylinder length="0.016" radius="0.008" />
+</geometry>
+</collision>
+<!-- Shapes for cleat -->
+<visual>
+<origin xyz="0.052 -0.0435 -0.07563" rpy="1.5708 -1.51133 1.5708" />
+<geometry>
+<cylinder length="0.016" radius="0.008" />
+</geometry>
+<material name="cleat_material">
+<color rgba="0.301961 0.290196 0.262745 1.0"/>
+</material>
+</visual>
+<!-- Shapes for cleat -->
+<collision>
+<origin xyz="0.052 -0.0435 0.06597" rpy="1.5708 -1.51133 1.5708" />
+<geometry>
+<cylinder length="0.016" radius="0.008" />
+</geometry>
+</collision>
+<!-- Shapes for cleat -->
+<visual>
+<origin xyz="0.052 -0.0435 0.06597" rpy="1.5708 -1.51133 1.5708" />
+<geometry>
+<cylinder length="0.016" radius="0.008" />
+</geometry>
+<material name="cleat_material">
+<color rgba="0.301961 0.290196 0.262745 1.0"/>
+</material>
+</visual>
+<!-- Shapes for cleat -->
+<collision>
+<origin xyz="0.052 0.0325 -0.07563" rpy="1.5708 -1.51133 1.5708" />
+<geometry>
+<cylinder length="0.016" radius="0.008" />
+</geometry>
+</collision>
+<!-- Shapes for cleat -->
+<visual>
+<origin xyz="0.052 0.0325 -0.07563" rpy="1.5708 -1.51133 1.5708" />
+<geometry>
+<cylinder length="0.016" radius="0.008" />
+</geometry>
+<material name="cleat_material">
+<color rgba="0.301961 0.290196 0.262745 1.0"/>
+</material>
+</visual>
+<!-- Shapes for cleat -->
+<collision>
+<origin xyz="0.052 0.0325 0.06597" rpy="1.5708 -1.51133 1.5708" />
+<geometry>
+<cylinder length="0.016" radius="0.008" />
+</geometry>
+</collision>
+<!-- Shapes for cleat -->
+<visual>
+<origin xyz="0.052 0.0325 0.06597" rpy="1.5708 -1.51133 1.5708" />
+<geometry>
+<cylinder length="0.016" radius="0.008" />
+</geometry>
+<material name="cleat_material">
+<color rgba="0.301961 0.290196 0.262745 1.0"/>
+</material>
+</visual>
+<!-- Shapes for foot_plate -->
+<collision>
+<origin xyz="0.0415 -0.0055 -0.00483" rpy="-1.5708 -9.6167e-30 1.5708" />
+<geometry>
+<box size="0.092 0.1576 0.003" />
+</geometry>
+</collision>
+<!-- Shapes for foot_plate -->
+<visual>
+<origin xyz="0.0415 -0.0055 -0.00483" rpy="-1.5708 -9.6167e-30 1.5708" />
+<geometry>
+<box size="0.092 0.1576 0.003" />
+</geometry>
+<material name="foot_plate_material">
+<color rgba="0.301961 0.301961 0.301961 1.0"/>
+</material>
+</visual>
+<inertial>
+<origin xyz="0.0312589 -0.00414302 0.000817452" rpy="0 0 0"/>
+<mass value="0.32139" />
+<inertia ixx="0.000773437" ixy="8.34003e-06"  ixz="-1.88587e-05" iyy="0.000967977" iyz="1.37873e-05" izz="0.00047205" />
+</inertial>
+</link>
+
+<link name="right_foot_tip">
+<inertial>
+<origin xyz="0 0 0" rpy="0 0 0" />
+<mass value="1e-9" />
+<inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
+</inertial>
+</link>
+<joint name="right_foot_tip_frame" type="fixed">
+<origin xyz="0.06 3.26128e-16 -0.02033" rpy="1.33076e-16 -1.5708 0" />
+<parent link="right_foot_asm" />
+<child link="right_foot_tip" />
+<axis xyz="0 0 0"/>
+</joint>
+
+<joint name="right_ankle_roll" type="revolute">
+<origin xyz="-3.33067e-16 0.0201 -0.016" rpy="1.5708 -3.91365e-15 3.14159" />
+<parent link="mx106_with_u_r_2" />
+<child link="right_foot_asm" />
+<axis xyz="0 0 1"/>
+<limit effort="10" velocity="6" />
+<joint_properties friction="0.0"/>
+</joint>
+
+<joint name="right_ankle_pitch" type="revolute">
+<origin xyz="-0.14 -1.52768e-14 5.05741e-14" rpy="-4.44089e-16 -2.94225e-15 3.03503e-14" />
+<parent link="tibia_right_full" />
+<child link="mx106_with_u_r_2" />
+<axis xyz="0 0 1"/>
+<limit effort="10" velocity="6" />
+<joint_properties friction="0.0"/>
+</joint>
+
+<joint name="right_knee" type="revolute">
+<origin xyz="-1.17094e-16 0.14 -2.05669e-14" rpy="1.27676e-15 -1.58087e-15 -1.5708" />
+<parent link="thigh_horn_right" />
+<child link="tibia_right_full" />
+<axis xyz="0 0 1"/>
+<limit effort="10" velocity="6" />
+<joint_properties friction="0.0"/>
+</joint>
+
+<joint name="right_hip_pitch" type="revolute">
+<origin xyz="0.000235943 -0.016 -0.0201" rpy="1.5708 -1.5708 0" />
+<parent link="mx106_with_u_l_2" />
+<child link="thigh_horn_right" />
+<axis xyz="0 0 1"/>
+<limit effort="10" velocity="6" />
+<joint_properties friction="0.0"/>
+</joint>
+
+<joint name="right_hip_roll" type="revolute">
+<origin xyz="-2.498e-16 -0.0200991 -0.0604" rpy="1.5708 -1.5708 0" />
+<parent link="u_hip_with_saver_2" />
+<child link="mx106_with_u_l_2" />
+<axis xyz="0 0 1"/>
+<limit effort="10" velocity="6" />
+<joint_properties friction="0.0"/>
+</joint>
+
+<joint name="right_hip_yaw" type="revolute">
+<origin xyz="0.00586897 -0.0464 -0.0411" rpy="2.16251e-14 -1.98167e-15 1.5708" />
+<parent link="torso" />
+<child link="u_hip_with_saver_2" />
+<axis xyz="0 0 1"/>
+<limit effort="10" velocity="6" />
+<joint_properties friction="0.0"/>
+</joint>
+
+<link name="u_neck">
+<!-- Shapes for u_base_64 -->
+<collision>
+<origin xyz="1.57772e-30 0 0.003125" rpy="3.14159 3.15544e-30 -5.54212e-31" />
+<geometry>
+<box size="0.049 0.03 0.00625" />
+</geometry>
+</collision>
+<!-- Shapes for u_base_64 -->
+<visual>
+<origin xyz="1.57772e-30 0 0.003125" rpy="3.14159 3.15544e-30 -5.54212e-31" />
+<geometry>
+<box size="0.049 0.03 0.00625" />
+</geometry>
+<material name="u_base_64_material">
+<color rgba="0.301961 0.301961 0.301961 1.0"/>
+</material>
+</visual>
+<!-- Shapes for u_side_neck -->
+<collision>
+<origin xyz="0.025 -7.95931e-16 0.032901" rpy="1.5708 -1.44676e-14 -1.5708" />
+<geometry>
+<box size="0.03 0.065802 0.003" />
+</geometry>
+</collision>
+<!-- Shapes for u_side_neck -->
+<visual>
+<origin xyz="0.025 -7.95931e-16 0.032901" rpy="1.5708 -1.44676e-14 -1.5708" />
+<geometry>
+<box size="0.03 0.065802 0.003" />
+</geometry>
+<material name="u_side_neck_material">
+<color rgba="0.301961 0.301961 0.301961 1.0"/>
+</material>
+</visual>
+<!-- Shapes for u_side_neck -->
+<collision>
+<origin xyz="-0.025 -1.37735e-16 0.032901" rpy="1.5708 1.44676e-14 1.5708" />
+<geometry>
+<box size="0.03 0.065802 0.003" />
+</geometry>
+</collision>
+<!-- Shapes for u_side_neck -->
+<visual>
+<origin xyz="-0.025 -1.37735e-16 0.032901" rpy="1.5708 1.44676e-14 1.5708" />
+<geometry>
+<box size="0.03 0.065802 0.003" />
+</geometry>
+<material name="u_side_neck_material">
+<color rgba="0.301961 0.301961 0.301961 1.0"/>
+</material>
+</visual>
+<inertial>
+<origin xyz="-5.78993e-17 -2.34862e-16 0.0206334" rpy="0 0 0"/>
+<mass value="0.0544799" />
+<inertia ixx="2.2633e-05" ixy="-1.35985e-11"  ixz="-8.74329e-08" iyy="5.36569e-05" iyz="1.21218e-19" izz="3.58365e-05" />
+</inertial>
+</link>
+
+<link name="head__field_of_view_false">
+<!-- Shapes for mx-64at_ar -->
+<collision>
+<origin xyz="-1.45586e-16 -0.01755 -0.0235" rpy="-8.21318e-16 4.447e-15 -9.33402e-15" />
+<geometry>
+<box size="0.0402 0.0611 0.041" />
+</geometry>
+</collision>
+<!-- Shapes for mx-64at_ar -->
+<visual>
+<origin xyz="-1.45586e-16 -0.01755 -0.0235" rpy="-8.21318e-16 4.447e-15 -9.33402e-15" />
+<geometry>
+<box size="0.0402 0.0611 0.041" />
+</geometry>
+<material name="mx-64at_ar_material">
+<color rgba="0.168627 0.168627 0.168627 1.0"/>
+</material>
+</visual>
+<!-- Shapes for head_plate -->
+<collision>
+<origin xyz="-0.0238 0.0365 -0.042" rpy="-3.14159 -4.447e-15 3.14159" />
+<geometry>
+<cylinder length="0.003" radius="0.0235" />
+</geometry>
+</collision>
+<collision>
+<origin xyz="0.01 0.0365 -0.042" rpy="-3.14159 -4.447e-15 3.14159" />
+<geometry>
+<box size="0.0616 0.047 0.003" />
+</geometry>
+</collision>
+<!-- Shapes for head_plate -->
+<visual>
+<origin xyz="-0.0238 0.0365 -0.042" rpy="-3.14159 -4.447e-15 3.14159" />
+<geometry>
+<cylinder length="0.003" radius="0.0235" />
+</geometry>
+<material name="head_plate_material">
+<color rgba="0.701961 0.682353 0.623529 1.0"/>
+</material>
+</visual>
+<visual>
+<origin xyz="0.01 0.0365 -0.042" rpy="-3.14159 -4.447e-15 3.14159" />
+<geometry>
+<box size="0.0616 0.047 0.003" />
+</geometry>
+<material name="head_plate_material">
+<color rgba="0.701961 0.682353 0.623529 1.0"/>
+</material>
+</visual>
+<!-- Shapes for head_plate -->
+<collision>
+<origin xyz="-0.0238 0.0365 -0.005" rpy="-3.14159 -4.447e-15 3.14159" />
+<geometry>
+<cylinder length="0.003" radius="0.0235" />
+</geometry>
+</collision>
+<collision>
+<origin xyz="0.01 0.0365 -0.005" rpy="-3.14159 -4.447e-15 3.14159" />
+<geometry>
+<box size="0.0616 0.047 0.003" />
+</geometry>
+</collision>
+<!-- Shapes for head_plate -->
+<visual>
+<origin xyz="-0.0238 0.0365 -0.005" rpy="-3.14159 -4.447e-15 3.14159" />
+<geometry>
+<cylinder length="0.003" radius="0.0235" />
+</geometry>
+<material name="head_plate_material">
+<color rgba="0.701961 0.682353 0.623529 1.0"/>
+</material>
+</visual>
+<visual>
+<origin xyz="0.01 0.0365 -0.005" rpy="-3.14159 -4.447e-15 3.14159" />
+<geometry>
+<box size="0.0616 0.047 0.003" />
+</geometry>
+<material name="head_plate_material">
+<color rgba="0.701961 0.682353 0.623529 1.0"/>
+</material>
+</visual>
+<inertial>
+<origin xyz="0.015805 0.114508 -0.0790378" rpy="0 0 0"/>
+<mass value="0.137167" />
+<inertia ixx="0.00764485" ixy="-0.00111618"  ixz="0.000678812" iyy="0.00232111" iyz="0.00334733" izz="0.00584336" />
+</inertial>
+</link>
+
+<link name="vive_head">
+<inertial>
+<origin xyz="0 0 0" rpy="0 0 0" />
+<mass value="1e-9" />
+<inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
+</inertial>
+</link>
+<joint name="vive_head_frame" type="fixed">
+<origin xyz="1.38778e-17 0.063 -0.0235" rpy="1.5708 -4.22496e-15 3.14159" />
+<parent link="head__field_of_view_false" />
+<child link="vive_head" />
+<axis xyz="0 0 0"/>
+</joint>
+
+<link name="camera">
+<inertial>
+<origin xyz="0 0 0" rpy="0 0 0" />
+<mass value="1e-9" />
+<inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
+</inertial>
+</link>
+<joint name="camera_frame" type="fixed">
+<origin xyz="-0.024933 0.0335 -0.0235" rpy="1.5708 -2.95668e-16 -1.5708" />
+<parent link="head__field_of_view_false" />
+<child link="camera" />
+<axis xyz="0 0 0"/>
+</joint>
+
+<joint name="head_pitch" type="revolute">
+<origin xyz="-0.0235 1.04083e-16 0.058302" rpy="1.5708 -9.33402e-15 -1.5708" />
+<parent link="u_neck" />
+<child link="head__field_of_view_false" />
+<axis xyz="0 0 1"/>
+<limit effort="10" velocity="6" />
+<joint_properties friction="0.0"/>
+</joint>
+
+<joint name="head_yaw" type="revolute">
+<origin xyz="0.035869 2.87964e-15 0.1595" rpy="1.00593e-14 2.25419e-14 -1.5708" />
+<parent link="torso" />
+<child link="u_neck" />
+<axis xyz="0 0 1"/>
+<limit effort="10" velocity="6" />
+<joint_properties friction="0.0"/>
+</joint>
+
+
+</robot>

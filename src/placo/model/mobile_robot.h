@@ -169,11 +169,12 @@ public:
    */
   std::vector<std::string> frame_names();
 
-protected:
   // Pinocchio model
   pinocchio::Model model;
   pinocchio::GeometryModel collision_model;
+  pinocchio::GeometryModel visual_model;
 
+protected:
   // Model data
   pinocchio::Data *data;
 

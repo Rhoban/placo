@@ -29,6 +29,9 @@ void exposeMobileRobot() {
 
   class_<MobileRobot>("MobileRobot", init<std::string>())
       .add_property("state", &MobileRobot::state)
+      .add_property("model", &MobileRobot::model)
+      .add_property("collision_model", &MobileRobot::collision_model)
+      .add_property("visual_model", &MobileRobot::visual_model)
       .def("load_collisions_pairs", &MobileRobot::load_collisions_pairs)
       .def("reset", &MobileRobot::reset)
       .def("neutral_state", &MobileRobot::neutral_state)

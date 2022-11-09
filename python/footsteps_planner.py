@@ -57,6 +57,8 @@ if __name__ == "__main__":
     parser.add_argument('-y', type=float, default=0, help='Target y')
     parser.add_argument('-t', '--theta', type=float, default=0, help='Target yaw (theta)')
     parser.add_argument('-f', '--feet_spacing', type=float, default=.2, help='Feet spacing')
+    parser.add_argument('-w', '--foot_width', type=float, default=.1, help='Foot width')
+    parser.add_argument('-l', '--foot_length', type=float, default=.15, help='Foot length')
     args = parser.parse_args()
 
     # Creating initial and target
@@ -73,6 +75,8 @@ if __name__ == "__main__":
 
     # Currently, the naive planner is the only one implemented
     planner = placo.FootstepsPlannerNaive("left", placo.frame(T_center_left), placo.frame(T_center_right), feet_spacing)
+    planner.foot_width = args.foot_width
+    planner.foot_length = args.foot_length
     footsteps = planner.plan(placo.frame(T_world_targetLeft), placo.frame(T_world_targetRight))
 
     # If using double support, transform the result in supports instead of footsteps

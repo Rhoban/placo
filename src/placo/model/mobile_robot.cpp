@@ -19,6 +19,8 @@ MobileRobot::MobileRobot(std::string model_directory) {
   pinocchio::urdf::buildModel(urdf_filename, root_joint, model);
   pinocchio::urdf::buildGeom(model, urdf_filename, pinocchio::COLLISION,
                              collision_model, model_directory);
+  pinocchio::urdf::buildGeom(model, urdf_filename, pinocchio::VISUAL,
+                             visual_model, model_directory);
 
   // Load collisions pairs
   if (rhoban_utils::file_exists(model_directory + "/collisions.json")) {
