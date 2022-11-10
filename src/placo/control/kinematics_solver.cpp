@@ -182,10 +182,11 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
     b.block(k, 0, equality.A.rows(), 1) = equality.b;
     k += equality.A.rows();
   }
-  
+
   // Adding 1s in columns of a, yielding delta_q_i = 0 and preventing the DoF from being
   // used by the solver
-  for (auto &joint : masked_dof) {
+  for (auto& joint : masked_dof)
+  {
     A(k, joint) = 1;
     k += 1;
   }
