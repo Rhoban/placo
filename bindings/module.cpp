@@ -8,7 +8,8 @@
 
 #include "module.h"
 
-BOOST_PYTHON_MODULE(placo) {
+BOOST_PYTHON_MODULE(placo)
+{
   using namespace boost::python;
 
   exposeAffine3d();

@@ -6,8 +6,10 @@
 #include "pinocchio/parsers/urdf.hpp"
 #include <pinocchio/container/boost-container-limits.hpp>
 
-namespace placo {
-class MobileRobot {
+namespace placo
+{
+class MobileRobot
+{
 public:
   MobileRobot(std::string model_directory = "robot/");
 
@@ -20,7 +22,7 @@ public:
    * @brief Load collision pairs from the given json file
    * @param filename
    */
-  void load_collisions_pairs(const std::string &filename);
+  void load_collisions_pairs(const std::string& filename);
 
   /**
    * @brief Reset internal states
@@ -32,35 +34,35 @@ public:
    * @param frame
    * @return a frame index
    */
-  FrameIndex get_frame_index(const std::string &frame);
+  FrameIndex get_frame_index(const std::string& frame);
 
   /**
    * @brief Set joint values
    * @param name DOF name
    * @param value DOF value
    */
-  void set_joint(const std::string &name, double value);
+  void set_joint(const std::string& name, double value);
 
   /**
    * @brief Retrieves a joint valud
    * @param name
    * @return the joint current (inner state) value
    */
-  double get_joint(const std::string &name);
+  double get_joint(const std::string& name);
 
   /**
    * @brief Gets the offset for a given joint in the state
    * @param name joint name
    * @return offset in state.q
    */
-  int get_joint_offset(const std::string &name);
+  int get_joint_offset(const std::string& name);
 
   /**
    * @brief Gets the offset for a given joint speed in the state
    * @param name joint name
    * @return offset in state.qd
    */
-  int get_joint_v_offset(const std::string &name);
+  int get_joint_v_offset(const std::string& name);
 
   /**
    * @brief List of expected DOFs to be present, throws an error when loading
@@ -77,7 +79,8 @@ public:
   virtual std::vector<std::string> expected_frames();
 
   // Robot state
-  struct State {
+  struct State
+  {
     Eigen::VectorXd q;
     Eigen::VectorXd qd;
   };
@@ -119,24 +122,23 @@ public:
   /**
    * @brief Gets the current transformation (frame to world)
    */
-  Eigen::Affine3d get_T_world_frame(const std::string &frame);
+  Eigen::Affine3d get_T_world_frame(const std::string& frame);
   Eigen::Affine3d get_T_world_frame(FrameIndex index);
 
   /**
    * @brief Updates the floating base so that a given frame matches the provided
    * world transformation.
    */
-  void set_T_world_frame(const std::string &frame,
-                         Eigen::Affine3d T_world_frameTarget);
-  void set_T_world_frame(FrameIndex frame,
-                         Eigen::Affine3d T_world_frameTarget);
+  void set_T_world_frame(const std::string& frame, Eigen::Affine3d T_world_frameTarget);
+  void set_T_world_frame(FrameIndex frame, Eigen::Affine3d T_world_frameTarget);
 
-  struct Collision {
+  struct Collision
+  {
     std::string bodyA;
     std::string bodyB;
     std::vector<Eigen::Vector3d> contacts;
 
-    bool operator==(const Collision &other);
+    bool operator==(const Collision& other);
   };
 
   /**
@@ -152,11 +154,9 @@ public:
    * @param frame given frame
    * @return jacobian (6xn matrix)
    */
-  Eigen::MatrixXd frame_jacobian(const std::string &frame);
-  Eigen::MatrixXd
-  frame_jacobian(FrameIndex frame,
-                 pinocchio::ReferenceFrame ref =
-                     pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED);
+  Eigen::MatrixXd frame_jacobian(const std::string& frame);
+  Eigen::MatrixXd frame_jacobian(FrameIndex frame,
+                                 pinocchio::ReferenceFrame ref = pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED);
 
   /**
    * @brief Computes the CoM jacobian
@@ -181,9 +181,9 @@ public:
 
 protected:
   // Model data
-  pinocchio::Data *data;
+  pinocchio::Data* data;
 
   // Root free-flyer joint
   pinocchio::JointModelFreeFlyer root_joint;
 };
-} // namespace placo
+}  // namespace placo

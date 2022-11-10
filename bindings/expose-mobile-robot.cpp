@@ -9,18 +9,15 @@
 using namespace boost::python;
 using namespace placo;
 
-void exposeMobileRobot() {
+void exposeMobileRobot()
+{
   class_<MobileRobot::State>("MobileRobot_State")
       .add_property(
-          "q", +[](const MobileRobot::State &state) { return state.q; },
-          +[](MobileRobot::State &state, const Eigen::VectorXd &q) {
-            state.q = q;
-          })
+          "q", +[](const MobileRobot::State& state) { return state.q; },
+          +[](MobileRobot::State& state, const Eigen::VectorXd& q) { state.q = q; })
       .add_property(
-          "qd", +[](const MobileRobot::State &state) { return state.qd; },
-          +[](MobileRobot::State &state, const Eigen::VectorXd &qd) {
-            state.qd = qd;
-          });
+          "qd", +[](const MobileRobot::State& state) { return state.qd; },
+          +[](MobileRobot::State& state, const Eigen::VectorXd& qd) { state.qd = qd; });
 
   class_<MobileRobot::Collision>("Collision")
       .add_property("bodyA", &MobileRobot::Collision::bodyA)
@@ -43,12 +40,10 @@ void exposeMobileRobot() {
       .def("joint_names", &MobileRobot::joint_names)
       .def("frame_names", &MobileRobot::frame_names)
       .def("self_collisions", &MobileRobot::self_collisions)
-      .def<Eigen::Affine3d (MobileRobot::*)(const std::string &)>(
-          "get_T_world_frame", &MobileRobot::get_T_world_frame)
-      .def<void (MobileRobot::*)(const std::string &, Eigen::Affine3d)>(
-          "set_T_world_frame", &MobileRobot::set_T_world_frame)
-      .def<Eigen::MatrixXd (MobileRobot::*)(const std::string &)>(
-          "frame_jacobian", &MobileRobot::frame_jacobian)
+      .def<Eigen::Affine3d (MobileRobot::*)(const std::string&)>("get_T_world_frame", &MobileRobot::get_T_world_frame)
+      .def<void (MobileRobot::*)(const std::string&, Eigen::Affine3d)>("set_T_world_frame",
+                                                                       &MobileRobot::set_T_world_frame)
+      .def<Eigen::MatrixXd (MobileRobot::*)(const std::string&)>("frame_jacobian", &MobileRobot::frame_jacobian)
       .def("com_jacobian", &MobileRobot::com_jacobian);
 
   exposeStdVector<MobileRobot::Collision>("vector_Collision");

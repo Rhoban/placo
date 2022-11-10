@@ -3,25 +3,33 @@
 #include "placo/model/mobile_robot.h"
 #include <Eigen/Dense>
 
-namespace placo {
-class KinematicsSolver {
+namespace placo
+{
+class KinematicsSolver
+{
 public:
-  KinematicsSolver(MobileRobot &robot);
+  KinematicsSolver(MobileRobot& robot);
 
-  enum Priority { Hard = 0, Soft = 1 };
+  enum Priority
+  {
+    Hard = 0,
+    Soft = 1
+  };
 
-  struct Equality {
+  struct Equality
+  {
     Equality(Eigen::MatrixXd A, Eigen::VectorXd b);
 
     Eigen::MatrixXd A;
     Eigen::VectorXd b;
   };
 
-  struct Objective {
+  struct Objective
+  {
     Objective(Eigen::MatrixXd P, Eigen::VectorXd q, double weight);
 
-    Eigen::MatrixXd P; // Hessian part
-    Eigen::VectorXd q; // Linear part
+    Eigen::MatrixXd P;  // Hessian part
+    Eigen::VectorXd q;  // Linear part
 
     double weight;
   };
@@ -35,11 +43,10 @@ public:
    * function)
    * @param weight task weight (if soft)
    */
-  void add_position_task(MobileRobot::FrameIndex frame,
-                         Eigen::Vector3d target_world, Priority priority = Soft,
+  void add_position_task(MobileRobot::FrameIndex frame, Eigen::Vector3d target_world, Priority priority = Soft,
                          double weight = 1.0);
-  void add_position_task(std::string frame, Eigen::Vector3d target_world,
-                         std::string priority = "soft", double weight = 1.0);
+  void add_position_task(std::string frame, Eigen::Vector3d target_world, std::string priority = "soft",
+                         double weight = 1.0);
 
   /**
    * @brief Adds a com position task
@@ -49,10 +56,8 @@ public:
    * function)
    * @param weight task weight (if soft)
    */
-  void add_com_task(Eigen::Vector3d targetCom_world, Priority priority = Soft,
-                    double weight = 1.0);
-  void add_com_task(Eigen::Vector3d targetCom_world,
-                    std::string priority = "soft", double weight = 1.0);
+  void add_com_task(Eigen::Vector3d targetCom_world, Priority priority = Soft, double weight = 1.0);
+  void add_com_task(Eigen::Vector3d targetCom_world, std::string priority = "soft", double weight = 1.0);
 
   /**
    * @brief Adds an orientation task
@@ -63,11 +68,10 @@ public:
    * function)
    * @param weight task weight (if soft)
    */
-  void add_orientation_task(MobileRobot::FrameIndex frame,
-                            Eigen::Matrix3d R_world_target,
-                            Priority priority = Soft, double weight = 1.0);
-  void add_orientation_task(std::string frame, Eigen::Matrix3d R_world_target,
-                            std::string priority = "soft", double weight = 1.0);
+  void add_orientation_task(MobileRobot::FrameIndex frame, Eigen::Matrix3d R_world_target, Priority priority = Soft,
+                            double weight = 1.0);
+  void add_orientation_task(std::string frame, Eigen::Matrix3d R_world_target, std::string priority = "soft",
+                            double weight = 1.0);
 
   /**
    * @brief Adds a frame task, this is equivalent to a position + orientation
@@ -80,14 +84,10 @@ public:
    * @param position_weight position task weight (if soft)
    * @param orientation_weight orientation task weight (if soft)
    */
-  void add_frame_task(MobileRobot::FrameIndex frame,
-                      Eigen::Affine3d T_world_target, Priority priority = Soft,
-                      double position_weight = 1.0,
-                      double orientation_weight = 1.0);
-  void add_frame_task(std::string frame, Eigen::Affine3d T_world_target,
-                      std::string priority = "soft",
-                      double position_weight = 1.0,
-                      double orientation_weight = 1.0);
+  void add_frame_task(MobileRobot::FrameIndex frame, Eigen::Affine3d T_world_target, Priority priority = Soft,
+                      double position_weight = 1.0, double orientation_weight = 1.0);
+  void add_frame_task(std::string frame, Eigen::Affine3d T_world_target, std::string priority = "soft",
+                      double position_weight = 1.0, double orientation_weight = 1.0);
 
   /**
    * @brief Adds a pose task. The difference with the frame task is that the
@@ -104,11 +104,10 @@ public:
    * function)
    * @param weight task weight (if soft)
    */
-  void add_pose_task(MobileRobot::FrameIndex frame,
-                     Eigen::Affine3d T_world_target, Priority priority = Soft,
+  void add_pose_task(MobileRobot::FrameIndex frame, Eigen::Affine3d T_world_target, Priority priority = Soft,
                      double weight = 1.0);
-  void add_pose_task(std::string frame, Eigen::Affine3d T_world_target,
-                     std::string priority = "soft", double weight = 1.0);
+  void add_pose_task(std::string frame, Eigen::Affine3d T_world_target, std::string priority = "soft",
+                     double weight = 1.0);
 
   /**
    * @brief Adds a regularization task for a given magnitude
@@ -123,10 +122,23 @@ public:
    */
   Eigen::VectorXd solve(bool apply = false);
 
+  /**
+   * @brief Masks (disables a DoF) from being used by the QP solver (it can't provide speed)
+   * @param dof the dof name
+   */
+  void mask_dof(std::string dof);
+
+  /**
+   * @brief Unmsks (enables a DoF) from being used by the QP solver (it can provide speed)
+   * @param dof the dof name
+   */
+  void unmask_dof(std::string dof);
+
 protected:
-  MobileRobot &robot;
+  MobileRobot& robot;
   std::vector<Equality> equalities;
   std::vector<Objective> objectives;
+  std::set<int> masked_dof;
 
   /**
    * @brief Creates either an equality constraint or an objective task depending
@@ -137,12 +149,11 @@ protected:
    * function)
    * @param weight task weight (if soft)
    */
-  void create_task(Eigen::MatrixXd A, Eigen::VectorXd b, Priority priority,
-                   double weight);
+  void create_task(Eigen::MatrixXd A, Eigen::VectorXd b, Priority priority, double weight);
 
   /**
    * @brief Size of the problem (number of variables we will search)
    */
   int N;
 };
-} // namespace placo
+}  // namespace placo

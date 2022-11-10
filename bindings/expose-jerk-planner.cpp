@@ -13,7 +13,8 @@
 using namespace boost::python;
 using namespace placo;
 
-void exposeJerkPlanner() {
+void exposeJerkPlanner()
+{
   enum_<JerkPlanner::ConstraintType>("ConstraintType")
       .value("position", JerkPlanner::ConstraintType::Position)
       .value("velocity", JerkPlanner::ConstraintType::Velocity)
@@ -21,7 +22,7 @@ void exposeJerkPlanner() {
       .value("zmp", JerkPlanner::ConstraintType::ZMP)
       .value("dcm", JerkPlanner::ConstraintType::DCM);
 
-  class_<JerkPlanner::Constraint>("Constraint", init<JerkPlanner &>())
+  class_<JerkPlanner::Constraint>("Constraint", init<JerkPlanner&>())
       .def("is_active", &JerkPlanner::Constraint::is_active);
 
   class_<JerkPlanner::JerkTrajectory2D>("JerkTrajectory2D", init<double>())
@@ -30,7 +31,7 @@ void exposeJerkPlanner() {
       .def("vel", &JerkPlanner::JerkTrajectory2D::vel)
       .def("acc", &JerkPlanner::JerkTrajectory2D::acc);
 
-  auto toString = +[](const JerkPlanner &planner) {
+  auto toString = +[](const JerkPlanner& planner) {
     std::ostringstream oss;
     oss << "[JerkPlanner]" << std::endl;
     oss << "* steps: " << planner.N << std::endl;
@@ -40,12 +41,10 @@ void exposeJerkPlanner() {
     return oss.str();
   };
 
-  class_<JerkPlanner>("JerkPlanner",
-                      init<int, JerkPlanner::State, double, double>())
+  class_<JerkPlanner>("JerkPlanner", init<int, JerkPlanner::State, double, double>())
       .def("add_equality_constraint", &JerkPlanner::add_equality_constraint)
       .def("add_lower_than_constraint", &JerkPlanner::add_lower_than_constraint)
-      .def("add_greater_than_constraint",
-           &JerkPlanner::add_greater_than_constraint)
+      .def("add_greater_than_constraint", &JerkPlanner::add_greater_than_constraint)
       .def("add_polygon_constraint", &JerkPlanner::add_polygon_constraint)
       .def("add_limit_constraint", &JerkPlanner::add_limit_constraint)
       .def("plan", &JerkPlanner::plan)

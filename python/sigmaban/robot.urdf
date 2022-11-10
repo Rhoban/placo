@@ -809,7 +809,7 @@
 <parent link="thigh_horn_left" />
 <child link="tibia_left_full" />
 <axis xyz="0 0 1"/>
-<limit effort="10" velocity="6" />
+<limit effort="10" velocity="6" lower="0.0" upper="3.14" />
 <joint_properties friction="0.0"/>
 </joint>
 
@@ -1163,7 +1163,7 @@
 <parent link="thigh_horn_right" />
 <child link="tibia_right_full" />
 <axis xyz="0 0 1"/>
-<limit effort="10" velocity="6" />
+<limit effort="10" velocity="6" lower="0.0" upper="3.14" />
 <joint_properties friction="0.0"/>
 </joint>
 

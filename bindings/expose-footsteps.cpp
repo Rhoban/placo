@@ -10,7 +10,8 @@
 using namespace boost::python;
 using namespace placo;
 
-void exposeFootsteps() {
+void exposeFootsteps()
+{
   enum_<FootstepsPlanner::Side>("FootstepsPlanner_Side")
       .value("left", FootstepsPlanner::Side::Left)
       .value("right", FootstepsPlanner::Side::Right);
@@ -24,15 +25,11 @@ void exposeFootsteps() {
       .def("support_polygon", &FootstepsPlanner::Support::support_polygon)
       .add_property("footsteps", &FootstepsPlanner::Support::footsteps);
 
-  class_<FootstepsPlannerNaive>(
-      "FootstepsPlannerNaive",
-      init<std::string, Eigen::Affine3d, Eigen::Affine3d, double>())
+  class_<FootstepsPlannerNaive>("FootstepsPlannerNaive", init<std::string, Eigen::Affine3d, Eigen::Affine3d, double>())
       .def("plan", &FootstepsPlannerNaive::plan)
       .def("make_double_supports", &FootstepsPlannerNaive::make_double_supports)
-      .add_property("foot_width", &FootstepsPlannerNaive::foot_width,
-                    &FootstepsPlannerNaive::foot_width)
-      .add_property("foot_length", &FootstepsPlannerNaive::foot_length,
-                    &FootstepsPlannerNaive::foot_length);
+      .add_property("foot_width", &FootstepsPlannerNaive::foot_width, &FootstepsPlannerNaive::foot_width)
+      .add_property("foot_length", &FootstepsPlannerNaive::foot_length, &FootstepsPlannerNaive::foot_length);
 
   // Exposing vector of footsteps
   exposeStdVector<FootstepsPlanner::Footstep>("Footsteps");

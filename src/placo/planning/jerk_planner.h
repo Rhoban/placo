@@ -5,15 +5,18 @@
 #include <map>
 #include <vector>
 
-namespace placo {
+namespace placo
+{
 /**
  * @brief The Jerk planner can be used to produce min-jerk (2D) trajectories
  * with given constraints
  */
-class JerkPlanner {
+class JerkPlanner
+{
 public:
   // A trajectory produces by the planner
-  struct JerkTrajectory {
+  struct JerkTrajectory
+  {
     std::vector<Eigen::Vector3d> pos_vel_acc;
     std::vector<double> jerk;
     double dt;
@@ -27,7 +30,8 @@ public:
   };
 
   // A 2D trajectory produced by the planner (combines x and y trajectoires)
-  struct JerkTrajectory2D {
+  struct JerkTrajectory2D
+  {
     JerkTrajectory2D(double dt);
     JerkTrajectory X;
     JerkTrajectory Y;
@@ -46,8 +50,7 @@ public:
    */
   typedef Eigen::Matrix<double, 6, 1> State;
 
-  JerkPlanner(int nb_steps, State initial_state = State::Zero(),
-              double dt = 0.1, double omega = 0.);
+  JerkPlanner(int nb_steps, State initial_state = State::Zero(), double dt = 0.1, double omega = 0.);
 
   /**
    * @brief sqrt(g/h): constant for pendulum-based points (ZMP and DCM)
@@ -71,7 +74,8 @@ public:
   Eigen::Matrix<double, 3, 3> A;
   Eigen::Matrix<double, 3, 1> B;
 
-  struct ConstraintMatrices {
+  struct ConstraintMatrices
+  {
     // Represents block for a constraint, can be
     // "Ax + b = 0" or "Ax + b >= 0"
     Eigen::MatrixXd A;
@@ -80,10 +84,11 @@ public:
     int nb_constraints();
   };
 
-  struct Constraint {
-    Constraint(JerkPlanner &planner);
+  struct Constraint
+  {
+    Constraint(JerkPlanner& planner);
 
-    JerkPlanner &planner;
+    JerkPlanner& planner;
     int first_row;
     int last_row;
 
@@ -91,7 +96,8 @@ public:
   };
 
   // Types of constraints that can be used
-  enum ConstraintType {
+  enum ConstraintType
+  {
     Position = 1,
     Velocity = 2,
     Acceleration = 3,
@@ -107,8 +113,7 @@ public:
    * @param value the value for equality
    * @param type the type of value (see ConstraintType) to constrain
    */
-  void add_equality_constraint(int step, Eigen::Vector2d value,
-                               ConstraintType type = ConstraintType::Position);
+  void add_equality_constraint(int step, Eigen::Vector2d value, ConstraintType type = ConstraintType::Position);
 
   /**
    * @brief Adds an inequality constraint (Ax >= b)
@@ -119,12 +124,9 @@ public:
    * @return the constraint range (constraint matrix rows associated with this
    * constraint)
    */
-  Constraint
-  add_greater_than_constraint(int step, Eigen::Vector2d value,
-                            ConstraintType type = ConstraintType::Position);
-  Constraint
-  add_lower_than_constraint(int step, Eigen::Vector2d value,
-                            ConstraintType type = ConstraintType::Position);
+  Constraint add_greater_than_constraint(int step, Eigen::Vector2d value,
+                                         ConstraintType type = ConstraintType::Position);
+  Constraint add_lower_than_constraint(int step, Eigen::Vector2d value, ConstraintType type = ConstraintType::Position);
 
   /**
    * @brief Given a polygon, produces inequalities so that the given point lies
@@ -138,9 +140,8 @@ public:
    * @return the constraint range (constraint matrix rows associated with this
    * constraint)
    */
-  Constraint add_polygon_constraint(
-      int step, std::vector<Eigen::Vector2d> polygon,
-      ConstraintType type = ConstraintType::Position, double margin = 0.);
+  Constraint add_polygon_constraint(int step, std::vector<Eigen::Vector2d> polygon,
+                                    ConstraintType type = ConstraintType::Position, double margin = 0.);
 
   /**
    * @brief Produces inequalities constraint so that a given value is limited in
@@ -150,9 +151,7 @@ public:
    * @return the constraint range (constraint matrix rows associated with this
    * constraint)
    */
-  Constraint
-  add_limit_constraint(double limit,
-                       ConstraintType type = ConstraintType::Velocity);
+  Constraint add_limit_constraint(double limit, ConstraintType type = ConstraintType::Velocity);
 
   /**
    * @brief Runs the solver and produces a JerkTrajectory2D solution
@@ -171,9 +170,8 @@ public:
    * @param value value for equality
    * @return a Constraint, that contains the value for the A and b matrices
    */
-  ConstraintMatrices
-  make_constraint(int step, JerkPlanner::ConstraintType type,
-                  Eigen::Vector2d value = Eigen::Vector2d::Zero());
+  ConstraintMatrices make_constraint(int step, JerkPlanner::ConstraintType type,
+                                     Eigen::Vector2d value = Eigen::Vector2d::Zero());
 
   Eigen::VectorXi active_set;
   size_t set_size;
@@ -184,10 +182,9 @@ protected:
   std::vector<ConstraintMatrices> equalities;
   std::vector<ConstraintMatrices> inequalities;
 
-  int nb_constraints(std::vector<ConstraintMatrices> &constraints);
-  void stack_constraints(std::vector<ConstraintMatrices> &constraints,
-                         int constraints_count, Eigen::MatrixXd &As,
-                         Eigen::VectorXd &bs);
+  int nb_constraints(std::vector<ConstraintMatrices>& constraints);
+  void stack_constraints(std::vector<ConstraintMatrices>& constraints, int constraints_count, Eigen::MatrixXd& As,
+                         Eigen::VectorXd& bs);
 
   void _push_equality(ConstraintMatrices constraint);
   void _push_inequality(ConstraintMatrices constraint);
@@ -198,4 +195,4 @@ protected:
   void compute_transition_matrix();
   Eigen::MatrixXd get_transition_matrix(int step);
 };
-} // namespace placo
+}  // namespace placo
