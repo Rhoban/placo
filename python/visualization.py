@@ -29,7 +29,9 @@ def robot_viz(
 cylinders: dict = {}
 
 
-def frame_viz(vis: meshcat.Visualizer, name: str, T: np.ndarray):
+def frame_viz(
+    vis: meshcat.Visualizer, name: str, T: np.ndarray, opacity: float = 1.0
+) -> None:
     """
     Visualizes a given frame
     """
@@ -47,7 +49,8 @@ def frame_viz(vis: meshcat.Visualizer, name: str, T: np.ndarray):
         if node_name not in cylinders:
             cylinders[node_name] = vis[node_name]
             cylinders[node_name].set_object(
-                g.Cylinder(0.1, 0.005), g.MeshLambertMaterial(color=color)
+                g.Cylinder(0.1, 0.005),
+                g.MeshLambertMaterial(color=color, opacity=opacity),
             )
         obj = cylinders[node_name]
 

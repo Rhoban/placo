@@ -48,6 +48,9 @@ MobileRobot::MobileRobot(std::string model_directory) {
     get_frame_index(frame);
   }
 
+  model.lowerPositionLimit[get_joint_offset("left_knee")] = 0.1;
+  model.lowerPositionLimit[get_joint_offset("right_knee")] = 0.1;
+
   reset();
   pinocchio::computeAllTerms(model, *data, state.q, state.qd);
   update_kinematics();

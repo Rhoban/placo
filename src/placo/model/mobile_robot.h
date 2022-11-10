@@ -12,6 +12,11 @@ public:
   MobileRobot(std::string model_directory = "robot/");
 
   /**
+   * @brief The index of a frame (currently directly wrapped to pinocchio's FrameIndex)
+   */
+  typedef pinocchio::FrameIndex FrameIndex;
+
+  /**
    * @brief Load collision pairs from the given json file
    * @param filename
    */
@@ -27,7 +32,7 @@ public:
    * @param frame
    * @return a frame index
    */
-  pinocchio::FrameIndex get_frame_index(const std::string &frame);
+  FrameIndex get_frame_index(const std::string &frame);
 
   /**
    * @brief Set joint values
@@ -115,7 +120,7 @@ public:
    * @brief Gets the current transformation (frame to world)
    */
   Eigen::Affine3d get_T_world_frame(const std::string &frame);
-  Eigen::Affine3d get_T_world_frame(pinocchio::FrameIndex index);
+  Eigen::Affine3d get_T_world_frame(FrameIndex index);
 
   /**
    * @brief Updates the floating base so that a given frame matches the provided
@@ -123,7 +128,7 @@ public:
    */
   void set_T_world_frame(const std::string &frame,
                          Eigen::Affine3d T_world_frameTarget);
-  void set_T_world_frame(pinocchio::FrameIndex frame,
+  void set_T_world_frame(FrameIndex frame,
                          Eigen::Affine3d T_world_frameTarget);
 
   struct Collision {
@@ -149,7 +154,7 @@ public:
    */
   Eigen::MatrixXd frame_jacobian(const std::string &frame);
   Eigen::MatrixXd
-  frame_jacobian(pinocchio::FrameIndex frame,
+  frame_jacobian(FrameIndex frame,
                  pinocchio::ReferenceFrame ref =
                      pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED);
 

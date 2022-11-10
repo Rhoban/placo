@@ -18,6 +18,7 @@ add_library(libplaco
     src/placo/footsteps/footsteps_planner_naive.cpp
     src/placo/planning/jerk_planner.cpp
     src/placo/model/mobile_robot.cpp
+    src/placo/control/kinematics_solver.cpp
     src/placo/utils.cpp
 )
 
@@ -52,6 +53,7 @@ add_library(placo MODULE
     bindings/expose-footsteps.cpp
     bindings/expose-jerk-planner.cpp
     bindings/expose-mobile-robot.cpp
+    bindings/expose-kinematics.cpp
     bindings/module.cpp
 )
 target_link_libraries(placo ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} libplaco)
