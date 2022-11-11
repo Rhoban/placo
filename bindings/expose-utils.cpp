@@ -18,4 +18,9 @@ void exposeUtils()
   exposeStdVector<int>("vector_int");
   exposeStdVector<double>("vector_double");
   exposeStdVector<std::string>("vector_string");
+
+  // exposeStdMap<std::string, double>("map_string_double");
+
+  class_<std::map<std::string, double> >("map_string_double")
+        .def(map_indexing_suite<std::map<std::string, double> >() );
 }

@@ -1,5 +1,6 @@
 #include <boost/python.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
+#include <boost/python/suite/indexing/map_indexing_suite.hpp>
 #include <vector>
 
 using namespace boost::python;
@@ -52,4 +53,38 @@ void exposeStdVector(const std::string& class_name)
   class_<vector_T>(class_name.c_str()).def(vector_indexing_suite<vector_T>());
 
   custom_vector_from_seq<T>();
+}
+
+template <typename K, typename V>
+void exposeStdMap(const std::string& class_name)
+{
+  typedef typename std::map<K, V> map_K_V;
+
+  class_<map_K_V>(class_name.c_str()).def(map_indexing_suite<map_K_V>());
+}
+
+template <typename K, typename V>
+void update_map(std::map<K, V>& map_, boost::python::dict& py_dict)
+{
+  boost::python::list keys = py_dict.keys();
+  for (int i = 0; i < len(keys); ++i)
+  {
+    boost::python::extract<K> extracted_key(keys[i]);
+    if (!extracted_key.check())
+    {
+      std::cout << "Key invalid, map might be incomplete" << std::endl;
+      continue;
+    }
+    K key = extracted_key;
+
+    boost::python::extract<V> extracted_val(py_dict[key]);
+    if (!extracted_val.check())
+    {
+      std::cout << "Value invalid, map might be incomplete" << std::endl;
+      continue;
+    }
+    V value = extracted_val;
+
+    map_[key] = value;
+  }
 }

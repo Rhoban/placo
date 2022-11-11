@@ -100,6 +100,15 @@ KinematicsSolver::JointTask::JointTask(std::string joint, double target) : joint
 {
 }
 
+KinematicsSolver::JointsTask::JointsTask()
+{
+}
+
+void KinematicsSolver::JointsTask::set_joint(std::string joint, double target)
+{
+  joints[joint] = target;
+}
+
 void KinematicsSolver::PositionTask::update()
 {
   auto T_world_frame = solver->robot.get_T_world_frame(frame_index);
@@ -110,10 +119,20 @@ void KinematicsSolver::PositionTask::update()
   b = error;
 }
 
+std::string KinematicsSolver::PositionTask::type_name()
+{
+  return "position";
+}
+
 void KinematicsSolver::CoMTask::update()
 {
   A = solver->robot.com_jacobian();
   b = target_world;
+}
+
+std::string KinematicsSolver::CoMTask::type_name()
+{
+  return "com";
 }
 
 void KinematicsSolver::OrientationTask::update()
@@ -130,6 +149,11 @@ void KinematicsSolver::OrientationTask::update()
 
   A = J.block(3, 0, 3, solver->N);
   b = error;
+}
+
+std::string KinematicsSolver::OrientationTask::type_name()
+{
+  return "orientation";
 }
 
 void KinematicsSolver::AxisAlignTask::update()
@@ -158,6 +182,11 @@ void KinematicsSolver::AxisAlignTask::update()
   b = Eigen::Vector2d(0., error_angle);
 }
 
+std::string KinematicsSolver::AxisAlignTask::type_name()
+{
+  return "axis_align";
+}
+
 void KinematicsSolver::PoseTask::update()
 {
   auto T_world_frame = solver->robot.get_T_world_frame(frame_index);
@@ -171,15 +200,45 @@ void KinematicsSolver::PoseTask::update()
   b = error;
 }
 
+std::string KinematicsSolver::PoseTask::type_name()
+{
+  return "pose";
+}
+
 void KinematicsSolver::JointTask::update()
 {
   A = Eigen::MatrixXd(1, solver->N);
   A.setZero();
   A(0, solver->robot.get_joint_v_offset(joint)) = 1;
 
-  double delta = target - solver->robot.get_joint(joint);
   b = Eigen::MatrixXd(1, 1);
-  b << delta;
+  b(0, 0) = target - solver->robot.get_joint(joint);
+}
+
+std::string KinematicsSolver::JointTask::type_name()
+{
+  return "joint";
+}
+
+void KinematicsSolver::JointsTask::update()
+{
+  A = Eigen::MatrixXd(joints.size(), solver->N);
+  b = Eigen::MatrixXd(joints.size(), 1);
+  A.setZero();
+
+  int k = 0;
+  for (auto& entry : joints)
+  {
+    A(k, solver->robot.get_joint_v_offset(entry.first)) = 1;
+    b(k, 0) = entry.second - solver->robot.get_joint(entry.first);
+
+    k += 1;
+  }
+}
+
+std::string KinematicsSolver::JointsTask::type_name()
+{
+  return "joints";
 }
 
 void KinematicsSolver::RegularizationTask::update()
@@ -190,6 +249,11 @@ void KinematicsSolver::RegularizationTask::update()
 
   b = Eigen::MatrixXd(solver->N, 1);
   b.setZero();
+}
+
+std::string KinematicsSolver::RegularizationTask::type_name()
+{
+  return "regularization";
 }
 
 KinematicsSolver::KinematicsSolver(MobileRobot& robot) : robot(robot)
@@ -266,6 +330,21 @@ KinematicsSolver::PoseTask& KinematicsSolver::add_pose_task(std::string frame, E
 KinematicsSolver::JointTask& KinematicsSolver::add_joint_task(std::string joint, double target)
 {
   return add_task(new JointTask(joint, target));
+}
+
+KinematicsSolver::JointsTask& KinematicsSolver::add_joints_task(std::map<std::string, double>& joints)
+{
+  KinematicsSolver::JointsTask& task = add_task(new JointsTask());
+  for (auto& entry : joints)
+  {
+    task.joints[entry.first] = entry.second;
+  }
+  return task;
+}
+
+KinematicsSolver::JointsTask& KinematicsSolver::add_joints_task()
+{
+  return add_task(new JointsTask());
 }
 
 KinematicsSolver::RegularizationTask& KinematicsSolver::add_regularization_task(double magnitude)
@@ -407,7 +486,7 @@ void KinematicsSolver::dump_status()
   for (auto task : tasks)
   {
     task->update();
-    std::cout << "  * " << task->name << std::endl;
+    std::cout << "  * " << task->name << " [" << task->type_name() << "]" << std::endl;
     std::cout << "    - Priority: ";
     if (task->priority == Hard)
     {

@@ -41,6 +41,7 @@ public:
     Eigen::MatrixXd b;
 
     virtual void update() = 0;
+    virtual std::string type_name() = 0;
     virtual double error();
   };
 
@@ -52,6 +53,7 @@ public:
     Eigen::Vector3d target_world;
 
     virtual void update();
+    virtual std::string type_name();
   };
 
   struct CoMTask : public Task
@@ -61,6 +63,7 @@ public:
     Eigen::Vector3d target_world;
 
     virtual void update();
+    virtual std::string type_name();
   };
 
   struct OrientationTask : public Task
@@ -71,13 +74,15 @@ public:
     Eigen::Matrix3d R_world_target;
 
     virtual void update();
+    virtual std::string type_name();
   };
 
   struct FrameTask
   {
     FrameTask(PositionTask& position, OrientationTask& orientation);
 
-    void configure(std::string name, std::string priority = "soft", double position_weight = 1.0, double orientation_weight = 1.0);
+    void configure(std::string name, std::string priority = "soft", double position_weight = 1.0,
+                   double orientation_weight = 1.0);
 
     PositionTask& position;
     OrientationTask& orientation;
@@ -92,6 +97,7 @@ public:
     Eigen::Vector3d targetAxis_world;
 
     virtual void update();
+    virtual std::string type_name();
   };
 
   struct PoseTask : public Task
@@ -102,6 +108,7 @@ public:
     Eigen::Affine3d T_world_target;
 
     virtual void update();
+    virtual std::string type_name();
   };
 
   struct JointTask : public Task
@@ -112,11 +119,25 @@ public:
     double target;
 
     virtual void update();
+    virtual std::string type_name();
+  };
+
+  struct JointsTask : public Task
+  {
+    JointsTask();
+
+    std::map<std::string, double> joints;
+
+    void set_joint(std::string joint, double target);
+
+    virtual void update();
+    virtual std::string type_name();
   };
 
   struct RegularizationTask : public Task
   {
     virtual void update();
+    virtual std::string type_name();
   };
 
   /**
@@ -178,6 +199,13 @@ public:
    * @param target its target value
    */
   JointTask& add_joint_task(std::string joint, double target);
+
+  /**
+   * @brief Adding joints task
+   * @param joints value for the joints
+   */
+  JointsTask& add_joints_task(std::map<std::string, double>& joints);
+  JointsTask& add_joints_task();
 
   /**
    * @brief Adds a regularization task for a given magnitude

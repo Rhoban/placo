@@ -86,6 +86,13 @@ void exposeKinematics()
           .add_property("joint", &KinematicsSolver::JointTask::joint)
           .add_property("target", &KinematicsSolver::JointTask::target, &KinematicsSolver::JointTask::target));
 
+  registerTaskMethods(class_<KinematicsSolver::JointsTask>("JointsTask", init<>())
+                          .def("set_joint", &KinematicsSolver::JointsTask::set_joint)
+                          .def(
+                              "set_joints", +[](KinematicsSolver::JointsTask& task, boost::python::dict& py_dict) {
+                                update_map<std::string, double>(task.joints, py_dict);
+                              }));
+
   auto regularizationTask = class_<KinematicsSolver::RegularizationTask>("RegularizationTask");
   registerTaskMethods(regularizationTask);
 
@@ -115,6 +122,8 @@ void exposeKinematics()
       // Joint task
       .def<KinematicsSolver::JointTask& (KinematicsSolver::*)(std::string, double)>(
           "add_joint_task", &KinematicsSolver::add_joint_task, return_internal_reference<>())
+      .def<KinematicsSolver::JointsTask& (KinematicsSolver::*)(void)>(
+          "add_joints_task", &KinematicsSolver::add_joints_task, return_internal_reference<>())
 
       // Regularization task
       .def("add_regularization_task", &KinematicsSolver::add_regularization_task, return_internal_reference<>())

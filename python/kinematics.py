@@ -42,9 +42,17 @@ viz = robot_viz(robot, viewer)
 
 left_foot_task = solver.add_frame_task("left_foot_tip", placo.frame(T_world_left))
 left_foot_task.configure("left_foot", "hard", 1.0, 1.0)
+
 right_foot_task = solver.add_frame_task("right_foot_tip", placo.frame(T_world_right))
 right_foot_task.configure("right_foot", "hard", 1.0, 1.0)
+
+look_at_ball = solver.add_axisalign_task("camera", np.array([0., 0., 1.]), np.array([0., 0., 0.]))
+look_at_ball.configure("look_ball", "soft", 1.0)
+
 solver.add_regularization_task(1e-6)
+
+joints_task = solver.add_joints_task()
+joints_task.configure("joints", "soft", 1.0)
 
 t = 0
 dt = 0.005
@@ -62,10 +70,13 @@ while True:
     if True:
         t0 = time.time()
 
-        print(right_foot_task.orientation().R_world_target)
+        # right_foot_task.position().target_world = np.array([0., -0.1, 0.1 + np.sin(t)*0.05])
+        # right_foot_task.orientation().R_world_target = tf.rotation([0, 0, 1], np.sin(t*1.1)*.2)[:3, :3]
 
-        # right_foot_task.position().target_world = np.array([0., -0.1, 0.1 + np.sin(t)*0.02])
-        right_foot_task.orientation().R_world_target = tf.rotation([0, 0, 1], np.sin(t)*.1)[:3, :3]
+        camera_pos = robot.get_T_world_frame("camera").mat[:3, 3]
+        look_at_ball.targetAxis_world = ball - camera_pos
+
+        joints_task.set_joints({"left_elbow": -2.0, "right_elbow": -2 + np.sin(t)})
 
         # # Controlling the com
         # T_world_targetTrunk = tf.frame(xyz=[0, -0.05 + np.sin(t) * 0.1, 0.35 + np.sin(t * 1.1) * 0.01])
@@ -75,8 +86,6 @@ while True:
         # solver.add_regularization_task(1e-5)
 
         # # Looking at the ball
-        # camera_pos = robot.get_T_world_frame("camera").mat[:3, 3]
-        # target_vector = ball - camera_pos
         # solver.add_axisalign_task("camera", np.array([0, 0, 1]), target_vector, "soft", 1e-4)
 
         # # Setting the arms target
