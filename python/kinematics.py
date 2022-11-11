@@ -55,34 +55,45 @@ while True:
 
     if True:
         t0 = time.time()
-        solver.add_frame_task("left_foot_tip", placo.frame(T_world_left), "hard", 1.0, 1.0)
-        solver.add_frame_task("right_foot_tip", placo.frame(T_world_right), "hard", 1.0, 1.0)
 
-        # Controlling the com
-        T_world_targetTrunk = tf.frame(xyz=[0, -0.05 + np.sin(t) * 0.1, 0.35 + np.sin(t * 1.1) * 0.01])
-        frame_viz(viewer, "trunk_target", T_world_targetTrunk, 0.25)
-        solver.add_com_task(placo.frame(T_world_targetTrunk).mat[:3, 3], "soft", 1.0)
-        solver.add_orientation_task("trunk", np.eye(3), "soft", 1.0)
-        solver.add_regularization_task(1e-5)
+        T_world_right[2, 3] = .02 + np.sin(t*2)*0.02
 
-        # Looking at the ball
-        camera_pos = robot.get_T_world_frame("camera").mat[:3, 3]
-        target_vector = ball - camera_pos
-        solver.add_axisalign_task("camera", np.array([0, 0, 1]), target_vector, "soft", 1e-4)
+        solver.clear_tasks()
 
-        # Setting the arms target
-        solver.add_joint_task("left_shoulder_roll", 0.0, "soft", 1.0)
-        solver.add_joint_task("left_shoulder_pitch", 0.5, "soft", 1.0)
-        solver.add_joint_task("left_elbow", -1.5, "soft", 1.0)
+        solver.add_frame_task("left_foot_tip", placo.frame(T_world_left)).configure("left_foot", "hard", 1., 1.)
+        solver.add_frame_task("right_foot_tip", placo.frame(T_world_right)).configure("right_foot", "hard", 1., 1.)
 
-        solver.add_joint_task("right_shoulder_roll", 0.0, "soft", 1.0)
-        solver.add_joint_task("right_shoulder_pitch", 0.5, "soft", 1.0)
-        solver.add_joint_task("right_elbow", -1.5, "soft", 1.0)
+        # # Controlling the com
+        # T_world_targetTrunk = tf.frame(xyz=[0, -0.05 + np.sin(t) * 0.1, 0.35 + np.sin(t * 1.1) * 0.01])
+        # frame_viz(viewer, "trunk_target", T_world_targetTrunk, 0.25)
+        # solver.add_com_task(placo.frame(T_world_targetTrunk).mat[:3, 3], "soft", 1.0)
+        # solver.add_orientation_task("trunk", np.eye(3), "soft", 1.0)
+        # solver.add_regularization_task(1e-5)
+
+        # # Looking at the ball
+        # camera_pos = robot.get_T_world_frame("camera").mat[:3, 3]
+        # target_vector = ball - camera_pos
+        # solver.add_axisalign_task("camera", np.array([0, 0, 1]), target_vector, "soft", 1e-4)
+
+        # # Setting the arms target
+        # solver.add_joint_task("left_shoulder_roll", 0.0, "soft", 1.0)
+        # solver.add_joint_task("left_shoulder_pitch", 0.5, "soft", 1.0)
+        # solver.add_joint_task("left_elbow", -1.5, "soft", 1.0)
+
+        # solver.add_joint_task("right_shoulder_roll", 0.0, "soft", 1.0)
+        # solver.add_joint_task("right_shoulder_pitch", 0.5, "soft", 1.0)
+        # solver.add_joint_task("right_elbow", -1.5, "soft", 1.0)
+
+        solver.add_regularization_task(1e-6)
 
         qd = solver.solve(True)
         elapsed = time.time() - t0
 
     robot_frame_viz(viewer, robot, "camera")
+    robot_frame_viz(viewer, robot, "left_foot_tip")
+    robot_frame_viz(viewer, robot, "right_foot_tip")
+    robot_frame_viz(viewer, robot, "trunk")
+    point_viz(viewer, "com", robot.com_world())
 
     t += dt
     while time.time() < start_t + t:
