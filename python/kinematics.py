@@ -40,6 +40,12 @@ viewer = meshcat.Visualizer()
 print(f"See at: {viewer.url()}")
 viz = robot_viz(robot, viewer)
 
+left_foot_task = solver.add_frame_task("left_foot_tip", placo.frame(T_world_left))
+left_foot_task.configure("left_foot", "hard", 1.0, 1.0)
+right_foot_task = solver.add_frame_task("right_foot_tip", placo.frame(T_world_right))
+right_foot_task.configure("right_foot", "hard", 1.0, 1.0)
+solver.add_regularization_task(1e-6)
+
 t = 0
 dt = 0.005
 K = 0
@@ -56,12 +62,8 @@ while True:
     if True:
         t0 = time.time()
 
-        T_world_right[2, 3] = .02 + np.sin(t*2)*0.02
-
-        solver.clear_tasks()
-
-        solver.add_frame_task("left_foot_tip", placo.frame(T_world_left)).configure("left_foot", "hard", 1., 1.)
-        solver.add_frame_task("right_foot_tip", placo.frame(T_world_right)).configure("right_foot", "hard", 1., 1.)
+        right_foot_task.position().target_world = np.array([0., -0.1, 0.1 + np.sin(t)*0.02])
+        # right_foot_task.position.target_world[1] = 0.02 + np.sin(t * 2) * 0.02
 
         # # Controlling the com
         # T_world_targetTrunk = tf.frame(xyz=[0, -0.05 + np.sin(t) * 0.1, 0.35 + np.sin(t * 1.1) * 0.01])
@@ -84,10 +86,11 @@ while True:
         # solver.add_joint_task("right_shoulder_pitch", 0.5, "soft", 1.0)
         # solver.add_joint_task("right_elbow", -1.5, "soft", 1.0)
 
-        solver.add_regularization_task(1e-6)
-
         qd = solver.solve(True)
         elapsed = time.time() - t0
+
+        print("")
+        solver.dump_status()
 
     robot_frame_viz(viewer, robot, "camera")
     robot_frame_viz(viewer, robot, "left_foot_tip")

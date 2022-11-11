@@ -33,15 +33,18 @@ void exposeKinematics()
   registerTaskMethods(
       class_<KinematicsSolver::PositionTask>("PositionTask", init<MobileRobot::FrameIndex, Eigen::Vector3d>())
           .add_property("frame_index", &KinematicsSolver::PositionTask::frame_index)
-          .add_property("target_world", &KinematicsSolver::PositionTask::target_world));
+          .add_property("target_world", &KinematicsSolver::PositionTask::target_world,
+                        &KinematicsSolver::PositionTask::target_world));
 
   registerTaskMethods(class_<KinematicsSolver::CoMTask>("CoMTask", init<Eigen::Vector3d>())
-                          .add_property("target_world", &KinematicsSolver::CoMTask::target_world));
+                          .add_property("target_world", &KinematicsSolver::CoMTask::target_world,
+                                        &KinematicsSolver::CoMTask::target_world));
 
   registerTaskMethods(
       class_<KinematicsSolver::OrientationTask>("OrientationTask", init<MobileRobot::FrameIndex, Eigen::Matrix3d>())
           .add_property("frame_index", &KinematicsSolver::OrientationTask::frame_index)
-          .add_property("R_world_target", &KinematicsSolver::OrientationTask::R_world_target));
+          .add_property("R_world_target", &KinematicsSolver::OrientationTask::R_world_target,
+                        &KinematicsSolver::OrientationTask::R_world_target));
 
   class_<KinematicsSolver::FrameTask>("FrameTask",
                                       init<KinematicsSolver::PositionTask&, KinematicsSolver::OrientationTask&>())
@@ -61,12 +64,20 @@ void exposeKinematics()
   registerTaskMethods(class_<KinematicsSolver::AxisAlignTask>(
                           "AxisAlignTask", init<MobileRobot::FrameIndex, Eigen::Vector3d, Eigen::Vector3d>())
                           .add_property("frame_index", &KinematicsSolver::AxisAlignTask::frame_index)
-                          .add_property("axis_frame", &KinematicsSolver::AxisAlignTask::axis_frame)
-                          .add_property("targetAxis_world", &KinematicsSolver::AxisAlignTask::targetAxis_world));
+                          .add_property("axis_frame", &KinematicsSolver::AxisAlignTask::axis_frame,
+                                        &KinematicsSolver::AxisAlignTask::axis_frame)
+                          .add_property("targetAxis_world", &KinematicsSolver::AxisAlignTask::targetAxis_world,
+                                        &KinematicsSolver::AxisAlignTask::targetAxis_world));
 
   registerTaskMethods(class_<KinematicsSolver::PoseTask>("PoseTask", init<MobileRobot::FrameIndex, Eigen::Affine3d>())
                           .add_property("frame_index", &KinematicsSolver::PoseTask::frame_index)
-                          .add_property("T_world_target", &KinematicsSolver::PoseTask::T_world_target));
+                          .add_property("T_world_target", &KinematicsSolver::PoseTask::T_world_target,
+                                        &KinematicsSolver::PoseTask::T_world_target));
+
+  registerTaskMethods(
+      class_<KinematicsSolver::JointTask>("JointTask", init<std::string, double>())
+          .add_property("joint", &KinematicsSolver::JointTask::joint)
+          .add_property("target", &KinematicsSolver::JointTask::target, &KinematicsSolver::JointTask::target));
 
   auto regularizationTask = class_<KinematicsSolver::RegularizationTask>("RegularizationTask");
   registerTaskMethods(regularizationTask);
@@ -107,6 +118,7 @@ void exposeKinematics()
 
       // Clearing the tasks
       .def("clear_tasks", &KinematicsSolver::clear_tasks)
+      .def("dump_status", &KinematicsSolver::dump_status)
 
       .def("solve", &KinematicsSolver::solve);
 }

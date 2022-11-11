@@ -208,6 +208,8 @@ public:
    */
   void clear_tasks();
 
+  void dump_status();
+
 protected:
   MobileRobot& robot;
   std::set<int> masked_dof;

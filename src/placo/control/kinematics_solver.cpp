@@ -271,6 +271,7 @@ KinematicsSolver::JointTask& KinematicsSolver::add_joint_task(std::string joint,
 KinematicsSolver::RegularizationTask& KinematicsSolver::add_regularization_task(double magnitude)
 {
   KinematicsSolver::RegularizationTask& task = add_task(new RegularizationTask());
+  task.set_name("regularization");
   task.set_weight(magnitude);
 
   return task;
@@ -379,8 +380,7 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
 
   if (result == std::numeric_limits<double>::infinity())
   {
-    throw std::runtime_error("KinematicsSolver: Infeasible QP (check your "
-                             "equality and inequality constraints)");
+    throw std::runtime_error("KinematicsSolver: Infeasible QP (check your equality and inequality constraints)");
   }
 
   if (apply)
@@ -399,6 +399,19 @@ void KinematicsSolver::clear_tasks()
   }
 
   tasks.clear();
+}
+
+void KinematicsSolver::dump_status()
+{
+  std::cout << "*** KinematicsSolver" << std::endl;
+  for (auto task : tasks)
+  {
+    task->update();
+    std::cout << "* Task " << task->name << std::endl;
+    std::cout << "- Weight: " << task->weight << std::endl;
+    std::cout << "- Error: " << task->error() << std::endl;
+    std::cout << std::endl;
+  }
 }
 
 };  // namespace placo
