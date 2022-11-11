@@ -62,8 +62,10 @@ while True:
     if True:
         t0 = time.time()
 
-        right_foot_task.position().target_world = np.array([0., -0.1, 0.1 + np.sin(t)*0.02])
-        # right_foot_task.position.target_world[1] = 0.02 + np.sin(t * 2) * 0.02
+        print(right_foot_task.orientation().R_world_target)
+
+        # right_foot_task.position().target_world = np.array([0., -0.1, 0.1 + np.sin(t)*0.02])
+        right_foot_task.orientation().R_world_target = tf.rotation([0, 0, 1], np.sin(t)*.1)[:3, :3]
 
         # # Controlling the com
         # T_world_targetTrunk = tf.frame(xyz=[0, -0.05 + np.sin(t) * 0.1, 0.35 + np.sin(t * 1.1) * 0.01])
@@ -89,7 +91,7 @@ while True:
         qd = solver.solve(True)
         elapsed = time.time() - t0
 
-        print("")
+        print(f"Computation time: {elapsed*1e6}µs")
         solver.dump_status()
 
     robot_frame_viz(viewer, robot, "camera")

@@ -208,6 +208,9 @@ public:
    */
   void clear_tasks();
 
+  /**
+   * @brief Shows the tasks status
+   */
   void dump_status();
 
 protected:

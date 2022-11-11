@@ -403,13 +403,22 @@ void KinematicsSolver::clear_tasks()
 
 void KinematicsSolver::dump_status()
 {
-  std::cout << "*** KinematicsSolver" << std::endl;
+  std::cout << "* Kinematics Tasks:" << std::endl;
   for (auto task : tasks)
   {
     task->update();
-    std::cout << "* Task " << task->name << std::endl;
-    std::cout << "- Weight: " << task->weight << std::endl;
-    std::cout << "- Error: " << task->error() << std::endl;
+    std::cout << "  * " << task->name << std::endl;
+    std::cout << "    - Priority: ";
+    if (task->priority == Hard)
+    {
+      std::cout << "hard";
+    }
+    else
+    {
+      std::cout << "soft (weight:" << task->weight << ")";
+    }
+    std::cout << std::endl;
+    std::cout << "    - Error: " << task->error() << std::endl;
     std::cout << std::endl;
   }
 }
