@@ -42,6 +42,7 @@ public:
 
     virtual void update() = 0;
     virtual std::string type_name() = 0;
+    virtual std::string error_unit() = 0;
     virtual double error();
   };
 
@@ -54,6 +55,7 @@ public:
 
     virtual void update();
     virtual std::string type_name();
+    virtual std::string error_unit();
   };
 
   struct CoMTask : public Task
@@ -64,6 +66,7 @@ public:
 
     virtual void update();
     virtual std::string type_name();
+    virtual std::string error_unit();
   };
 
   struct OrientationTask : public Task
@@ -75,6 +78,7 @@ public:
 
     virtual void update();
     virtual std::string type_name();
+    virtual std::string error_unit();
   };
 
   struct FrameTask
@@ -98,6 +102,7 @@ public:
 
     virtual void update();
     virtual std::string type_name();
+    virtual std::string error_unit();
   };
 
   struct PoseTask : public Task
@@ -109,6 +114,7 @@ public:
 
     virtual void update();
     virtual std::string type_name();
+    virtual std::string error_unit();
   };
 
   struct JointTask : public Task
@@ -120,6 +126,7 @@ public:
 
     virtual void update();
     virtual std::string type_name();
+    virtual std::string error_unit();
   };
 
   struct JointsTask : public Task
@@ -132,12 +139,14 @@ public:
 
     virtual void update();
     virtual std::string type_name();
+    virtual std::string error_unit();
   };
 
   struct RegularizationTask : public Task
   {
     virtual void update();
     virtual std::string type_name();
+    virtual std::string error_unit();
   };
 
   /**

@@ -124,6 +124,11 @@ std::string KinematicsSolver::PositionTask::type_name()
   return "position";
 }
 
+std::string KinematicsSolver::PositionTask::error_unit()
+{
+  return "m";
+}
+
 void KinematicsSolver::CoMTask::update()
 {
   A = solver->robot.com_jacobian();
@@ -133,6 +138,11 @@ void KinematicsSolver::CoMTask::update()
 std::string KinematicsSolver::CoMTask::type_name()
 {
   return "com";
+}
+
+std::string KinematicsSolver::CoMTask::error_unit()
+{
+  return "m";
 }
 
 void KinematicsSolver::OrientationTask::update()
@@ -156,6 +166,11 @@ std::string KinematicsSolver::OrientationTask::type_name()
   return "orientation";
 }
 
+std::string KinematicsSolver::OrientationTask::error_unit()
+{
+  return "rad";
+}
+
 void KinematicsSolver::AxisAlignTask::update()
 {
   auto T_world_frame = solver->robot.get_T_world_frame(frame_index);
@@ -174,8 +189,9 @@ void KinematicsSolver::AxisAlignTask::update()
   double error_angle = acos(R_world_axisframe.col(0).dot(target_axis_world_normalized));
 
   // We express the Jacobian in the axisframe
-  auto J_axisframe = R_world_axisframe.inverse() *
-                     solver->robot.frame_jacobian(frame_index, pinocchio::WORLD).block(3, 0, 3, solver->N);
+  Eigen::MatrixXd J_axisframe = /* R_world_axisframe.inverse() * */
+      solver->robot.frame_jacobian(frame_index, pinocchio::WORLD).block(3, 0, 3, solver->N);
+  J_axisframe = (R_world_axisframe.inverse() * J_axisframe);
 
   // We only keep y and z in the constraint, since we don't care about rotations about x axis in the axis frame
   A = J_axisframe.block(1, 0, 2, solver->N);
@@ -185,6 +201,11 @@ void KinematicsSolver::AxisAlignTask::update()
 std::string KinematicsSolver::AxisAlignTask::type_name()
 {
   return "axis_align";
+}
+
+std::string KinematicsSolver::AxisAlignTask::error_unit()
+{
+  return "rad";
 }
 
 void KinematicsSolver::PoseTask::update()
@@ -205,6 +226,11 @@ std::string KinematicsSolver::PoseTask::type_name()
   return "pose";
 }
 
+std::string KinematicsSolver::PoseTask::error_unit()
+{
+  return "twist-norm";
+}
+
 void KinematicsSolver::JointTask::update()
 {
   A = Eigen::MatrixXd(1, solver->N);
@@ -218,6 +244,11 @@ void KinematicsSolver::JointTask::update()
 std::string KinematicsSolver::JointTask::type_name()
 {
   return "joint";
+}
+
+std::string KinematicsSolver::JointTask::error_unit()
+{
+  return "dof-rad";
 }
 
 void KinematicsSolver::JointsTask::update()
@@ -241,6 +272,11 @@ std::string KinematicsSolver::JointsTask::type_name()
   return "joints";
 }
 
+std::string KinematicsSolver::JointsTask::error_unit()
+{
+  return "dof-rads";
+}
+
 void KinematicsSolver::RegularizationTask::update()
 {
   // Regularization magnitude is handled through the task weight (see add_regularization_task)
@@ -254,6 +290,11 @@ void KinematicsSolver::RegularizationTask::update()
 std::string KinematicsSolver::RegularizationTask::type_name()
 {
   return "regularization";
+}
+
+std::string KinematicsSolver::RegularizationTask::error_unit()
+{
+  return "none";
 }
 
 KinematicsSolver::KinematicsSolver(MobileRobot& robot) : robot(robot)
@@ -497,7 +538,7 @@ void KinematicsSolver::dump_status()
       std::cout << "soft (weight:" << task->weight << ")";
     }
     std::cout << std::endl;
-    std::cout << "    - Error: " << task->error() << std::endl;
+    printf("    - Error: %.06f [%s]\n", task->error(), task->error_unit().c_str());
     std::cout << std::endl;
   }
 }
