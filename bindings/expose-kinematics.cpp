@@ -22,6 +22,10 @@ void exposeKinematics()
       .def<void (KinematicsSolver::*)(std::string, Eigen::Matrix3d, std::string, double)>(
           "add_orientation_task", &KinematicsSolver::add_orientation_task)
 
+      // Axis align task
+      .def<void (KinematicsSolver::*)(std::string, Eigen::Vector3d, Eigen::Vector3d, std::string, double)>(
+          "add_axisalign_task", &KinematicsSolver::add_axisalign_task)
+
       // Frame task
       .def<void (KinematicsSolver::*)(std::string, Eigen::Affine3d, std::string, double, double)>(
           "add_frame_task", &KinematicsSolver::add_frame_task)
@@ -29,6 +33,10 @@ void exposeKinematics()
       // Pose task
       .def<void (KinematicsSolver::*)(std::string, Eigen::Affine3d, std::string, double)>(
           "add_pose_task", &KinematicsSolver::add_pose_task)
+
+      // Joint task
+      .def<void (KinematicsSolver::*)(std::string, double, std::string, double)>("add_joint_task",
+                                                                                 &KinematicsSolver::add_joint_task)
 
       // Regularization task
       .def("add_regularization_task", &KinematicsSolver::add_regularization_task)
@@ -38,6 +46,4 @@ void exposeKinematics()
       .def("unmask_dof", &KinematicsSolver::unmask_dof)
 
       .def("solve", &KinematicsSolver::solve);
-
-  // .def<Eigen::Affine3d (MobileRobot::*)(const std::string &)>(
 }

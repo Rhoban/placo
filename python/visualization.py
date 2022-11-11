@@ -6,9 +6,7 @@ import meshcat.transformations as tf
 import placo
 
 
-def robot_viz(
-    robot: placo.MobileRobot, viewer: meshcat.Visualizer
-) -> pin.visualize.MeshcatVisualizer:
+def robot_viz(robot: placo.MobileRobot, viewer: meshcat.Visualizer) -> pin.visualize.MeshcatVisualizer:
     """
     Builds an instance of pinocchio MeshcatVisualizer, which allows to push the model to the meshcat
     visualizer passed as parameter
@@ -17,9 +15,7 @@ def robot_viz(
 
     > viz.display(q)
     """
-    viz = pin.visualize.MeshcatVisualizer(
-        robot.model, robot.collision_model, robot.visual_model
-    )
+    viz = pin.visualize.MeshcatVisualizer(robot.model, robot.collision_model, robot.visual_model)
     viz.initViewer(viewer=viewer)
     viz.loadViewerModel()
 
@@ -29,9 +25,7 @@ def robot_viz(
 cylinders: dict = {}
 
 
-def frame_viz(
-    vis: meshcat.Visualizer, name: str, T: np.ndarray, opacity: float = 1.0
-) -> None:
+def frame_viz(vis: meshcat.Visualizer, name: str, T: np.ndarray, opacity: float = 1.0) -> None:
     """
     Visualizes a given frame
     """
@@ -54,14 +48,15 @@ def frame_viz(
             )
         obj = cylinders[node_name]
 
-        obj.set_transform(
-            T @ tf.rotation_matrix(*rotate) @ tf.translation_matrix([0, 0.05, 0])
-        )
+        obj.set_transform(T @ tf.rotation_matrix(*rotate) @ tf.translation_matrix([0, 0.05, 0]))
 
 
-def robot_frame_viz(
-    vis: meshcat.Visualizer, robot: placo.MobileRobot, frame: str
-) -> None:
+def point_viz(vis: meshcat.Visualizer, name: str, point: np.ndarray, color: float = 0xFF0000) -> None:
+    vis["points"][name].set_object(g.Sphere(0.01), g.MeshPhongMaterial(color=color))
+    vis["points"][name].set_transform(tf.translation_matrix(point))
+
+
+def robot_frame_viz(vis: meshcat.Visualizer, robot: placo.MobileRobot, frame: str) -> None:
     """
     Draw a frame from the robot
     """
@@ -84,6 +79,4 @@ def footsteps_viz(vis: meshcat.Visualizer, footsteps: placo.Footsteps) -> None:
         polygon = np.array([*polygon, polygon[-1]])
         color = 0xFF3333 if str(footstep.side) == "left" else 0x33FF33
 
-        vis["footsteps"][str(k)].set_object(
-            g.LineLoop(g.PointsGeometry(polygon.T), g.MeshBasicMaterial(color=color))
-        )
+        vis["footsteps"][str(k)].set_object(g.LineLoop(g.PointsGeometry(polygon.T), g.MeshBasicMaterial(color=color)))

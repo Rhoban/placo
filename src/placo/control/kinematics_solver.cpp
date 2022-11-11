@@ -83,6 +83,38 @@ void KinematicsSolver::add_orientation_task(std::string frame, Eigen::Matrix3d R
   add_orientation_task(robot.get_frame_index(frame), R_world_target, priority_from_string(priority), weight);
 }
 
+void KinematicsSolver::add_axisalign_task(MobileRobot::FrameIndex frame, Eigen::Vector3d axis_frame,
+                                          Eigen::Vector3d target_axis_world, Priority priority, double weight)
+{
+  auto T_world_frame = robot.get_T_world_frame(frame);
+  auto target_axis_world_normalized = target_axis_world.normalized();
+
+  // Here, we will define an "axis frame", which x axis is aligned with the current axis, the z axis is the axis
+  // we need to rotate about to correct the error, and y the last axis
+  // Thus, expressing the Jacobian in this frame, we can let the rotation about the x axis free, and control
+  // the rotation about z to be the error, and about y to be zero.
+  Eigen::Matrix3d R_world_axisframe;
+  R_world_axisframe.col(0) = (T_world_frame.rotation() * axis_frame).normalized();
+  R_world_axisframe.col(2) = R_world_axisframe.col(0).cross(target_axis_world_normalized);
+  R_world_axisframe.col(1) = R_world_axisframe.col(2).cross(R_world_axisframe.col(0));
+
+  // Computing the error angle we want to compensate
+  double error_angle = acos(R_world_axisframe.col(0).dot(target_axis_world_normalized));
+
+  // We express the Jacobian in the axisframe
+  auto J_axisframe = R_world_axisframe.inverse() * robot.frame_jacobian(frame, pinocchio::WORLD).block(3, 0, 3, N);
+
+  // We only keep y and z in the constraint, since we don't care about rotations about x axis in the axis frame
+  create_task(J_axisframe.block(1, 0, 2, N), Eigen::Vector2d(0., error_angle), priority, weight);
+}
+
+void KinematicsSolver::add_axisalign_task(std::string frame, Eigen::Vector3d axis_frame,
+                                          Eigen::Vector3d target_axis_world, std::string priority, double weight)
+{
+  add_axisalign_task(robot.get_frame_index(frame), axis_frame, target_axis_world, priority_from_string(priority),
+                     weight);
+}
+
 void KinematicsSolver::add_frame_task(MobileRobot::FrameIndex frame, Eigen::Affine3d frame_target, Priority priority,
                                       double position_weight, double orientation_weight)
 {
@@ -116,6 +148,24 @@ void KinematicsSolver::add_pose_task(std::string frame, Eigen::Affine3d T_world_
                                      double weight)
 {
   add_pose_task(robot.get_frame_index(frame), T_world_target, priority_from_string(priority), weight);
+}
+
+void KinematicsSolver::add_joint_task(std::string joint, double target, Priority priority, double weight)
+{
+  Eigen::MatrixXd A(1, N);
+  A.setZero();
+  A(0, robot.get_joint_v_offset(joint)) = 1;
+
+  double delta = target - robot.get_joint(joint);
+  Eigen::MatrixXd b(1, 1);
+  b << delta;
+
+  create_task(A, b, priority, weight);
+}
+
+void KinematicsSolver::add_joint_task(std::string joint, double target, std::string priority, double weight)
+{
+  add_joint_task(joint, target, priority_from_string(priority), weight);
 }
 
 void KinematicsSolver::add_regularization_task(double magnitude)
@@ -235,12 +285,12 @@ void KinematicsSolver::create_task(Eigen::MatrixXd A, Eigen::VectorXd b, Priorit
 {
   if (priority == Soft)
   {
-    // Ax = b
-    // minimizes (Ax - b)^T (Ax - b)
+    // The original equality is: Ax = b
+    // In term of minimization, we want to minimize (Ax - b)^T (Ax - b)
     // Thus, (x^T A^T - b^T) (Ax - b) = x^T A^T A x - 2 b^T A
-    // P (Hessian) is A^T A
+    // P (hessian) is A^T A
     // q (linear) is - b^T A
-    // We removed the "2" because the solver solves for 1/2 x^T P x + q^T x
+    // We removed the "2" because the solver already solves for 1/2 x^T P x + q^T x
     objectives.push_back(Objective(A.transpose() * A, -b.transpose() * A, weight));
   }
   else
