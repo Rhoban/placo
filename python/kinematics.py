@@ -7,8 +7,6 @@ import tf
 from visualization import robot_viz, frame_viz, point_viz, robot_frame_viz
 
 # TODO: Update joint limits in URDF
-# TODO: Regularize with reference posture
-# TODO: Return tasks allowing retrieving of error after solve
 # TODO: Move the viewer in visualization.py, avoid passing it everytime as argument to methods
 
 robot = placo.MobileRobot("sigmaban/")
@@ -20,14 +18,6 @@ robot.set_T_world_frame("left_foot_tip", placo.frame(np.eye(4)))
 robot.update_kinematics()
 
 solver = placo.KinematicsSolver(robot)
-# solver.mask_dof("left_shoulder_roll")
-# solver.mask_dof("right_shoulder_roll")
-# solver.mask_dof("left_shoulder_pitch")
-# solver.mask_dof("right_shoulder_pitch")
-# solver.mask_dof("left_elbow")
-# solver.mask_dof("right_elbow")
-# solver.mask_dof("head_pitch")
-# solver.mask_dof("head_yaw")
 
 # Retrieving initial position of the feet, com and trunk orientation
 T_world_left = robot.get_T_world_frame("left_foot_tip").mat
@@ -36,27 +26,27 @@ com_world = robot.com_world().copy()
 R_world_trunk = robot.get_T_world_frame("trunk").mat[:3, :3]
 
 # Creating the viewer
-viewer = meshcat.Visualizer()
-print(f"See at: {viewer.url()}")
-viz = robot_viz(robot, viewer)
+viz = robot_viz(robot)
 
-# left_foot_task = solver.add_frame_task("left_foot_tip", placo.frame(T_world_left))
-# left_foot_task.configure("left_foot", "hard", 1.0, 1.0)
+left_foot_task = solver.add_frame_task("left_foot_tip", placo.frame(T_world_left))
+left_foot_task.configure("left_foot", "hard", 1.0, 1.0)
 
-# right_foot_task = solver.add_frame_task("right_foot_tip", placo.frame(T_world_right))
-# right_foot_task.configure("right_foot", "hard", 1.0, 1.0)
+right_foot_task = solver.add_frame_task("right_foot_tip", placo.frame(T_world_right))
+right_foot_task.configure("right_foot", "hard", 1.0, 1.0)
 
-look_at_ball = solver.add_axisalign_task("camera", np.array([0., 0., 1.]), np.array([0., 0., 0.]))
-look_at_ball.configure("look_ball", "soft", 1.)
+look_at_ball = solver.add_axisalign_task("camera", np.array([0.0, 0.0, 1.0]), np.array([0.0, 0.0, 0.0]))
+look_at_ball.configure("look_ball", "soft", 1.0)
 
 T_world_frame = robot.get_T_world_frame("trunk").mat
-T_world_frame[0, 3] += 0.5
-T_world_frame[2, 3] += 0.2
-T_world_frame[:3, :3] = tf.rotation([0, 1, 0], 1.1)[:3, :3]
-trunk_task = solver.add_frame_task("trunk", placo.frame(T_world_frame))
-trunk_task.configure("trunk", "soft", 1., 1.)
+T_world_frame[2, 3] -= 0.06
+# trunk_task = solver.add_frame_task("trunk", placo.frame(T_world_frame))
+# trunk_task.configure("trunk", "soft", 1., 1.)
+trunk_task = solver.add_position_task("trunk", T_world_frame[:3, 3])
+trunk_task.configure("trunk_task", "soft", 1.0)
+trunk_orientation_task = solver.add_orientation_task("trunk", np.eye(3))
+trunk_orientation_task.configure("trunk_orn", "soft", 1e-6)
 
-solver.add_regularization_task(1e-12)
+solver.add_regularization_task(1e-4)
 
 joints_task = solver.add_joints_task()
 joints_task.configure("joints", "soft", 1.0)
@@ -75,8 +65,8 @@ while True:
         viz.display(robot.state.q)
 
     w = 1
-    ball = np.array([0.5 + np.cos(t*w) * 0.25, np.sin(t*w) * 0.7, 0.0])
-    point_viz(viewer, "ball", ball)
+    ball = np.array([0.5 + np.cos(t * w) * 0.25, np.sin(t * w) * 0.7, 0.0])
+    point_viz("ball", ball)
 
     if True:
         t0 = time.time()
@@ -117,11 +107,11 @@ while True:
         robot.update_kinematics()
         solver.dump_status()
 
-    robot_frame_viz(viewer, robot, "camera")
-    robot_frame_viz(viewer, robot, "left_foot_tip")
-    robot_frame_viz(viewer, robot, "right_foot_tip")
-    robot_frame_viz(viewer, robot, "trunk")
-    point_viz(viewer, "com", robot.com_world())
+    robot_frame_viz(robot, "camera")
+    robot_frame_viz(robot, "left_foot_tip")
+    robot_frame_viz(robot, "right_foot_tip")
+    robot_frame_viz(robot, "trunk")
+    point_viz("com", robot.com_world(), radius=0.025, color=0xAAAAAA)
 
     t += dt
     while time.time() < start_t + t:
