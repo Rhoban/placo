@@ -6,8 +6,9 @@ import numpy as np
 import tf
 from visualization import robot_viz, frame_viz, point_viz, robot_frame_viz
 
+# TODO: Clean this to make it a proper simple example
+# TODO: Do something about conversions from numpy 4x4 matrices to Affine3d?
 # TODO: Update joint limits in URDF
-# TODO: Move the viewer in visualization.py, avoid passing it everytime as argument to methods
 
 robot = placo.MobileRobot("sigmaban/")
 
@@ -28,11 +29,16 @@ R_world_trunk = robot.get_T_world_frame("trunk").mat[:3, :3]
 # Creating the viewer
 viz = robot_viz(robot)
 
-left_foot_task = solver.add_frame_task("left_foot_tip", placo.frame(T_world_left))
-left_foot_task.configure("left_foot", "hard", 1.0, 1.0)
+left_foot_task = solver.add_pose_task("left_foot_tip", placo.frame(T_world_left))
+left_foot_task.configure("left_foot", "soft", 1.0)
 
-right_foot_task = solver.add_frame_task("right_foot_tip", placo.frame(T_world_right))
-right_foot_task.configure("right_foot", "hard", 1.0, 1.0)
+right_foot_task = solver.add_relative_frame_task(
+    "left_foot_tip", "right_foot_tip", placo.frame(tf.translation([0, -0.1, 0]))
+)
+right_foot_task.configure("right_foot", "soft", 1.0, 1.0)
+
+# right_foot_orn_task = solver.add_orientation_task("right_foot_tip", np.eye(3))
+# right_foot_orn_task.configure("right_foot_orn", "soft", 1.0)
 
 look_at_ball = solver.add_axisalign_task("camera", np.array([0.0, 0.0, 1.0]), np.array([0.0, 0.0, 0.0]))
 look_at_ball.configure("look_ball", "soft", 1.0)
@@ -44,10 +50,11 @@ T_world_frame[2, 3] -= 0.06
 trunk_task = solver.add_position_task("trunk", T_world_frame[:3, 3])
 trunk_task.configure("trunk_task", "soft", 1.0)
 trunk_orientation_task = solver.add_orientation_task("trunk", np.eye(3))
-trunk_orientation_task.configure("trunk_orn", "soft", 1e-6)
+trunk_orientation_task.configure("trunk_orn", "soft", 1.0)
 
-solver.add_regularization_task(1e-4)
+solver.add_regularization_task(1e-6)
 
+# Elbows
 joints_task = solver.add_joints_task()
 joints_task.configure("joints", "soft", 1.0)
 
@@ -70,6 +77,18 @@ while True:
 
     if True:
         t0 = time.time()
+
+        # Moving left foot
+        T_world_left[:2, 3] = [0 + np.cos(t) * 0.05, np.sin(t) * 0.05]
+        # T_world_left[2, 3] = 0.02 + np.sin(t)*0.01
+        # T_world_left[:3, :3] = tf.rotation([0, 0, 1], np.sin(t * 3) * 0.2)[:3, :3]
+        # T_world_left[:3, :3] = T_world_left[:3, :3] @ tf.rotation([0, 1, 0], np.sin(t * 2) * 0.2)[:3, :3]
+
+        left_foot_task.T_world_frame = placo.frame(T_world_left)
+
+        right_foot_task.T_a_b = placo.frame(tf.translation([0, -0.1, 0]) @ tf.rotation([0, 0, 1], np.pi / 2))
+
+        # right_foot_orn_task.R_world_target = tf.rotation([0, 0, 1], np.sin(t * 3) * 0.3)[:3, :3]
 
         # right_foot_task.position().target_world = np.array([0., -0.1, 0.1 + np.sin(t)*0.05])
         # right_foot_task.orientation().R_world_target = tf.rotation([0, 0, 1], np.sin(t*1.1)*.2)[:3, :3]
@@ -100,12 +119,14 @@ while True:
 
         # for k in range(1000):
         qd = solver.solve(True)
+        robot.update_kinematics()
         # robot.update_kinematics()
         elapsed = time.time() - t0
 
         print(f"Computation time: {elapsed*1e6}µs")
         robot.update_kinematics()
         solver.dump_status()
+        # exit()
 
     robot_frame_viz(robot, "camera")
     robot_frame_viz(robot, "left_foot_tip")

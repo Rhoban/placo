@@ -58,6 +58,19 @@ public:
     virtual std::string error_unit();
   };
 
+  struct RelativePositionTask : public Task
+  {
+    RelativePositionTask(MobileRobot::FrameIndex frame_a, MobileRobot::FrameIndex frame_b, Eigen::Vector3d target);
+
+    MobileRobot::FrameIndex frame_a;
+    MobileRobot::FrameIndex frame_b;
+    Eigen::Vector3d target;
+
+    virtual void update();
+    virtual std::string type_name();
+    virtual std::string error_unit();
+  };
+
   struct CoMTask : public Task
   {
     CoMTask(Eigen::Vector3d target_world);
@@ -71,10 +84,23 @@ public:
 
   struct OrientationTask : public Task
   {
-    OrientationTask(MobileRobot::FrameIndex, Eigen::Matrix3d);
+    OrientationTask(MobileRobot::FrameIndex frame_index, Eigen::Matrix3d R_world_frame);
 
     MobileRobot::FrameIndex frame_index;
-    Eigen::Matrix3d R_world_target;
+    Eigen::Matrix3d R_world_frame;
+
+    virtual void update();
+    virtual std::string type_name();
+    virtual std::string error_unit();
+  };
+
+  struct RelativeOrientationTask : public Task
+  {
+    RelativeOrientationTask(MobileRobot::FrameIndex frame_a, MobileRobot::FrameIndex frame_b, Eigen::Matrix3d R_a_b);
+
+    MobileRobot::FrameIndex frame_a;
+    MobileRobot::FrameIndex frame_b;
+    Eigen::Matrix3d R_a_b;
 
     virtual void update();
     virtual std::string type_name();
@@ -90,6 +116,23 @@ public:
 
     PositionTask& position;
     OrientationTask& orientation;
+
+    Eigen::Affine3d get_T_world_frame() const;
+    void set_T_world_frame(Eigen::Affine3d T_world_frame);
+  };
+
+  struct RelativeFrameTask
+  {
+    RelativeFrameTask(RelativePositionTask& position, RelativeOrientationTask& orientation);
+
+    void configure(std::string name, std::string priority = "soft", double position_weight = 1.0,
+                   double orientation_weight = 1.0);
+
+    RelativePositionTask& position;
+    RelativeOrientationTask& orientation;
+
+    Eigen::Affine3d get_T_a_b() const;
+    void set_T_a_b(Eigen::Affine3d T_world_frame);
   };
 
   struct AxisAlignTask : public Task
@@ -107,10 +150,23 @@ public:
 
   struct PoseTask : public Task
   {
-    PoseTask(MobileRobot::FrameIndex frame_index, Eigen::Affine3d T_world_target);
+    PoseTask(MobileRobot::FrameIndex frame_index, Eigen::Affine3d T_world_frame);
 
     MobileRobot::FrameIndex frame_index;
-    Eigen::Affine3d T_world_target;
+    Eigen::Affine3d T_world_frame;
+
+    virtual void update();
+    virtual std::string type_name();
+    virtual std::string error_unit();
+  };
+
+  struct RelativePoseTask : public Task
+  {
+    RelativePoseTask(MobileRobot::FrameIndex frame_a, MobileRobot::FrameIndex frame_b, Eigen::Affine3d T_a_b);
+
+    MobileRobot::FrameIndex frame_a;
+    MobileRobot::FrameIndex frame_b;
+    Eigen::Affine3d T_a_b;
 
     virtual void update();
     virtual std::string type_name();
@@ -158,6 +214,16 @@ public:
   PositionTask& add_position_task(std::string frame, Eigen::Vector3d target_world);
 
   /**
+   * @brief Adds a relative position task
+   * @param frame_a frame a
+   * @param frame_b frame b
+   * @param target the target vector between frame a and b (expressed in world)
+   */
+  RelativePositionTask& add_relative_position_task(MobileRobot::FrameIndex frame_a, MobileRobot::FrameIndex frame_b,
+                                                   Eigen::Vector3d target);
+  RelativePositionTask& add_relative_position_task(std::string frame_a, std::string frame_b, Eigen::Vector3d target);
+
+  /**
    * @brief Adds a com position task
    * @param targetCom_world the target position, expressed in the world (as T_world_frame)
    */
@@ -166,10 +232,21 @@ public:
   /**
    * @brief Adds an orientation task
    * @param frame the robot frame we want to control
-   * @param R_world_target the target orientation we want to achieve, expressed in the world (as T_world_frame)
+   * @param R_world_frame the target orientation we want to achieve, expressed in the world (as T_world_frame)
    */
-  OrientationTask& add_orientation_task(MobileRobot::FrameIndex frame, Eigen::Matrix3d R_world_target);
-  OrientationTask& add_orientation_task(std::string frame, Eigen::Matrix3d R_world_target);
+  OrientationTask& add_orientation_task(MobileRobot::FrameIndex frame, Eigen::Matrix3d R_world_frame);
+  OrientationTask& add_orientation_task(std::string frame, Eigen::Matrix3d R_world_frame);
+
+  /**
+   * @brief Adds a relative orientation task
+   * @param frame_a frame a
+   * @param frame_b frame b
+   * @param R_a_b the desired orientation
+   */
+  RelativeOrientationTask& add_relative_orientation_task(MobileRobot::FrameIndex frame_a,
+                                                         MobileRobot::FrameIndex frame_b, Eigen::Matrix3d R_a_b);
+  RelativeOrientationTask& add_relative_orientation_task(std::string frame_a, std::string frame_b,
+                                                         Eigen::Matrix3d R_a_b);
 
   /**
    * @brief Adds an axis alignment task. The goal here is to keep the given axis (expressed in the given frame) aligned
@@ -185,11 +262,21 @@ public:
    * @brief Adds a frame task, this is equivalent to a position + orientation task, resulting in a "decoupled" style
    * control of a given frame
    * @param frame the robot frame we want to control
-   * @param T_world_target the target for the frame we want to control, expressed in the world (as T_world_frame)
+   * @param T_world_frame the target for the frame we want to control, expressed in the world (as T_world_frame)
    * @param priority task priority (hard: equality constraint, soft: objective function)
    */
-  FrameTask add_frame_task(MobileRobot::FrameIndex frame, Eigen::Affine3d T_world_target);
-  FrameTask add_frame_task(std::string frame, Eigen::Affine3d T_world_target);
+  FrameTask add_frame_task(MobileRobot::FrameIndex frame, Eigen::Affine3d T_world_frame);
+  FrameTask add_frame_task(std::string frame, Eigen::Affine3d T_world_frame);
+
+  /**
+   * @brief Adds a relative frame task
+   * @param frame_a frame a
+   * @param frame_b frame b
+   * @param T_a_b desired transformation
+   */
+  RelativeFrameTask add_relative_frame_task(MobileRobot::FrameIndex frame_a, MobileRobot::FrameIndex frame_b,
+                                            Eigen::Affine3d T_a_b);
+  RelativeFrameTask add_relative_frame_task(std::string frame_a, std::string frame_b, Eigen::Affine3d T_a_b);
 
   /**
    * @brief Adds a pose task. The difference with the frame task is that the error will be computed in a coupled way
@@ -197,10 +284,21 @@ public:
    * add_frame_task when the frame is not attached to a particular point we want to control, but to a body. As a result,
    * the position and orientation tasks can't be weighted independently when this task is soft.
    * @param frame the robot frame we want to control
-   * @param T_world_target the target for the frame we want to control, expressed in the world (as T_world_frame)
+   * @param T_world_frame the target for the frame we want to control, expressed in the world (as T_world_frame)
    */
-  PoseTask& add_pose_task(MobileRobot::FrameIndex frame, Eigen::Affine3d T_world_target);
-  PoseTask& add_pose_task(std::string frame, Eigen::Affine3d T_world_target);
+  PoseTask& add_pose_task(MobileRobot::FrameIndex frame, Eigen::Affine3d T_world_frame);
+  PoseTask& add_pose_task(std::string frame, Eigen::Affine3d T_world_frame);
+
+  /**
+   * @brief Adds a relative pose task, this is similar to add_pose_task, but it ensures a relative pose between two
+   * given frames.
+   * @param frame_a frame A
+   * @param frame_b frame B
+   * @param T_a_b relative desired pose to enforce
+   */
+  RelativePoseTask& add_relative_pose_task(MobileRobot::FrameIndex frame_a, MobileRobot::FrameIndex frame_b,
+                                           Eigen::Affine3d T_a_b);
+  RelativePoseTask& add_relative_pose_task(std::string frame_a, std::string frame_b, Eigen::Affine3d T_a_b);
 
   /**
    * @brief Adds a joint task, meaning that we want to bring a joint to a given target position

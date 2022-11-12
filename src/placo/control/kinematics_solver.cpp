@@ -64,16 +64,35 @@ KinematicsSolver::PositionTask::PositionTask(MobileRobot::FrameIndex frame_index
 {
 }
 
+KinematicsSolver::RelativePositionTask::RelativePositionTask(MobileRobot::FrameIndex frame_a,
+                                                             MobileRobot::FrameIndex frame_b, Eigen::Vector3d target)
+  : frame_a(frame_a), frame_b(frame_b), target(target)
+{
+}
+
 KinematicsSolver::CoMTask::CoMTask(Eigen::Vector3d target_world) : target_world(target_world)
 {
 }
 
-KinematicsSolver::OrientationTask::OrientationTask(MobileRobot::FrameIndex frame_index, Eigen::Matrix3d R_world_target)
-  : frame_index(frame_index), R_world_target(R_world_target)
+KinematicsSolver::OrientationTask::OrientationTask(MobileRobot::FrameIndex frame_index, Eigen::Matrix3d R_world_frame)
+  : frame_index(frame_index), R_world_frame(R_world_frame)
+{
+}
+
+KinematicsSolver::RelativeOrientationTask::RelativeOrientationTask(MobileRobot::FrameIndex frame_a,
+                                                                   MobileRobot::FrameIndex frame_b,
+                                                                   Eigen::Matrix3d R_a_b)
+  : frame_a(frame_a), frame_b(frame_b), R_a_b(R_a_b)
 {
 }
 
 KinematicsSolver::FrameTask::FrameTask(PositionTask& position, OrientationTask& orientation)
+  : position(position), orientation(orientation)
+{
+}
+
+KinematicsSolver::RelativeFrameTask::RelativeFrameTask(RelativePositionTask& position,
+                                                       RelativeOrientationTask& orientation)
   : position(position), orientation(orientation)
 {
 }
@@ -85,14 +104,55 @@ void KinematicsSolver::FrameTask::configure(std::string name, std::string priori
   orientation.configure(name + "_orientation", priority, orientation_weight);
 }
 
+Eigen::Affine3d KinematicsSolver::FrameTask::get_T_world_frame() const
+{
+  Eigen::Affine3d T;
+  T.translation() = position.target_world;
+  T.linear() = orientation.R_world_frame;
+  return T;
+}
+
+void KinematicsSolver::FrameTask::set_T_world_frame(Eigen::Affine3d T_world_frame)
+{
+  position.target_world = T_world_frame.translation();
+  orientation.R_world_frame = T_world_frame.linear();
+}
+
+void KinematicsSolver::RelativeFrameTask::configure(std::string name, std::string priority, double position_weight,
+                                                    double orientation_weight)
+{
+  position.configure(name + "_position", priority, position_weight);
+  orientation.configure(name + "_orientation", priority, orientation_weight);
+}
+
+Eigen::Affine3d KinematicsSolver::RelativeFrameTask::get_T_a_b() const
+{
+  Eigen::Affine3d T;
+  T.translation() = position.target;
+  T.linear() = orientation.R_a_b;
+  return T;
+}
+
+void KinematicsSolver::RelativeFrameTask::set_T_a_b(Eigen::Affine3d T_a_b)
+{
+  position.target = T_a_b.translation();
+  orientation.R_a_b = T_a_b.linear();
+}
+
 KinematicsSolver::AxisAlignTask::AxisAlignTask(MobileRobot::FrameIndex frame_index, Eigen::Vector3d axis_frame,
                                                Eigen::Vector3d targetAxis_world)
   : frame_index(frame_index), axis_frame(axis_frame), targetAxis_world(targetAxis_world)
 {
 }
 
-KinematicsSolver::PoseTask::PoseTask(MobileRobot::FrameIndex frame_index, Eigen::Affine3d T_world_target)
-  : frame_index(frame_index), T_world_target(T_world_target)
+KinematicsSolver::PoseTask::PoseTask(MobileRobot::FrameIndex frame_index, Eigen::Affine3d T_world_frame)
+  : frame_index(frame_index), T_world_frame(T_world_frame)
+{
+}
+
+KinematicsSolver::RelativePoseTask::RelativePoseTask(MobileRobot::FrameIndex frame_a, MobileRobot::FrameIndex frame_b,
+                                                     Eigen::Affine3d T_a_b)
+  : frame_a(frame_a), frame_b(frame_b), T_a_b(T_a_b)
 {
 }
 
@@ -129,6 +189,31 @@ std::string KinematicsSolver::PositionTask::error_unit()
   return "m";
 }
 
+void KinematicsSolver::RelativePositionTask::update()
+{
+  auto T_world_a = solver->robot.get_T_world_frame(frame_a);
+  auto T_world_b = solver->robot.get_T_world_frame(frame_b);
+  auto T_a_b = T_world_a.inverse() * T_world_b;
+
+  Eigen::Vector3d error = target - T_a_b.translation();
+
+  auto J_a = solver->robot.frame_jacobian(frame_a, pinocchio::WORLD);
+  auto J_b = solver->robot.frame_jacobian(frame_b, pinocchio::WORLD);
+
+  A = (pinocchio::SE3(T_world_a.inverse().matrix()).toActionMatrix() * (J_b - J_a)).block(0, 0, 3, solver->N);
+  b = error;
+}
+
+std::string KinematicsSolver::RelativePositionTask::type_name()
+{
+  return "relative_position";
+}
+
+std::string KinematicsSolver::RelativePositionTask::error_unit()
+{
+  return "m";
+}
+
 void KinematicsSolver::CoMTask::update()
 {
   A = solver->robot.com_jacobian();
@@ -149,11 +234,11 @@ void KinematicsSolver::OrientationTask::update()
 {
   auto T_world_frame = solver->robot.get_T_world_frame(frame_index);
 
-  // (R_target R_current^{-1}) R_current = R_target
+  // (R_frame R_current^{-1}) R_current = R_frame
   // |-----------------------|
   //            | This part is the world error that "correct" the rotation
   //            matrix to the desired one
-  Eigen::Vector3d error = pinocchio::log3(R_world_target * T_world_frame.linear().inverse());
+  Eigen::Vector3d error = pinocchio::log3(R_world_frame * T_world_frame.linear().inverse());
 
   auto J = solver->robot.frame_jacobian(frame_index, pinocchio::WORLD);
 
@@ -167,6 +252,36 @@ std::string KinematicsSolver::OrientationTask::type_name()
 }
 
 std::string KinematicsSolver::OrientationTask::error_unit()
+{
+  return "rad";
+}
+
+void KinematicsSolver::RelativeOrientationTask::update()
+{
+  auto T_world_a = solver->robot.get_T_world_frame(frame_a);
+  auto T_world_b = solver->robot.get_T_world_frame(frame_b);
+  auto T_a_b = T_world_a.inverse() * T_world_b;
+
+  // (R_a_b* R_a_b^{-1}) R_a_b = R_a_b*
+  // |-----------------|
+  //         | This part is the world error that "correct" the rotation
+  //           matrix to the desired one
+  Eigen::Vector3d error = pinocchio::log3(R_a_b * T_a_b.linear().inverse());
+
+  auto J_a = solver->robot.frame_jacobian(frame_a, pinocchio::WORLD);
+  auto J_b = solver->robot.frame_jacobian(frame_b, pinocchio::WORLD);
+  Eigen::MatrixXd J_ab = pinocchio::SE3(T_world_a.inverse().matrix()).toActionMatrix() * (J_b - J_a);
+
+  A = J_ab.block(3, 0, 3, solver->N);
+  b = error;
+}
+
+std::string KinematicsSolver::RelativeOrientationTask::type_name()
+{
+  return "relative_orientation";
+}
+
+std::string KinematicsSolver::RelativeOrientationTask::error_unit()
 {
   return "rad";
 }
@@ -210,14 +325,31 @@ std::string KinematicsSolver::AxisAlignTask::error_unit()
 
 void KinematicsSolver::PoseTask::update()
 {
-  auto T_world_frame = solver->robot.get_T_world_frame(frame_index);
+  auto T_world_frame_current = solver->robot.get_T_world_frame(frame_index);
 
-  // (T_target T_current^{-1}) T_current = T_target
+  // (T_frame T_current^{-1}) T_current = T_frame
   // |-----------------------|
   //            | This part is the world error that "correct" the transformatio
-  Eigen::VectorXd error = pinocchio::log6((T_world_target * T_world_frame.inverse()).matrix()).toVector();
+  Eigen::VectorXd error = pinocchio::log6((T_world_frame * T_world_frame_current.inverse()).matrix()).toVector();
 
   A = solver->robot.frame_jacobian(frame_index, pinocchio::WORLD);
+  b = error;
+}
+
+void KinematicsSolver::RelativePoseTask::update()
+{
+  auto T_world_a = solver->robot.get_T_world_frame(frame_a);
+  auto T_world_b = solver->robot.get_T_world_frame(frame_b);
+  auto T_a_b_current = T_world_a.inverse() * T_world_b;
+
+  // (T_a_b* T_a_b^{-1}) T_a_b = T_a_b*
+  // |-----------------|
+  //          | This part is the world error that "correct" the transformatio
+  Eigen::VectorXd error = pinocchio::log6((T_a_b * T_a_b_current.inverse()).matrix()).toVector();
+
+  auto J_a = solver->robot.frame_jacobian(frame_a, pinocchio::WORLD);
+  auto J_b = solver->robot.frame_jacobian(frame_b, pinocchio::WORLD);
+  A = pinocchio::SE3(T_world_a.inverse().matrix()).toActionMatrix() * (J_b - J_a);
   b = error;
 }
 
@@ -227,6 +359,16 @@ std::string KinematicsSolver::PoseTask::type_name()
 }
 
 std::string KinematicsSolver::PoseTask::error_unit()
+{
+  return "twist-norm";
+}
+
+std::string KinematicsSolver::RelativePoseTask::type_name()
+{
+  return "relative_pose";
+}
+
+std::string KinematicsSolver::RelativePoseTask::error_unit()
 {
   return "twist-norm";
 }
@@ -313,21 +455,48 @@ KinematicsSolver::PositionTask& KinematicsSolver::add_position_task(std::string 
   return add_position_task(robot.get_frame_index(frame), target_world);
 }
 
+KinematicsSolver::RelativePositionTask& KinematicsSolver::add_relative_position_task(MobileRobot::FrameIndex frame_a,
+                                                                                     MobileRobot::FrameIndex frame_b,
+                                                                                     Eigen::Vector3d target)
+{
+  return add_task(new RelativePositionTask(frame_a, frame_b, target));
+}
+
+KinematicsSolver::RelativePositionTask& KinematicsSolver::add_relative_position_task(std::string frame_a,
+                                                                                     std::string frame_b,
+                                                                                     Eigen::Vector3d target)
+{
+  return add_relative_position_task(robot.get_frame_index(frame_a), robot.get_frame_index(frame_b), target);
+}
+
 KinematicsSolver::CoMTask& KinematicsSolver::add_com_task(Eigen::Vector3d targetCom_world)
 {
   return add_task(new CoMTask(targetCom_world));
 }
 
 KinematicsSolver::OrientationTask& KinematicsSolver::add_orientation_task(MobileRobot::FrameIndex frame,
-                                                                          Eigen::Matrix3d R_world_target)
+                                                                          Eigen::Matrix3d R_world_frame)
 {
-  return add_task(new OrientationTask(frame, R_world_target));
+  return add_task(new OrientationTask(frame, R_world_frame));
 }
 
 KinematicsSolver::OrientationTask& KinematicsSolver::add_orientation_task(std::string frame,
-                                                                          Eigen::Matrix3d R_world_target)
+                                                                          Eigen::Matrix3d R_world_frame)
 {
-  return add_orientation_task(robot.get_frame_index(frame), R_world_target);
+  return add_orientation_task(robot.get_frame_index(frame), R_world_frame);
+}
+
+KinematicsSolver::RelativeOrientationTask& KinematicsSolver::add_relative_orientation_task(
+    MobileRobot::FrameIndex frame_a, MobileRobot::FrameIndex frame_b, Eigen::Matrix3d R_a_b)
+{
+  return add_task(new RelativeOrientationTask(frame_a, frame_b, R_a_b));
+}
+
+KinematicsSolver::RelativeOrientationTask& KinematicsSolver::add_relative_orientation_task(std::string frame_a,
+                                                                                           std::string frame_b,
+                                                                                           Eigen::Matrix3d R_a_b)
+{
+  return add_relative_orientation_task(robot.get_frame_index(frame_a), robot.get_frame_index(frame_b), R_a_b);
 }
 
 KinematicsSolver::AxisAlignTask& KinematicsSolver::add_axisalign_task(MobileRobot::FrameIndex frame,
@@ -344,28 +513,57 @@ KinematicsSolver::AxisAlignTask& KinematicsSolver::add_axisalign_task(std::strin
 }
 
 KinematicsSolver::FrameTask KinematicsSolver::add_frame_task(MobileRobot::FrameIndex frame,
-                                                             Eigen::Affine3d frame_target)
+                                                             Eigen::Affine3d T_world_frame)
 {
-  PositionTask& position = add_position_task(frame, frame_target.translation());
-  OrientationTask& orientation = add_orientation_task(frame, frame_target.rotation());
+  PositionTask& position = add_position_task(frame, T_world_frame.translation());
+  OrientationTask& orientation = add_orientation_task(frame, T_world_frame.rotation());
 
   return FrameTask(position, orientation);
 }
 
-KinematicsSolver::FrameTask KinematicsSolver::add_frame_task(std::string frame, Eigen::Affine3d T_world_target)
+KinematicsSolver::FrameTask KinematicsSolver::add_frame_task(std::string frame, Eigen::Affine3d T_world_frame)
 {
-  return add_frame_task(robot.get_frame_index(frame), T_world_target);
+  return add_frame_task(robot.get_frame_index(frame), T_world_frame);
+}
+
+KinematicsSolver::RelativeFrameTask KinematicsSolver::add_relative_frame_task(MobileRobot::FrameIndex frame_a,
+                                                                              MobileRobot::FrameIndex frame_b,
+                                                                              Eigen::Affine3d T_a_b)
+{
+  RelativePositionTask& position = add_relative_position_task(frame_a, frame_b, T_a_b.translation());
+  RelativeOrientationTask& orientation = add_relative_orientation_task(frame_a, frame_b, T_a_b.rotation());
+
+  return RelativeFrameTask(position, orientation);
+}
+
+KinematicsSolver::RelativeFrameTask KinematicsSolver::add_relative_frame_task(std::string frame_a, std::string frame_b,
+                                                                              Eigen::Affine3d T_a_b)
+{
+  return add_relative_frame_task(robot.get_frame_index(frame_a), robot.get_frame_index(frame_b), T_a_b);
 }
 
 KinematicsSolver::PoseTask& KinematicsSolver::add_pose_task(MobileRobot::FrameIndex frame,
-                                                            Eigen::Affine3d T_world_target)
+                                                            Eigen::Affine3d T_world_frame)
 {
-  return add_task(new PoseTask(frame, T_world_target));
+  return add_task(new PoseTask(frame, T_world_frame));
 }
 
-KinematicsSolver::PoseTask& KinematicsSolver::add_pose_task(std::string frame, Eigen::Affine3d T_world_target)
+KinematicsSolver::PoseTask& KinematicsSolver::add_pose_task(std::string frame, Eigen::Affine3d T_world_frame)
 {
-  return add_pose_task(robot.get_frame_index(frame), T_world_target);
+  return add_pose_task(robot.get_frame_index(frame), T_world_frame);
+}
+
+KinematicsSolver::RelativePoseTask& KinematicsSolver::add_relative_pose_task(MobileRobot::FrameIndex frame_a,
+                                                                             MobileRobot::FrameIndex frame_b,
+                                                                             Eigen::Affine3d T_a_b)
+{
+  return add_task(new RelativePoseTask(frame_a, frame_b, T_a_b));
+}
+
+KinematicsSolver::RelativePoseTask& KinematicsSolver::add_relative_pose_task(std::string frame_a, std::string frame_b,
+                                                                             Eigen::Affine3d T_a_b)
+{
+  return add_relative_pose_task(robot.get_frame_index(frame_a), robot.get_frame_index(frame_b), T_a_b);
 }
 
 KinematicsSolver::JointTask& KinematicsSolver::add_joint_task(std::string joint, double target)
