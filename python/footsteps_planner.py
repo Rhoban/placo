@@ -85,6 +85,6 @@ if __name__ == "__main__":
         
     elapsed = time.time() - start
 
-    print(f"{len(footsteps)} steps, computation time: {elapsed}s.")
+    print(f"{len(footsteps)} steps, computation time: {elapsed*1e6}µs.")
 
     draw_footsteps(footsteps, args.animate)

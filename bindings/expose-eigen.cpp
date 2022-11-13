@@ -4,44 +4,29 @@
 #include <boost/python.hpp>
 #include <eigenpy/eigenpy.hpp>
 #include <boost/python/implicit.hpp>
+#include <boost/python/numpy.hpp>
 
 using namespace boost::python;
+namespace np = boost::python::numpy;
+
+// Wrapper to convert Affine3d to a numpy 4x4 matrix
+struct Affine3d_to_np
+{
+  static PyObject* convert(Eigen::Affine3d const& T)
+  {
+    Py_intptr_t shape[2] = { 4, 4 };
+    Eigen::Matrix<double, 4, 4, Eigen::RowMajor> M = T.matrix();
+
+    PyObject* array = PyArray_SimpleNew(2, shape, (int)NPY_DOUBLE);
+
+    std::memcpy(PyArray_DATA((PyArrayObject*)array), M.data(), 4 * 4 * sizeof(double));
+
+    return array;
+  }
+};
 
 void exposeAffine3d()
 {
-  auto toString = +[](const Eigen::Affine3d& a) {
-    std::ostringstream oss;
-    oss << "[Affine3d]" << std::endl;
-    oss << "t: " << a.translation().transpose() << std::endl;
-    oss << "R: " << std::endl << a.linear();
-    return oss.str();
-  };
-
-  class_<Eigen::Affine3d>("Affine3d")
-      .def(
-          "from_matrix",
-          +[](const Eigen::Matrix4d& m) {
-            Eigen::Affine3d result;
-            result.matrix() = m;
-            return result;
-          })
-      .staticmethod("from_matrix")
-      .add_property(
-          "mat", +[](const Eigen::Affine3d& a) { return (Eigen::Matrix4d)a.matrix(); },
-          +[](Eigen::Affine3d& a, const Eigen::Matrix4d& m) { a.matrix() = m; })
-      .add_property(
-          "t", +[](const Eigen::Affine3d& a) { return (Eigen::Vector3d)a.translation(); },
-          +[](Eigen::Affine3d& a, const Eigen::Vector3d& t) { a.translation() = t; })
-      .add_property(
-          "R", +[](const Eigen::Affine3d& a) { return (Eigen::Matrix3d)a.linear(); },
-          +[](Eigen::Affine3d& a, const Eigen::Matrix3d& m) { a.linear() = m; })
-      .def(
-          "inv", +[](const Eigen::Affine3d& a) { return a.inverse(); })
-      .def("__repr__", toString)
-      .def("__str__", toString)
-      .def(self * other<Eigen::Vector3d>())
-      .def(self * self);
-
   // Vectors of points
   exposeStdVector<Eigen::Vector2d>("vector_Vector2d");
   exposeStdVector<Eigen::Vector3d>("vector_Vector3d");
@@ -58,6 +43,7 @@ void exposeAffine3d()
   eigenpy::enableEigenPySpecific<Eigen::Matrix<double, 6, 1>>();
   eigenpy::enableEigenPySpecific<Eigen::Matrix<double, 9, 1>>();
 
-  // Allow 4x4 matrices to be passed to functions requiring frames
+  // Thanks to this, Affine3d will be seamlessly converted from/to numpy 4x4 matrices
   implicitly_convertible<Eigen::Matrix4d, Eigen::Affine3d>();
+  to_python_converter<Eigen::Affine3d, Affine3d_to_np, false>();
 }

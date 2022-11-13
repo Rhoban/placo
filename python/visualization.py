@@ -83,7 +83,7 @@ def robot_frame_viz(robot: placo.MobileRobot, frame: str) -> None:
     """
     Draw a frame from the robot
     """
-    frame_viz(frame, robot.get_T_world_frame(frame).mat)
+    frame_viz(frame, robot.get_T_world_frame(frame))
 
 
 steps: int = 0

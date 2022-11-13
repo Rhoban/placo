@@ -15,25 +15,25 @@ robot = placo.MobileRobot("sigmaban/")
 robot.set_joint("left_knee", 0.1)
 robot.set_joint("right_knee", 0.1)
 robot.update_kinematics()
-robot.set_T_world_frame("left_foot_tip", placo.frame(np.eye(4)))
+robot.set_T_world_frame("left_foot_tip", np.eye(4))
 robot.update_kinematics()
 
 solver = placo.KinematicsSolver(robot)
 
 # Retrieving initial position of the feet, com and trunk orientation
-T_world_left = robot.get_T_world_frame("left_foot_tip").mat
-T_world_right = robot.get_T_world_frame("right_foot_tip").mat
+T_world_left = robot.get_T_world_frame("left_foot_tip")
+T_world_right = robot.get_T_world_frame("right_foot_tip")
 com_world = robot.com_world().copy()
-R_world_trunk = robot.get_T_world_frame("trunk").mat[:3, :3]
+R_world_trunk = robot.get_T_world_frame("trunk")
 
 # Creating the viewer
 viz = robot_viz(robot)
 
-left_foot_task = solver.add_pose_task("left_foot_tip", placo.frame(T_world_left))
+left_foot_task = solver.add_pose_task("left_foot_tip", T_world_left)
 left_foot_task.configure("left_foot", "soft", 1.0)
 
 right_foot_task = solver.add_relative_frame_task(
-    "left_foot_tip", "right_foot_tip", placo.frame(tf.translation([0, -0.1, 0]))
+    "left_foot_tip", "right_foot_tip", tf.translation([0, -0.1, 0])
 )
 right_foot_task.configure("right_foot", "soft", 1.0, 1.0)
 
@@ -43,9 +43,9 @@ right_foot_task.configure("right_foot", "soft", 1.0, 1.0)
 look_at_ball = solver.add_axisalign_task("camera", np.array([0.0, 0.0, 1.0]), np.array([0.0, 0.0, 0.0]))
 look_at_ball.configure("look_ball", "soft", 1.0)
 
-T_world_frame = robot.get_T_world_frame("trunk").mat
+T_world_frame = robot.get_T_world_frame("trunk")
 T_world_frame[2, 3] -= 0.06
-# trunk_task = solver.add_frame_task("trunk", placo.frame(T_world_frame))
+# trunk_task = solver.add_frame_task("trunk", T_world_frame)
 # trunk_task.configure("trunk", "soft", 1., 1.)
 trunk_task = solver.add_position_task("trunk", T_world_frame[:3, 3])
 trunk_task.configure("trunk_task", "soft", 1.0)
@@ -84,9 +84,9 @@ while True:
         # T_world_left[:3, :3] = tf.rotation([0, 0, 1], np.sin(t * 3) * 0.2)[:3, :3]
         # T_world_left[:3, :3] = T_world_left[:3, :3] @ tf.rotation([0, 1, 0], np.sin(t * 2) * 0.2)[:3, :3]
 
-        left_foot_task.T_world_frame = placo.frame(T_world_left)
+        left_foot_task.T_world_frame = T_world_left
 
-        right_foot_task.T_a_b = placo.frame(tf.translation([0, -0.1, 0]) @ tf.rotation([0, 0, 1], np.pi / 2))
+        right_foot_task.T_a_b = tf.translation([0, -0.1, 0]) @ tf.rotation([0, 0, 1], np.pi / 2)
 
         # right_foot_orn_task.R_world_target = tf.rotation([0, 0, 1], np.sin(t * 3) * 0.3)[:3, :3]
 
@@ -95,13 +95,13 @@ while True:
 
         # R = (tf.rotation([0, 0, 1], t/2) @ tf.rotation([0, 1, 0], 1.1))[:3, :3]
         # trunk_task.orientation().R_world_target = T_world_frame[:3, :3] = R
-        camera_pos = robot.get_T_world_frame("camera").mat[:3, 3]
+        camera_pos = robot.get_T_world_frame("camera")[:3, 3]
         look_at_ball.targetAxis_world = ball - camera_pos
 
         # # Controlling the com
         # T_world_targetTrunk = tf.frame(xyz=[0, -0.05 + np.sin(t) * 0.1, 0.35 + np.sin(t * 1.1) * 0.01])
         # frame_viz(viewer, "trunk_target", T_world_targetTrunk, 0.25)
-        # solver.add_com_task(placo.frame(T_world_targetTrunk).mat[:3, 3], "soft", 1.0)
+        # solver.add_com_task(T_world_targetTrunk.mat[:3, 3], "soft", 1.0)
         # solver.add_orientation_task("trunk", np.eye(3), "soft", 1.0)
         # solver.add_regularization_task(1e-5)
 
