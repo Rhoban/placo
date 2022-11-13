@@ -148,6 +148,19 @@ public:
     virtual std::string error_unit();
   };
 
+  struct AxisPlaneTask : public Task
+  {
+    AxisPlaneTask(MobileRobot::FrameIndex frame_index, Eigen::Vector3d axis_frame, Eigen::Vector3d normal_world);
+
+    MobileRobot::FrameIndex frame_index;
+    Eigen::Vector3d axis_frame;
+    Eigen::Vector3d normal_world;
+
+    virtual void update();
+    virtual std::string type_name();
+    virtual std::string error_unit();
+  };
+
   struct PoseTask : public Task
   {
     PoseTask(MobileRobot::FrameIndex frame_index, Eigen::Affine3d T_world_frame);
@@ -268,8 +281,19 @@ public:
    * @param axis_frame the axis to align, expressed in the robot frame
    * @param targetAxis_world the target axis (in the world) we want to be aligned with
    */
-  AxisAlignTask& add_axisalign_task(MobileRobot::FrameIndex frame, Eigen::Vector3d axis_frame, Eigen::Vector3d);
-  AxisAlignTask& add_axisalign_task(std::string frame, Eigen::Vector3d axis_frame, Eigen::Vector3d target_axis_world);
+  AxisAlignTask& add_axisalign_task(MobileRobot::FrameIndex frame, Eigen::Vector3d axis_frame,
+                                    Eigen::Vector3d targetAxis_world);
+  AxisAlignTask& add_axisalign_task(std::string frame, Eigen::Vector3d axis_frame, Eigen::Vector3d targetAxis_world);
+
+  /**
+   * @brief Adds an axis plane task (the target axis should lie in the target plane)
+   * @param frame the frame
+   * @param axis_frame axis expressed in frame
+   * @param normal_world normal expressed in world
+   */
+  AxisPlaneTask& add_axisplane_task(MobileRobot::FrameIndex frame, Eigen::Vector3d axis_frame,
+                                    Eigen::Vector3d normal_world);
+  AxisPlaneTask& add_axisplane_task(std::string frame, Eigen::Vector3d axis_frame, Eigen::Vector3d normal_world);
 
   /**
    * @brief Adds a frame task, this is equivalent to a position + orientation task, resulting in a "decoupled" style

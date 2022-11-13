@@ -113,6 +113,17 @@ void exposeKinematics()
               "targetAxis_world", +[](const KinematicsSolver::AxisAlignTask& task) { return task.targetAxis_world; },
               &KinematicsSolver::AxisAlignTask::targetAxis_world));
 
+  registerTaskMethods(
+      class_<KinematicsSolver::AxisPlaneTask>("AxisPlaneTask",
+                                              init<MobileRobot::FrameIndex, Eigen::Vector3d, Eigen::Vector3d>())
+          .add_property("frame_index", &KinematicsSolver::AxisPlaneTask::frame_index)
+          .add_property(
+              "axis_frame", +[](const KinematicsSolver::AxisPlaneTask& task) { return task.axis_frame; },
+              &KinematicsSolver::AxisPlaneTask::axis_frame)
+          .add_property(
+              "normal_world", +[](const KinematicsSolver::AxisPlaneTask& task) { return task.normal_world; },
+              &KinematicsSolver::AxisPlaneTask::normal_world));
+
   registerTaskMethods(class_<KinematicsSolver::PoseTask>("PoseTask", init<MobileRobot::FrameIndex, Eigen::Affine3d>())
                           .add_property("frame_index", &KinematicsSolver::PoseTask::frame_index)
                           .add_property(
@@ -166,9 +177,11 @@ void exposeKinematics()
           "add_relative_orientation_task", &KinematicsSolver::add_relative_orientation_task,
           return_internal_reference<>())
 
-      // Axis align task
+      // Axis tasks
       .def<KinematicsSolver::AxisAlignTask& (KinematicsSolver::*)(std::string, Eigen::Vector3d, Eigen::Vector3d)>(
           "add_axisalign_task", &KinematicsSolver::add_axisalign_task, return_internal_reference<>())
+      .def<KinematicsSolver::AxisPlaneTask& (KinematicsSolver::*)(std::string, Eigen::Vector3d, Eigen::Vector3d)>(
+          "add_axisplane_task", &KinematicsSolver::add_axisplane_task, return_internal_reference<>())
 
       // Frame task
       .def<KinematicsSolver::FrameTask (KinematicsSolver::*)(std::string, Eigen::Affine3d)>(

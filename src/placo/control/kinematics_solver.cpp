@@ -1,6 +1,7 @@
 #include "placo/control/kinematics_solver.h"
 #include "eiquadprog/eiquadprog.hpp"
 #include "pinocchio/algorithm/geometry.hpp"
+#include "placo/utils.h"
 
 namespace placo
 {
@@ -301,7 +302,7 @@ void KinematicsSolver::AxisAlignTask::update()
   R_world_axisframe.col(1) = R_world_axisframe.col(2).cross(R_world_axisframe.col(0));
 
   // Computing the error angle we want to compensate
-  double error_angle = acos(R_world_axisframe.col(0).dot(targetAxis_world_normalized));
+  double error_angle = safe_acos(R_world_axisframe.col(0).dot(targetAxis_world_normalized));
 
   // We express the Jacobian in the axisframe
   Eigen::MatrixXd J_axisframe = solver->robot.frame_jacobian(frame_index, pinocchio::WORLD).block(3, 0, 3, solver->N);
@@ -416,6 +417,38 @@ std::string KinematicsSolver::JointsTask::type_name()
 std::string KinematicsSolver::JointsTask::error_unit()
 {
   return "dof-rads";
+}
+
+KinematicsSolver::AxisPlaneTask::AxisPlaneTask(MobileRobot::FrameIndex frame_index, Eigen::Vector3d axis_frame,
+                                               Eigen::Vector3d normal_world)
+  : frame_index(frame_index), axis_frame(axis_frame), normal_world(normal_world)
+{
+  b = Eigen::MatrixXd(1, 1);
+}
+
+void KinematicsSolver::AxisPlaneTask::update()
+{
+  auto T_world_frame = solver->robot.get_T_world_frame(frame_index);
+
+  Eigen::Vector3d axis_world = (T_world_frame.rotation() * axis_frame).normalized();
+  Eigen::Vector3d normal_world_normalized = normal_world.normalized();
+  Eigen::Vector3d rotate_axis = axis_world.cross(normal_world_normalized).normalized();
+  Eigen::Vector3d axis_target = normal_world_normalized.cross(rotate_axis).normalized();
+  double error = safe_acos(axis_world.dot(normal_world_normalized)) - (M_PI / 2);
+
+  Eigen::MatrixXd J = solver->robot.frame_jacobian(frame_index, pinocchio::WORLD);
+  A = rotate_axis.transpose() * J.block(3, 0, 3, solver->N);
+  b(0, 0) = error;
+}
+
+std::string KinematicsSolver::AxisPlaneTask::type_name()
+{
+  return "axis_plane";
+}
+
+std::string KinematicsSolver::AxisPlaneTask::error_unit()
+{
+  return "rad";
 }
 
 KinematicsSolver::DistanceTask::DistanceTask(MobileRobot::FrameIndex frame_a, MobileRobot::FrameIndex frame_b,
@@ -541,6 +574,19 @@ KinematicsSolver::AxisAlignTask& KinematicsSolver::add_axisalign_task(std::strin
                                                                       Eigen::Vector3d target_axis_world)
 {
   return add_axisalign_task(robot.get_frame_index(frame), axis_frame, target_axis_world);
+}
+
+KinematicsSolver::AxisPlaneTask& KinematicsSolver::add_axisplane_task(MobileRobot::FrameIndex frame,
+                                                                      Eigen::Vector3d axis_frame,
+                                                                      Eigen::Vector3d normal_world)
+{
+  return add_task(new AxisPlaneTask(frame, axis_frame, normal_world));
+}
+
+KinematicsSolver::AxisPlaneTask& KinematicsSolver::add_axisplane_task(std::string frame, Eigen::Vector3d axis_frame,
+                                                                      Eigen::Vector3d normal_world)
+{
+  return add_axisplane_task(robot.get_frame_index(frame), axis_frame, normal_world);
 }
 
 KinematicsSolver::FrameTask KinematicsSolver::add_frame_task(MobileRobot::FrameIndex frame,
@@ -742,6 +788,14 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
   if (result == std::numeric_limits<double>::infinity())
   {
     throw std::runtime_error("KinematicsSolver: Infeasible QP (check your equality and inequality constraints)");
+  }
+
+  for (auto entry : qd)
+  {
+    if (isnan(entry))
+    {
+      throw std::runtime_error("KinematicsSolver: NaN encountered in result");
+    }
   }
 
   if (apply)

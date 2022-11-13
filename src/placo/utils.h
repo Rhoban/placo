@@ -43,4 +43,10 @@ Eigen::Affine3d flatten_on_floor(const Eigen::Affine3d &transformation);
  * @return Eigen affine3d
  */
 Eigen::Affine3d pin_se3_to_eigen(const pinocchio::GeometryData::SE3 &se3);
+
+/**
+ * @brief Returns the acos of v, with safety on v values
+ * @param v value
+ */
+double safe_acos(double v);
 } // namespace placo
