@@ -126,6 +126,12 @@ public:
   Eigen::Affine3d get_T_world_frame(FrameIndex index);
 
   /**
+   * @brief Gets transform from one given frame to another
+   */
+  Eigen::Affine3d get_T_a_b(const std::string& frame_a, const std::string& frame_b);
+  Eigen::Affine3d get_T_a_b(FrameIndex index_a, FrameIndex index_b);
+
+  /**
    * @brief Updates the floating base so that a given frame matches the provided
    * world transformation.
    */

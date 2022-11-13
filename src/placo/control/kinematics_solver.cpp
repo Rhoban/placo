@@ -418,6 +418,38 @@ std::string KinematicsSolver::JointsTask::error_unit()
   return "dof-rads";
 }
 
+KinematicsSolver::DistanceTask::DistanceTask(MobileRobot::FrameIndex frame_a, MobileRobot::FrameIndex frame_b,
+                                             double distance)
+  : frame_a(frame_a), frame_b(frame_b), distance(distance)
+{
+  b = Eigen::MatrixXd(1, 1);
+}
+
+void KinematicsSolver::DistanceTask::update()
+{
+  auto T_world_a = solver->robot.get_T_world_frame(frame_a);
+  auto T_world_b = solver->robot.get_T_world_frame(frame_b);
+
+  Eigen::Vector3d ab_world = T_world_b.translation() - T_world_a.translation();
+
+  double error = distance - ab_world.norm();
+  Eigen::Vector3d direction = ab_world.normalized();
+
+  auto J = solver->robot.frame_jacobian(frame_b, pinocchio::LOCAL_WORLD_ALIGNED);
+  A = direction.transpose() * J.block(0, 0, 3, solver->N);
+  b(0, 0) = error;
+}
+
+std::string KinematicsSolver::DistanceTask::type_name()
+{
+  return "distance";
+}
+
+std::string KinematicsSolver::DistanceTask::error_unit()
+{
+  return "m";
+}
+
 void KinematicsSolver::RegularizationTask::update()
 {
   // Regularization magnitude is handled through the task weight (see add_regularization_task)
@@ -578,6 +610,18 @@ KinematicsSolver::JointsTask& KinematicsSolver::add_joints_task(std::map<std::st
     task.joints[entry.first] = entry.second;
   }
   return task;
+}
+
+KinematicsSolver::DistanceTask& KinematicsSolver::add_distance_task(MobileRobot::FrameIndex frame_a,
+                                                                    MobileRobot::FrameIndex frame_b, double distance)
+{
+  return add_task(new DistanceTask(frame_a, frame_b, distance));
+}
+
+KinematicsSolver::DistanceTask& KinematicsSolver::add_distance_task(std::string frame_a, std::string frame_b,
+                                                                    double distance)
+{
+  return add_distance_task(robot.get_frame_index(frame_a), robot.get_frame_index(frame_b), distance);
 }
 
 KinematicsSolver::JointsTask& KinematicsSolver::add_joints_task()

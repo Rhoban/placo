@@ -200,6 +200,16 @@ Eigen::Affine3d MobileRobot::get_T_world_frame(pinocchio::FrameIndex index)
   return pin_se3_to_eigen(data->oMf[index]);
 }
 
+Eigen::Affine3d MobileRobot::get_T_a_b(const std::string& frame_a, const std::string& frame_b)
+{
+  return get_T_a_b(get_frame_index(frame_a), get_frame_index(frame_b));
+}
+
+Eigen::Affine3d MobileRobot::get_T_a_b(FrameIndex index_a, FrameIndex index_b)
+{
+  return get_T_world_frame(index_a).inverse() * get_T_world_frame(index_b);
+}
+
 void MobileRobot::set_T_world_frame(const std::string& frame, Eigen::Affine3d T_world_frameTarget)
 {
   set_T_world_frame(get_frame_index(frame), T_world_frameTarget);

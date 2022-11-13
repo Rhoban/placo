@@ -140,6 +140,13 @@ void exposeKinematics()
                                 update_map<std::string, double>(task.joints, py_dict);
                               }));
 
+  registerTaskMethods(class_<KinematicsSolver::DistanceTask>(
+                          "DistanceTask", init<MobileRobot::FrameIndex, MobileRobot::FrameIndex, double>())
+                          .add_property("frame_a", &KinematicsSolver::DistanceTask::frame_a)
+                          .add_property("frame_b", &KinematicsSolver::DistanceTask::frame_b)
+                          .add_property("distance", &KinematicsSolver::DistanceTask::distance,
+                                        &KinematicsSolver::DistanceTask::distance));
+
   auto regularizationTask = class_<KinematicsSolver::RegularizationTask>("RegularizationTask");
   registerTaskMethods(regularizationTask);
 
@@ -180,6 +187,10 @@ void exposeKinematics()
           "add_joint_task", &KinematicsSolver::add_joint_task, return_internal_reference<>())
       .def<KinematicsSolver::JointsTask& (KinematicsSolver::*)(void)>(
           "add_joints_task", &KinematicsSolver::add_joints_task, return_internal_reference<>())
+
+      // Distance task
+      .def<KinematicsSolver::DistanceTask& (KinematicsSolver::*)(std::string, std::string, double)>(
+          "add_distance_task", &KinematicsSolver::add_distance_task, return_internal_reference<>())
 
       // Regularization task
       .def("add_regularization_task", &KinematicsSolver::add_regularization_task, return_internal_reference<>())

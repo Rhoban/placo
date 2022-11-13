@@ -198,6 +198,19 @@ public:
     virtual std::string error_unit();
   };
 
+  struct DistanceTask : public Task
+  {
+    DistanceTask(MobileRobot::FrameIndex frame_a, MobileRobot::FrameIndex frame_b, double distance);
+
+    MobileRobot::FrameIndex frame_a;
+    MobileRobot::FrameIndex frame_b;
+    double distance;
+
+    virtual void update();
+    virtual std::string type_name();
+    virtual std::string error_unit();
+  };
+
   struct RegularizationTask : public Task
   {
     virtual void update();
@@ -313,6 +326,15 @@ public:
    */
   JointsTask& add_joints_task(std::map<std::string, double>& joints);
   JointsTask& add_joints_task();
+
+  /**
+   * @brief Adds a distance task to be maintained between two frames
+   * @param frame_a frame a
+   * @param frame_b frame b
+   * @param distance distance to maintain
+   */
+  DistanceTask& add_distance_task(MobileRobot::FrameIndex frame_a, MobileRobot::FrameIndex frame_b, double distance);
+  DistanceTask& add_distance_task(std::string frame_a, std::string frame_b, double distance);
 
   /**
    * @brief Adds a regularization task for a given magnitude
