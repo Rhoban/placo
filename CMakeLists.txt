@@ -19,6 +19,22 @@ add_library(libplaco
     src/placo/planning/jerk_planner.cpp
     src/placo/model/mobile_robot.cpp
     src/placo/control/kinematics_solver.cpp
+    src/placo/control/task.cpp
+    src/placo/control/position_task.cpp
+    src/placo/control/orientation_task.cpp
+    src/placo/control/frame_task.cpp
+    src/placo/control/pose_task.cpp
+    src/placo/control/relative_position_task.cpp
+    src/placo/control/relative_orientation_task.cpp
+    src/placo/control/relative_frame_task.cpp
+    src/placo/control/relative_pose_task.cpp
+    src/placo/control/com_task.cpp
+    src/placo/control/axis_align_task.cpp
+    src/placo/control/axis_plane_task.cpp
+    src/placo/control/distance_task.cpp
+    src/placo/control/joint_task.cpp
+    src/placo/control/joints_task.cpp
+    src/placo/control/regularization_task.cpp
     src/placo/utils.cpp
 )
 

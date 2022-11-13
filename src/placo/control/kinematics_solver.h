@@ -3,233 +3,30 @@
 #include "placo/model/mobile_robot.h"
 #include <Eigen/Dense>
 
+// Tasks
+#include "placo/control/task.h"
+#include "placo/control/position_task.h"
+#include "placo/control/orientation_task.h"
+#include "placo/control/frame_task.h"
+#include "placo/control/pose_task.h"
+#include "placo/control/relative_position_task.h"
+#include "placo/control/relative_orientation_task.h"
+#include "placo/control/relative_frame_task.h"
+#include "placo/control/relative_pose_task.h"
+#include "placo/control/com_task.h"
+#include "placo/control/axis_align_task.h"
+#include "placo/control/axis_plane_task.h"
+#include "placo/control/distance_task.h"
+#include "placo/control/joint_task.h"
+#include "placo/control/joints_task.h"
+#include "placo/control/regularization_task.h"
+
 namespace placo
 {
 class KinematicsSolver
 {
 public:
   KinematicsSolver(MobileRobot& robot);
-
-  enum Priority
-  {
-    Hard = 0,
-    Soft = 1
-  };
-
-  struct Task
-  {
-    Task();
-
-    KinematicsSolver* solver;
-    std::string name;
-
-    void set_priority_value(Priority priority);
-    void set_priority(std::string priority);
-    void set_weight(double weight);
-    void set_name(std::string name);
-
-    void configure(std::string name, std::string priority = "soft", double weight = 1.0);
-
-    // Task priority (hard: equality constraint, soft: objective function)
-    Priority priority;
-
-    // If the task is "soft", this is its weight
-    double weight;
-
-    // The task is of type Ax = b
-    Eigen::MatrixXd A;
-    Eigen::MatrixXd b;
-
-    virtual void update() = 0;
-    virtual std::string type_name() = 0;
-    virtual std::string error_unit() = 0;
-    virtual double error();
-  };
-
-  struct PositionTask : public Task
-  {
-    PositionTask(MobileRobot::FrameIndex frame_index, Eigen::Vector3d target_world);
-
-    MobileRobot::FrameIndex frame_index;
-    Eigen::Vector3d target_world;
-
-    virtual void update();
-    virtual std::string type_name();
-    virtual std::string error_unit();
-  };
-
-  struct RelativePositionTask : public Task
-  {
-    RelativePositionTask(MobileRobot::FrameIndex frame_a, MobileRobot::FrameIndex frame_b, Eigen::Vector3d target);
-
-    MobileRobot::FrameIndex frame_a;
-    MobileRobot::FrameIndex frame_b;
-    Eigen::Vector3d target;
-
-    virtual void update();
-    virtual std::string type_name();
-    virtual std::string error_unit();
-  };
-
-  struct CoMTask : public Task
-  {
-    CoMTask(Eigen::Vector3d target_world);
-
-    Eigen::Vector3d target_world;
-
-    virtual void update();
-    virtual std::string type_name();
-    virtual std::string error_unit();
-  };
-
-  struct OrientationTask : public Task
-  {
-    OrientationTask(MobileRobot::FrameIndex frame_index, Eigen::Matrix3d R_world_frame);
-
-    MobileRobot::FrameIndex frame_index;
-    Eigen::Matrix3d R_world_frame;
-
-    virtual void update();
-    virtual std::string type_name();
-    virtual std::string error_unit();
-  };
-
-  struct RelativeOrientationTask : public Task
-  {
-    RelativeOrientationTask(MobileRobot::FrameIndex frame_a, MobileRobot::FrameIndex frame_b, Eigen::Matrix3d R_a_b);
-
-    MobileRobot::FrameIndex frame_a;
-    MobileRobot::FrameIndex frame_b;
-    Eigen::Matrix3d R_a_b;
-
-    virtual void update();
-    virtual std::string type_name();
-    virtual std::string error_unit();
-  };
-
-  struct FrameTask
-  {
-    FrameTask(PositionTask& position, OrientationTask& orientation);
-
-    void configure(std::string name, std::string priority = "soft", double position_weight = 1.0,
-                   double orientation_weight = 1.0);
-
-    PositionTask& position;
-    OrientationTask& orientation;
-
-    Eigen::Affine3d get_T_world_frame() const;
-    void set_T_world_frame(Eigen::Affine3d T_world_frame);
-  };
-
-  struct RelativeFrameTask
-  {
-    RelativeFrameTask(RelativePositionTask& position, RelativeOrientationTask& orientation);
-
-    void configure(std::string name, std::string priority = "soft", double position_weight = 1.0,
-                   double orientation_weight = 1.0);
-
-    RelativePositionTask& position;
-    RelativeOrientationTask& orientation;
-
-    Eigen::Affine3d get_T_a_b() const;
-    void set_T_a_b(Eigen::Affine3d T_world_frame);
-  };
-
-  struct AxisAlignTask : public Task
-  {
-    AxisAlignTask(MobileRobot::FrameIndex frame_index, Eigen::Vector3d axis_frame, Eigen::Vector3d targetAxis_world);
-
-    MobileRobot::FrameIndex frame_index;
-    Eigen::Vector3d axis_frame;
-    Eigen::Vector3d targetAxis_world;
-
-    virtual void update();
-    virtual std::string type_name();
-    virtual std::string error_unit();
-  };
-
-  struct AxisPlaneTask : public Task
-  {
-    AxisPlaneTask(MobileRobot::FrameIndex frame_index, Eigen::Vector3d axis_frame, Eigen::Vector3d normal_world);
-
-    MobileRobot::FrameIndex frame_index;
-    Eigen::Vector3d axis_frame;
-    Eigen::Vector3d normal_world;
-
-    virtual void update();
-    virtual std::string type_name();
-    virtual std::string error_unit();
-  };
-
-  struct PoseTask : public Task
-  {
-    PoseTask(MobileRobot::FrameIndex frame_index, Eigen::Affine3d T_world_frame);
-
-    MobileRobot::FrameIndex frame_index;
-    Eigen::Affine3d T_world_frame;
-
-    virtual void update();
-    virtual std::string type_name();
-    virtual std::string error_unit();
-  };
-
-  struct RelativePoseTask : public Task
-  {
-    RelativePoseTask(MobileRobot::FrameIndex frame_a, MobileRobot::FrameIndex frame_b, Eigen::Affine3d T_a_b);
-
-    MobileRobot::FrameIndex frame_a;
-    MobileRobot::FrameIndex frame_b;
-    Eigen::Affine3d T_a_b;
-
-    virtual void update();
-    virtual std::string type_name();
-    virtual std::string error_unit();
-  };
-
-  struct JointTask : public Task
-  {
-    JointTask(std::string joint, double target);
-
-    std::string joint;
-    double target;
-
-    virtual void update();
-    virtual std::string type_name();
-    virtual std::string error_unit();
-  };
-
-  struct JointsTask : public Task
-  {
-    JointsTask();
-
-    std::map<std::string, double> joints;
-
-    void set_joint(std::string joint, double target);
-
-    virtual void update();
-    virtual std::string type_name();
-    virtual std::string error_unit();
-  };
-
-  struct DistanceTask : public Task
-  {
-    DistanceTask(MobileRobot::FrameIndex frame_a, MobileRobot::FrameIndex frame_b, double distance);
-
-    MobileRobot::FrameIndex frame_a;
-    MobileRobot::FrameIndex frame_b;
-    double distance;
-
-    virtual void update();
-    virtual std::string type_name();
-    virtual std::string error_unit();
-  };
-
-  struct RegularizationTask : public Task
-  {
-    virtual void update();
-    virtual std::string type_name();
-    virtual std::string error_unit();
-  };
 
   /**
    * @brief Adds a position task
@@ -394,8 +191,17 @@ public:
    */
   void dump_status();
 
-protected:
+  /**
+   * @brief The robot controlled by this solver
+   */
   MobileRobot& robot;
+
+  /**
+   * @brief Size of the problem (number of variables we will search)
+   */
+  int N;
+
+protected:
   std::set<int> masked_dof;
   std::vector<Task*> tasks;
 
@@ -410,10 +216,5 @@ protected:
 
     return *task;
   }
-
-  /**
-   * @brief Size of the problem (number of variables we will search)
-   */
-  int N;
 };
 }  // namespace placo
