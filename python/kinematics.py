@@ -32,8 +32,10 @@ viz = robot_viz(robot)
 left_foot_task = solver.add_pose_task("left_foot_tip", T_world_left)
 left_foot_task.configure("left_foot", "soft", 1.0)
 
-right_foot_task = solver.add_pose_task("right_foot_tip", T_world_right)
-right_foot_task.configure("right_foot", "soft", 1.0)
+# right_foot_task = solver.add_pose_task("right_foot_tip", T_world_right)
+# right_foot_task.configure("right_foot", "soft", 1.0)
+
+right_foot_task = solver.add_distance_task("left_foot_tip", "right_foot_tip", 0.15)
 
 right_foot_orn_task = solver.add_orientation_task("right_foot_tip", np.eye(3))
 right_foot_orn_task.configure("right_foot_orn", "soft", 1.0)
@@ -48,11 +50,11 @@ T_world_frame[2, 3] -= 0.06
 trunk_task = solver.add_position_task("trunk", T_world_frame[:3, 3])
 trunk_task.configure("trunk_task", "soft", 1.0)
 
-# trunk_orientation_task = solver.add_orientation_task("trunk", np.eye(3))
-# trunk_orientation_task.configure("trunk_orn", "soft", 1.0)
+trunk_orientation_task = solver.add_orientation_task("trunk", np.eye(3))
+trunk_orientation_task.configure("trunk_orn", "soft", 1.0)
 # trunk_orientation_task = solver.add_axisalign_task("trunk", np.array([0, 0, 1]), np.array([0, 0, 1]))
-trunk_orientation_task = solver.add_axisplane_task("trunk", np.array([0, 1, 0]), np.array([0, 0, 1]))
-trunk_orientation_task = solver.add_axisplane_task("trunk", np.array([1, 0, 0]), np.array([0, 0, 1]))
+# trunk_orientation_task = solver.add_axisplane_task("trunk", np.array([0, 1, 0]), np.array([0, 0, 1]))
+# trunk_orientation_task = solver.add_axisplane_task("trunk", np.array([1, 0, 0]), np.array([0, 0, 1]))
 
 solver.add_regularization_task(1e-6)
 
@@ -81,7 +83,7 @@ while True:
         t0 = time.time()
 
         # Moving left foot
-        # T_world_left[:2, 3] = [0 + np.cos(t) * 0.05, np.sin(t) * 0.05]
+        T_world_left[:2, 3] = [0 + np.cos(t) * 0.05, np.sin(t) * 0.05]
         # T_world_left[2, 3] = 0.02 + np.sin(t)*0.01
         # T_world_left[:3, :3] = tf.rotation([0, 0, 1], np.sin(t * 3) * 0.2)[:3, :3]
         # T_world_left[:3, :3] = T_world_left[:3, :3] @ tf.rotation([0, 1, 0], np.sin(t * 2) * 0.2)[:3, :3]
