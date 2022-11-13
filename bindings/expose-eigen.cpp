@@ -3,6 +3,7 @@
 #include <Eigen/Dense>
 #include <boost/python.hpp>
 #include <eigenpy/eigenpy.hpp>
+#include <boost/python/implicit.hpp>
 
 using namespace boost::python;
 
@@ -56,4 +57,7 @@ void exposeAffine3d()
   eigenpy::enableEigenPySpecific<Eigen::Matrix<double, 4, 1>>();
   eigenpy::enableEigenPySpecific<Eigen::Matrix<double, 6, 1>>();
   eigenpy::enableEigenPySpecific<Eigen::Matrix<double, 9, 1>>();
+
+  // Allow 4x4 matrices to be passed to functions requiring frames
+  implicitly_convertible<Eigen::Matrix4d, Eigen::Affine3d>();
 }
