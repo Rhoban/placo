@@ -32,10 +32,8 @@ viz = robot_viz(robot)
 left_foot_task = solver.add_pose_task("left_foot_tip", T_world_left)
 left_foot_task.configure("left_foot", "soft", 1.0)
 
-right_foot_task = solver.add_relative_frame_task(
-    "left_foot_tip", "right_foot_tip", tf.translation([0, -0.1, 0])
-)
-right_foot_task.configure("right_foot", "soft", 1.0, 1.0)
+right_foot_task = solver.add_pose_task("right_foot_tip", T_world_right)
+right_foot_task.configure("right_foot", "soft", 1.0)
 
 # right_foot_orn_task = solver.add_orientation_task("right_foot_tip", np.eye(3))
 # right_foot_orn_task.configure("right_foot_orn", "soft", 1.0)
@@ -49,8 +47,9 @@ T_world_frame[2, 3] -= 0.06
 # trunk_task.configure("trunk", "soft", 1., 1.)
 trunk_task = solver.add_position_task("trunk", T_world_frame[:3, 3])
 trunk_task.configure("trunk_task", "soft", 1.0)
-trunk_orientation_task = solver.add_orientation_task("trunk", np.eye(3))
-trunk_orientation_task.configure("trunk_orn", "soft", 1.0)
+# trunk_orientation_task = solver.add_orientation_task("trunk", np.eye(3))
+# trunk_orientation_task.configure("trunk_orn", "soft", 1.0)
+trunk_orientation_task = solver.add_axisalign_task("trunk", np.array([0, 0, 1]), np.array([0, 0, 1]))
 
 solver.add_regularization_task(1e-6)
 
@@ -79,14 +78,14 @@ while True:
         t0 = time.time()
 
         # Moving left foot
-        T_world_left[:2, 3] = [0 + np.cos(t) * 0.05, np.sin(t) * 0.05]
+        # T_world_left[:2, 3] = [0 + np.cos(t) * 0.05, np.sin(t) * 0.05]
         # T_world_left[2, 3] = 0.02 + np.sin(t)*0.01
         # T_world_left[:3, :3] = tf.rotation([0, 0, 1], np.sin(t * 3) * 0.2)[:3, :3]
         # T_world_left[:3, :3] = T_world_left[:3, :3] @ tf.rotation([0, 1, 0], np.sin(t * 2) * 0.2)[:3, :3]
 
         left_foot_task.T_world_frame = T_world_left
 
-        right_foot_task.T_a_b = tf.translation([0, -0.1, 0]) @ tf.rotation([0, 0, 1], np.pi / 2)
+        # right_foot_task.T_a_b = tf.translation([0, -0.1, 0]) @ tf.rotation([0, 0, 1], np.pi / 2)
 
         # right_foot_orn_task.R_world_target = tf.rotation([0, 0, 1], np.sin(t * 3) * 0.3)[:3, :3]
 
@@ -95,8 +94,11 @@ while True:
 
         # R = (tf.rotation([0, 0, 1], t/2) @ tf.rotation([0, 1, 0], 1.1))[:3, :3]
         # trunk_task.orientation().R_world_target = T_world_frame[:3, :3] = R
+        
         camera_pos = robot.get_T_world_frame("camera")[:3, 3]
         look_at_ball.targetAxis_world = ball - camera_pos
+
+        # trunk_orientation_task.R_world_frame = tf.rotation([0, 1, 0], np.sin(t)*.3)[:3, :3]
 
         # # Controlling the com
         # T_world_targetTrunk = tf.frame(xyz=[0, -0.05 + np.sin(t) * 0.1, 0.35 + np.sin(t * 1.1) * 0.01])
