@@ -22,18 +22,16 @@ solver = placo.KinematicsSolver(robot)
 # Retrieving initial position of the feet, com and trunk orientation
 T_world_left = robot.get_T_world_frame("left_foot_tip")
 T_world_right = robot.get_T_world_frame("right_foot_tip")
-com_world = robot.com_world().copy()
-R_world_trunk = robot.get_T_world_frame("trunk")
 
 # Creating the viewer
 viz = robot_viz(robot)
 
 # Keep left and right foot on the floor
 left_foot_task = solver.add_frame_task("left_foot_tip", T_world_left)
-left_foot_task.configure("left_foot", "soft", 1., 1.)
+left_foot_task.configure("left_foot", "soft", 1.0, 1.0)
 
 right_foot_task = solver.add_frame_task("right_foot_tip", T_world_right)
-right_foot_task.configure("right_foot", "soft", 1., 1.)
+right_foot_task.configure("right_foot", "soft", 1.0, 1.0)
 
 # Look at ball
 look_at_ball = solver.add_axisalign_task("camera", np.array([0.0, 0.0, 1.0]), np.array([0.0, 0.0, 0.0]))
@@ -46,10 +44,6 @@ init_trunk_z = T_world_frame[2, 3]
 
 trunk_task = solver.add_frame_task("trunk", T_world_frame)
 trunk_task.configure("trunk_task", "soft", 1.0, 1.0)
-
-# Keep trunk without
-# trunk_orientation_task = solver.add_axisalign_task("trunk", np.array([0, 0, 1]), np.array([0, 0, 1]))
-# trunk_orientation_task.configure("trunk_tilt", "soft", 1.0)
 
 solver.add_regularization_task(1e-6)
 
@@ -75,11 +69,11 @@ for step in range(int(1e9)):
     if True:
         t0 = time.time()
 
-        # Updating camera task
+        # Updating camera task
         camera_pos = robot.get_T_world_frame("camera")[:3, 3]
         look_at_ball.targetAxis_world = ball - camera_pos
 
-        trunk_task.orientation().R_world_frame = tf.rotation([0, 0, 1], np.sin(t*1.2))[:3, :3]
+        trunk_task.orientation().R_world_frame = tf.rotation([0, 0, 1], np.sin(t * 1.2))[:3, :3]
         # target = trunk_task.target_world
         # target[2] = init_trunk_z + np.sin(t)*.15
         # trunk_task.target_world = target
