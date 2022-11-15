@@ -38,7 +38,7 @@ start = time.time()
 trajectory = jerk_planner.plan()
 elapsed = time.time() - start
 
-print(f"Computation time: {elapsed}")
+print(f"Computation time: {elapsed*1e6}µs")
 print("Limits: ", limits.is_active())
 print("Ineq: ", ineq.is_active())
 print("Constraint for polygon1: ", constraint1.is_active())
