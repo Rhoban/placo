@@ -187,6 +187,18 @@ void KinematicsSolver::unmask_dof(std::string dof)
 
 Eigen::VectorXd KinematicsSolver::solve(bool apply)
 {
+  // Adding some random noise
+  auto q_save = robot.state.q;
+
+  if (noise > 0)
+  {
+    auto q_random = pinocchio::randomConfiguration(robot.model);
+
+    // Adding some noise in direction of a random configuration (except floating base)
+    robot.state.q.block(7, 0, robot.model.nq - 7, 1) +=
+        (q_random.block(7, 0, robot.model.nq - 7, 1) - robot.state.q.block(7, 0, robot.model.nq - 7, 1)) * noise;
+  }
+
   Eigen::VectorXd qd;
 
   // Updating all the task matrices
@@ -292,6 +304,10 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
   if (apply)
   {
     robot.state.q = pinocchio::integrate(robot.model, robot.state.q, qd);
+  }
+  else
+  {
+    robot.state.q = q_save;
   }
 
   return qd;

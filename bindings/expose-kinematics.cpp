@@ -137,6 +137,9 @@ void exposeKinematics()
   registerTaskMethods(regularizationTask);
 
   class_<KinematicsSolver>("KinematicsSolver", init<MobileRobot&>())
+      .add_property("noise", &KinematicsSolver::noise, &KinematicsSolver::noise)
+      .add_property("N", &KinematicsSolver::N)
+
       // Position and CoM task
       .def<PositionTask& (KinematicsSolver::*)(std::string, Eigen::Vector3d)>(
           "add_position_task", &KinematicsSolver::add_position_task, return_internal_reference<>())

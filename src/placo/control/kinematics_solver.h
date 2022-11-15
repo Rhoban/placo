@@ -201,6 +201,11 @@ public:
    */
   int N;
 
+  /**
+   * @brief Some configuration noise added before solving
+   */
+  double noise = 1e-4;
+
 protected:
   std::set<int> masked_dof;
   std::vector<Task*> tasks;
