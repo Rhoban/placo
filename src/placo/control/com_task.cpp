@@ -10,7 +10,7 @@ CoMTask::CoMTask(Eigen::Vector3d target_world) : target_world(target_world)
 void CoMTask::update()
 {
   A = solver->robot.com_jacobian();
-  b = target_world;
+  b = target_world - solver->robot.com_world();
 }
 
 std::string CoMTask::type_name()
