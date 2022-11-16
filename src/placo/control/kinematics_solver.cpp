@@ -293,12 +293,9 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
     throw std::runtime_error("KinematicsSolver: Infeasible QP (check your equality and inequality constraints)");
   }
 
-  for (auto entry : qd)
+  if (qd.hasNaN())
   {
-    if (isnan(entry))
-    {
-      throw std::runtime_error("KinematicsSolver: NaN encountered in result");
-    }
+    throw std::runtime_error("KinematicsSolver: NaN encountered in result");
   }
 
   if (apply)
