@@ -11,7 +11,7 @@ AxisAlignTask::AxisAlignTask(MobileRobot::FrameIndex frame_index, Eigen::Vector3
 
 void AxisAlignTask::update()
 {
-  auto T_world_frame = solver->robot.get_T_world_frame(frame_index);
+  auto T_world_frame = solver->robot->get_T_world_frame(frame_index);
   auto targetAxis_world_normalized = targetAxis_world.normalized();
 
   // Here, we will define an "axis frame", which x axis is aligned with the current axis, the z axis is the axis
@@ -27,7 +27,7 @@ void AxisAlignTask::update()
   double error_angle = safe_acos(R_world_axisframe.col(0).dot(targetAxis_world_normalized));
 
   // We express the Jacobian in the axisframe
-  Eigen::MatrixXd J_axisframe = solver->robot.frame_jacobian(frame_index, pinocchio::WORLD).block(3, 0, 3, solver->N);
+  Eigen::MatrixXd J_axisframe = solver->robot->frame_jacobian(frame_index, pinocchio::WORLD).block(3, 0, 3, solver->N);
   J_axisframe = (R_world_axisframe.inverse() * J_axisframe);
 
   // We only keep y and z in the constraint, since we don't care about rotations about x axis in the axis frame

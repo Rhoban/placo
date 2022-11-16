@@ -21,8 +21,8 @@ void JointsTask::update()
   int k = 0;
   for (auto& entry : joints)
   {
-    A(k, solver->robot.get_joint_v_offset(entry.first)) = 1;
-    b(k, 0) = entry.second - solver->robot.get_joint(entry.first);
+    A(k, solver->robot->get_joint_v_offset(entry.first)) = 1;
+    b(k, 0) = entry.second - solver->robot->get_joint(entry.first);
 
     k += 1;
   }

@@ -11,14 +11,14 @@ RelativePositionTask::RelativePositionTask(MobileRobot::FrameIndex frame_a, Mobi
 
 void RelativePositionTask::update()
 {
-  auto T_world_a = solver->robot.get_T_world_frame(frame_a);
-  auto T_world_b = solver->robot.get_T_world_frame(frame_b);
+  auto T_world_a = solver->robot->get_T_world_frame(frame_a);
+  auto T_world_b = solver->robot->get_T_world_frame(frame_b);
   auto T_a_b = T_world_a.inverse() * T_world_b;
 
   Eigen::Vector3d error = target - T_a_b.translation();
 
-  auto J_a = solver->robot.frame_jacobian(frame_a, pinocchio::WORLD);
-  auto J_b = solver->robot.frame_jacobian(frame_b, pinocchio::WORLD);
+  auto J_a = solver->robot->frame_jacobian(frame_a, pinocchio::WORLD);
+  auto J_b = solver->robot->frame_jacobian(frame_b, pinocchio::WORLD);
 
   A = (pinocchio::SE3(T_world_a.inverse().matrix()).toActionMatrix() * (J_b - J_a)).block(0, 0, 3, solver->N);
   b = error;

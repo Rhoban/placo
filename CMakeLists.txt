@@ -18,6 +18,7 @@ add_library(libplaco
     src/placo/footsteps/footsteps_planner_naive.cpp
     src/placo/planning/jerk_planner.cpp
     src/placo/model/mobile_robot.cpp
+    src/placo/model/legged_robot.cpp
     src/placo/control/kinematics_solver.cpp
     src/placo/control/task.cpp
     src/placo/control/position_task.cpp

@@ -11,8 +11,8 @@ RelativeOrientationTask::RelativeOrientationTask(MobileRobot::FrameIndex frame_a
 
 void RelativeOrientationTask::update()
 {
-  auto T_world_a = solver->robot.get_T_world_frame(frame_a);
-  auto T_world_b = solver->robot.get_T_world_frame(frame_b);
+  auto T_world_a = solver->robot->get_T_world_frame(frame_a);
+  auto T_world_b = solver->robot->get_T_world_frame(frame_b);
   auto T_a_b = T_world_a.inverse() * T_world_b;
 
   // (R_a_b* R_a_b^{-1}) R_a_b = R_a_b*
@@ -21,8 +21,8 @@ void RelativeOrientationTask::update()
   //           matrix to the desired one
   Eigen::Vector3d error = pinocchio::log3(R_a_b * T_a_b.linear().inverse());
 
-  auto J_a = solver->robot.frame_jacobian(frame_a, pinocchio::WORLD);
-  auto J_b = solver->robot.frame_jacobian(frame_b, pinocchio::WORLD);
+  auto J_a = solver->robot->frame_jacobian(frame_a, pinocchio::WORLD);
+  auto J_b = solver->robot->frame_jacobian(frame_b, pinocchio::WORLD);
   Eigen::MatrixXd J_ab = pinocchio::SE3(T_world_a.inverse().matrix()).toActionMatrix() * (J_b - J_a);
 
   A = J_ab.block(3, 0, 3, solver->N);

@@ -9,28 +9,28 @@ from visualization import robot_viz, frame_viz, point_viz, robot_frame_viz
 # TODO: Update joint limits in URDF
 
 # Loading the robot
-robot = placo.MobileRobot("sigmaban/")
+robot = placo.LeggedRobot("sigmaban/")
 
 # robot.set_joint("left_knee", 0.1)
 # robot.set_joint("right_knee", 0.1)
 # robot.update_kinematics()
-robot.set_T_world_frame("left_foot_tip", np.eye(4))
+robot.set_T_world_frame("left_foot", np.eye(4))
 robot.update_kinematics()
 
-solver = placo.KinematicsSolver(robot)
+solver = robot.make_solver()
 
 # Retrieving initial position of the feet, com and trunk orientation
-T_world_left = robot.get_T_world_frame("left_foot_tip")
-T_world_right = robot.get_T_world_frame("right_foot_tip")
+T_world_left = robot.get_T_world_frame("left_foot")
+T_world_right = robot.get_T_world_frame("right_foot")
 
 # Creating the viewer
 viz = robot_viz(robot)
 
 # Keep left and right foot on the floor
-left_foot_task = solver.add_frame_task("left_foot_tip", T_world_left)
+left_foot_task = solver.add_frame_task("left_foot", T_world_left)
 left_foot_task.configure("left_foot", "soft", 1.0, 1.0)
 
-right_foot_task = solver.add_frame_task("right_foot_tip", T_world_right)
+right_foot_task = solver.add_frame_task("right_foot", T_world_right)
 right_foot_task.configure("right_foot", "soft", 1.0, 1.0)
 
 # Look at ball
@@ -87,8 +87,8 @@ for step in range(int(1e9)):
 
     # Show some frames
     robot_frame_viz(robot, "camera")
-    robot_frame_viz(robot, "left_foot_tip")
-    robot_frame_viz(robot, "right_foot_tip")
+    robot_frame_viz(robot, "left_foot")
+    robot_frame_viz(robot, "right_foot")
     robot_frame_viz(robot, "trunk")
 
     # Show the CoM

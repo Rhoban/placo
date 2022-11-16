@@ -1,7 +1,7 @@
 #pragma once
+#include <Eigen/Dense>
 
 #include "placo/model/mobile_robot.h"
-#include <Eigen/Dense>
 
 // Tasks
 #include "placo/control/task.h"
@@ -27,6 +27,7 @@ class KinematicsSolver
 {
 public:
   KinematicsSolver(MobileRobot& robot);
+  KinematicsSolver(MobileRobot* robot);
 
   /**
    * @brief Adds a position task
@@ -194,7 +195,7 @@ public:
   /**
    * @brief The robot controlled by this solver
    */
-  MobileRobot& robot;
+  MobileRobot* robot;
 
   /**
    * @brief Size of the problem (number of variables we will search)

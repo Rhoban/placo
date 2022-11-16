@@ -11,10 +11,10 @@ void JointTask::update()
 {
   A = Eigen::MatrixXd(1, solver->N);
   A.setZero();
-  A(0, solver->robot.get_joint_v_offset(joint)) = 1;
+  A(0, solver->robot->get_joint_v_offset(joint)) = 1;
 
   b = Eigen::MatrixXd(1, 1);
-  b(0, 0) = target - solver->robot.get_joint(joint);
+  b(0, 0) = target - solver->robot->get_joint(joint);
 }
 
 std::string JointTask::type_name()

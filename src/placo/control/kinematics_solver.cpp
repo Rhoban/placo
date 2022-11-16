@@ -1,13 +1,19 @@
 #include "placo/control/kinematics_solver.h"
 #include "eiquadprog/eiquadprog.hpp"
 #include "pinocchio/algorithm/geometry.hpp"
+#include "placo/model/mobile_robot.h"
 #include "placo/utils.h"
 
 namespace placo
 {
-KinematicsSolver::KinematicsSolver(MobileRobot& robot) : robot(robot)
+KinematicsSolver::KinematicsSolver(MobileRobot* robot_) : robot(robot_)
 {
-  N = robot.model.nv;
+  N = robot->model.nv;
+}
+
+KinematicsSolver::KinematicsSolver(MobileRobot& robot_) : robot(&robot_)
+{
+  N = robot->model.nv;
 }
 
 PositionTask& KinematicsSolver::add_position_task(MobileRobot::FrameIndex frame, Eigen::Vector3d target_world)
@@ -17,7 +23,7 @@ PositionTask& KinematicsSolver::add_position_task(MobileRobot::FrameIndex frame,
 
 PositionTask& KinematicsSolver::add_position_task(std::string frame, Eigen::Vector3d target_world)
 {
-  return add_position_task(robot.get_frame_index(frame), target_world);
+  return add_position_task(robot->get_frame_index(frame), target_world);
 }
 
 RelativePositionTask& KinematicsSolver::add_relative_position_task(MobileRobot::FrameIndex frame_a,
@@ -30,7 +36,7 @@ RelativePositionTask& KinematicsSolver::add_relative_position_task(MobileRobot::
 RelativePositionTask& KinematicsSolver::add_relative_position_task(std::string frame_a, std::string frame_b,
                                                                    Eigen::Vector3d target)
 {
-  return add_relative_position_task(robot.get_frame_index(frame_a), robot.get_frame_index(frame_b), target);
+  return add_relative_position_task(robot->get_frame_index(frame_a), robot->get_frame_index(frame_b), target);
 }
 
 CoMTask& KinematicsSolver::add_com_task(Eigen::Vector3d targetCom_world)
@@ -45,7 +51,7 @@ OrientationTask& KinematicsSolver::add_orientation_task(MobileRobot::FrameIndex 
 
 OrientationTask& KinematicsSolver::add_orientation_task(std::string frame, Eigen::Matrix3d R_world_frame)
 {
-  return add_orientation_task(robot.get_frame_index(frame), R_world_frame);
+  return add_orientation_task(robot->get_frame_index(frame), R_world_frame);
 }
 
 RelativeOrientationTask& KinematicsSolver::add_relative_orientation_task(MobileRobot::FrameIndex frame_a,
@@ -58,7 +64,7 @@ RelativeOrientationTask& KinematicsSolver::add_relative_orientation_task(MobileR
 RelativeOrientationTask& KinematicsSolver::add_relative_orientation_task(std::string frame_a, std::string frame_b,
                                                                          Eigen::Matrix3d R_a_b)
 {
-  return add_relative_orientation_task(robot.get_frame_index(frame_a), robot.get_frame_index(frame_b), R_a_b);
+  return add_relative_orientation_task(robot->get_frame_index(frame_a), robot->get_frame_index(frame_b), R_a_b);
 }
 
 AxisAlignTask& KinematicsSolver::add_axisalign_task(MobileRobot::FrameIndex frame, Eigen::Vector3d axis_frame,
@@ -70,7 +76,7 @@ AxisAlignTask& KinematicsSolver::add_axisalign_task(MobileRobot::FrameIndex fram
 AxisAlignTask& KinematicsSolver::add_axisalign_task(std::string frame, Eigen::Vector3d axis_frame,
                                                     Eigen::Vector3d target_axis_world)
 {
-  return add_axisalign_task(robot.get_frame_index(frame), axis_frame, target_axis_world);
+  return add_axisalign_task(robot->get_frame_index(frame), axis_frame, target_axis_world);
 }
 
 AxisPlaneTask& KinematicsSolver::add_axisplane_task(MobileRobot::FrameIndex frame, Eigen::Vector3d axis_frame,
@@ -82,7 +88,7 @@ AxisPlaneTask& KinematicsSolver::add_axisplane_task(MobileRobot::FrameIndex fram
 AxisPlaneTask& KinematicsSolver::add_axisplane_task(std::string frame, Eigen::Vector3d axis_frame,
                                                     Eigen::Vector3d normal_world)
 {
-  return add_axisplane_task(robot.get_frame_index(frame), axis_frame, normal_world);
+  return add_axisplane_task(robot->get_frame_index(frame), axis_frame, normal_world);
 }
 
 FrameTask KinematicsSolver::add_frame_task(MobileRobot::FrameIndex frame, Eigen::Affine3d T_world_frame)
@@ -95,7 +101,7 @@ FrameTask KinematicsSolver::add_frame_task(MobileRobot::FrameIndex frame, Eigen:
 
 FrameTask KinematicsSolver::add_frame_task(std::string frame, Eigen::Affine3d T_world_frame)
 {
-  return add_frame_task(robot.get_frame_index(frame), T_world_frame);
+  return add_frame_task(robot->get_frame_index(frame), T_world_frame);
 }
 
 RelativeFrameTask KinematicsSolver::add_relative_frame_task(MobileRobot::FrameIndex frame_a,
@@ -110,7 +116,7 @@ RelativeFrameTask KinematicsSolver::add_relative_frame_task(MobileRobot::FrameIn
 RelativeFrameTask KinematicsSolver::add_relative_frame_task(std::string frame_a, std::string frame_b,
                                                             Eigen::Affine3d T_a_b)
 {
-  return add_relative_frame_task(robot.get_frame_index(frame_a), robot.get_frame_index(frame_b), T_a_b);
+  return add_relative_frame_task(robot->get_frame_index(frame_a), robot->get_frame_index(frame_b), T_a_b);
 }
 
 PoseTask& KinematicsSolver::add_pose_task(MobileRobot::FrameIndex frame, Eigen::Affine3d T_world_frame)
@@ -120,7 +126,7 @@ PoseTask& KinematicsSolver::add_pose_task(MobileRobot::FrameIndex frame, Eigen::
 
 PoseTask& KinematicsSolver::add_pose_task(std::string frame, Eigen::Affine3d T_world_frame)
 {
-  return add_pose_task(robot.get_frame_index(frame), T_world_frame);
+  return add_pose_task(robot->get_frame_index(frame), T_world_frame);
 }
 
 RelativePoseTask& KinematicsSolver::add_relative_pose_task(MobileRobot::FrameIndex frame_a,
@@ -132,7 +138,7 @@ RelativePoseTask& KinematicsSolver::add_relative_pose_task(MobileRobot::FrameInd
 RelativePoseTask& KinematicsSolver::add_relative_pose_task(std::string frame_a, std::string frame_b,
                                                            Eigen::Affine3d T_a_b)
 {
-  return add_relative_pose_task(robot.get_frame_index(frame_a), robot.get_frame_index(frame_b), T_a_b);
+  return add_relative_pose_task(robot->get_frame_index(frame_a), robot->get_frame_index(frame_b), T_a_b);
 }
 
 JointTask& KinematicsSolver::add_joint_task(std::string joint, double target)
@@ -158,7 +164,7 @@ DistanceTask& KinematicsSolver::add_distance_task(MobileRobot::FrameIndex frame_
 
 DistanceTask& KinematicsSolver::add_distance_task(std::string frame_a, std::string frame_b, double distance)
 {
-  return add_distance_task(robot.get_frame_index(frame_a), robot.get_frame_index(frame_b), distance);
+  return add_distance_task(robot->get_frame_index(frame_a), robot->get_frame_index(frame_b), distance);
 }
 
 JointsTask& KinematicsSolver::add_joints_task()
@@ -177,26 +183,26 @@ RegularizationTask& KinematicsSolver::add_regularization_task(double magnitude)
 
 void KinematicsSolver::mask_dof(std::string dof)
 {
-  masked_dof.insert(robot.get_joint_v_offset(dof));
+  masked_dof.insert(robot->get_joint_v_offset(dof));
 }
 
 void KinematicsSolver::unmask_dof(std::string dof)
 {
-  masked_dof.erase(robot.get_joint_v_offset(dof));
+  masked_dof.erase(robot->get_joint_v_offset(dof));
 }
 
 Eigen::VectorXd KinematicsSolver::solve(bool apply)
 {
   // Adding some random noise
-  auto q_save = robot.state.q;
+  auto q_save = robot->state.q;
 
   if (noise > 0)
   {
-    auto q_random = pinocchio::randomConfiguration(robot.model);
+    auto q_random = pinocchio::randomConfiguration(robot->model);
 
     // Adding some noise in direction of a random configuration (except floating base)
-    robot.state.q.block(7, 0, robot.model.nq - 7, 1) +=
-        (q_random.block(7, 0, robot.model.nq - 7, 1) - robot.state.q.block(7, 0, robot.model.nq - 7, 1)) * noise;
+    robot->state.q.block(7, 0, robot->model.nq - 7, 1) +=
+        (q_random.block(7, 0, robot->model.nq - 7, 1) - robot->state.q.block(7, 0, robot->model.nq - 7, 1)) * noise;
   }
 
   Eigen::VectorXd qd;
@@ -279,8 +285,8 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
     CI.block(k * 2, 0, 1, N) = selector;
     CI.block(k * 2 + 1, 0, 1, N) = -selector;
 
-    ci0[k * 2] = -(robot.model.lowerPositionLimit[k + 7] - robot.state.q[k + 7]);
-    ci0[k * 2 + 1] = (robot.model.upperPositionLimit[k + 7] - robot.state.q[k + 7]);
+    ci0[k * 2] = -(robot->model.lowerPositionLimit[k + 7] - robot->state.q[k + 7]);
+    ci0[k * 2 + 1] = (robot->model.upperPositionLimit[k + 7] - robot->state.q[k + 7]);
   }
 
   Eigen::VectorXi activeSet;
@@ -300,11 +306,11 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
 
   if (apply)
   {
-    robot.state.q = pinocchio::integrate(robot.model, robot.state.q, qd);
+    robot->state.q = pinocchio::integrate(robot->model, robot->state.q, qd);
   }
   else
   {
-    robot.state.q = q_save;
+    robot->state.q = q_save;
   }
 
   return qd;

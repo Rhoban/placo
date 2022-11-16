@@ -12,7 +12,7 @@ AxisPlaneTask::AxisPlaneTask(MobileRobot::FrameIndex frame_index, Eigen::Vector3
 
 void AxisPlaneTask::update()
 {
-  auto T_world_frame = solver->robot.get_T_world_frame(frame_index);
+  auto T_world_frame = solver->robot->get_T_world_frame(frame_index);
 
   Eigen::Vector3d axis_world = (T_world_frame.rotation() * axis_frame).normalized();
   Eigen::Vector3d normal_world_normalized = normal_world.normalized();
@@ -20,7 +20,7 @@ void AxisPlaneTask::update()
   Eigen::Vector3d axis_target = normal_world_normalized.cross(rotate_axis).normalized();
   double error = safe_acos(axis_world.dot(normal_world_normalized)) - (M_PI / 2);
 
-  Eigen::MatrixXd J = solver->robot.frame_jacobian(frame_index, pinocchio::WORLD);
+  Eigen::MatrixXd J = solver->robot->frame_jacobian(frame_index, pinocchio::WORLD);
   A = rotate_axis.transpose() * J.block(3, 0, 3, solver->N);
   b(0, 0) = error;
 }
