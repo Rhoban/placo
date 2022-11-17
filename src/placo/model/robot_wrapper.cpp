@@ -1,4 +1,4 @@
-#include "placo/model/mobile_robot.h"
+#include "placo/model/robot_wrapper.h"
 #include "pinocchio/algorithm/center-of-mass-derivatives.hpp"
 #include "pinocchio/algorithm/center-of-mass.hpp"
 #include "pinocchio/algorithm/compute-all-terms.hpp"
@@ -10,12 +10,12 @@
 
 namespace placo
 {
-bool MobileRobot::Collision::operator==(const Collision& other)
+bool RobotWrapper::Collision::operator==(const Collision& other)
 {
   return (bodyA == other.bodyA && bodyB == other.bodyB && contacts == other.contacts);
 }
 
-MobileRobot::MobileRobot(std::string model_directory)
+RobotWrapper::RobotWrapper(std::string model_directory)
 {
   std::string urdf_filename = model_directory + "/robot.urdf";
   pinocchio::urdf::buildModel(urdf_filename, root_joint, model);
@@ -72,12 +72,12 @@ MobileRobot::MobileRobot(std::string model_directory)
   }
 }
 
-void MobileRobot::reset()
+void RobotWrapper::reset()
 {
   state = neutral_state();
 }
 
-pinocchio::FrameIndex MobileRobot::get_frame_index(const std::string& frame)
+pinocchio::FrameIndex RobotWrapper::get_frame_index(const std::string& frame)
 {
   if (!model.existFrame(frame))
   {
@@ -89,17 +89,17 @@ pinocchio::FrameIndex MobileRobot::get_frame_index(const std::string& frame)
   return model.getFrameId(frame);
 }
 
-void MobileRobot::set_joint(const std::string& name, double value)
+void RobotWrapper::set_joint(const std::string& name, double value)
 {
   state.q[get_joint_offset(name)] = value;
 }
 
-double MobileRobot::get_joint(const std::string& name)
+double RobotWrapper::get_joint(const std::string& name)
 {
   return state.q[get_joint_offset(name)];
 }
 
-int MobileRobot::get_joint_offset(const std::string& name)
+int RobotWrapper::get_joint_offset(const std::string& name)
 {
   if (!model.existJointName(name))
   {
@@ -111,12 +111,12 @@ int MobileRobot::get_joint_offset(const std::string& name)
   return 7 + model.getJointId(name) - 2;
 }
 
-int MobileRobot::get_joint_v_offset(const std::string& name)
+int RobotWrapper::get_joint_v_offset(const std::string& name)
 {
   return 6 + model.getJointId(name) - 2;
 }
 
-Eigen::Affine3d MobileRobot::get_T_world_fbase()
+Eigen::Affine3d RobotWrapper::get_T_world_fbase()
 {
   Eigen::Affine3d transformation = Eigen::Affine3d::Identity();
 
@@ -128,7 +128,7 @@ Eigen::Affine3d MobileRobot::get_T_world_fbase()
   return transformation;
 }
 
-void MobileRobot::set_T_world_fbase(Eigen::Affine3d transformation)
+void RobotWrapper::set_T_world_fbase(Eigen::Affine3d transformation)
 {
   state.q[0] = transformation.translation().x();
   state.q[1] = transformation.translation().y();
@@ -141,19 +141,19 @@ void MobileRobot::set_T_world_fbase(Eigen::Affine3d transformation)
   state.q[6] = quaternions.w();
 }
 
-Eigen::Vector3d MobileRobot::com_world()
+Eigen::Vector3d RobotWrapper::com_world()
 {
   pinocchio::centerOfMass(model, *data);
 
   return data->com[0];
 }
 
-void MobileRobot::update_kinematics()
+void RobotWrapper::update_kinematics()
 {
   pinocchio::framesForwardKinematics(model, *data, state.q);
 }
 
-MobileRobot::State MobileRobot::neutral_state()
+RobotWrapper::State RobotWrapper::neutral_state()
 {
   State state;
   state.q = pinocchio::neutral(model);
@@ -163,7 +163,7 @@ MobileRobot::State MobileRobot::neutral_state()
   return state;
 }
 
-void MobileRobot::load_collisions_pairs(const std::string& filename)
+void RobotWrapper::load_collisions_pairs(const std::string& filename)
 {
   // Reading collision pairs
   Json::Value collisions;
@@ -190,32 +190,32 @@ void MobileRobot::load_collisions_pairs(const std::string& filename)
   }
 }
 
-Eigen::Affine3d MobileRobot::get_T_world_frame(const std::string& frame)
+Eigen::Affine3d RobotWrapper::get_T_world_frame(const std::string& frame)
 {
   return get_T_world_frame(get_frame_index(frame));
 }
 
-Eigen::Affine3d MobileRobot::get_T_world_frame(pinocchio::FrameIndex index)
+Eigen::Affine3d RobotWrapper::get_T_world_frame(pinocchio::FrameIndex index)
 {
   return pin_se3_to_eigen(data->oMf[index]);
 }
 
-Eigen::Affine3d MobileRobot::get_T_a_b(const std::string& frame_a, const std::string& frame_b)
+Eigen::Affine3d RobotWrapper::get_T_a_b(const std::string& frame_a, const std::string& frame_b)
 {
   return get_T_a_b(get_frame_index(frame_a), get_frame_index(frame_b));
 }
 
-Eigen::Affine3d MobileRobot::get_T_a_b(FrameIndex index_a, FrameIndex index_b)
+Eigen::Affine3d RobotWrapper::get_T_a_b(FrameIndex index_a, FrameIndex index_b)
 {
   return get_T_world_frame(index_a).inverse() * get_T_world_frame(index_b);
 }
 
-void MobileRobot::set_T_world_frame(const std::string& frame, Eigen::Affine3d T_world_frameTarget)
+void RobotWrapper::set_T_world_frame(const std::string& frame, Eigen::Affine3d T_world_frameTarget)
 {
   set_T_world_frame(get_frame_index(frame), T_world_frameTarget);
 }
 
-void MobileRobot::set_T_world_frame(pinocchio::FrameIndex frame, Eigen::Affine3d T_world_frameTarget)
+void RobotWrapper::set_T_world_frame(pinocchio::FrameIndex frame, Eigen::Affine3d T_world_frameTarget)
 {
   Eigen::Affine3d T_world_fbase = get_T_world_fbase();
   Eigen::Affine3d T_world_frame = get_T_world_frame(frame);
@@ -224,7 +224,7 @@ void MobileRobot::set_T_world_frame(pinocchio::FrameIndex frame, Eigen::Affine3d
   set_T_world_fbase(T_world_frameTarget * T_frame_fbase);
 }
 
-std::vector<MobileRobot::Collision> MobileRobot::self_collisions(bool stop_at_first)
+std::vector<RobotWrapper::Collision> RobotWrapper::self_collisions(bool stop_at_first)
 {
   std::vector<Collision> collisions;
   pinocchio::GeometryData geom_data(collision_model);
@@ -261,12 +261,12 @@ std::vector<MobileRobot::Collision> MobileRobot::self_collisions(bool stop_at_fi
   return collisions;
 }
 
-Eigen::MatrixXd MobileRobot::frame_jacobian(const std::string& frame)
+Eigen::MatrixXd RobotWrapper::frame_jacobian(const std::string& frame)
 {
   return frame_jacobian(get_frame_index(frame));
 }
 
-Eigen::MatrixXd MobileRobot::frame_jacobian(pinocchio::FrameIndex frame, pinocchio::ReferenceFrame ref)
+Eigen::MatrixXd RobotWrapper::frame_jacobian(pinocchio::FrameIndex frame, pinocchio::ReferenceFrame ref)
 {
   Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> jacobian(6, model.nv);
   jacobian.setZero();
@@ -275,17 +275,17 @@ Eigen::MatrixXd MobileRobot::frame_jacobian(pinocchio::FrameIndex frame, pinocch
   return jacobian;
 }
 
-Eigen::Matrix3Xd MobileRobot::com_jacobian()
+Eigen::Matrix3Xd RobotWrapper::com_jacobian()
 {
   return pinocchio::jacobianCenterOfMass(model, *data, state.q);
 }
 
-std::vector<std::string> MobileRobot::joint_names()
+std::vector<std::string> RobotWrapper::joint_names()
 {
   return model.names;
 }
 
-std::vector<std::string> MobileRobot::frame_names()
+std::vector<std::string> RobotWrapper::frame_names()
 {
   std::vector<std::string> result;
   for (auto& frame : model.frames)
@@ -295,12 +295,12 @@ std::vector<std::string> MobileRobot::frame_names()
   return result;
 }
 
-std::vector<std::string> MobileRobot::expected_dofs()
+std::vector<std::string> RobotWrapper::expected_dofs()
 {
   return {};
 }
 
-std::vector<std::string> MobileRobot::expected_frames()
+std::vector<std::string> RobotWrapper::expected_frames()
 {
   return {};
 }

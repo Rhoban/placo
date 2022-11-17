@@ -30,7 +30,7 @@ void registerTaskMethods(class_<T>& class__)
 
 void exposeKinematics()
 {
-  registerTaskMethods(class_<PositionTask>("PositionTask", init<MobileRobot::FrameIndex, Eigen::Vector3d>())
+  registerTaskMethods(class_<PositionTask>("PositionTask", init<RobotWrapper::FrameIndex, Eigen::Vector3d>())
                           .add_property("frame_index", &PositionTask::frame_index)
                           .add_property(
                               "target_world", +[](const PositionTask& task) { return task.target_world; },
@@ -38,7 +38,7 @@ void exposeKinematics()
 
   registerTaskMethods(
       class_<RelativePositionTask>("RelativePositionTask",
-                                   init<MobileRobot::FrameIndex, MobileRobot::FrameIndex, Eigen::Vector3d>())
+                                   init<RobotWrapper::FrameIndex, RobotWrapper::FrameIndex, Eigen::Vector3d>())
           .add_property("frame_a", &RelativePositionTask::frame_a)
           .add_property("frame_b", &RelativePositionTask::frame_b)
           .add_property(
@@ -47,7 +47,7 @@ void exposeKinematics()
   registerTaskMethods(class_<CoMTask>("CoMTask", init<Eigen::Vector3d>())
                           .add_property("target_world", &CoMTask::target_world, &CoMTask::target_world));
 
-  registerTaskMethods(class_<OrientationTask>("OrientationTask", init<MobileRobot::FrameIndex, Eigen::Matrix3d>())
+  registerTaskMethods(class_<OrientationTask>("OrientationTask", init<RobotWrapper::FrameIndex, Eigen::Matrix3d>())
                           .add_property("frame_index", &OrientationTask::frame_index)
                           .add_property(
                               "R_world_frame", +[](const OrientationTask& task) { return task.R_world_frame; },
@@ -55,7 +55,7 @@ void exposeKinematics()
 
   registerTaskMethods(
       class_<RelativeOrientationTask>("RelativeOrientationTask",
-                                      init<MobileRobot::FrameIndex, MobileRobot::FrameIndex, Eigen::Matrix3d>())
+                                      init<RobotWrapper::FrameIndex, RobotWrapper::FrameIndex, Eigen::Matrix3d>())
           .add_property("frame_a", &RelativeOrientationTask::frame_a)
           .add_property("frame_b", &RelativeOrientationTask::frame_b)
           .add_property(
@@ -85,7 +85,7 @@ void exposeKinematics()
       .add_property("T_a_b", &RelativeFrameTask::get_T_a_b, &RelativeFrameTask::set_T_a_b);
 
   registerTaskMethods(
-      class_<AxisAlignTask>("AxisAlignTask", init<MobileRobot::FrameIndex, Eigen::Vector3d, Eigen::Vector3d>())
+      class_<AxisAlignTask>("AxisAlignTask", init<RobotWrapper::FrameIndex, Eigen::Vector3d, Eigen::Vector3d>())
           .add_property("frame_index", &AxisAlignTask::frame_index)
           .add_property(
               "axis_frame", +[](const AxisAlignTask& task) { return task.axis_frame; }, &AxisAlignTask::axis_frame)
@@ -94,7 +94,7 @@ void exposeKinematics()
               &AxisAlignTask::targetAxis_world));
 
   registerTaskMethods(
-      class_<AxisPlaneTask>("AxisPlaneTask", init<MobileRobot::FrameIndex, Eigen::Vector3d, Eigen::Vector3d>())
+      class_<AxisPlaneTask>("AxisPlaneTask", init<RobotWrapper::FrameIndex, Eigen::Vector3d, Eigen::Vector3d>())
           .add_property("frame_index", &AxisPlaneTask::frame_index)
           .add_property(
               "axis_frame", +[](const AxisPlaneTask& task) { return task.axis_frame; }, &AxisPlaneTask::axis_frame)
@@ -103,14 +103,14 @@ void exposeKinematics()
               &AxisPlaneTask::normal_world));
 
   registerTaskMethods(
-      class_<PoseTask>("PoseTask", init<MobileRobot::FrameIndex, Eigen::Affine3d>())
+      class_<PoseTask>("PoseTask", init<RobotWrapper::FrameIndex, Eigen::Affine3d>())
           .add_property("frame_index", &PoseTask::frame_index)
           .add_property(
               "T_world_frame", +[](const PoseTask& task) { return task.T_world_frame; }, &PoseTask::T_world_frame));
 
   registerTaskMethods(
       class_<RelativePoseTask>("RelativePoseTask",
-                               init<MobileRobot::FrameIndex, MobileRobot::FrameIndex, Eigen::Affine3d>())
+                               init<RobotWrapper::FrameIndex, RobotWrapper::FrameIndex, Eigen::Affine3d>())
           .add_property("frame_a", &RelativePoseTask::frame_a)
           .add_property("frame_b", &RelativePoseTask::frame_b)
           .add_property(
@@ -128,7 +128,7 @@ void exposeKinematics()
                               }));
 
   registerTaskMethods(
-      class_<DistanceTask>("DistanceTask", init<MobileRobot::FrameIndex, MobileRobot::FrameIndex, double>())
+      class_<DistanceTask>("DistanceTask", init<RobotWrapper::FrameIndex, RobotWrapper::FrameIndex, double>())
           .add_property("frame_a", &DistanceTask::frame_a)
           .add_property("frame_b", &DistanceTask::frame_b)
           .add_property("distance", &DistanceTask::distance, &DistanceTask::distance));
@@ -136,7 +136,7 @@ void exposeKinematics()
   auto regularizationTask = class_<RegularizationTask>("RegularizationTask");
   registerTaskMethods(regularizationTask);
 
-  class_<KinematicsSolver>("KinematicsSolver", init<MobileRobot&>())
+  class_<KinematicsSolver>("KinematicsSolver", init<RobotWrapper&>())
       .add_property("noise", &KinematicsSolver::noise, &KinematicsSolver::noise)
       .add_property("N", &KinematicsSolver::N)
 

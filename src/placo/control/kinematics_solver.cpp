@@ -1,22 +1,22 @@
 #include "placo/control/kinematics_solver.h"
 #include "eiquadprog/eiquadprog.hpp"
 #include "pinocchio/algorithm/geometry.hpp"
-#include "placo/model/mobile_robot.h"
+#include "placo/model/robot_wrapper.h"
 #include "placo/utils.h"
 
 namespace placo
 {
-KinematicsSolver::KinematicsSolver(MobileRobot* robot_) : robot(robot_)
+KinematicsSolver::KinematicsSolver(RobotWrapper* robot_) : robot(robot_)
 {
   N = robot->model.nv;
 }
 
-KinematicsSolver::KinematicsSolver(MobileRobot& robot_) : robot(&robot_)
+KinematicsSolver::KinematicsSolver(RobotWrapper& robot_) : robot(&robot_)
 {
   N = robot->model.nv;
 }
 
-PositionTask& KinematicsSolver::add_position_task(MobileRobot::FrameIndex frame, Eigen::Vector3d target_world)
+PositionTask& KinematicsSolver::add_position_task(RobotWrapper::FrameIndex frame, Eigen::Vector3d target_world)
 {
   return add_task(new PositionTask(frame, target_world));
 }
@@ -26,8 +26,8 @@ PositionTask& KinematicsSolver::add_position_task(std::string frame, Eigen::Vect
   return add_position_task(robot->get_frame_index(frame), target_world);
 }
 
-RelativePositionTask& KinematicsSolver::add_relative_position_task(MobileRobot::FrameIndex frame_a,
-                                                                   MobileRobot::FrameIndex frame_b,
+RelativePositionTask& KinematicsSolver::add_relative_position_task(RobotWrapper::FrameIndex frame_a,
+                                                                   RobotWrapper::FrameIndex frame_b,
                                                                    Eigen::Vector3d target)
 {
   return add_task(new RelativePositionTask(frame_a, frame_b, target));
@@ -44,7 +44,7 @@ CoMTask& KinematicsSolver::add_com_task(Eigen::Vector3d targetCom_world)
   return add_task(new CoMTask(targetCom_world));
 }
 
-OrientationTask& KinematicsSolver::add_orientation_task(MobileRobot::FrameIndex frame, Eigen::Matrix3d R_world_frame)
+OrientationTask& KinematicsSolver::add_orientation_task(RobotWrapper::FrameIndex frame, Eigen::Matrix3d R_world_frame)
 {
   return add_task(new OrientationTask(frame, R_world_frame));
 }
@@ -54,8 +54,8 @@ OrientationTask& KinematicsSolver::add_orientation_task(std::string frame, Eigen
   return add_orientation_task(robot->get_frame_index(frame), R_world_frame);
 }
 
-RelativeOrientationTask& KinematicsSolver::add_relative_orientation_task(MobileRobot::FrameIndex frame_a,
-                                                                         MobileRobot::FrameIndex frame_b,
+RelativeOrientationTask& KinematicsSolver::add_relative_orientation_task(RobotWrapper::FrameIndex frame_a,
+                                                                         RobotWrapper::FrameIndex frame_b,
                                                                          Eigen::Matrix3d R_a_b)
 {
   return add_task(new RelativeOrientationTask(frame_a, frame_b, R_a_b));
@@ -67,7 +67,7 @@ RelativeOrientationTask& KinematicsSolver::add_relative_orientation_task(std::st
   return add_relative_orientation_task(robot->get_frame_index(frame_a), robot->get_frame_index(frame_b), R_a_b);
 }
 
-AxisAlignTask& KinematicsSolver::add_axisalign_task(MobileRobot::FrameIndex frame, Eigen::Vector3d axis_frame,
+AxisAlignTask& KinematicsSolver::add_axisalign_task(RobotWrapper::FrameIndex frame, Eigen::Vector3d axis_frame,
                                                     Eigen::Vector3d targetAxis_world)
 {
   return add_task(new AxisAlignTask(frame, axis_frame, targetAxis_world));
@@ -79,7 +79,7 @@ AxisAlignTask& KinematicsSolver::add_axisalign_task(std::string frame, Eigen::Ve
   return add_axisalign_task(robot->get_frame_index(frame), axis_frame, target_axis_world);
 }
 
-AxisPlaneTask& KinematicsSolver::add_axisplane_task(MobileRobot::FrameIndex frame, Eigen::Vector3d axis_frame,
+AxisPlaneTask& KinematicsSolver::add_axisplane_task(RobotWrapper::FrameIndex frame, Eigen::Vector3d axis_frame,
                                                     Eigen::Vector3d normal_world)
 {
   return add_task(new AxisPlaneTask(frame, axis_frame, normal_world));
@@ -91,7 +91,7 @@ AxisPlaneTask& KinematicsSolver::add_axisplane_task(std::string frame, Eigen::Ve
   return add_axisplane_task(robot->get_frame_index(frame), axis_frame, normal_world);
 }
 
-FrameTask KinematicsSolver::add_frame_task(MobileRobot::FrameIndex frame, Eigen::Affine3d T_world_frame)
+FrameTask KinematicsSolver::add_frame_task(RobotWrapper::FrameIndex frame, Eigen::Affine3d T_world_frame)
 {
   PositionTask& position = add_position_task(frame, T_world_frame.translation());
   OrientationTask& orientation = add_orientation_task(frame, T_world_frame.rotation());
@@ -104,8 +104,8 @@ FrameTask KinematicsSolver::add_frame_task(std::string frame, Eigen::Affine3d T_
   return add_frame_task(robot->get_frame_index(frame), T_world_frame);
 }
 
-RelativeFrameTask KinematicsSolver::add_relative_frame_task(MobileRobot::FrameIndex frame_a,
-                                                            MobileRobot::FrameIndex frame_b, Eigen::Affine3d T_a_b)
+RelativeFrameTask KinematicsSolver::add_relative_frame_task(RobotWrapper::FrameIndex frame_a,
+                                                            RobotWrapper::FrameIndex frame_b, Eigen::Affine3d T_a_b)
 {
   RelativePositionTask& position = add_relative_position_task(frame_a, frame_b, T_a_b.translation());
   RelativeOrientationTask& orientation = add_relative_orientation_task(frame_a, frame_b, T_a_b.rotation());
@@ -119,7 +119,7 @@ RelativeFrameTask KinematicsSolver::add_relative_frame_task(std::string frame_a,
   return add_relative_frame_task(robot->get_frame_index(frame_a), robot->get_frame_index(frame_b), T_a_b);
 }
 
-PoseTask& KinematicsSolver::add_pose_task(MobileRobot::FrameIndex frame, Eigen::Affine3d T_world_frame)
+PoseTask& KinematicsSolver::add_pose_task(RobotWrapper::FrameIndex frame, Eigen::Affine3d T_world_frame)
 {
   return add_task(new PoseTask(frame, T_world_frame));
 }
@@ -129,8 +129,8 @@ PoseTask& KinematicsSolver::add_pose_task(std::string frame, Eigen::Affine3d T_w
   return add_pose_task(robot->get_frame_index(frame), T_world_frame);
 }
 
-RelativePoseTask& KinematicsSolver::add_relative_pose_task(MobileRobot::FrameIndex frame_a,
-                                                           MobileRobot::FrameIndex frame_b, Eigen::Affine3d T_a_b)
+RelativePoseTask& KinematicsSolver::add_relative_pose_task(RobotWrapper::FrameIndex frame_a,
+                                                           RobotWrapper::FrameIndex frame_b, Eigen::Affine3d T_a_b)
 {
   return add_task(new RelativePoseTask(frame_a, frame_b, T_a_b));
 }
@@ -156,7 +156,7 @@ JointsTask& KinematicsSolver::add_joints_task(std::map<std::string, double>& joi
   return task;
 }
 
-DistanceTask& KinematicsSolver::add_distance_task(MobileRobot::FrameIndex frame_a, MobileRobot::FrameIndex frame_b,
+DistanceTask& KinematicsSolver::add_distance_task(RobotWrapper::FrameIndex frame_a, RobotWrapper::FrameIndex frame_b,
                                                   double distance)
 {
   return add_task(new DistanceTask(frame_a, frame_b, distance));

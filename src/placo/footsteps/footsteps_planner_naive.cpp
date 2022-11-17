@@ -19,15 +19,15 @@ typedef boost::geometry::model::polygon<b_point> b_polygon;
 
 namespace placo
 {
-FootstepsPlannerNaive::FootstepsPlannerNaive(Side initial_side, Eigen::Affine3d T_world_left,
-                                             Eigen::Affine3d T_world_right, double feet_spacing)
-  : FootstepsPlanner(initial_side, T_world_left, T_world_right, feet_spacing)
+FootstepsPlannerNaive::FootstepsPlannerNaive(HumanoidRobot::Side initial_side, Eigen::Affine3d T_world_left,
+                                             Eigen::Affine3d T_world_right)
+  : FootstepsPlanner(initial_side, T_world_left, T_world_right)
 {
 }
 
 FootstepsPlannerNaive::FootstepsPlannerNaive(std::string initial_side, Eigen::Affine3d T_world_left,
-                                             Eigen::Affine3d T_world_right, double feet_spacing)
-  : FootstepsPlanner(initial_side, T_world_left, T_world_right, feet_spacing)
+                                             Eigen::Affine3d T_world_right)
+  : FootstepsPlanner(initial_side, T_world_left, T_world_right)
 {
 }
 
@@ -48,12 +48,12 @@ std::vector<FootstepsPlanner::Footstep> FootstepsPlannerNaive::plan(Eigen::Affin
 
   // Including initial footsteps, which are current frames
   FootstepsPlanner::Footstep footstep(foot_width, foot_length);
-  footstep.side = support_side == Side::Left ? Side::Right : Side::Left;
-  footstep.frame = support_side == Side::Left ? T_world_right : T_world_left;
+  footstep.side = support_side == HumanoidRobot::Side::Left ? HumanoidRobot::Side::Right : HumanoidRobot::Side::Left;
+  footstep.frame = support_side == HumanoidRobot::Side::Left ? T_world_right : T_world_left;
   footsteps.push_back(footstep);
 
   footstep.side = support_side;
-  footstep.frame = support_side == Side::Left ? T_world_left : T_world_right;
+  footstep.frame = support_side == HumanoidRobot::Side::Left ? T_world_left : T_world_right;
   footsteps.push_back(footstep);
 
   while ((!left_arrived || !right_arrived) && steps < max_steps)
@@ -63,7 +63,8 @@ std::vector<FootstepsPlanner::Footstep> FootstepsPlannerNaive::plan(Eigen::Affin
     bool arrived = true;
 
     // The current support in the world
-    Eigen::Affine3d T_world_support = (support_side == Left) ? T_world_currentLeft : T_world_currentRight;
+    Eigen::Affine3d T_world_support =
+        (support_side == HumanoidRobot::Side::Left) ? T_world_currentLeft : T_world_currentRight;
 
     // Floating foot to current frame
     Eigen::Affine3d T_support_floatingIdle = Eigen::Affine3d::Identity();
@@ -71,9 +72,10 @@ std::vector<FootstepsPlanner::Footstep> FootstepsPlannerNaive::plan(Eigen::Affin
 
     // Expressing the target (for current flying foot) in the support foot
     Eigen::Affine3d T_support_target =
-        T_world_support.inverse() * ((support_side == Left) ? T_world_targetRight : T_world_targetLeft);
+        T_world_support.inverse() *
+        ((support_side == HumanoidRobot::Side::Left) ? T_world_targetRight : T_world_targetLeft);
 
-    if (support_side == Left)
+    if (support_side == HumanoidRobot::Side::Left)
     {
       T_support_floatingIdle.translation().y() = -feet_spacing;
       T_support_center.translation().y() = -feet_spacing / 2.;
@@ -145,21 +147,21 @@ std::vector<FootstepsPlanner::Footstep> FootstepsPlannerNaive::plan(Eigen::Affin
 
     // Going to next step
     FootstepsPlanner::Footstep footstep(foot_width, foot_length);
-    footstep.side = (support_side == Side::Left) ? Side::Right : Side::Left;
+    footstep.side = HumanoidRobot::other_side(support_side);
     footstep.frame = T_world_support * new_step;
     footsteps.push_back(footstep);
 
-    if (support_side == Side::Left)
+    if (support_side == HumanoidRobot::Side::Left)
     {
       right_arrived = arrived;
       T_world_currentRight = footstep.frame;
-      support_side = Side::Right;
+      support_side = HumanoidRobot::Side::Right;
     }
     else
     {
       left_arrived = arrived;
       T_world_currentLeft = footstep.frame;
-      support_side = Side::Left;
+      support_side = HumanoidRobot::Side::Left;
     }
   }
 

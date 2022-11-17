@@ -74,7 +74,8 @@ if __name__ == "__main__":
     start = time.time()
 
     # Currently, the naive planner is the only one implemented
-    planner = placo.FootstepsPlannerNaive("left", placo.frame(T_center_left), placo.frame(T_center_right), feet_spacing)
+    planner = placo.FootstepsPlannerNaive("left", placo.frame(T_center_left), placo.frame(T_center_right))
+    planner.feet_spacing = args.feet_spacing
     planner.foot_width = args.foot_width
     planner.foot_length = args.foot_length
     footsteps = planner.plan(placo.frame(T_world_targetLeft), placo.frame(T_world_targetRight))

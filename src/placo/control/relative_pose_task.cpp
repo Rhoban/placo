@@ -3,7 +3,7 @@
 
 namespace placo
 {
-RelativePoseTask::RelativePoseTask(MobileRobot::FrameIndex frame_a, MobileRobot::FrameIndex frame_b,
+RelativePoseTask::RelativePoseTask(RobotWrapper::FrameIndex frame_a, RobotWrapper::FrameIndex frame_b,
                                    Eigen::Affine3d T_a_b)
   : frame_a(frame_a), frame_b(frame_b), T_a_b(T_a_b)
 {

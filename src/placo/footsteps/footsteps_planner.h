@@ -3,21 +3,13 @@
 #include <Eigen/Dense>
 #include <algorithm>
 #include <vector>
+#include "placo/model/humanoid_robot.h"
 
 namespace placo
 {
 class FootstepsPlanner
 {
 public:
-  /**
-   * @brief Which side the foot is
-   */
-  enum Side
-  {
-    Left = 0,
-    Right
-  };
-
   /**
    * @brief A footstep is the position of a specific foot on the ground
    */
@@ -26,7 +18,7 @@ public:
     Footstep(double foot_width, double foot_length);
     double foot_width;
     double foot_length;
-    Side side;
+    HumanoidRobot::Side side;
     Eigen::Affine3d frame;
     std::vector<Eigen::Vector2d> polygon;
     bool computed_polygon = false;
@@ -59,7 +51,7 @@ public:
      * @param side the side we want the frame (left or right foot)
      * @return a frame
      */
-    Eigen::Affine3d frame(Side side);
+    Eigen::Affine3d frame(HumanoidRobot::Side side);
 
     bool operator==(const Support& other);
   };
@@ -71,14 +63,13 @@ public:
    * @param T_world_right frame of the initial right foot
    * @param feet_spacing spacing between feet
    */
-  FootstepsPlanner(Side initial_side, Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right, double feet_spacing);
+  FootstepsPlanner(HumanoidRobot::Side initial_side, Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right);
 
   /**
    * @brief This constructors allow the initial_side to be a string (useful for
    * Python bindings)
    */
-  FootstepsPlanner(std::string initial_side, Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right,
-                   double feet_spacing);
+  FootstepsPlanner(std::string initial_side, Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right);
 
   /**
    * @brief Plan the footsteps
@@ -99,14 +90,14 @@ public:
   std::vector<Support> make_double_supports(const std::vector<Footstep>& footsteps);
 
   // Foot dimensions
+  double feet_spacing = 0.1;
   double foot_width = 0.1;
   double foot_length = 0.15;
 
 protected:
   // Frames for initial and target feet placements
-  Side initial_side;
+  HumanoidRobot::Side initial_side;
   Eigen::Affine3d T_world_left;
   Eigen::Affine3d T_world_right;
-  double feet_spacing;
 };
 }  // namespace placo

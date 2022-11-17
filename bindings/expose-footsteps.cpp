@@ -12,9 +12,9 @@ using namespace placo;
 
 void exposeFootsteps()
 {
-  enum_<FootstepsPlanner::Side>("FootstepsPlanner_Side")
-      .value("left", FootstepsPlanner::Side::Left)
-      .value("right", FootstepsPlanner::Side::Right);
+  enum_<HumanoidRobot::Side>("HumanoidRobot_Side")
+      .value("left", HumanoidRobot::Side::Left)
+      .value("right", HumanoidRobot::Side::Right);
 
   class_<FootstepsPlanner::Footstep>("Footstep", init<double, double>())
       .add_property("side", &FootstepsPlanner::Footstep::side)
@@ -25,9 +25,10 @@ void exposeFootsteps()
       .def("support_polygon", &FootstepsPlanner::Support::support_polygon)
       .add_property("footsteps", &FootstepsPlanner::Support::footsteps);
 
-  class_<FootstepsPlannerNaive>("FootstepsPlannerNaive", init<std::string, Eigen::Affine3d, Eigen::Affine3d, double>())
+  class_<FootstepsPlannerNaive>("FootstepsPlannerNaive", init<std::string, Eigen::Affine3d, Eigen::Affine3d>())
       .def("plan", &FootstepsPlannerNaive::plan)
       .def("make_double_supports", &FootstepsPlannerNaive::make_double_supports)
+      .add_property("feet_spacing", &FootstepsPlannerNaive::feet_spacing, &FootstepsPlannerNaive::feet_spacing)
       .add_property("foot_width", &FootstepsPlannerNaive::foot_width, &FootstepsPlannerNaive::foot_width)
       .add_property("foot_length", &FootstepsPlannerNaive::foot_length, &FootstepsPlannerNaive::foot_length);
 

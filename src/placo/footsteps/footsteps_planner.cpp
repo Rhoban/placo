@@ -89,7 +89,7 @@ Eigen::Affine3d FootstepsPlanner::Support::frame()
   return f;
 }
 
-Eigen::Affine3d FootstepsPlanner::Support::frame(Side side)
+Eigen::Affine3d FootstepsPlanner::Support::frame(HumanoidRobot::Side side)
 {
   for (auto& footstep : footsteps)
   {
@@ -102,18 +102,15 @@ Eigen::Affine3d FootstepsPlanner::Support::frame(Side side)
   throw std::logic_error("Asked for a frame that doesn't exist");
 }
 
-FootstepsPlanner::FootstepsPlanner(Side initial_side, Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right,
-                                   double feet_spacing)
-  : initial_side(initial_side), T_world_left(T_world_left), T_world_right(T_world_right), feet_spacing(feet_spacing)
+FootstepsPlanner::FootstepsPlanner(HumanoidRobot::Side initial_side, Eigen::Affine3d T_world_left,
+                                   Eigen::Affine3d T_world_right)
+  : initial_side(initial_side), T_world_left(T_world_left), T_world_right(T_world_right)
 {
 }
 
 FootstepsPlanner::FootstepsPlanner(std::string initial_side, Eigen::Affine3d T_world_left,
-                                   Eigen::Affine3d T_world_right, double feet_spacing)
-  : initial_side(initial_side == "left" ? Left : Right)
-  , T_world_left(T_world_left)
-  , T_world_right(T_world_right)
-  , feet_spacing(feet_spacing)
+                                   Eigen::Affine3d T_world_right)
+  : initial_side(HumanoidRobot::string_to_side(initial_side)), T_world_left(T_world_left), T_world_right(T_world_right)
 {
 }
 

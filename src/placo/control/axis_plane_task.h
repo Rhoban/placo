@@ -7,9 +7,9 @@ namespace placo
 class KinematicsSolver;
 struct AxisPlaneTask : public Task
 {
-  AxisPlaneTask(MobileRobot::FrameIndex frame_index, Eigen::Vector3d axis_frame, Eigen::Vector3d normal_world);
+  AxisPlaneTask(RobotWrapper::FrameIndex frame_index, Eigen::Vector3d axis_frame, Eigen::Vector3d normal_world);
 
-  MobileRobot::FrameIndex frame_index;
+  RobotWrapper::FrameIndex frame_index;
   Eigen::Vector3d axis_frame;
   Eigen::Vector3d normal_world;
 

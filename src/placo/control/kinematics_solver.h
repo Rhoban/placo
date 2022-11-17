@@ -1,7 +1,7 @@
 #pragma once
 #include <Eigen/Dense>
 
-#include "placo/model/mobile_robot.h"
+#include "placo/model/robot_wrapper.h"
 
 // Tasks
 #include "placo/control/task.h"
@@ -26,15 +26,15 @@ namespace placo
 class KinematicsSolver
 {
 public:
-  KinematicsSolver(MobileRobot& robot);
-  KinematicsSolver(MobileRobot* robot);
+  KinematicsSolver(RobotWrapper& robot);
+  KinematicsSolver(RobotWrapper* robot);
 
   /**
    * @brief Adds a position task
    * @param frame the robot frame we want to control
    * @param target_world the target position, expressed in the world (as T_world_frame)
    */
-  PositionTask& add_position_task(MobileRobot::FrameIndex frame, Eigen::Vector3d target_world);
+  PositionTask& add_position_task(RobotWrapper::FrameIndex frame, Eigen::Vector3d target_world);
   PositionTask& add_position_task(std::string frame, Eigen::Vector3d target_world);
 
   /**
@@ -43,7 +43,7 @@ public:
    * @param frame_b frame b
    * @param target the target vector between frame a and b (expressed in world)
    */
-  RelativePositionTask& add_relative_position_task(MobileRobot::FrameIndex frame_a, MobileRobot::FrameIndex frame_b,
+  RelativePositionTask& add_relative_position_task(RobotWrapper::FrameIndex frame_a, RobotWrapper::FrameIndex frame_b,
                                                    Eigen::Vector3d target);
   RelativePositionTask& add_relative_position_task(std::string frame_a, std::string frame_b, Eigen::Vector3d target);
 
@@ -58,7 +58,7 @@ public:
    * @param frame the robot frame we want to control
    * @param R_world_frame the target orientation we want to achieve, expressed in the world (as T_world_frame)
    */
-  OrientationTask& add_orientation_task(MobileRobot::FrameIndex frame, Eigen::Matrix3d R_world_frame);
+  OrientationTask& add_orientation_task(RobotWrapper::FrameIndex frame, Eigen::Matrix3d R_world_frame);
   OrientationTask& add_orientation_task(std::string frame, Eigen::Matrix3d R_world_frame);
 
   /**
@@ -67,8 +67,8 @@ public:
    * @param frame_b frame b
    * @param R_a_b the desired orientation
    */
-  RelativeOrientationTask& add_relative_orientation_task(MobileRobot::FrameIndex frame_a,
-                                                         MobileRobot::FrameIndex frame_b, Eigen::Matrix3d R_a_b);
+  RelativeOrientationTask& add_relative_orientation_task(RobotWrapper::FrameIndex frame_a,
+                                                         RobotWrapper::FrameIndex frame_b, Eigen::Matrix3d R_a_b);
   RelativeOrientationTask& add_relative_orientation_task(std::string frame_a, std::string frame_b,
                                                          Eigen::Matrix3d R_a_b);
 
@@ -79,7 +79,7 @@ public:
    * @param axis_frame the axis to align, expressed in the robot frame
    * @param targetAxis_world the target axis (in the world) we want to be aligned with
    */
-  AxisAlignTask& add_axisalign_task(MobileRobot::FrameIndex frame, Eigen::Vector3d axis_frame,
+  AxisAlignTask& add_axisalign_task(RobotWrapper::FrameIndex frame, Eigen::Vector3d axis_frame,
                                     Eigen::Vector3d targetAxis_world);
   AxisAlignTask& add_axisalign_task(std::string frame, Eigen::Vector3d axis_frame, Eigen::Vector3d targetAxis_world);
 
@@ -89,7 +89,7 @@ public:
    * @param axis_frame axis expressed in frame
    * @param normal_world normal expressed in world
    */
-  AxisPlaneTask& add_axisplane_task(MobileRobot::FrameIndex frame, Eigen::Vector3d axis_frame,
+  AxisPlaneTask& add_axisplane_task(RobotWrapper::FrameIndex frame, Eigen::Vector3d axis_frame,
                                     Eigen::Vector3d normal_world);
   AxisPlaneTask& add_axisplane_task(std::string frame, Eigen::Vector3d axis_frame, Eigen::Vector3d normal_world);
 
@@ -100,7 +100,7 @@ public:
    * @param T_world_frame the target for the frame we want to control, expressed in the world (as T_world_frame)
    * @param priority task priority (hard: equality constraint, soft: objective function)
    */
-  FrameTask add_frame_task(MobileRobot::FrameIndex frame, Eigen::Affine3d T_world_frame);
+  FrameTask add_frame_task(RobotWrapper::FrameIndex frame, Eigen::Affine3d T_world_frame);
   FrameTask add_frame_task(std::string frame, Eigen::Affine3d T_world_frame);
 
   /**
@@ -109,7 +109,7 @@ public:
    * @param frame_b frame b
    * @param T_a_b desired transformation
    */
-  RelativeFrameTask add_relative_frame_task(MobileRobot::FrameIndex frame_a, MobileRobot::FrameIndex frame_b,
+  RelativeFrameTask add_relative_frame_task(RobotWrapper::FrameIndex frame_a, RobotWrapper::FrameIndex frame_b,
                                             Eigen::Affine3d T_a_b);
   RelativeFrameTask add_relative_frame_task(std::string frame_a, std::string frame_b, Eigen::Affine3d T_a_b);
 
@@ -121,7 +121,7 @@ public:
    * @param frame the robot frame we want to control
    * @param T_world_frame the target for the frame we want to control, expressed in the world (as T_world_frame)
    */
-  PoseTask& add_pose_task(MobileRobot::FrameIndex frame, Eigen::Affine3d T_world_frame);
+  PoseTask& add_pose_task(RobotWrapper::FrameIndex frame, Eigen::Affine3d T_world_frame);
   PoseTask& add_pose_task(std::string frame, Eigen::Affine3d T_world_frame);
 
   /**
@@ -131,7 +131,7 @@ public:
    * @param frame_b frame B
    * @param T_a_b relative desired pose to enforce
    */
-  RelativePoseTask& add_relative_pose_task(MobileRobot::FrameIndex frame_a, MobileRobot::FrameIndex frame_b,
+  RelativePoseTask& add_relative_pose_task(RobotWrapper::FrameIndex frame_a, RobotWrapper::FrameIndex frame_b,
                                            Eigen::Affine3d T_a_b);
   RelativePoseTask& add_relative_pose_task(std::string frame_a, std::string frame_b, Eigen::Affine3d T_a_b);
 
@@ -155,7 +155,7 @@ public:
    * @param frame_b frame b
    * @param distance distance to maintain
    */
-  DistanceTask& add_distance_task(MobileRobot::FrameIndex frame_a, MobileRobot::FrameIndex frame_b, double distance);
+  DistanceTask& add_distance_task(RobotWrapper::FrameIndex frame_a, RobotWrapper::FrameIndex frame_b, double distance);
   DistanceTask& add_distance_task(std::string frame_a, std::string frame_b, double distance);
 
   /**
@@ -195,7 +195,7 @@ public:
   /**
    * @brief The robot controlled by this solver
    */
-  MobileRobot* robot;
+  RobotWrapper* robot;
 
   /**
    * @brief Size of the problem (number of variables we will search)

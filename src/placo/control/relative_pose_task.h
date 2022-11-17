@@ -7,10 +7,10 @@ namespace placo
 class KinematicsSolver;
 struct RelativePoseTask : public Task
 {
-  RelativePoseTask(MobileRobot::FrameIndex frame_a, MobileRobot::FrameIndex frame_b, Eigen::Affine3d T_a_b);
+  RelativePoseTask(RobotWrapper::FrameIndex frame_a, RobotWrapper::FrameIndex frame_b, Eigen::Affine3d T_a_b);
 
-  MobileRobot::FrameIndex frame_a;
-  MobileRobot::FrameIndex frame_b;
+  RobotWrapper::FrameIndex frame_a;
+  RobotWrapper::FrameIndex frame_b;
   Eigen::Affine3d T_a_b;
 
   virtual void update();

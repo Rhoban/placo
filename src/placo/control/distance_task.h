@@ -7,10 +7,10 @@ namespace placo
 class KinematicsSolver;
 struct DistanceTask : public Task
 {
-  DistanceTask(MobileRobot::FrameIndex frame_a, MobileRobot::FrameIndex frame_b, double distance);
+  DistanceTask(RobotWrapper::FrameIndex frame_a, RobotWrapper::FrameIndex frame_b, double distance);
 
-  MobileRobot::FrameIndex frame_a;
-  MobileRobot::FrameIndex frame_b;
+  RobotWrapper::FrameIndex frame_a;
+  RobotWrapper::FrameIndex frame_b;
   double distance;
 
   virtual void update();

@@ -8,10 +8,10 @@ class KinematicsSolver;
 
 struct RelativeOrientationTask : public Task
 {
-  RelativeOrientationTask(MobileRobot::FrameIndex frame_a, MobileRobot::FrameIndex frame_b, Eigen::Matrix3d R_a_b);
+  RelativeOrientationTask(RobotWrapper::FrameIndex frame_a, RobotWrapper::FrameIndex frame_b, Eigen::Matrix3d R_a_b);
 
-  MobileRobot::FrameIndex frame_a;
-  MobileRobot::FrameIndex frame_b;
+  RobotWrapper::FrameIndex frame_a;
+  RobotWrapper::FrameIndex frame_b;
   Eigen::Matrix3d R_a_b;
 
   virtual void update();

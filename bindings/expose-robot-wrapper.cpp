@@ -2,8 +2,8 @@
 
 #include "expose-utils.hpp"
 #include "module.h"
-#include "placo/model/mobile_robot.h"
-#include "placo/model/legged_robot.h"
+#include "placo/model/robot_wrapper.h"
+#include "placo/model/humanoid_robot.h"
 #include "placo/control/kinematics_solver.h"
 #include <Eigen/Dense>
 #include <boost/python.hpp>
@@ -12,7 +12,7 @@ using namespace boost::python;
 using namespace placo;
 
 template <typename RobotType>
-class_<RobotType>& exposeRobotType(const char* name)
+class_<RobotType> exposeRobotType(const char* name)
 {
   return class_<RobotType>(name, init<std::string>())
       .add_property("state", &RobotType::state)
@@ -44,23 +44,34 @@ class_<RobotType>& exposeRobotType(const char* name)
           "make_solver", +[](RobotType& robot) { return KinematicsSolver(&robot); });
 }
 
-void exposeMobileRobot()
+void exposeRobotWrapper()
 {
-  class_<MobileRobot::State>("MobileRobot_State")
+  class_<RobotWrapper::State>("RobotWrapper_State")
       .add_property(
-          "q", +[](const MobileRobot::State& state) { return state.q; },
-          +[](MobileRobot::State& state, const Eigen::VectorXd& q) { state.q = q; })
+          "q", +[](const RobotWrapper::State& state) { return state.q; },
+          +[](RobotWrapper::State& state, const Eigen::VectorXd& q) { state.q = q; })
       .add_property(
-          "qd", +[](const MobileRobot::State& state) { return state.qd; },
-          +[](MobileRobot::State& state, const Eigen::VectorXd& qd) { state.qd = qd; });
+          "qd", +[](const RobotWrapper::State& state) { return state.qd; },
+          +[](RobotWrapper::State& state, const Eigen::VectorXd& qd) { state.qd = qd; });
 
-  class_<MobileRobot::Collision>("Collision")
-      .add_property("bodyA", &MobileRobot::Collision::bodyA)
-      .add_property("bodyB", &MobileRobot::Collision::bodyB)
-      .add_property("contacts", &MobileRobot::Collision::contacts);
+  class_<RobotWrapper::Collision>("Collision")
+      .add_property("bodyA", &RobotWrapper::Collision::bodyA)
+      .add_property("bodyB", &RobotWrapper::Collision::bodyB)
+      .add_property("contacts", &RobotWrapper::Collision::contacts);
 
-  exposeRobotType<MobileRobot>("MobileRobot");
-  exposeRobotType<LeggedRobot>("LeggedRobot");
+  exposeRobotType<RobotWrapper>("RobotWrapper");
 
-  exposeStdVector<MobileRobot::Collision>("vector_Collision");
+  exposeRobotType<HumanoidRobot>("HumanoidRobot")
+      .def<void (HumanoidRobot::*)(const std::string&)>("update_support_side", &HumanoidRobot::update_support_side)
+      .def("ensure_on_floor", &HumanoidRobot::ensure_on_floor)
+      .def("get_T_world_left", &HumanoidRobot::get_T_world_left)
+      .def("get_T_world_right", &HumanoidRobot::get_T_world_right)
+      .def("get_T_world_trunk", &HumanoidRobot::get_T_world_trunk)
+      .def("swap_support_side", &HumanoidRobot::swap_support_side)
+      .def(
+          "get_support_side", +[](const HumanoidRobot& robot) {
+            return robot.support_side == HumanoidRobot::Side::Left ? "left" : "right";
+          });
+
+  exposeStdVector<RobotWrapper::Collision>("vector_Collision");
 }

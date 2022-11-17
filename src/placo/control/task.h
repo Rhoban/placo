@@ -2,7 +2,7 @@
 
 #include <string>
 #include <Eigen/Dense>
-#include "placo/model/mobile_robot.h"
+#include "placo/model/robot_wrapper.h"
 #include "placo/utils.h"
 
 namespace placo

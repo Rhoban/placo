@@ -10,11 +10,9 @@ namespace placo
 class FootstepsPlannerNaive : public FootstepsPlanner
 {
 public:
-  FootstepsPlannerNaive(Side initial_side, Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right,
-                        double feet_spacing);
+  FootstepsPlannerNaive(HumanoidRobot::Side initial_side, Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right);
 
-  FootstepsPlannerNaive(std::string initial_side, Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right,
-                        double feet_spacing);
+  FootstepsPlannerNaive(std::string initial_side, Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right);
 
   /**
    * @see FootstepPlanner::plan(). This is a naive implementation of this

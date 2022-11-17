@@ -22,7 +22,7 @@ def get_viewer() -> meshcat.Visualizer:
     return viewer
 
 
-def robot_viz(robot: placo.MobileRobot) -> pin.visualize.MeshcatVisualizer:
+def robot_viz(robot: placo.RobotWrapper) -> pin.visualize.MeshcatVisualizer:
     """
     Builds an instance of pinocchio MeshcatVisualizer, which allows to push the model to the meshcat
     visualizer passed as parameter
@@ -79,7 +79,7 @@ def point_viz(
     vis["points"][name].set_transform(tf.translation_matrix(point))
 
 
-def robot_frame_viz(robot: placo.MobileRobot, frame: str) -> None:
+def robot_frame_viz(robot: placo.RobotWrapper, frame: str) -> None:
     """
     Draw a frame from the robot
     """

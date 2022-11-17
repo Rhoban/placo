@@ -3,7 +3,7 @@
 
 namespace placo
 {
-RelativeOrientationTask::RelativeOrientationTask(MobileRobot::FrameIndex frame_a, MobileRobot::FrameIndex frame_b,
+RelativeOrientationTask::RelativeOrientationTask(RobotWrapper::FrameIndex frame_a, RobotWrapper::FrameIndex frame_b,
                                                  Eigen::Matrix3d R_a_b)
   : frame_a(frame_a), frame_b(frame_b), R_a_b(R_a_b)
 {

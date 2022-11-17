@@ -9,7 +9,7 @@ from visualization import robot_viz, frame_viz, point_viz, robot_frame_viz
 # TODO: Update joint limits in URDF
 
 # Loading the robot
-robot = placo.LeggedRobot("sigmaban/")
+robot = placo.HumanoidRobot("sigmaban/")
 
 # robot.set_joint("left_knee", 0.1)
 # robot.set_joint("right_knee", 0.1)
@@ -32,6 +32,8 @@ left_foot_task.configure("left_foot", "soft", 1.0, 1.0)
 
 right_foot_task = solver.add_frame_task("right_foot", T_world_right)
 right_foot_task.configure("right_foot", "soft", 1.0, 1.0)
+T_world_right[0, 3] = .1
+right_foot_task.T_world_frame = T_world_right
 
 # Look at ball
 look_at_ball = solver.add_axisalign_task("camera", np.array([0.0, 0.0, 1.0]), np.array([0.0, 0.0, 0.0]))
@@ -73,7 +75,7 @@ for step in range(int(1e9)):
         camera_pos = robot.get_T_world_frame("camera")[:3, 3]
         look_at_ball.targetAxis_world = ball - camera_pos
 
-        trunk_task.orientation().R_world_frame = tf.rotation([0, 0, 1], np.sin(t * 1.2))[:3, :3]
+        # trunk_task.orientation().R_world_frame = tf.rotation([0, 0, 1], np.sin(t * 1.2))[:3, :3]
         # target = trunk_task.target_world
         # target[2] = init_trunk_z + np.sin(t)*.15
         # trunk_task.target_world = target

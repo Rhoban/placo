@@ -8,10 +8,10 @@
 
 namespace placo
 {
-class MobileRobot
+class RobotWrapper
 {
 public:
-  MobileRobot(std::string model_directory = "robot/");
+  RobotWrapper(std::string model_directory = "robot/");
 
   /**
    * @brief The index of a frame (currently directly wrapped to pinocchio's FrameIndex)

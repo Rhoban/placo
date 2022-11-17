@@ -3,7 +3,7 @@
 
 namespace placo
 {
-DistanceTask::DistanceTask(MobileRobot::FrameIndex frame_a, MobileRobot::FrameIndex frame_b, double distance)
+DistanceTask::DistanceTask(RobotWrapper::FrameIndex frame_a, RobotWrapper::FrameIndex frame_b, double distance)
   : frame_a(frame_a), frame_b(frame_b), distance(distance)
 {
   b = Eigen::MatrixXd(1, 1);

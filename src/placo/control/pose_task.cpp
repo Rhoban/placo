@@ -3,7 +3,7 @@
 
 namespace placo
 {
-PoseTask::PoseTask(MobileRobot::FrameIndex frame_index, Eigen::Affine3d T_world_frame)
+PoseTask::PoseTask(RobotWrapper::FrameIndex frame_index, Eigen::Affine3d T_world_frame)
   : frame_index(frame_index), T_world_frame(T_world_frame)
 {
 }

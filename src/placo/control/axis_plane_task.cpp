@@ -3,7 +3,7 @@
 
 namespace placo
 {
-AxisPlaneTask::AxisPlaneTask(MobileRobot::FrameIndex frame_index, Eigen::Vector3d axis_frame,
+AxisPlaneTask::AxisPlaneTask(RobotWrapper::FrameIndex frame_index, Eigen::Vector3d axis_frame,
                              Eigen::Vector3d normal_world)
   : frame_index(frame_index), axis_frame(axis_frame), normal_world(normal_world)
 {

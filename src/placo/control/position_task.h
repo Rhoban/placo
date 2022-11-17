@@ -7,9 +7,9 @@ namespace placo
 class KinematicsSolver;
 struct PositionTask : public Task
 {
-  PositionTask(MobileRobot::FrameIndex frame_index, Eigen::Vector3d target_world);
+  PositionTask(RobotWrapper::FrameIndex frame_index, Eigen::Vector3d target_world);
 
-  MobileRobot::FrameIndex frame_index;
+  RobotWrapper::FrameIndex frame_index;
   Eigen::Vector3d target_world;
 
   virtual void update();

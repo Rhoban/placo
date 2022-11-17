@@ -8,9 +8,9 @@ class KinematicsSolver;
 
 struct OrientationTask : public Task
 {
-  OrientationTask(MobileRobot::FrameIndex frame_index, Eigen::Matrix3d R_world_frame);
+  OrientationTask(RobotWrapper::FrameIndex frame_index, Eigen::Matrix3d R_world_frame);
 
-  MobileRobot::FrameIndex frame_index;
+  RobotWrapper::FrameIndex frame_index;
   Eigen::Matrix3d R_world_frame;
 
   virtual void update();
