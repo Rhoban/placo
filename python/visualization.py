@@ -7,6 +7,7 @@ import placo
 
 
 viewer = None
+robot_names: dict = {}
 
 
 def get_viewer() -> meshcat.Visualizer:
@@ -22,7 +23,7 @@ def get_viewer() -> meshcat.Visualizer:
     return viewer
 
 
-def robot_viz(robot: placo.RobotWrapper) -> pin.visualize.MeshcatVisualizer:
+def robot_viz(robot: placo.RobotWrapper, name: str = "robot") -> pin.visualize.MeshcatVisualizer:
     """
     Builds an instance of pinocchio MeshcatVisualizer, which allows to push the model to the meshcat
     visualizer passed as parameter
@@ -31,9 +32,12 @@ def robot_viz(robot: placo.RobotWrapper) -> pin.visualize.MeshcatVisualizer:
 
     > viz.display(q)
     """
+    global robot_names
+
+    robot_names[robot] = name
     viz = pin.visualize.MeshcatVisualizer(robot.model, robot.collision_model, robot.visual_model)
     viz.initViewer(viewer=get_viewer())
-    viz.loadViewerModel()
+    viz.loadViewerModel(name)
 
     return viz
 
@@ -68,9 +72,7 @@ def frame_viz(name: str, T: np.ndarray, opacity: float = 1.0) -> None:
         obj.set_transform(T @ tf.rotation_matrix(*rotate) @ tf.translation_matrix([0, 0.05, 0]))
 
 
-def point_viz(
-    name: str, point: np.ndarray, radius: float = 0.01, color: float = 0xFF0000, opacity: float = 1.0
-) -> None:
+def point_viz(name: str, point: np.ndarray, radius: float = 0.01, color: float = 0xFF0000, opacity: float = 1.0) -> None:
     """
     Prints a point (sphere)
     """
@@ -83,7 +85,8 @@ def robot_frame_viz(robot: placo.RobotWrapper, frame: str) -> None:
     """
     Draw a frame from the robot
     """
-    frame_viz(frame, robot.get_T_world_frame(frame))
+    node_name = f"{robot_names[robot]}_{frame}"
+    frame_viz(node_name, robot.get_T_world_frame(frame))
 
 
 steps: int = 0
