@@ -278,7 +278,7 @@ Eigen::MatrixXd RobotWrapper::frame_jacobian(const std::string& frame, const std
   else
   {
     std::ostringstream oss;
-    oss << "Unknown reference: " << reference;
+    oss << "Unknown reference: " << reference << ", use one of: world, local, local_world_aligned.";
     throw std::runtime_error(oss.str());
   }
 }
