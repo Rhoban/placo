@@ -160,7 +160,7 @@ public:
    * @param frame given frame
    * @return jacobian (6xn matrix)
    */
-  Eigen::MatrixXd frame_jacobian(const std::string& frame);
+  Eigen::MatrixXd frame_jacobian(const std::string& frame, const std::string& reference = "local_world_aligned");
   Eigen::MatrixXd frame_jacobian(FrameIndex frame,
                                  pinocchio::ReferenceFrame ref = pinocchio::ReferenceFrame::WORLD);
 

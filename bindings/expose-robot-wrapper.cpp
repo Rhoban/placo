@@ -39,7 +39,8 @@ class_<RobotType> exposeRobotType(const char* name)
           "set_T_world_frame", +[](RobotType& robot, const std::string& frame,
                                    Eigen::Affine3d T_world_frame) { robot.set_T_world_frame(frame, T_world_frame); })
       .def(
-          "frame_jacobian", +[](RobotType& robot, const std::string& frame) { return robot.frame_jacobian(frame); })
+          "frame_jacobian", +[](RobotType& robot, const std::string& frame,
+                                const std::string& reference) { return robot.frame_jacobian(frame, reference); })
       .def(
           "make_solver", +[](RobotType& robot) { return KinematicsSolver(&robot); });
 }

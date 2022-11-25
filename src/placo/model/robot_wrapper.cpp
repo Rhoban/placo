@@ -261,9 +261,26 @@ std::vector<RobotWrapper::Collision> RobotWrapper::self_collisions(bool stop_at_
   return collisions;
 }
 
-Eigen::MatrixXd RobotWrapper::frame_jacobian(const std::string& frame)
+Eigen::MatrixXd RobotWrapper::frame_jacobian(const std::string& frame, const std::string& reference)
 {
-  return frame_jacobian(get_frame_index(frame));
+  if (reference == "local_world_aligned")
+  {
+    return frame_jacobian(get_frame_index(frame), pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED);
+  }
+  else if (reference == "local")
+  {
+    return frame_jacobian(get_frame_index(frame), pinocchio::ReferenceFrame::LOCAL);
+  }
+  else if (reference == "world")
+  {
+    return frame_jacobian(get_frame_index(frame), pinocchio::ReferenceFrame::WORLD);
+  }
+  else
+  {
+    std::ostringstream oss;
+    oss << "Unknown reference: " << reference << ", use one of: world, local, local_world_aligned.";
+    throw std::runtime_error(oss.str());
+  }
 }
 
 Eigen::MatrixXd RobotWrapper::frame_jacobian(pinocchio::FrameIndex frame, pinocchio::ReferenceFrame ref)

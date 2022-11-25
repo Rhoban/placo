@@ -1,0 +1,253 @@
+<robot name="onshape">
+<link name="irb6620_220-150_m2004_rev0_01-1">
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package:///irb6620_220-150_m2004_rev0_01-1.stl"/>
+</geometry>
+<material name="irb6620_220-150_m2004_rev0_01-1_material">
+<color rgba="0.890196 0.411765 0.12549 1.0"/>
+</material>
+</visual>
+<collision>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package:///irb6620_220-150_m2004_rev0_01-1.stl"/>
+</geometry>
+<material name="irb6620_220-150_m2004_rev0_01-1_material">
+<color rgba="0.890196 0.411765 0.12549 1.0"/>
+</material>
+</collision>
+<inertial>
+<origin xyz="-0.13157 -0.000324731 0.10665" rpy="0 0 0"/>
+<mass value="773.632" />
+<inertia ixx="25.5752" ixy="-0.133182"  ixz="0.412189" iyy="53.1654" iyz="-0.00689753" izz="73.7359" />
+</inertial>
+</link>
+
+<link name="irb6620_220-150_m2004_rev0_01-2">
+<visual>
+<origin xyz="3.47652e-35 -7.70372e-33 -0.23" rpy="-3.35571e-17 -9.6472e-18 1.26457e-50" />
+<geometry>
+<mesh filename="package:///irb6620_220-150_m2004_rev0_01-2.stl"/>
+</geometry>
+<material name="irb6620_220-150_m2004_rev0_01-2_material">
+<color rgba="0.890196 0.411765 0.12549 1.0"/>
+</material>
+</visual>
+<collision>
+<origin xyz="3.47652e-35 -7.70372e-33 -0.23" rpy="-3.35571e-17 -9.6472e-18 1.26457e-50" />
+<geometry>
+<mesh filename="package:///irb6620_220-150_m2004_rev0_01-2.stl"/>
+</geometry>
+<material name="irb6620_220-150_m2004_rev0_01-2_material">
+<color rgba="0.890196 0.411765 0.12549 1.0"/>
+</material>
+</collision>
+<inertial>
+<origin xyz="0.148912 0.0326312 0.29935" rpy="0 0 0"/>
+<mass value="641.051" />
+<inertia ixx="27.6361" ixy="-2.19497"  ixz="-12.801" iyy="44.7432" iyz="-2.63954" izz="35.4588" />
+</inertial>
+</link>
+
+<link name="irb6620_220-150_m2004_rev0_01-3">
+<visual>
+<origin xyz="-0.32 0.68 0.1305" rpy="1.5708 2.91737e-34 0" />
+<geometry>
+<mesh filename="package:///irb6620_220-150_m2004_rev0_01-3.stl"/>
+</geometry>
+<material name="irb6620_220-150_m2004_rev0_01-3_material">
+<color rgba="0.890196 0.411765 0.12549 1.0"/>
+</material>
+</visual>
+<collision>
+<origin xyz="-0.32 0.68 0.1305" rpy="1.5708 2.91737e-34 0" />
+<geometry>
+<mesh filename="package:///irb6620_220-150_m2004_rev0_01-3.stl"/>
+</geometry>
+<material name="irb6620_220-150_m2004_rev0_01-3_material">
+<color rgba="0.890196 0.411765 0.12549 1.0"/>
+</material>
+</collision>
+<inertial>
+<origin xyz="0.000201766 -0.418032 -0.0878342" rpy="0 0 0"/>
+<mass value="321.848" />
+<inertia ixx="31.095" ixy="0.00543582"  ixz="0.000711824" iyy="2.70569" iyz="-2.95953" izz="31.8061" />
+</inertial>
+</link>
+
+<link name="irb6620_220-150_m2004_rev0_01-4">
+<visual>
+<origin xyz="-0.32 1.655 0.226" rpy="1.5708 1.21431e-16 0" />
+<geometry>
+<mesh filename="package:///irb6620_220-150_m2004_rev0_01-4.stl"/>
+</geometry>
+<material name="irb6620_220-150_m2004_rev0_01-4_material">
+<color rgba="0.890196 0.411765 0.12549 1.0"/>
+</material>
+</visual>
+<collision>
+<origin xyz="-0.32 1.655 0.226" rpy="1.5708 1.21431e-16 0" />
+<geometry>
+<mesh filename="package:///irb6620_220-150_m2004_rev0_01-4.stl"/>
+</geometry>
+<material name="irb6620_220-150_m2004_rev0_01-4_material">
+<color rgba="0.890196 0.411765 0.12549 1.0"/>
+</material>
+</collision>
+<inertial>
+<origin xyz="-0.0481335 -0.117643 0.233825" rpy="0 0 0"/>
+<mass value="390.365" />
+<inertia ixx="11.6726" ixy="-1.57606"  ixz="1.44385" iyy="11.6131" iyz="2.03075" izz="10.7651" />
+</inertial>
+</link>
+
+<link name="irb6620_220-150_m2004_rev0_01-5">
+<visual>
+<origin xyz="2.32994e-15 -1.855 -0.502" rpy="-1.5708 -1.5708 0" />
+<geometry>
+<mesh filename="package:///irb6620_220-150_m2004_rev0_01-5.stl"/>
+</geometry>
+<material name="irb6620_220-150_m2004_rev0_01-5_material">
+<color rgba="0.890196 0.411765 0.12549 1.0"/>
+</material>
+</visual>
+<collision>
+<origin xyz="2.32994e-15 -1.855 -0.502" rpy="-1.5708 -1.5708 0" />
+<geometry>
+<mesh filename="package:///irb6620_220-150_m2004_rev0_01-5.stl"/>
+</geometry>
+<material name="irb6620_220-150_m2004_rev0_01-5_material">
+<color rgba="0.890196 0.411765 0.12549 1.0"/>
+</material>
+</collision>
+<inertial>
+<origin xyz="-0.0139217 1.09139e-05 0.391175" rpy="0 0 0"/>
+<mass value="282.092" />
+<inertia ixx="11.3515" ixy="0.000254355"  ixz="0.635368" iyy="13.4161" iyz="-0.000599466" izz="3.91566" />
+</inertial>
+</link>
+
+<link name="irb6620_220-150_m2004_rev0_01-6">
+<visual>
+<origin xyz="-1.207 1.855 0.095" rpy="1.5708 1.1428e-16 -1.2326e-32" />
+<geometry>
+<mesh filename="package:///irb6620_220-150_m2004_rev0_01-6.stl"/>
+</geometry>
+<material name="irb6620_220-150_m2004_rev0_01-6_material">
+<color rgba="0.890196 0.411765 0.12549 1.0"/>
+</material>
+</visual>
+<collision>
+<origin xyz="-1.207 1.855 0.095" rpy="1.5708 1.1428e-16 -1.2326e-32" />
+<geometry>
+<mesh filename="package:///irb6620_220-150_m2004_rev0_01-6.stl"/>
+</geometry>
+<material name="irb6620_220-150_m2004_rev0_01-6_material">
+<color rgba="0.890196 0.411765 0.12549 1.0"/>
+</material>
+</collision>
+<inertial>
+<origin xyz="0.0363042 -4.46348e-08 0.09713" rpy="0 0 0"/>
+<mass value="48.6088" />
+<inertia ixx="0.191995" ixy="-6.15611e-08"  ixz="0.00953206" iyy="0.381344" iyz="1.74478e-07" izz="0.353244" />
+</inertial>
+</link>
+
+<link name="irb6620_220-150_m2004_rev0_01-7">
+<visual>
+<origin xyz="6.03932e-15 -1.855 -1.37" rpy="-1.5708 -1.5708 0" />
+<geometry>
+<mesh filename="package:///irb6620_220-150_m2004_rev0_01-7.stl"/>
+</geometry>
+<material name="irb6620_220-150_m2004_rev0_01-7_material">
+<color rgba="0.701961 0.701961 0.701961 1.0"/>
+</material>
+</visual>
+<collision>
+<origin xyz="6.03932e-15 -1.855 -1.37" rpy="-1.5708 -1.5708 0" />
+<geometry>
+<mesh filename="package:///irb6620_220-150_m2004_rev0_01-7.stl"/>
+</geometry>
+<material name="irb6620_220-150_m2004_rev0_01-7_material">
+<color rgba="0.701961 0.701961 0.701961 1.0"/>
+</material>
+</collision>
+<inertial>
+<origin xyz="5.76129e-17 9.49046e-06 0.018941" rpy="0 0 0"/>
+<mass value="7.065" />
+<inertia ixx="0.0177307" ixy="-4.85198e-22"  ixz="-2.28477e-18" iyy="0.0177254" iyz="3.4598e-06" izz="0.0340227" />
+</inertial>
+</link>
+
+<link name="effector">
+<inertial>
+<origin xyz="0 0 0" rpy="0 0 0" />
+<mass value="1e-9" />
+<inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
+</inertial>
+</link>
+<joint name="effector_frame" type="fixed">
+<origin xyz="8.12109e-18 -2.22045e-16 0.0395" rpy="-1.5708 -1.5708 0" />
+<parent link="irb6620_220-150_m2004_rev0_01-7" />
+<child link="effector" />
+<axis xyz="0 0 0"/>
+</joint>
+
+<joint name="r6" type="revolute">
+<origin xyz="0.163 -4.44089e-16 0.095" rpy="-3.14159 -1.5708 0" />
+<parent link="irb6620_220-150_m2004_rev0_01-6" />
+<child link="irb6620_220-150_m2004_rev0_01-7" />
+<axis xyz="0 0 1"/>
+<limit effort="1" velocity="20" lower="-5.23599" upper="5.23599"/>
+<joint_properties friction="0.0"/>
+</joint>
+
+<joint name="r5" type="revolute">
+<origin xyz="-0.095 -2.22045e-16 0.705" rpy="-3.14159 -1.5708 0" />
+<parent link="irb6620_220-150_m2004_rev0_01-5" />
+<child link="irb6620_220-150_m2004_rev0_01-6" />
+<axis xyz="0 0 1"/>
+<limit effort="1" velocity="20" lower="-2.26893" upper="2.26893"/>
+<joint_properties friction="0.0"/>
+</joint>
+
+<joint name="r4" type="revolute">
+<origin xyz="0.182 -0.2 0.226" rpy="3.14159 -1.5708 0" />
+<parent link="irb6620_220-150_m2004_rev0_01-4" />
+<child link="irb6620_220-150_m2004_rev0_01-5" />
+<axis xyz="0 0 1"/>
+<limit effort="1" velocity="20" lower="-5.23599" upper="5.23599"/>
+<joint_properties friction="0.0"/>
+</joint>
+
+<joint name="r3" type="revolute">
+<origin xyz="-1.66533e-16 -0.975 -0.0955" rpy="6.48844e-17 2.91737e-34 0" />
+<parent link="irb6620_220-150_m2004_rev0_01-3" />
+<child link="irb6620_220-150_m2004_rev0_01-4" />
+<axis xyz="0 0 1"/>
+<limit effort="1" velocity="20" lower="-3.14159" upper="1.22173"/>
+<joint_properties friction="0.0"/>
+</joint>
+
+<joint name="r2" type="revolute">
+<origin xyz="0.32 -0.1305 0.45" rpy="-1.5708 -9.6472e-18 -6.93889e-15" />
+<parent link="irb6620_220-150_m2004_rev0_01-2" />
+<child link="irb6620_220-150_m2004_rev0_01-3" />
+<axis xyz="0 0 1"/>
+<limit effort="1" velocity="20" lower="-2.44346" upper="1.13446"/>
+<joint_properties friction="0.0"/>
+</joint>
+
+<joint name="r1" type="revolute">
+<origin xyz="3.19606e-34 6.95533e-18 0.23" rpy="-3.02406e-17 1.54074e-33 -4.27125e-50" />
+<parent link="irb6620_220-150_m2004_rev0_01-1" />
+<child link="irb6620_220-150_m2004_rev0_01-2" />
+<axis xyz="0 0 1"/>
+<limit effort="1" velocity="20" lower="-2.96706" upper="2.96706"/>
+<joint_properties friction="0.0"/>
+</joint>
+
+
+</robot>
