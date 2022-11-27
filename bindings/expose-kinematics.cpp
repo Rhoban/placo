@@ -138,6 +138,7 @@ void exposeKinematics()
 
   class_<KinematicsSolver>("KinematicsSolver", init<RobotWrapper&>())
       .add_property("noise", &KinematicsSolver::noise, &KinematicsSolver::noise)
+      .add_property("dt", &KinematicsSolver::dt, &KinematicsSolver::dt)
       .add_property("N", &KinematicsSolver::N)
 
       // Position and CoM task
@@ -189,10 +190,13 @@ void exposeKinematics()
       // Masking/unmasking DoFs
       .def("mask_dof", &KinematicsSolver::mask_dof)
       .def("unmask_dof", &KinematicsSolver::unmask_dof)
+      .def("mask_fbase", &KinematicsSolver::mask_fbase)
 
       // Clearing the tasks
       .def("clear_tasks", &KinematicsSolver::clear_tasks)
       .def("dump_status", &KinematicsSolver::dump_status)
+
+      .def("configure_limits", &KinematicsSolver::configure_limits)
 
       .def("solve", &KinematicsSolver::solve);
 }

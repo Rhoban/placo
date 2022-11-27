@@ -64,6 +64,7 @@ void HumanoidRobot::ensure_on_floor()
   // Updating the floating base so that the foot is where we want
   update_kinematics();
   set_T_world_frame(support_frame(), T_world_support);
+  update_kinematics();
 }
 
 void HumanoidRobot::swap_support_side()

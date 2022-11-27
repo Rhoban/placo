@@ -6,12 +6,12 @@
 
 namespace placo
 {
-KinematicsSolver::KinematicsSolver(RobotWrapper* robot_) : robot(robot_)
+KinematicsSolver::KinematicsSolver(RobotWrapper* robot_) : robot(robot_), masked_fbase(false)
 {
   N = robot->model.nv;
 }
 
-KinematicsSolver::KinematicsSolver(RobotWrapper& robot_) : robot(&robot_)
+KinematicsSolver::KinematicsSolver(RobotWrapper& robot_) : robot(&robot_), masked_fbase(false)
 {
   N = robot->model.nv;
 }
@@ -191,6 +191,17 @@ void KinematicsSolver::unmask_dof(std::string dof)
   masked_dof.erase(robot->get_joint_v_offset(dof));
 }
 
+void KinematicsSolver::mask_fbase(bool masked)
+{
+  masked_fbase = masked;
+}
+
+void KinematicsSolver::configure_limits(bool dofs_limit_, bool speeds_limit_)
+{
+  dofs_limit = dofs_limit_;
+  speeds_limit = speeds_limit_;
+}
+
 Eigen::VectorXd KinematicsSolver::solve(bool apply)
 {
   // Adding some random noise
@@ -245,6 +256,11 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
   // Adding masked DoF in equality constraints
   n_equalities += masked_dof.size();
 
+  if (masked_fbase)
+  {
+    n_equalities += 6;
+  }
+
   // Constraint matrices
   Eigen::MatrixXd A(n_equalities, N);
   Eigen::VectorXd b(n_equalities);
@@ -272,21 +288,60 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
     current_equality_row += 1;
   }
 
+  if (masked_fbase)
+  {
+    // Masking the 6 first dof to disable fbase in optimization
+    for (int k = 0; k < 6; k++)
+    {
+      A(current_equality_row, k) = 1;
+      current_equality_row += 1;
+    }
+  }
+
   // Handling degree of freedoms limit inequalities
   int constrained_dofs = N - 6;
-  Eigen::MatrixXd CI(2 * constrained_dofs, N);
-  Eigen::VectorXd ci0(2 * constrained_dofs);
+  int n_inequalities = 0;
+  if (dofs_limit)
+  {
+    n_inequalities += constrained_dofs * 2;
+  }
+  if (speeds_limit)
+  {
+    n_inequalities += constrained_dofs * 2;
+  }
+  Eigen::MatrixXd CI(n_inequalities, N);
+  Eigen::VectorXd ci0(n_inequalities);
+  int current_inequality_row = 0;
 
   for (int k = 0; k < N - 6; k++)
   {
     Eigen::MatrixXd selector(1, N);
     selector.setZero();
     selector(0, k + 6) = 1;
-    CI.block(k * 2, 0, 1, N) = selector;
-    CI.block(k * 2 + 1, 0, 1, N) = -selector;
 
-    ci0[k * 2] = -(robot->model.lowerPositionLimit[k + 7] - robot->state.q[k + 7]);
-    ci0[k * 2 + 1] = (robot->model.upperPositionLimit[k + 7] - robot->state.q[k + 7]);
+    if (dofs_limit)
+    {
+      // Position limits
+      CI.block(current_inequality_row, 0, 1, N) = selector;
+      CI.block(current_inequality_row + 1, 0, 1, N) = -selector;
+
+      ci0[current_inequality_row] = -(robot->model.lowerPositionLimit[k + 7] - robot->state.q[k + 7]);
+      ci0[current_inequality_row + 1] = (robot->model.upperPositionLimit[k + 7] - robot->state.q[k + 7]);
+
+      current_inequality_row += 2;
+    }
+
+    if (speeds_limit)
+    {
+      // Speed limits
+      CI.block(current_inequality_row, 0, 1, N) = selector;
+      CI.block(current_inequality_row + 1, 0, 1, N) = -selector;
+
+      ci0[current_inequality_row] = dt * robot->model.velocityLimit[k + 6];
+      ci0[current_inequality_row + 1] = dt * robot->model.velocityLimit[k + 6];
+
+      current_inequality_row += 2;
+    }
   }
 
   Eigen::VectorXi activeSet;

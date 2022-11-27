@@ -183,6 +183,11 @@ public:
   void unmask_dof(std::string dof);
 
   /**
+   * @brief Decides if the floating base should be masked
+   */
+  void mask_fbase(bool masked);
+
+  /**
    * @brief Clears the internal tasks
    */
   void clear_tasks();
@@ -191,6 +196,11 @@ public:
    * @brief Shows the tasks status
    */
   void dump_status();
+
+  /**
+   * @brief Configure limits that are enabled
+   */
+  void configure_limits(bool dofs_limit, bool speeds_limit);
 
   /**
    * @brief The robot controlled by this solver
@@ -206,10 +216,20 @@ public:
    * @brief Some configuration noise added before solving
    */
   double noise = 1e-4;
+  
+  /**
+   * @brief solver dt (for speeds limiting)
+   */
+  double dt = 0.01;
 
 protected:
   std::set<int> masked_dof;
+  bool masked_fbase;
   std::vector<Task*> tasks;
+
+  // Modes to limit the DoFs
+  bool dofs_limit = true;
+  bool speeds_limit = false;
 
   template <typename T>
   T& add_task(T* task)
