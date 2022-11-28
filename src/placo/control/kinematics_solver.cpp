@@ -196,10 +196,11 @@ void KinematicsSolver::mask_fbase(bool masked)
   masked_fbase = masked;
 }
 
-void KinematicsSolver::configure_limits(bool dofs_limit_, bool speeds_limit_)
+void KinematicsSolver::configure_limits(bool dofs_limit_, bool speeds_limit_, bool speed_post_limits_)
 {
   dofs_limit = dofs_limit_;
   speeds_limit = speeds_limit_;
+  speed_post_limits = speed_post_limits_;
 }
 
 Eigen::VectorXd KinematicsSolver::solve(bool apply)
@@ -357,6 +358,24 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
   if (qd.hasNaN())
   {
     throw std::runtime_error("KinematicsSolver: NaN encountered in result");
+  }
+
+  if (speed_post_limits)
+  {
+    double ratio = 1.0;
+
+    for (int k = 0; k < N - 6; k++)
+    {
+      double max_variation = dt * robot->model.velocityLimit[k + 6];
+      double variation = fabs(qd[k + 6]);
+
+      if (variation > max_variation)
+      {
+        ratio = std::min(ratio, max_variation / variation);
+      }
+    }
+
+    qd = qd * ratio;
   }
 
   if (apply)

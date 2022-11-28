@@ -200,7 +200,7 @@ public:
   /**
    * @brief Configure limits that are enabled
    */
-  void configure_limits(bool dofs_limit, bool speeds_limit);
+  void configure_limits(bool dofs_limit, bool speeds_limit, bool speed_post_limits);
 
   /**
    * @brief The robot controlled by this solver
@@ -230,6 +230,7 @@ protected:
   // Modes to limit the DoFs
   bool dofs_limit = true;
   bool speeds_limit = false;
+  bool speed_post_limits = false;
 
   template <typename T>
   T& add_task(T* task)
