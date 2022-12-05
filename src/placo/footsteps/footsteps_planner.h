@@ -84,10 +84,14 @@ public:
   /**
    * @brief From planned footsteps, this method adds the double support phases
    * @param footsteps a vector of footsteps ad produces by plan
+   * @param start should we add a double support at the begining of the move?
+   * @param middle should we add a double support between each step ?
+   * @param end should we add a double support at the end of the move?
    * @return vector of supports to use. It starts with initial double supports,
    * and add double support phases between footsteps.
    */
-  std::vector<Support> make_double_supports(const std::vector<Footstep>& footsteps);
+  std::vector<Support> make_double_supports(const std::vector<Footstep>& footsteps, bool start = false,
+                                            bool middle = false, bool end = false);
 
   // Foot dimensions
   double feet_spacing = 0.1;

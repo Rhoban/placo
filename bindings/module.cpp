@@ -18,4 +18,5 @@ BOOST_PYTHON_MODULE(placo)
   exposeJerkPlanner();
   exposeRobotWrapper();
   exposeKinematics();
+  exposeWalkPatternGenerator();
 }

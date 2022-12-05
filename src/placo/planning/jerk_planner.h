@@ -32,10 +32,12 @@ public:
   // A 2D trajectory produced by the planner (combines x and y trajectoires)
   struct JerkTrajectory2D
   {
-    JerkTrajectory2D(double dt);
+    JerkTrajectory2D(double dt, double omega);
     JerkTrajectory2D();
     JerkTrajectory X;
     JerkTrajectory Y;
+
+    double omega = 0.0;
 
     double get_dt();
     void set_dt(double dt);
@@ -45,6 +47,8 @@ public:
     Eigen::Vector2d pos(double t) const;
     Eigen::Vector2d vel(double t) const;
     Eigen::Vector2d acc(double t) const;
+    Eigen::Vector2d zmp(double t) const;
+    Eigen::Vector2d dcm(double t) const;
 
     protected:
     double dt;

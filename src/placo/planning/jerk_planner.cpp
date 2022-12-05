@@ -74,7 +74,7 @@ double JerkPlanner::JerkTrajectory::acc(double t) const
   return t * jerk[k] + pos_vel_acc[k][2];
 }
 
-JerkPlanner::JerkTrajectory2D::JerkTrajectory2D(double dt) : dt(dt)
+JerkPlanner::JerkTrajectory2D::JerkTrajectory2D(double dt, double omega) : dt(dt), omega(omega)
 {
   X.dt = dt;
   Y.dt = dt;
@@ -121,6 +121,18 @@ Eigen::Vector2d JerkPlanner::JerkTrajectory2D::vel(double t) const
 Eigen::Vector2d JerkPlanner::JerkTrajectory2D::acc(double t) const
 {
   return Eigen::Vector2d(X.acc(t), Y.acc(t));
+}
+
+Eigen::Vector2d JerkPlanner::JerkTrajectory2D::zmp(double t) const
+{
+  // ZMP = c - (1/omega^2) c_ddot
+  return pos(t) - (1 / pow(omega, 2)) * acc(t);
+}
+
+Eigen::Vector2d JerkPlanner::JerkTrajectory2D::dcm(double t) const
+{
+  // DCM = c + (1/omega) c_dot
+  return pos(t) + (1 / omega) * vel(t);
 }
 
 JerkPlanner::JerkPlanner(int nb_steps, Eigen::Vector2d initial_position, Eigen::Vector2d initial_velocity,
@@ -377,7 +389,7 @@ JerkPlanner::JerkTrajectory2D JerkPlanner::plan()
   State state = initial_state;
 
   // Building the Jerk Trajectory from QP outputs
-  JerkPlanner::JerkTrajectory2D trajectory(dt);
+  JerkPlanner::JerkTrajectory2D trajectory(dt, omega);
 
   for (int step = 0; step < N; step++)
   {

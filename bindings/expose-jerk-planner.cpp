@@ -25,11 +25,13 @@ void exposeJerkPlanner()
   class_<JerkPlanner::Constraint>("Constraint", init<JerkPlanner&>())
       .def("is_active", &JerkPlanner::Constraint::is_active);
 
-  class_<JerkPlanner::JerkTrajectory2D>("JerkTrajectory2D", init<double>())
+  class_<JerkPlanner::JerkTrajectory2D>("JerkTrajectory2D", init<double, double>())
       .def("duration", &JerkPlanner::JerkTrajectory2D::duration)
       .def("pos", &JerkPlanner::JerkTrajectory2D::pos)
       .def("vel", &JerkPlanner::JerkTrajectory2D::vel)
-      .def("acc", &JerkPlanner::JerkTrajectory2D::acc);
+      .def("acc", &JerkPlanner::JerkTrajectory2D::acc)
+      .def("zmp", &JerkPlanner::JerkTrajectory2D::zmp)
+      .def("dcm", &JerkPlanner::JerkTrajectory2D::dcm);
 
   auto toString = +[](const JerkPlanner& planner) {
     std::ostringstream oss;
@@ -41,7 +43,7 @@ void exposeJerkPlanner()
     return oss.str();
   };
 
-  class_<JerkPlanner>("JerkPlanner", init<int, JerkPlanner::State, double, double>())
+  class_<JerkPlanner>("JerkPlanner", init<int, Eigen::Vector2d, Eigen::Vector2d, Eigen::Vector2d, double, double>())
       .def("add_equality_constraint", &JerkPlanner::add_equality_constraint)
       .def("add_lower_than_constraint", &JerkPlanner::add_lower_than_constraint)
       .def("add_greater_than_constraint", &JerkPlanner::add_greater_than_constraint)

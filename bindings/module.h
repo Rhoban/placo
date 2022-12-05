@@ -6,3 +6,4 @@ void exposeFootsteps();
 void exposeJerkPlanner();
 void exposeRobotWrapper();
 void exposeKinematics();
+void exposeWalkPatternGenerator();

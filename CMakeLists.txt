@@ -72,6 +72,7 @@ add_library(placo MODULE
     bindings/expose-jerk-planner.cpp
     bindings/expose-robot-wrapper.cpp
     bindings/expose-kinematics.cpp
+    bindings/expose-walk-pattern-generator.cpp
     bindings/module.cpp
 )
 target_link_libraries(placo ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} libplaco)

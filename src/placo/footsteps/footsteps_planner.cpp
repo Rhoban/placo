@@ -136,14 +136,18 @@ bool FootstepsPlanner::Support::operator==(const Support& other)
   return true;
 }
 
-std::vector<FootstepsPlanner::Support> FootstepsPlanner::make_double_supports(const std::vector<Footstep>& footsteps)
+std::vector<FootstepsPlanner::Support> FootstepsPlanner::make_double_supports(const std::vector<Footstep>& footsteps,
+                                                                              bool start, bool middle, bool end)
 {
   std::vector<FootstepsPlanner::Support> supports;
 
-  // Creating the first (double-support) initial state
-  FootstepsPlanner::Support support;
-  support.footsteps = { footsteps[0], footsteps[1] };
-  supports.push_back(support);
+  if (start)
+  {
+    // Creating the first (double-support) initial state
+    FootstepsPlanner::Support support;
+    support.footsteps = { footsteps[0], footsteps[1] };
+    supports.push_back(support);
+  }
 
   // Adding single/double support phases
   for (int step = 1; step < footsteps.size() - 1; step++)
@@ -152,9 +156,14 @@ std::vector<FootstepsPlanner::Support> FootstepsPlanner::make_double_supports(co
     single_support.footsteps = { footsteps[step] };
     supports.push_back(single_support);
 
-    FootstepsPlanner::Support double_support;
-    double_support.footsteps = { footsteps[step], footsteps[step + 1] };
-    supports.push_back(double_support);
+    bool is_end = (step == footsteps.size() - 2);
+
+    if ((!is_end && middle) || (is_end && end))
+    {
+      FootstepsPlanner::Support double_support;
+      double_support.footsteps = { footsteps[step], footsteps[step + 1] };
+      supports.push_back(double_support);
+    }
   }
 
   return supports;
