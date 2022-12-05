@@ -33,15 +33,21 @@ public:
   struct JerkTrajectory2D
   {
     JerkTrajectory2D(double dt);
+    JerkTrajectory2D();
     JerkTrajectory X;
     JerkTrajectory Y;
-    double dt;
+
+    double get_dt();
+    void set_dt(double dt);
 
     double duration() const;
 
     Eigen::Vector2d pos(double t) const;
     Eigen::Vector2d vel(double t) const;
     Eigen::Vector2d acc(double t) const;
+
+    protected:
+    double dt;
   };
 
   /**
@@ -50,7 +56,9 @@ public:
    */
   typedef Eigen::Matrix<double, 6, 1> State;
 
-  JerkPlanner(int nb_steps, State initial_state = State::Zero(), double dt = 0.1, double omega = 0.);
+  JerkPlanner(int nb_steps, Eigen::Vector2d initial_position = Eigen::Vector2d::Zero(),
+                            Eigen::Vector2d initial_velocity = Eigen::Vector2d::Zero(),
+                            Eigen::Vector2d initial_acceleration = Eigen::Vector2d::Zero(), double dt = 0.1, double omega = 0.);
 
   /**
    * @brief sqrt(g/h): constant for pendulum-based points (ZMP and DCM)

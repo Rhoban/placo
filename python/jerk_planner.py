@@ -7,7 +7,7 @@ import numpy as np
 
 dt = 0.1
 
-jerk_planner = placo.JerkPlanner(100, np.array([0., 0., 0., 0., 0., 0.]), dt, 0.)
+jerk_planner = placo.JerkPlanner(100, np.array([0., 0]), np.array([0., 0]), np.array([0., 0]), dt, 0.)
 jerk_planner.add_equality_constraint(100, np.array([1., 1]), ConstraintType.position)
 jerk_planner.add_equality_constraint(100, np.array([0., 0]), ConstraintType.velocity)
 jerk_planner.add_equality_constraint(100, np.array([0., 0]), ConstraintType.acceleration)

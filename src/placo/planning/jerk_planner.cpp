@@ -80,6 +80,24 @@ JerkPlanner::JerkTrajectory2D::JerkTrajectory2D(double dt) : dt(dt)
   Y.dt = dt;
 }
 
+JerkPlanner::JerkTrajectory2D::JerkTrajectory2D() : dt(0.)
+{
+  X.dt = 0.;
+  Y.dt = 0.;
+}
+
+double JerkPlanner::JerkTrajectory2D::get_dt()
+{
+  return dt;
+}
+
+void JerkPlanner::JerkTrajectory2D::set_dt(double dt_)
+{
+  dt = dt_;
+  X.dt = dt;
+  Y.dt = dt;
+}
+
 double JerkPlanner::JerkTrajectory::duration() const
 {
   return pos_vel_acc.size() * dt;
@@ -105,9 +123,13 @@ Eigen::Vector2d JerkPlanner::JerkTrajectory2D::acc(double t) const
   return Eigen::Vector2d(X.acc(t), Y.acc(t));
 }
 
-JerkPlanner::JerkPlanner(int nb_steps, JerkPlanner::State initial_state, double dt, double omega)
-  : initial_state(initial_state), dt(dt), omega(omega)
+JerkPlanner::JerkPlanner(int nb_steps, Eigen::Vector2d initial_position, Eigen::Vector2d initial_velocity,
+                         Eigen::Vector2d initial_acceleration, double dt, double omega)
+  : dt(dt), omega(omega)
 {
+  initial_state << initial_position.x(), initial_velocity.x(), initial_acceleration.x(), initial_position.y(),
+      initial_velocity.y(), initial_acceleration.y();
+
   N = nb_steps;
 
   A.setZero();
