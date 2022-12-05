@@ -13,7 +13,13 @@ def translation(xyz: list) -> np.ndarray:
     return m
 
 
-def frame(
-    axis: list = [0.0, 0.0, 1.0], angle: float = 0.0, xyz: list = [0.0, 0.0, 0.0]
-) -> np.ndarray:
+def frame_inv(T):
+    R = T[:3, :3]
+    t = T[:3, 3:]
+    upper = np.hstack((R.T, -R.T @ t))
+    lower = np.array([0.0, 0.0, 0.0, 1.0])
+    return np.vstack((upper, lower))
+
+
+def frame(axis: list = [0.0, 0.0, 1.0], angle: float = 0.0, xyz: list = [0.0, 0.0, 0.0]) -> np.ndarray:
     return translation(xyz) @ rotation(axis, angle)
