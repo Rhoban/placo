@@ -79,3 +79,9 @@ add_library(placo MODULE
 )
 target_link_libraries(placo ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} libplaco)
 target_include_directories(placo PRIVATE ${PYTHON_INCLUDE_DIRS})
+
+add_custom_command(TARGET placo POST_BUILD
+    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/stubs.py > placo.pyi
+    WORKING_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+    COMMENT "Generating stubs..."
+)
