@@ -2,11 +2,14 @@
 
 #include <Eigen/Dense>
 #include <boost/python.hpp>
+#include "rhoban_utils/spline/poly_spline.h"
+#include "rhoban_utils/spline/poly_spline_3d.h"
 #include "module.h"
 #include "placo/utils.h"
 #include "expose-utils.hpp"
 
 using namespace boost::python;
+using namespace rhoban_utils;
 
 void exposeUtils()
 {
@@ -21,6 +24,8 @@ void exposeUtils()
 
   // exposeStdMap<std::string, double>("map_string_double");
 
-  class_<std::map<std::string, double> >("map_string_double")
-        .def(map_indexing_suite<std::map<std::string, double> >() );
+  class_<std::map<std::string, double> >("map_string_double").def(map_indexing_suite<std::map<std::string, double> >());
+
+  class_<PolySpline>("PolySpline").def("get", &PolySpline::get).def("getVel", &PolySpline::getVel);
+  class_<PolySpline3D>("PolySpline3D").def("get", &PolySpline3D::get).def("getVel", &PolySpline3D::getVel);
 }

@@ -17,6 +17,7 @@ BOOST_PYTHON_MODULE(placo)
   exposeFootsteps();
   exposeJerkPlanner();
   exposeRobotWrapper();
+  exposeParameters();
   exposeKinematics();
   exposeWalkPatternGenerator();
 }

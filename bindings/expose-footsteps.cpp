@@ -28,9 +28,7 @@ void exposeFootsteps()
   class_<FootstepsPlannerNaive>("FootstepsPlannerNaive", init<std::string, Eigen::Affine3d, Eigen::Affine3d>())
       .def("plan", &FootstepsPlannerNaive::plan)
       .def("make_double_supports", &FootstepsPlannerNaive::make_double_supports)
-      .add_property("feet_spacing", &FootstepsPlannerNaive::feet_spacing, &FootstepsPlannerNaive::feet_spacing)
-      .add_property("foot_width", &FootstepsPlannerNaive::foot_width, &FootstepsPlannerNaive::foot_width)
-      .add_property("foot_length", &FootstepsPlannerNaive::foot_length, &FootstepsPlannerNaive::foot_length);
+      .add_property("parameters", &FootstepsPlannerNaive::parameters, &FootstepsPlannerNaive::parameters);
 
   // Exposing vector of footsteps
   exposeStdVector<FootstepsPlanner::Footstep>("Footsteps");

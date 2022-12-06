@@ -4,12 +4,18 @@
 #include <algorithm>
 #include <vector>
 #include "placo/model/humanoid_robot.h"
+#include "placo/model/humanoid_parameters.h"
 
 namespace placo
 {
 class FootstepsPlanner
 {
 public:
+  /**
+   * @brief Humanoid parameters for planning and control
+   */
+  HumanoidParameters parameters;
+
   /**
    * @brief A footstep is the position of a specific foot on the ground
    */
@@ -93,10 +99,6 @@ public:
   std::vector<Support> make_double_supports(const std::vector<Footstep>& footsteps, bool start = false,
                                             bool middle = false, bool end = false);
 
-  // Foot dimensions
-  double feet_spacing = 0.1;
-  double foot_width = 0.1;
-  double foot_length = 0.15;
 
 protected:
   // Frames for initial and target feet placements

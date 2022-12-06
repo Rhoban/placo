@@ -47,7 +47,7 @@ std::vector<FootstepsPlanner::Footstep> FootstepsPlannerNaive::plan(Eigen::Affin
   int steps = 0;
 
   // Including initial footsteps, which are current frames
-  FootstepsPlanner::Footstep footstep(foot_width, foot_length);
+  FootstepsPlanner::Footstep footstep(parameters.foot_width, parameters.foot_length);
   footstep.side = support_side == HumanoidRobot::Side::Left ? HumanoidRobot::Side::Right : HumanoidRobot::Side::Left;
   footstep.frame = support_side == HumanoidRobot::Side::Left ? T_world_right : T_world_left;
   footsteps.push_back(footstep);
@@ -75,15 +75,18 @@ std::vector<FootstepsPlanner::Footstep> FootstepsPlannerNaive::plan(Eigen::Affin
         T_world_support.inverse() *
         ((support_side == HumanoidRobot::Side::Left) ? T_world_targetRight : T_world_targetLeft);
 
+
+    T_support_target.translation().z() = 0.;
+
     if (support_side == HumanoidRobot::Side::Left)
     {
-      T_support_floatingIdle.translation().y() = -feet_spacing;
-      T_support_center.translation().y() = -feet_spacing / 2.;
+      T_support_floatingIdle.translation().y() = -parameters.feet_spacing;
+      T_support_center.translation().y() = -parameters.feet_spacing / 2.;
     }
     else
     {
-      T_support_floatingIdle.translation().y() = feet_spacing;
-      T_support_center.translation().y() = feet_spacing / 2.;
+      T_support_floatingIdle.translation().y() = parameters.feet_spacing;
+      T_support_center.translation().y() = parameters.feet_spacing / 2.;
     }
 
     // Updating the position
@@ -146,7 +149,7 @@ std::vector<FootstepsPlanner::Footstep> FootstepsPlannerNaive::plan(Eigen::Affin
     new_step.linear() = Eigen::AngleAxisd(error_yaw, Eigen::Vector3d::UnitZ()).toRotationMatrix();
 
     // Going to next step
-    FootstepsPlanner::Footstep footstep(foot_width, foot_length);
+    FootstepsPlanner::Footstep footstep(parameters.foot_width, parameters.foot_length);
     footstep.side = HumanoidRobot::other_side(support_side);
     footstep.frame = T_world_support * new_step;
     footsteps.push_back(footstep);

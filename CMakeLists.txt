@@ -20,6 +20,7 @@ add_library(libplaco
     src/placo/planning/walk_pattern_generator.cpp
     src/placo/model/robot_wrapper.cpp
     src/placo/model/humanoid_robot.cpp
+    src/placo/model/humanoid_parameters.cpp
     src/placo/control/kinematics_solver.cpp
     src/placo/control/task.cpp
     src/placo/control/position_task.cpp
@@ -71,6 +72,7 @@ add_library(placo MODULE
     bindings/expose-footsteps.cpp
     bindings/expose-jerk-planner.cpp
     bindings/expose-robot-wrapper.cpp
+    bindings/expose-parameters.cpp
     bindings/expose-kinematics.cpp
     bindings/expose-walk-pattern-generator.cpp
     bindings/module.cpp
