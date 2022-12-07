@@ -82,9 +82,9 @@ if __name__ == "__main__":
 
     # Currently, the naive planner is the only one implemented
     planner = placo.FootstepsPlannerNaive("left", placo.frame(T_center_left), placo.frame(T_center_right))
-    planner.feet_spacing = args.feet_spacing
-    planner.foot_width = args.foot_width
-    planner.foot_length = args.foot_length
+    planner.parameters.feet_spacing = args.feet_spacing
+    planner.parameters.foot_width = args.foot_width
+    planner.parameters.foot_length = args.foot_length
     footsteps = planner.plan(placo.frame(T_world_targetLeft), placo.frame(T_world_targetRight))
 
     # If using double support, transform the result in supports instead of footsteps
