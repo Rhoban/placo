@@ -143,7 +143,6 @@ static void _addSupports(WalkPatternGenerator::Trajectory& trajectory, double t,
   for (auto footstep : support.footsteps)
   {
     auto T_world_foot = footstep.frame;
-    std::cout << T_world_foot.translation().z() << std::endl;
     trajectory.position(footstep.side).addPoint(t, T_world_foot.translation(), Eigen::Vector3d::Zero());
     trajectory.yaw(footstep.side).addPoint(t, frame_yaw(T_world_foot.rotation()), 0);
   }
