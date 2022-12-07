@@ -42,10 +42,15 @@ public:
   double walk_foot_height = 0.03;
 
   /**
+   * @brief CoM height while walking
+   */
+  double walk_com_height = 0.4;
+
+  /**
    * @brief Robot center of mass height for LIPM model. This is used to compute the pendulum constant
    * omega, which is sqrt(g/h)
    */
-  double pendulum_height = 0.0;
+  double pendulum_height = 0.4;
 
   /**
    * @brief Lateral spacing between feet [m]

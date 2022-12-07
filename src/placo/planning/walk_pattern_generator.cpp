@@ -102,6 +102,18 @@ Eigen::Affine3d WalkPatternGenerator::Trajectory::get_T_world_right(double t)
   return _buildFrame(right_foot.get(t), right_foot_yaw.get(t));
 }
 
+Eigen::Vector3d WalkPatternGenerator::Trajectory::get_CoM_world(double t)
+{
+  auto pos = com.pos(t);
+
+  return Eigen::Vector3d(pos.x(), pos.y(), com_height);
+}
+
+Eigen::Matrix3d WalkPatternGenerator::Trajectory::get_R_world_trunk(double t)
+{
+  return Eigen::AngleAxisd(trunk_yaw.get(t), Eigen::Vector3d::UnitZ()).matrix();
+}
+
 rhoban_utils::PolySpline3D& WalkPatternGenerator::Trajectory::position(HumanoidRobot::Side side)
 {
   if (side == HumanoidRobot::Left)
@@ -143,6 +155,7 @@ void WalkPatternGenerator::planFeetTrajctories(Trajectory& trajectory)
 
   // First, adds the initial position to the trajectory
   _addSupports(trajectory, 0., trajectory.footsteps[0]);
+  trajectory.trunk_yaw.addPoint(0, frame_yaw(trajectory.footsteps[0].frame().rotation()), 0);
 
   for (int step = 0; step < trajectory.footsteps.size(); step++)
   {
@@ -173,6 +186,7 @@ void WalkPatternGenerator::planFeetTrajctories(Trajectory& trajectory)
       // Flying foot reaching its position
       trajectory.position(flying_side).addPoint(t, T_world_flyingTarget.translation(), Eigen::Vector3d::Zero());
       trajectory.yaw(flying_side).addPoint(t, frame_yaw(T_world_flyingTarget.rotation()), 0);
+      trajectory.trunk_yaw.addPoint(0, frame_yaw(T_world_flyingTarget.rotation()), 0);
 
       // Support foot remaining steady
       _addSupports(trajectory, t, support);
@@ -182,6 +196,7 @@ void WalkPatternGenerator::planFeetTrajctories(Trajectory& trajectory)
       // Double support, adding the support foot at the begining and at the end of the trajectory
       t += parameters.double_support_duration;
       _addSupports(trajectory, t, support);
+      trajectory.trunk_yaw.addPoint(0, frame_yaw(support.frame().rotation()), 0);
     }
   }
 
@@ -191,6 +206,7 @@ void WalkPatternGenerator::planFeetTrajctories(Trajectory& trajectory)
 WalkPatternGenerator::Trajectory WalkPatternGenerator::plan(Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right)
 {
   Trajectory trajectory;
+  trajectory.com_height = parameters.walk_com_height;
 
   // Planning the footsteps to take
   planFootsteps(trajectory, T_world_left, T_world_right);
