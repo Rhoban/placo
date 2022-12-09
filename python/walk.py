@@ -32,6 +32,7 @@ T_world_rightTarget[0, 3] += 1.0
 
 # Creating the pattern generator to plan the trajectory
 walk = placo.WalkPatternGenerator(robot)
+walk.parameters.dt = 0.05
 walk.parameters.single_support_duration = 0.4
 walk.parameters.double_support_duration = 0.1
 walk.parameters.startend_double_support_duration = 0.5
@@ -134,8 +135,11 @@ elif args.pybullet or args.meshcat:
         T = max(0, t)
 
         if args.pybullet and t < -2:
-            _, orn = p.getBasePositionAndOrientation(sim.robot)
-            sim.setRobotPose([0., 0.,  .5], orn)
+            T_left_origin = sim.transformation("origin", "left_foot_frame")
+            T_world_left = sim.poseToMatrix(([0., 0., 0.05], [0., 0., 0., 1.]))
+            T_world_origin = T_world_left @ T_left_origin
+
+            sim.setRobotPose(*sim.matrixToPose(T_world_origin))
 
         left_foot.T_world_frame = trajectory.get_T_world_left(T)
         right_foot.T_world_frame = trajectory.get_T_world_right(T)
