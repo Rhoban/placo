@@ -105,6 +105,13 @@ def footsteps_viz(footsteps: placo.Footsteps) -> None:
         k += 1
         polygon = [[*xy, 0] for xy in footstep.support_polygon()]
         polygon = np.array([*polygon, polygon[-1]])
-        color = 0xFF3333 if str(footstep.side) == "left" else 0x33FF33
+
+        if isinstance(footstep, placo.Support):
+            if len(footstep.footsteps) >= 2:
+                color = 0x1111AA
+            else:
+                color = 0xFF3333 if str(footstep.footsteps[0].side) == "left" else 0x33FF33
+        else:
+            color = 0xFF3333 if str(footstep.side) == "left" else 0x33FF33
 
         vis["footsteps"][str(k)].set_object(g.LineLoop(g.PointsGeometry(polygon.T), g.MeshBasicMaterial(color=color)))
