@@ -76,7 +76,9 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory)
         if (k == (ssp_steps / 2))
         {
           // Adding a constraint at the begining of the stem
-          planner.add_polygon_constraint(steps + k, support.support_polygon(), JerkPlanner::ZMP, parameters.zmp_margin);
+          // planner.add_polygon_constraint(steps + k, support.support_polygon(), JerkPlanner::ZMP, parameters.zmp_margin);
+          auto target = support.frame().translation();
+          planner.add_equality_constraint(steps + k, Eigen::Vector2d(target.x(), target.y()), JerkPlanner::ZMP);
         }
       }
 
