@@ -204,7 +204,7 @@ void WalkPatternGenerator::planFeetTrajctories(Trajectory& trajectory)
       flying_mid.z() = parameters.walk_foot_height;
 
       // XXX: The speed at inflection point could be parametrized
-      Eigen::Vector3d flying_mid_delta = delta_step / (2. * parameters.single_support_duration);
+      Eigen::Vector3d flying_mid_delta = delta_step / (1.5 * parameters.single_support_duration);
 
       trajectory.position(flying_side)
           .addPoint(t + parameters.single_support_duration / 2., flying_mid, flying_mid_delta);
