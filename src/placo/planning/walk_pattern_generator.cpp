@@ -17,9 +17,13 @@ void WalkPatternGenerator::planFootsteps(Trajectory& trajectory, Eigen::Affine3d
 
   // Creates the planner and run the planning
   FootstepsPlannerNaive planner(robot.support_side, T_world_leftCurrent, T_world_rightCurrent);
+  planner.parameters = parameters;
+
   auto footsteps = planner.plan(T_world_left, T_world_right);
 
-  trajectory.footsteps = planner.make_double_supports(footsteps, true, false, true);
+  int dsp_steps = std::round(parameters.double_support_duration / parameters.dt);
+
+  trajectory.footsteps = planner.make_double_supports(footsteps, true, dsp_steps > 0, true);
 }
 
 void WalkPatternGenerator::planCoM(Trajectory& trajectory)
@@ -27,6 +31,7 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory)
   // Computing how many steps are required
   int ssp_steps = std::round(parameters.single_support_duration / parameters.dt);
   int dsp_steps = std::round(parameters.double_support_duration / parameters.dt);
+  int se_dsp_steps = std::round(parameters.startend_double_support_duration / parameters.dt);
   int total_steps = 0;
 
   for (auto& support : trajectory.footsteps)
@@ -37,7 +42,14 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory)
     }
     else
     {
-      total_steps += dsp_steps;
+      if (support.start_end)
+      {
+        total_steps += se_dsp_steps;
+      }
+      else
+      {
+        total_steps += dsp_steps;
+      }
     }
 
     if (total_steps >= parameters.maximum_steps)
@@ -46,9 +58,11 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory)
     }
   }
 
+  auto com_world = robot.com_world();
+
   // Creating the planner
-  JerkPlanner planner(total_steps, Eigen::Vector2d(0., 0.), Eigen::Vector2d(0., 0.), Eigen::Vector2d(0., 0.),
-                      parameters.dt, parameters.omega());
+  JerkPlanner planner(total_steps, Eigen::Vector2d(com_world.x(), com_world.y()), Eigen::Vector2d(0., 0.),
+                      Eigen::Vector2d(0., 0.), parameters.dt, parameters.omega());
 
   // Adding constraints
   int steps = 0;
@@ -56,14 +70,28 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory)
   {
     if (support.footsteps.size() == 1)
     {
-      // Adding a constraint at the begining of the stem
-      planner.add_polygon_constraint(steps, support.support_polygon(), JerkPlanner::ZMP, parameters.zmp_margin);
+      // XXX: To investigate
+      for (int k = 0; k < ssp_steps; k++)
+      {
+        if (k == (ssp_steps / 2))
+        {
+          // Adding a constraint at the begining of the stem
+          planner.add_polygon_constraint(steps + k, support.support_polygon(), JerkPlanner::ZMP, parameters.zmp_margin);
+        }
+      }
 
       steps += ssp_steps;
     }
     else
     {
-      steps += dsp_steps;
+      if (support.start_end)
+      {
+        steps += se_dsp_steps;
+      }
+      else
+      {
+        steps += dsp_steps;
+      }
     }
 
     // We reach the target with the given position, a null speed and a null acceleration
@@ -111,7 +139,8 @@ Eigen::Vector3d WalkPatternGenerator::Trajectory::get_CoM_world(double t)
 
 Eigen::Matrix3d WalkPatternGenerator::Trajectory::get_R_world_trunk(double t)
 {
-  return Eigen::AngleAxisd(trunk_yaw.get(t), Eigen::Vector3d::UnitZ()).matrix();
+  return Eigen::AngleAxisd(trunk_yaw.get(t), Eigen::Vector3d::UnitZ()).matrix() *
+         Eigen::AngleAxisd(trunk_pitch, Eigen::Vector3d::UnitY()).matrix();
 }
 
 rhoban_utils::PolySpline3D& WalkPatternGenerator::Trajectory::position(HumanoidRobot::Side side)
@@ -175,7 +204,7 @@ void WalkPatternGenerator::planFeetTrajctories(Trajectory& trajectory)
       flying_mid.z() = parameters.walk_foot_height;
 
       // XXX: The speed at inflection point could be parametrized
-      Eigen::Vector3d flying_mid_delta = delta_step / parameters.single_support_duration;
+      Eigen::Vector3d flying_mid_delta = delta_step / (2. * parameters.single_support_duration);
 
       trajectory.position(flying_side)
           .addPoint(t + parameters.single_support_duration / 2., flying_mid, flying_mid_delta);
@@ -185,7 +214,7 @@ void WalkPatternGenerator::planFeetTrajctories(Trajectory& trajectory)
       // Flying foot reaching its position
       trajectory.position(flying_side).addPoint(t, T_world_flyingTarget.translation(), Eigen::Vector3d::Zero());
       trajectory.yaw(flying_side).addPoint(t, frame_yaw(T_world_flyingTarget.rotation()), 0);
-      trajectory.trunk_yaw.addPoint(0, frame_yaw(T_world_flyingTarget.rotation()), 0);
+      trajectory.trunk_yaw.addPoint(t, frame_yaw(T_world_flyingTarget.rotation()), 0);
 
       // Support foot remaining steady
       _addSupports(trajectory, t, support);
@@ -193,9 +222,16 @@ void WalkPatternGenerator::planFeetTrajctories(Trajectory& trajectory)
     else
     {
       // Double support, adding the support foot at the begining and at the end of the trajectory
-      t += parameters.double_support_duration;
+      if (support.start_end)
+      {
+        t += parameters.startend_double_support_duration;
+      }
+      else
+      {
+        t += parameters.double_support_duration;
+      }
       _addSupports(trajectory, t, support);
-      trajectory.trunk_yaw.addPoint(0, frame_yaw(support.frame().rotation()), 0);
+      trajectory.trunk_yaw.addPoint(t, frame_yaw(support.frame().rotation()), 0);
     }
   }
 
@@ -206,6 +242,7 @@ WalkPatternGenerator::Trajectory WalkPatternGenerator::plan(Eigen::Affine3d T_wo
 {
   Trajectory trajectory;
   trajectory.com_height = parameters.walk_com_height;
+  trajectory.trunk_pitch = parameters.walk_trunk_pitch;
 
   // Planning the footsteps to take
   planFootsteps(trajectory, T_world_left, T_world_right);

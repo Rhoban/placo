@@ -11,8 +11,8 @@ typedef boost::geometry::model::polygon<b_point> b_polygon;
 
 namespace placo
 {
-FootstepsPlanner::Footstep::Footstep(double foot_width, double foot_length) : 
-foot_width(foot_width), foot_length(foot_length)
+FootstepsPlanner::Footstep::Footstep(double foot_width, double foot_length)
+  : foot_width(foot_width), foot_length(foot_length)
 {
 }
 
@@ -30,8 +30,7 @@ std::vector<Eigen::Vector2d> FootstepsPlanner::Footstep::support_polygon()
 
     for (auto sxsy : contour)
     {
-      Eigen::Vector3d corner = frame * Eigen::Vector3d(sxsy.first * foot_length / 2,
-                                                       sxsy.second * foot_width / 2, 0.);
+      Eigen::Vector3d corner = frame * Eigen::Vector3d(sxsy.first * foot_length / 2, sxsy.second * foot_width / 2, 0.);
       Eigen::Vector2d point(corner.x(), corner.y());
       polygon.push_back(point);
     }
@@ -146,6 +145,7 @@ std::vector<FootstepsPlanner::Support> FootstepsPlanner::make_double_supports(co
   {
     // Creating the first (double-support) initial state
     FootstepsPlanner::Support support;
+    support.start_end = true;
     support.footsteps = { footsteps[0], footsteps[1] };
     supports.push_back(support);
   }
@@ -163,6 +163,12 @@ std::vector<FootstepsPlanner::Support> FootstepsPlanner::make_double_supports(co
     {
       FootstepsPlanner::Support double_support;
       double_support.footsteps = { footsteps[step], footsteps[step + 1] };
+
+      if (is_end)
+      {
+        double_support.start_end = true;
+      }
+
       supports.push_back(double_support);
     }
   }

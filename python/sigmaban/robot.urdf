@@ -120,9 +120,9 @@
 </material>
 </visual>
 <inertial>
-<origin xyz="-0.00999148 0.0067075 0.0847028" rpy="0 0 0"/>
-<mass value="1.74256" />
-<inertia ixx="0.0256992" ixy="0.00212058"  ixz="0.00444597" iyy="0.0280135" iyz="-0.00204502" izz="0.0103838" />
+<origin xyz="-0.00228246 0.00486462 0.0826876" rpy="0 0 0"/>
+<mass value="2.39006" />
+<inertia ixx="0.031289" ixy="0.00221215"  ixz="0.00473162" iyy="0.032668" iyz="-0.00207203" izz="0.012466" />
 </inertial>
 </link>
 
@@ -148,7 +148,7 @@
 </inertial>
 </link>
 <joint name="trunk_frame" type="fixed">
-<origin xyz="0.00586803 -3.58583e-15 -0.1015" rpy="-2.22624e-15 4.13778e-27 -1.14065e-13" />
+<origin xyz="0.00586803 -3.95579e-15 -0.1015" rpy="2.09431e-15 2.18595e-26 -4.72596e-14" />
 <parent link="torso" />
 <child link="trunk" />
 <axis xyz="0 0 0"/>
@@ -157,14 +157,14 @@
 <link name="u_shoulder">
 <!-- Shapes for u_base_64 -->
 <collision>
-<origin xyz="-2.13528e-33 -3.58215e-33 -0.003125" rpy="-1.13995e-30 1.27353e-30 1.29422e-30" />
+<origin xyz="-2.05957e-33 -1.79199e-33 -0.003125" rpy="-5.70266e-31 1.2977e-30 -9.30609e-31" />
 <geometry>
 <box size="0.049 0.03 0.00625" />
 </geometry>
 </collision>
 <!-- Shapes for u_base_64 -->
 <visual>
-<origin xyz="-2.13528e-33 -3.58215e-33 -0.003125" rpy="-1.13995e-30 1.27353e-30 1.29422e-30" />
+<origin xyz="-2.05957e-33 -1.79199e-33 -0.003125" rpy="-5.70266e-31 1.2977e-30 -9.30609e-31" />
 <geometry>
 <box size="0.049 0.03 0.00625" />
 </geometry>
@@ -173,23 +173,23 @@
 </material>
 </visual>
 <inertial>
-<origin xyz="-1.42778e-15 -0.00566234 -0.0159676" rpy="0 0 0"/>
+<origin xyz="-1.43643e-15 -0.00566234 -0.0159676" rpy="0 0 0"/>
 <mass value="0.0570101" />
-<inertia ixx="2.21758e-05" ixy="-2.10263e-19"  ixz="9.28639e-19" iyy="4.03314e-05" iyz="-6.10703e-06" izz="3.58629e-05" />
+<inertia ixx="2.21758e-05" ixy="-1.99013e-19"  ixz="9.23531e-19" iyy="4.03314e-05" iyz="-6.10703e-06" izz="3.58629e-05" />
 </inertial>
 </link>
 
 <link name="right_humerus">
 <!-- Shapes for mx-64at_ar -->
 <collision>
-<origin xyz="1.54658e-17 -0.01755 -0.0235" rpy="-8.07063e-16 -5.18375e-30 -4.64906e-16" />
+<origin xyz="1.46133e-17 -0.01755 -0.0235" rpy="-8.04912e-16 6.93889e-18 -3.88578e-16" />
 <geometry>
 <box size="0.0402 0.0611 0.041" />
 </geometry>
 </collision>
 <!-- Shapes for mx-64at_ar -->
 <visual>
-<origin xyz="1.54658e-17 -0.01755 -0.0235" rpy="-8.07063e-16 -5.18375e-30 -4.64906e-16" />
+<origin xyz="1.46133e-17 -0.01755 -0.0235" rpy="-8.04912e-16 6.93889e-18 -3.88578e-16" />
 <geometry>
 <box size="0.0402 0.0611 0.041" />
 </geometry>
@@ -198,29 +198,29 @@
 </material>
 </visual>
 <inertial>
-<origin xyz="-0.0219502 0.0714677 -0.0108756" rpy="0 0 0"/>
-<mass value="0.111948" />
-<inertia ixx="0.0132959" ixy="0.00182099"  ixz="0.000176202" iyy="0.000422449" iyz="-0.00129199" izz="0.0134217" />
+<origin xyz="-0.0100924 0.0240054 -0.0167465" rpy="0 0 0"/>
+<mass value="0.241448" />
+<inertia ixx="0.0138297" ixy="0.00193846"  ixz="0.00019138" iyy="0.000488317" iyz="-0.00135015" izz="0.0139663" />
 </inertial>
 </link>
 
 <link name="radius_v2">
 <!-- Shapes for hand -->
 <collision>
-<origin xyz="-2.76384e-17 0.1276 0.042" rpy="3.14159 4.25254e-16 1.5708" />
+<origin xyz="-2.76099e-17 0.1276 0.042" rpy="3.14159 3.33067e-16 1.5708" />
 <geometry>
 <cylinder length="0.003" radius="0.04" />
 </geometry>
 </collision>
 <collision>
-<origin xyz="-1.12905e-17 0.0539756 0.042" rpy="3.14159 4.25254e-16 1.5708" />
+<origin xyz="-7.17498e-18 0.0539756 0.042" rpy="3.14159 3.33067e-16 1.5708" />
 <geometry>
 <box size="0.0775512 0.0412 0.003" />
 </geometry>
 </collision>
 <!-- Shapes for hand -->
 <visual>
-<origin xyz="-2.76384e-17 0.1276 0.042" rpy="3.14159 4.25254e-16 1.5708" />
+<origin xyz="-2.76099e-17 0.1276 0.042" rpy="3.14159 3.33067e-16 1.5708" />
 <geometry>
 <cylinder length="0.003" radius="0.04" />
 </geometry>
@@ -229,7 +229,7 @@
 </material>
 </visual>
 <visual>
-<origin xyz="-1.12905e-17 0.0539756 0.042" rpy="3.14159 4.25254e-16 1.5708" />
+<origin xyz="-7.17498e-18 0.0539756 0.042" rpy="3.14159 3.33067e-16 1.5708" />
 <geometry>
 <box size="0.0775512 0.0412 0.003" />
 </geometry>
@@ -239,20 +239,20 @@
 </visual>
 <!-- Shapes for hand -->
 <collision>
-<origin xyz="-1.24846e-16 0.1276 0.005" rpy="3.14159 4.25254e-16 1.5708" />
+<origin xyz="-1.52635e-16 0.1276 0.005" rpy="3.14159 4.44089e-16 1.5708" />
 <geometry>
 <cylinder length="0.003" radius="0.04" />
 </geometry>
 </collision>
 <collision>
-<origin xyz="-1.28933e-16 0.0539756 0.005" rpy="3.14159 4.25254e-16 1.5708" />
+<origin xyz="-1.54678e-16 0.0539756 0.005" rpy="3.14159 4.44089e-16 1.5708" />
 <geometry>
 <box size="0.0775512 0.0412 0.003" />
 </geometry>
 </collision>
 <!-- Shapes for hand -->
 <visual>
-<origin xyz="-1.24846e-16 0.1276 0.005" rpy="3.14159 4.25254e-16 1.5708" />
+<origin xyz="-1.52635e-16 0.1276 0.005" rpy="3.14159 4.44089e-16 1.5708" />
 <geometry>
 <cylinder length="0.003" radius="0.04" />
 </geometry>
@@ -261,7 +261,7 @@
 </material>
 </visual>
 <visual>
-<origin xyz="-1.28933e-16 0.0539756 0.005" rpy="3.14159 4.25254e-16 1.5708" />
+<origin xyz="-1.54678e-16 0.0539756 0.005" rpy="3.14159 4.44089e-16 1.5708" />
 <geometry>
 <box size="0.0775512 0.0412 0.003" />
 </geometry>
@@ -271,14 +271,14 @@
 </visual>
 <!-- Shapes for mx-64at_ar -->
 <collision>
-<origin xyz="-2.92266e-18 0.01755 0.0235" rpy="3.14159 -1.27021e-30 5.55112e-17" />
+<origin xyz="3.52912e-18 0.01755 0.0235" rpy="3.14159 -8.03036e-30 2.77556e-17" />
 <geometry>
 <box size="0.0402 0.0611 0.041" />
 </geometry>
 </collision>
 <!-- Shapes for mx-64at_ar -->
 <visual>
-<origin xyz="-2.92266e-18 0.01755 0.0235" rpy="3.14159 -1.27021e-30 5.55112e-17" />
+<origin xyz="3.52912e-18 0.01755 0.0235" rpy="3.14159 -8.03036e-30 2.77556e-17" />
 <geometry>
 <box size="0.0402 0.0611 0.041" />
 </geometry>
@@ -287,9 +287,9 @@
 </material>
 </visual>
 <inertial>
-<origin xyz="-0.0615379 -0.10265 0.0219354" rpy="0 0 0"/>
-<mass value="0.120619" />
-<inertia ixx="0.0207428" ixy="-0.00638349"  ixz="-2.1871e-05" iyy="0.00208063" iyz="-7.96366e-05" izz="0.022758" />
+<origin xyz="-0.0295944 -0.040688 0.0218765" rpy="0 0 0"/>
+<mass value="0.250119" />
+<inertia ixx="0.0216936" ixy="-0.00684459"  ixz="-2.20795e-05" iyy="0.00234767" iyz="-7.87859e-05" izz="0.0239352" />
 </inertial>
 </link>
 
@@ -303,7 +303,7 @@
 </joint>
 
 <joint name="right_shoulder_roll" type="revolute">
-<origin xyz="-0.0235 -0.03 -0.035" rpy="-3.58863e-16 -1.5708 0" />
+<origin xyz="-0.0235 -0.03 -0.035" rpy="-5.55112e-17 -1.5708 0" />
 <parent link="u_shoulder" />
 <child link="right_humerus" />
 <axis xyz="0 0 1"/>
@@ -339,9 +339,9 @@
 </material>
 </visual>
 <inertial>
-<origin xyz="-5.66222e-16 0.00566234 0.0159676" rpy="0 0 0"/>
+<origin xyz="-5.67381e-16 0.00566234 0.0159676" rpy="0 0 0"/>
 <mass value="0.0570101" />
-<inertia ixx="2.21758e-05" ixy="1.13873e-19"  ixz="3.1237e-19" iyy="4.03314e-05" iyz="-6.10703e-06" izz="3.58629e-05" />
+<inertia ixx="2.21758e-05" ixy="1.12444e-19"  ixz="3.13085e-19" iyy="4.03314e-05" iyz="-6.10703e-06" izz="3.58629e-05" />
 </inertial>
 </link>
 
@@ -364,9 +364,9 @@
 </material>
 </visual>
 <inertial>
-<origin xyz="-0.0663577 0.040272 -0.0134765" rpy="0 0 0"/>
-<mass value="0.111948" />
-<inertia ixx="0.00896033" ixy="0.00398528"  ixz="0.00041087" iyy="0.00197497" iyz="-0.000899791" izz="0.0107095" />
+<origin xyz="-0.0306821 0.00954138 -0.0179524" rpy="0 0 0"/>
+<mass value="0.241448" />
+<inertia ixx="0.00921809" ixy="0.00421411"  ixz="0.000444846" iyy="0.00227413" iyz="-0.0009285" izz="0.0112174" />
 </inertial>
 </link>
 
@@ -453,9 +453,9 @@
 </material>
 </visual>
 <inertial>
-<origin xyz="0.0776041 0.104341 -0.0531645" rpy="0 0 0"/>
-<mass value="0.120619" />
-<inertia ixx="0.021585" ixy="-0.00811906"  ixz="0.00124466" iyy="0.0037442" iyz="0.00318708" izz="0.0242843" />
+<origin xyz="0.0375062 0.0415038 -0.0369366" rpy="0 0 0"/>
+<mass value="0.250119" />
+<inertia ixx="0.0226227" ixy="-0.00870605"  ixz="0.0013969" iyy="0.00420944" iyz="0.00342464" izz="0.0256238" />
 </inertial>
 </link>
 
@@ -490,21 +490,21 @@
 <inertial>
 <origin xyz="-6.06621e-11 0.00126178 -0.0329138" rpy="0 0 0"/>
 <mass value="0.136031" />
-<inertia ixx="0.000121591" ixy="4.65787e-14"  ixz="1.94175e-13" iyy="7.55159e-05" iyz="7.1306e-07" izz="5.66884e-05" />
+<inertia ixx="0.000121591" ixy="4.65786e-14"  ixz="1.94175e-13" iyy="7.55159e-05" iyz="7.1306e-07" izz="5.66884e-05" />
 </inertial>
 </link>
 
 <link name="mx106_with_u_r">
 <!-- Shapes for inner -->
 <collision>
-<origin xyz="-0.01515 -0.00015 -0.0799438" rpy="-3.14159 2.16493e-15 1.5708" />
+<origin xyz="-0.01515 -0.00015 -0.0799438" rpy="-3.14159 2.33147e-15 1.5708" />
 <geometry>
 <box size="0.027 0.058 0.026" />
 </geometry>
 </collision>
 <!-- Shapes for inner -->
 <visual>
-<origin xyz="-0.01515 -0.00015 -0.0799438" rpy="-3.14159 2.16493e-15 1.5708" />
+<origin xyz="-0.01515 -0.00015 -0.0799438" rpy="-3.14159 2.33147e-15 1.5708" />
 <geometry>
 <box size="0.027 0.058 0.026" />
 </geometry>
@@ -530,23 +530,23 @@
 </material>
 </visual>
 <inertial>
-<origin xyz="-0.016034 -0.00248551 -0.0424236" rpy="0 0 0"/>
-<mass value="0.136461" />
-<inertia ixx="0.000126539" ixy="1.4013e-06"  ixz="-7.33812e-06" iyy="0.000158864" iyz="7.54591e-06" izz="8.16062e-05" />
+<origin xyz="-0.0131496 -0.00103215 -0.0475243" rpy="0 0 0"/>
+<mass value="0.421574" />
+<inertia ixx="0.000440314" ixy="4.41959e-07"  ixz="-4.51991e-06" iyy="0.000581579" iyz="1.16474e-05" izz="0.000245732" />
 </inertial>
 </link>
 
 <link name="thigh_horn_left">
 <!-- Shapes for thigh_free_left -->
 <collision>
-<origin xyz="-1.15245e-16 0.04 -0.0054" rpy="3.14159 -1.37092e-29 -5.71942e-19" />
+<origin xyz="-7.85706e-17 0.04 -0.0054" rpy="3.14159 5.55112e-16 -7.22946e-16" />
 <geometry>
 <box size="0.03 0.08 0.003" />
 </geometry>
 </collision>
 <!-- Shapes for thigh_free_left -->
 <visual>
-<origin xyz="-1.15245e-16 0.04 -0.0054" rpy="3.14159 -1.37092e-29 -5.71942e-19" />
+<origin xyz="-7.85706e-17 0.04 -0.0054" rpy="3.14159 5.55112e-16 -7.22946e-16" />
 <geometry>
 <box size="0.03 0.08 0.003" />
 </geometry>
@@ -556,14 +556,14 @@
 </visual>
 <!-- Shapes for thigh_horn -->
 <collision>
-<origin xyz="1.75621e-16 0.04 0.0436" rpy="3.14159 -1.39398e-29 -5.74647e-19" />
+<origin xyz="-2.34837e-16 0.04 0.0436" rpy="3.14159 -1.11022e-16 -1.16669e-16" />
 <geometry>
 <box size="0.03 0.08 0.003" />
 </geometry>
 </collision>
 <!-- Shapes for thigh_horn -->
 <visual>
-<origin xyz="1.75621e-16 0.04 0.0436" rpy="3.14159 -1.39398e-29 -5.74647e-19" />
+<origin xyz="-2.34837e-16 0.04 0.0436" rpy="3.14159 -1.11022e-16 -1.16669e-16" />
 <geometry>
 <box size="0.03 0.08 0.003" />
 </geometry>
@@ -573,14 +573,14 @@
 </visual>
 <!-- Shapes for inner -->
 <collision>
-<origin xyz="0.00015 0.12485 0.0165" rpy="-3.14159 2.0529e-15 -3.14159" />
+<origin xyz="0.00015 0.12485 0.0165" rpy="-3.14159 -1.05471e-15 3.14159" />
 <geometry>
 <box size="0.027 0.058 0.026" />
 </geometry>
 </collision>
 <!-- Shapes for inner -->
 <visual>
-<origin xyz="0.00015 0.12485 0.0165" rpy="-3.14159 2.0529e-15 -3.14159" />
+<origin xyz="0.00015 0.12485 0.0165" rpy="-3.14159 -1.05471e-15 3.14159" />
 <geometry>
 <box size="0.027 0.058 0.026" />
 </geometry>
@@ -589,23 +589,23 @@
 </material>
 </visual>
 <inertial>
-<origin xyz="-9.36074e-05 0.0868627 0.0156903" rpy="0 0 0"/>
-<mass value="0.0845547" />
-<inertia ixx="0.000327329" ixy="2.3833e-08"  ixz="-1.25073e-09" iyy="3.62057e-05" iyz="-4.5674e-05" izz="0.000305877" />
+<origin xyz="-1.5876e-05 0.112829 0.0162882" rpy="0 0 0"/>
+<mass value="0.227111" />
+<inertia ixx="0.000493196" ixy="-1.161e-07"  ixz="-1.76694e-08" iyy="6.33947e-05" iyz="-4.7784e-05" izz="0.000483708" />
 </inertial>
 </link>
 
 <link name="tibia_left_full">
 <!-- Shapes for tibia_horn_side -->
 <collision>
-<origin xyz="-0.065 1.52525e-14 0.0435" rpy="-1.249e-14 1.99003e-14 -5.7303e-14" />
+<origin xyz="-0.065 1.71938e-14 0.0435" rpy="-3.57492e-14 -1.03071e-13 -3.84321e-14" />
 <geometry>
 <box size="0.15 0.035 0.003" />
 </geometry>
 </collision>
 <!-- Shapes for tibia_horn_side -->
 <visual>
-<origin xyz="-0.065 1.52525e-14 0.0435" rpy="-1.249e-14 1.99003e-14 -5.7303e-14" />
+<origin xyz="-0.065 1.71938e-14 0.0435" rpy="-3.57492e-14 -1.03071e-13 -3.84321e-14" />
 <geometry>
 <box size="0.15 0.035 0.003" />
 </geometry>
@@ -615,14 +615,14 @@
 </visual>
 <!-- Shapes for tibia_left -->
 <collision>
-<origin xyz="-0.065 -0.0025 -0.0085" rpy="9.56646e-30 -1.52821e-30 -1.07717e-18" />
+<origin xyz="-0.065 -0.0025 -0.0085" rpy="2.13355e-30 -1.94078e-32 1.36352e-19" />
 <geometry>
 <box size="0.15 0.035 0.003" />
 </geometry>
 </collision>
 <!-- Shapes for tibia_left -->
 <visual>
-<origin xyz="-0.065 -0.0025 -0.0085" rpy="9.56646e-30 -1.52821e-30 -1.07717e-18" />
+<origin xyz="-0.065 -0.0025 -0.0085" rpy="2.13355e-30 -1.94078e-32 1.36352e-19" />
 <geometry>
 <box size="0.15 0.035 0.003" />
 </geometry>
@@ -631,9 +631,9 @@
 </material>
 </visual>
 <inertial>
-<origin xyz="-0.07 1.75919e-13 0.00139217" rpy="0 0 0"/>
+<origin xyz="-0.07 1.75683e-13 0.00139217" rpy="0 0 0"/>
 <mass value="0.0501468" />
-<inertia ixx="1.6277e-05" ixy="1.474e-17"  ixz="-1.29865e-13" iyy="0.000261996" iyz="-3.38442e-16" izz="0.000248145" />
+<inertia ixx="1.6277e-05" ixy="1.37678e-17"  ixz="-1.29879e-13" iyy="0.000261996" iyz="-3.38785e-16" izz="0.000248145" />
 </inertial>
 </link>
 
@@ -657,14 +657,14 @@
 </visual>
 <!-- Shapes for inner -->
 <collision>
-<origin xyz="0.01515 0.00015 0.0165" rpy="-3.14159 3.27516e-15 -1.5708" />
+<origin xyz="0.01515 0.00015 0.0165" rpy="3.14159 4.16334e-15 -1.5708" />
 <geometry>
 <box size="0.027 0.058 0.026" />
 </geometry>
 </collision>
 <!-- Shapes for inner -->
 <visual>
-<origin xyz="0.01515 0.00015 0.0165" rpy="-3.14159 3.27516e-15 -1.5708" />
+<origin xyz="0.01515 0.00015 0.0165" rpy="3.14159 4.16334e-15 -1.5708" />
 <geometry>
 <box size="0.027 0.058 0.026" />
 </geometry>
@@ -673,23 +673,23 @@
 </material>
 </visual>
 <inertial>
-<origin xyz="0.016034 -0.0223173 0.0184793" rpy="0 0 0"/>
-<mass value="0.136461" />
-<inertia ixx="0.000126581" ixy="7.32947e-06"  ixz="1.40995e-06" iyy="8.16104e-05" iyz="-7.57616e-06" izz="0.000158902" />
+<origin xyz="0.0131496 -0.0274018 0.0170097" rpy="0 0 0"/>
+<mass value="0.421574" />
+<inertia ixx="0.000440852" ixy="4.25678e-06"  ixz="7.05086e-07" iyy="0.000245751" iyz="-1.19495e-05" izz="0.000582098" />
 </inertial>
 </link>
 
 <link name="left_foot_asm">
 <!-- Shapes for cleat -->
 <collision>
-<origin xyz="0.052 -0.0325 -0.07563" rpy="-1.5708 -1.13409 -1.5708" />
+<origin xyz="0.052 -0.0325 -0.07563" rpy="1.5708 -0.367068 1.5708" />
 <geometry>
 <cylinder length="0.016" radius="0.008" />
 </geometry>
 </collision>
 <!-- Shapes for cleat -->
 <visual>
-<origin xyz="0.052 -0.0325 -0.07563" rpy="-1.5708 -1.13409 -1.5708" />
+<origin xyz="0.052 -0.0325 -0.07563" rpy="1.5708 -0.367068 1.5708" />
 <geometry>
 <cylinder length="0.016" radius="0.008" />
 </geometry>
@@ -699,14 +699,14 @@
 </visual>
 <!-- Shapes for cleat -->
 <collision>
-<origin xyz="0.052 0.0435 0.06597" rpy="-1.5708 -1.13468 -1.5708" />
+<origin xyz="0.052 0.0435 0.06597" rpy="-1.5708 -0.641317 -1.5708" />
 <geometry>
 <cylinder length="0.016" radius="0.008" />
 </geometry>
 </collision>
 <!-- Shapes for cleat -->
 <visual>
-<origin xyz="0.052 0.0435 0.06597" rpy="-1.5708 -1.13468 -1.5708" />
+<origin xyz="0.052 0.0435 0.06597" rpy="-1.5708 -0.641317 -1.5708" />
 <geometry>
 <cylinder length="0.016" radius="0.008" />
 </geometry>
@@ -716,14 +716,14 @@
 </visual>
 <!-- Shapes for cleat -->
 <collision>
-<origin xyz="0.052 -0.0325 0.06597" rpy="-1.5708 -1.13409 -1.5708" />
+<origin xyz="0.052 -0.0325 0.06597" rpy="1.5708 -0.367068 1.5708" />
 <geometry>
 <cylinder length="0.016" radius="0.008" />
 </geometry>
 </collision>
 <!-- Shapes for cleat -->
 <visual>
-<origin xyz="0.052 -0.0325 0.06597" rpy="-1.5708 -1.13409 -1.5708" />
+<origin xyz="0.052 -0.0325 0.06597" rpy="1.5708 -0.367068 1.5708" />
 <geometry>
 <cylinder length="0.016" radius="0.008" />
 </geometry>
@@ -733,14 +733,14 @@
 </visual>
 <!-- Shapes for cleat -->
 <collision>
-<origin xyz="0.052 0.0435 -0.07563" rpy="-1.5708 -1.13409 -1.5708" />
+<origin xyz="0.052 0.0435 -0.07563" rpy="1.5708 -0.367068 1.5708" />
 <geometry>
 <cylinder length="0.016" radius="0.008" />
 </geometry>
 </collision>
 <!-- Shapes for cleat -->
 <visual>
-<origin xyz="0.052 0.0435 -0.07563" rpy="-1.5708 -1.13409 -1.5708" />
+<origin xyz="0.052 0.0435 -0.07563" rpy="1.5708 -0.367068 1.5708" />
 <geometry>
 <cylinder length="0.016" radius="0.008" />
 </geometry>
@@ -750,14 +750,14 @@
 </visual>
 <!-- Shapes for foot_plate -->
 <collision>
-<origin xyz="0.0415 0.0055 -0.00483" rpy="-1.5708 -8.96762e-20 1.5708" />
+<origin xyz="0.0415 0.0055 -0.00483" rpy="-1.5708 3.82914e-19 1.5708" />
 <geometry>
 <box size="0.092 0.1576 0.003" />
 </geometry>
 </collision>
 <!-- Shapes for foot_plate -->
 <visual>
-<origin xyz="0.0415 0.0055 -0.00483" rpy="-1.5708 -8.96762e-20 1.5708" />
+<origin xyz="0.0415 0.0055 -0.00483" rpy="-1.5708 3.82914e-19 1.5708" />
 <geometry>
 <box size="0.092 0.1576 0.003" />
 </geometry>
@@ -780,14 +780,14 @@
 </inertial>
 </link>
 <joint name="left_foot_frame" type="fixed">
-<origin xyz="0.06 6.45317e-16 -0.02033" rpy="8.38389e-16 -1.5708 0" />
+<origin xyz="0.06 0.0055 -0.00483" rpy="3.04574e-27 -1.5708 0" />
 <parent link="left_foot_asm" />
 <child link="left_foot" />
 <axis xyz="0 0 0"/>
 </joint>
 
 <joint name="left_ankle_roll" type="revolute">
-<origin xyz="-2.22045e-16 0.0201 0.016" rpy="1.5708 7.53536e-19 3.14159" />
+<origin xyz="-2.22045e-16 0.0201 0.016" rpy="1.5708 -4.79033e-15 -3.14159" />
 <parent link="mx106_with_u_l" />
 <child link="left_foot_asm" />
 <axis xyz="0 0 1"/>
@@ -796,7 +796,7 @@
 </joint>
 
 <joint name="left_ankle_pitch" type="revolute">
-<origin xyz="-0.14 9.46118e-15 4.71151e-15" rpy="-2.63106e-14 -1.45196e-14 -1.5669e-13" />
+<origin xyz="-0.14 8.93643e-15 -4.26742e-15" rpy="6.00611e-15 -4.79034e-15 -6.38113e-14" />
 <parent link="tibia_left_full" />
 <child link="mx106_with_u_l" />
 <axis xyz="0 0 1"/>
@@ -805,16 +805,16 @@
 </joint>
 
 <joint name="left_knee" type="revolute">
-<origin xyz="-7.5287e-16 0.14 -0.001" rpy="1.92498e-15 1.2611e-14 -1.5708" />
+<origin xyz="4.11129e-16 0.14 -0.001" rpy="-1.18197e-15 -3.78471e-15 -1.5708" />
 <parent link="thigh_horn_left" />
 <child link="tibia_left_full" />
 <axis xyz="0 0 1"/>
-<limit effort="10" velocity="6" lower="0." upper="3.14159"/>
+<limit effort="10" velocity="6" lower="0" upper="3.14159"/>
 <joint_properties friction="0.0"/>
 </joint>
 
 <joint name="left_hip_pitch" type="revolute">
-<origin xyz="1.38778e-16 0.016 -0.0201" rpy="1.5708 -1.56511 -9.4895e-13" />
+<origin xyz="-2.08167e-16 0.016 -0.0201" rpy="1.5708 -1.56511 8.40664e-12" />
 <parent link="mx106_with_u_r" />
 <child link="thigh_horn_left" />
 <axis xyz="0 0 1"/>
@@ -823,7 +823,7 @@
 </joint>
 
 <joint name="left_hip_roll" type="revolute">
-<origin xyz="-1.11022e-16 -0.0200991 -0.0604" rpy="1.5708 -1.5708 0" />
+<origin xyz="-1.17961e-16 -0.0200991 -0.0604" rpy="1.5708 -1.5708 0" />
 <parent link="u_hip_with_saver" />
 <child link="mx106_with_u_r" />
 <axis xyz="0 0 1"/>
@@ -832,7 +832,7 @@
 </joint>
 
 <joint name="left_hip_yaw" type="revolute">
-<origin xyz="0.00586897 0.0464 -0.0411" rpy="1.43162e-16 -2.2295e-14 1.5708" />
+<origin xyz="0.00586897 0.0464 -0.0411" rpy="1.38778e-17 -2.2295e-14 1.5708" />
 <parent link="torso" />
 <child link="u_hip_with_saver" />
 <axis xyz="0 0 1"/>
@@ -844,7 +844,7 @@
 <inertial>
 <origin xyz="-6.0662e-11 0.00126178 -0.0329138" rpy="0 0 0"/>
 <mass value="0.136031" />
-<inertia ixx="0.000121591" ixy="4.65788e-14"  ixz="1.94175e-13" iyy="7.55159e-05" iyz="7.1306e-07" izz="5.66884e-05" />
+<inertia ixx="0.000121591" ixy="4.65787e-14"  ixz="1.94175e-13" iyy="7.55159e-05" iyz="7.1306e-07" izz="5.66884e-05" />
 </inertial>
 </link>
 
@@ -868,14 +868,14 @@
 </visual>
 <!-- Shapes for inner -->
 <collision>
-<origin xyz="-0.0149141 -0.00015 -0.0799437" rpy="3.14159 -6.10623e-16 1.5708" />
+<origin xyz="-0.0149141 -0.00015 -0.0799438" rpy="3.14159 -3.88578e-16 1.5708" />
 <geometry>
 <box size="0.027 0.058 0.026" />
 </geometry>
 </collision>
 <!-- Shapes for inner -->
 <visual>
-<origin xyz="-0.0149141 -0.00015 -0.0799437" rpy="3.14159 -6.10623e-16 1.5708" />
+<origin xyz="-0.0149141 -0.00015 -0.0799438" rpy="3.14159 -3.88578e-16 1.5708" />
 <geometry>
 <box size="0.027 0.058 0.026" />
 </geometry>
@@ -884,23 +884,23 @@
 </material>
 </visual>
 <inertial>
-<origin xyz="-0.0157981 0.00247927 -0.0424173" rpy="0 0 0"/>
-<mass value="0.136461" />
-<inertia ixx="0.000126581" ixy="-1.40995e-06"  ixz="-7.32947e-06" iyy="0.000158902" iyz="-7.57616e-06" izz="8.16104e-05" />
+<origin xyz="-0.0129136 0.00100969 -0.0475018" rpy="0 0 0"/>
+<mass value="0.421574" />
+<inertia ixx="0.000440852" ixy="-7.05086e-07"  ixz="-4.25678e-06" iyy="0.000582098" iyz="-1.19495e-05" izz="0.000245751" />
 </inertial>
 </link>
 
 <link name="thigh_horn_right">
 <!-- Shapes for thigh_horn -->
 <collision>
-<origin xyz="2.15499e-16 0.04 -0.0434" rpy="3.14159 5.55112e-17 2.01916e-16" />
+<origin xyz="-4.90141e-16 0.04 -0.0434" rpy="3.14159 2.22045e-16 -1.6603e-15" />
 <geometry>
 <box size="0.03 0.08 0.003" />
 </geometry>
 </collision>
 <!-- Shapes for thigh_horn -->
 <visual>
-<origin xyz="2.15499e-16 0.04 -0.0434" rpy="3.14159 5.55112e-17 2.01916e-16" />
+<origin xyz="-4.90141e-16 0.04 -0.0434" rpy="3.14159 2.22045e-16 -1.6603e-15" />
 <geometry>
 <box size="0.03 0.08 0.003" />
 </geometry>
@@ -910,14 +910,14 @@
 </visual>
 <!-- Shapes for inner -->
 <collision>
-<origin xyz="-0.00015 0.12485 -0.0165" rpy="2.3019e-16 -1.11022e-16 6.46001e-16" />
+<origin xyz="-0.00015 0.12485 -0.0165" rpy="-3.84884e-16 -1.66533e-15 7.59603e-16" />
 <geometry>
 <box size="0.027 0.058 0.026" />
 </geometry>
 </collision>
 <!-- Shapes for inner -->
 <visual>
-<origin xyz="-0.00015 0.12485 -0.0165" rpy="2.3019e-16 -1.11022e-16 6.46001e-16" />
+<origin xyz="-0.00015 0.12485 -0.0165" rpy="-3.84884e-16 -1.66533e-15 7.59603e-16" />
 <geometry>
 <box size="0.027 0.058 0.026" />
 </geometry>
@@ -927,14 +927,14 @@
 </visual>
 <!-- Shapes for thigh_free_right -->
 <collision>
-<origin xyz="-6.15994e-17 0.036 0.0054" rpy="-8.53145e-16 1.04637e-29 -1.04003e-18" />
+<origin xyz="-2.02173e-16 0.036 0.0054" rpy="-6.10659e-16 -2.77556e-16 -7.47855e-17" />
 <geometry>
 <box size="0.03 0.08 0.003" />
 </geometry>
 </collision>
 <!-- Shapes for thigh_free_right -->
 <visual>
-<origin xyz="-6.15994e-17 0.036 0.0054" rpy="-8.53145e-16 1.04637e-29 -1.04003e-18" />
+<origin xyz="-2.02173e-16 0.036 0.0054" rpy="-6.10659e-16 -2.77556e-16 -7.47855e-17" />
 <geometry>
 <box size="0.03 0.08 0.003" />
 </geometry>
@@ -943,23 +943,23 @@
 </material>
 </visual>
 <inertial>
-<origin xyz="-0.000103673 0.0868627 -0.0156903" rpy="0 0 0"/>
-<mass value="0.0845547" />
-<inertia ixx="0.000327329" ixy="4.67647e-08"  ixz="-6.41747e-09" iyy="3.62056e-05" iyz="4.5674e-05" izz="0.000305876" />
+<origin xyz="-5.75727e-05 0.112829 -0.0162882" rpy="0 0 0"/>
+<mass value="0.227111" />
+<inertia ixx="0.000493196" ixy="-2.46452e-07"  ixz="-1.28619e-08" iyy="6.3394e-05" iyz="4.7784e-05" izz="0.000483708" />
 </inertial>
 </link>
 
 <link name="tibia_right_full">
 <!-- Shapes for tibia_right -->
 <collision>
-<origin xyz="-0.065 0.0005 0.0085" rpy="3.14159 4.34305e-31 -7.29719e-19" />
+<origin xyz="-0.065 0.0005 0.0085" rpy="-3.14159 6.46989e-32 -1.00361e-18" />
 <geometry>
 <box size="0.15 0.035 0.003" />
 </geometry>
 </collision>
 <!-- Shapes for tibia_right -->
 <visual>
-<origin xyz="-0.065 0.0005 0.0085" rpy="3.14159 4.34305e-31 -7.29719e-19" />
+<origin xyz="-0.065 0.0005 0.0085" rpy="-3.14159 6.46989e-32 -1.00361e-18" />
 <geometry>
 <box size="0.15 0.035 0.003" />
 </geometry>
@@ -969,14 +969,14 @@
 </visual>
 <!-- Shapes for tibia_horn_side -->
 <collision>
-<origin xyz="-0.065 1.05036e-14 -0.0435" rpy="4.89053e-14 -1.70336e-13 3.06391e-14" />
+<origin xyz="-0.065 1.0586e-14 -0.0435" rpy="4.89608e-14 -1.70234e-13 3.05148e-14" />
 <geometry>
 <box size="0.15 0.035 0.003" />
 </geometry>
 </collision>
 <!-- Shapes for tibia_horn_side -->
 <visual>
-<origin xyz="-0.065 1.05036e-14 -0.0435" rpy="4.89053e-14 -1.70336e-13 3.06391e-14" />
+<origin xyz="-0.065 1.0586e-14 -0.0435" rpy="4.89608e-14 -1.70234e-13 3.05148e-14" />
 <geometry>
 <box size="0.15 0.035 0.003" />
 </geometry>
@@ -985,23 +985,23 @@
 </material>
 </visual>
 <inertial>
-<origin xyz="-0.07 -1.76056e-13 -0.00139217" rpy="0 0 0"/>
+<origin xyz="-0.07 -1.76067e-13 -0.00139217" rpy="0 0 0"/>
 <mass value="0.0501468" />
-<inertia ixx="1.6277e-05" ixy="-2.49887e-17"  ixz="1.29958e-13" iyy="0.000261996" iyz="-3.33217e-16" izz="0.000248145" />
+<inertia ixx="1.6277e-05" ixy="-2.50302e-17"  ixz="1.29958e-13" iyy="0.000261996" iyz="-3.33222e-16" izz="0.000248145" />
 </inertial>
 </link>
 
 <link name="mx106_with_u_r_2">
 <!-- Shapes for inner -->
 <collision>
-<origin xyz="0.01515 -0.00015 -0.0165" rpy="6.89553e-17 -9.4369e-16 1.5708" />
+<origin xyz="0.01515 -0.00015 -0.0165" rpy="2.47719e-15 -1.88738e-15 1.5708" />
 <geometry>
 <box size="0.027 0.058 0.026" />
 </geometry>
 </collision>
 <!-- Shapes for inner -->
 <visual>
-<origin xyz="0.01515 -0.00015 -0.0165" rpy="6.89553e-17 -9.4369e-16 1.5708" />
+<origin xyz="0.01515 -0.00015 -0.0165" rpy="2.47719e-15 -1.88738e-15 1.5708" />
 <geometry>
 <box size="0.027 0.058 0.026" />
 </geometry>
@@ -1027,23 +1027,23 @@
 </material>
 </visual>
 <inertial>
-<origin xyz="0.016034 -0.0223236 -0.0184855" rpy="0 0 0"/>
-<mass value="0.136461" />
-<inertia ixx="0.000126539" ixy="7.33812e-06"  ixz="-1.4013e-06" iyy="8.16062e-05" iyz="7.54591e-06" izz="0.000158864" />
+<origin xyz="0.0131496 -0.0274243 -0.0170322" rpy="0 0 0"/>
+<mass value="0.421574" />
+<inertia ixx="0.000440314" ixy="4.51991e-06"  ixz="-4.41959e-07" iyy="0.000245732" iyz="1.16474e-05" izz="0.000581579" />
 </inertial>
 </link>
 
 <link name="right_foot_asm">
 <!-- Shapes for cleat -->
 <collision>
-<origin xyz="0.052 -0.0435 -0.07563" rpy="1.5708 0.653869 1.5708" />
+<origin xyz="0.052 -0.0435 -0.07563" rpy="-1.5708 1.29002 -1.5708" />
 <geometry>
 <cylinder length="0.016" radius="0.008" />
 </geometry>
 </collision>
 <!-- Shapes for cleat -->
 <visual>
-<origin xyz="0.052 -0.0435 -0.07563" rpy="1.5708 0.653869 1.5708" />
+<origin xyz="0.052 -0.0435 -0.07563" rpy="-1.5708 1.29002 -1.5708" />
 <geometry>
 <cylinder length="0.016" radius="0.008" />
 </geometry>
@@ -1053,14 +1053,14 @@
 </visual>
 <!-- Shapes for cleat -->
 <collision>
-<origin xyz="0.052 -0.0435 0.06597" rpy="-1.5708 -1.27175 -1.5708" />
+<origin xyz="0.052 -0.0435 0.06597" rpy="-1.5708 -1.10788 -1.5708" />
 <geometry>
 <cylinder length="0.016" radius="0.008" />
 </geometry>
 </collision>
 <!-- Shapes for cleat -->
 <visual>
-<origin xyz="0.052 -0.0435 0.06597" rpy="-1.5708 -1.27175 -1.5708" />
+<origin xyz="0.052 -0.0435 0.06597" rpy="-1.5708 -1.10788 -1.5708" />
 <geometry>
 <cylinder length="0.016" radius="0.008" />
 </geometry>
@@ -1070,14 +1070,14 @@
 </visual>
 <!-- Shapes for cleat -->
 <collision>
-<origin xyz="0.052 0.0325 -0.07563" rpy="1.5708 0.653869 1.5708" />
+<origin xyz="0.052 0.0325 -0.07563" rpy="-1.5708 1.29002 -1.5708" />
 <geometry>
 <cylinder length="0.016" radius="0.008" />
 </geometry>
 </collision>
 <!-- Shapes for cleat -->
 <visual>
-<origin xyz="0.052 0.0325 -0.07563" rpy="1.5708 0.653869 1.5708" />
+<origin xyz="0.052 0.0325 -0.07563" rpy="-1.5708 1.29002 -1.5708" />
 <geometry>
 <cylinder length="0.016" radius="0.008" />
 </geometry>
@@ -1087,14 +1087,14 @@
 </visual>
 <!-- Shapes for cleat -->
 <collision>
-<origin xyz="0.052 0.0325 0.06597" rpy="1.5708 0.653869 1.5708" />
+<origin xyz="0.052 0.0325 0.06597" rpy="-1.5708 1.29002 -1.5708" />
 <geometry>
 <cylinder length="0.016" radius="0.008" />
 </geometry>
 </collision>
 <!-- Shapes for cleat -->
 <visual>
-<origin xyz="0.052 0.0325 0.06597" rpy="1.5708 0.653869 1.5708" />
+<origin xyz="0.052 0.0325 0.06597" rpy="-1.5708 1.29002 -1.5708" />
 <geometry>
 <cylinder length="0.016" radius="0.008" />
 </geometry>
@@ -1104,14 +1104,14 @@
 </visual>
 <!-- Shapes for foot_plate -->
 <collision>
-<origin xyz="0.0415 -0.0055 -0.00483" rpy="-1.5708 2.8968e-19 1.5708" />
+<origin xyz="0.0415 -0.0055 -0.00483" rpy="-1.5708 -2.99786e-19 1.5708" />
 <geometry>
 <box size="0.092 0.1576 0.003" />
 </geometry>
 </collision>
 <!-- Shapes for foot_plate -->
 <visual>
-<origin xyz="0.0415 -0.0055 -0.00483" rpy="-1.5708 2.8968e-19 1.5708" />
+<origin xyz="0.0415 -0.0055 -0.00483" rpy="-1.5708 -2.99786e-19 1.5708" />
 <geometry>
 <box size="0.092 0.1576 0.003" />
 </geometry>
@@ -1134,14 +1134,14 @@
 </inertial>
 </link>
 <joint name="right_foot_frame" type="fixed">
-<origin xyz="0.06 1.02696e-15 -0.02033" rpy="4.64969e-19 -1.5708 0" />
+<origin xyz="0.06 -0.0055 -0.00483" rpy="-1.661e-16 -1.5708 0" />
 <parent link="right_foot_asm" />
 <child link="right_foot" />
 <axis xyz="0 0 0"/>
 </joint>
 
 <joint name="right_ankle_roll" type="revolute">
-<origin xyz="-2.22045e-16 0.0201 -0.016" rpy="1.5708 4.64969e-19 -3.14159" />
+<origin xyz="2.77556e-16 0.0201 -0.016" rpy="1.5708 -1.43631e-15 3.14159" />
 <parent link="mx106_with_u_r_2" />
 <child link="right_foot_asm" />
 <axis xyz="0 0 1"/>
@@ -1150,7 +1150,7 @@
 </joint>
 
 <joint name="right_ankle_pitch" type="revolute">
-<origin xyz="-0.14 -1.56732e-14 5.03798e-14" rpy="-4.4409e-16 -4.49305e-15 1.11963e-13" />
+<origin xyz="-0.14 -1.56316e-14 -2.08167e-17" rpy="1.46503e-15 -5.21573e-15 -5.73004e-19" />
 <parent link="tibia_right_full" />
 <child link="mx106_with_u_r_2" />
 <axis xyz="0 0 1"/>
@@ -1159,16 +1159,16 @@
 </joint>
 
 <joint name="right_knee" type="revolute">
-<origin xyz="-3.81639e-17 0.14 -2.05357e-14" rpy="-1.24994e-15 -5.32933e-16 -1.5708" />
+<origin xyz="3.05311e-16 0.14 -2.01748e-14" rpy="-5.68163e-14 -6.87273e-16 -1.5708" />
 <parent link="thigh_horn_right" />
 <child link="tibia_right_full" />
 <axis xyz="0 0 1"/>
-<limit effort="10" velocity="6" lower="0." upper="3.14159"/>
+<limit effort="10" velocity="6" lower="-0" upper="3.14159"/>
 <joint_properties friction="0.0"/>
 </joint>
 
 <joint name="right_hip_pitch" type="revolute">
-<origin xyz="0.000235943 -0.016 -0.0201" rpy="1.5708 -1.56511 -2.92366e-13" />
+<origin xyz="0.000235943 -0.016 -0.0201" rpy="1.5708 -1.56511 -2.04106e-13" />
 <parent link="mx106_with_u_l_2" />
 <child link="thigh_horn_right" />
 <axis xyz="0 0 1"/>
@@ -1177,7 +1177,7 @@
 </joint>
 
 <joint name="right_hip_roll" type="revolute">
-<origin xyz="6.245e-17 -0.0200991 -0.0604" rpy="1.5708 -1.5708 0" />
+<origin xyz="4.85723e-17 -0.0200991 -0.0604" rpy="1.5708 -1.5708 0" />
 <parent link="u_hip_with_saver_2" />
 <child link="mx106_with_u_l_2" />
 <axis xyz="0 0 1"/>
@@ -1186,7 +1186,7 @@
 </joint>
 
 <joint name="right_hip_yaw" type="revolute">
-<origin xyz="0.00586897 -0.0464 -0.0411" rpy="1.22835e-15 -2.11957e-15 1.5708" />
+<origin xyz="0.00586897 -0.0464 -0.0411" rpy="1.08941e-15 -2.22601e-15 1.5708" />
 <parent link="torso" />
 <child link="u_hip_with_saver_2" />
 <axis xyz="0 0 1"/>
@@ -1197,14 +1197,14 @@
 <link name="u_neck">
 <!-- Shapes for u_base_64 -->
 <collision>
-<origin xyz="5.24496e-34 -1.92593e-35 0.003125" rpy="3.14159 1.57269e-31 1.0424e-30" />
+<origin xyz="-4.01637e-33 1.92593e-35 0.003125" rpy="3.14159 -1.29581e-30 8.40232e-30" />
 <geometry>
 <box size="0.049 0.03 0.00625" />
 </geometry>
 </collision>
 <!-- Shapes for u_base_64 -->
 <visual>
-<origin xyz="5.24496e-34 -1.92593e-35 0.003125" rpy="3.14159 1.57269e-31 1.0424e-30" />
+<origin xyz="-4.01637e-33 1.92593e-35 0.003125" rpy="3.14159 -1.29581e-30 8.40232e-30" />
 <geometry>
 <box size="0.049 0.03 0.00625" />
 </geometry>
@@ -1247,23 +1247,23 @@
 </material>
 </visual>
 <inertial>
-<origin xyz="-6.22838e-17 -2.25985e-16 0.0206334" rpy="0 0 0"/>
+<origin xyz="-7.01198e-17 -2.25658e-16 0.0206334" rpy="0 0 0"/>
 <mass value="0.0544799" />
-<inertia ixx="3.05787e-05" ixy="-1.35944e-11"  ixz="-1.74859e-19" iyy="5.16952e-05" iyz="4.29472e-20" izz="2.98525e-05" />
+<inertia ixx="3.05787e-05" ixy="-1.35944e-11"  ixz="-1.78883e-19" iyy="5.16952e-05" iyz="4.37148e-20" izz="2.98525e-05" />
 </inertial>
 </link>
 
 <link name="head__field_of_view_false">
 <!-- Shapes for mx-64at_ar -->
 <collision>
-<origin xyz="2.01086e-16 -0.01755 -0.0235" rpy="-3.09954e-16 1.24585e-15 1.34226e-14" />
+<origin xyz="2.00525e-16 -0.01755 -0.0235" rpy="-3.09954e-16 1.24585e-15 1.33949e-14" />
 <geometry>
 <box size="0.0402 0.0611 0.041" />
 </geometry>
 </collision>
 <!-- Shapes for mx-64at_ar -->
 <visual>
-<origin xyz="2.01086e-16 -0.01755 -0.0235" rpy="-3.09954e-16 1.24585e-15 1.34226e-14" />
+<origin xyz="2.00525e-16 -0.01755 -0.0235" rpy="-3.09954e-16 1.24585e-15 1.33949e-14" />
 <geometry>
 <box size="0.0402 0.0611 0.041" />
 </geometry>
@@ -1336,9 +1336,9 @@
 </material>
 </visual>
 <inertial>
-<origin xyz="0.0180026 0.128543 -0.0843703" rpy="0 0 0"/>
-<mass value="0.120438" />
-<inertia ixx="0.00740784" ixy="-0.00108575"  ixz="0.000667157" iyy="0.00228607" iyz="0.00327733" izz="0.00563245" />
+<origin xyz="0.00875694 0.0531205 -0.051962" rpy="0 0 0"/>
+<mass value="0.249938" />
+<inertia ixx="0.00903073" ixy="-0.00124784"  ixz="0.000737453" iyy="0.0025794" iyz="0.00384551" izz="0.00701973" />
 </inertial>
 </link>
 
@@ -1357,7 +1357,7 @@
 </joint>
 
 <joint name="head_pitch" type="revolute">
-<origin xyz="-0.0235 1.67921e-15 0.058302" rpy="1.5708 -5.26755e-18 -1.5708" />
+<origin xyz="-0.0235 1.63064e-15 0.058302" rpy="1.5708 -5.26755e-18 -1.5708" />
 <parent link="u_neck" />
 <child link="head__field_of_view_false" />
 <axis xyz="0 0 1"/>
@@ -1366,7 +1366,7 @@
 </joint>
 
 <joint name="head_yaw" type="revolute">
-<origin xyz="0.035869 4.36359e-15 0.1595" rpy="3.46945e-16 2.84444e-15 -1.5708" />
+<origin xyz="0.035869 2.46254e-15 0.1595" rpy="4.02456e-16 -2.25859e-14 -1.5708" />
 <parent link="torso" />
 <child link="u_neck" />
 <axis xyz="0 0 1"/>

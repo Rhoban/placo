@@ -27,6 +27,11 @@ public:
   double double_support_duration = 1.;
 
   /**
+   * @brief DSP duration [ms], must be a multiple of dt
+   */
+  double startend_double_support_duration = 1.;
+
+  /**
    * @brief Maximum steps for planning
    */
   int maximum_steps = 100;
@@ -34,7 +39,7 @@ public:
   /**
    * @brief Margin for the ZMP to live in the support polygon [m]
    */
-  double zmp_margin = 0.05;
+  double zmp_margin = 0.025;
 
   /**
    * @brief How height the feet are rising while walking
@@ -45,6 +50,11 @@ public:
    * @brief CoM height while walking
    */
   double walk_com_height = 0.4;
+
+  /**
+   * @brief Trunk pitch while walking
+   */
+  double walk_trunk_pitch = 0.0;
 
   /**
    * @brief Robot center of mass height for LIPM model. This is used to compute the pendulum constant

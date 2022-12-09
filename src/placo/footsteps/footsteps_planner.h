@@ -43,6 +43,7 @@ public:
     std::vector<Footstep> footsteps;
     std::vector<Eigen::Vector2d> polygon;
     bool computed_polygon = false;
+    bool start_end = false;
     std::vector<Eigen::Vector2d> support_polygon();
 
     /**

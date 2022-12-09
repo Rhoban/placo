@@ -1,4 +1,4 @@
-#!/bin/env python
+#!/usr/bin/env python
 import re
 import inspect
 import placo
@@ -50,4 +50,3 @@ for name, object in inspect.getmembers(placo):
     else:
         ...
 
-print(os.getcwd())

@@ -20,12 +20,14 @@ public:
 
   struct Trajectory
   {
+    double com_height;
+    double trunk_pitch;
+    
     // Planned footsteps
     std::vector<FootstepsPlanner::Support> footsteps;
 
     // CoM trajectory
     JerkPlanner::JerkTrajectory2D com;
-    double com_height;
 
     // Feet trajectory
     rhoban_utils::PolySpline3D left_foot;

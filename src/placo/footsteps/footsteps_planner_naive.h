@@ -24,8 +24,8 @@ public:
   int max_steps = 100;
 
   // Dimension of the accessibility window for the opposite foot
-  double accessibility_width = 0.05;
-  double accessibility_length = 0.1;
+  double accessibility_width = 0.025;
+  double accessibility_length = 0.08;
   double accessibility_yaw = 0.2;
 
   // Distance where the robot walks forward instead of aligning with target
