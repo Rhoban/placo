@@ -1,5 +1,5 @@
 deps:
-  - rhoban/utils#cmake_only
+  - rhoban/utils#fixes
   - rhobandeps/cppzmq
   - rhoban/rhio#wks
   - CLIUtils/CLI11@v1.9.1
