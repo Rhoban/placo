@@ -26,6 +26,12 @@ void exposeUtils()
 
   class_<std::map<std::string, double> >("map_string_double").def(map_indexing_suite<std::map<std::string, double> >());
 
-  class_<PolySpline>("PolySpline").def("get", &PolySpline::get).def("getVel", &PolySpline::getVel);
-  class_<PolySpline3D>("PolySpline3D").def("get", &PolySpline3D::get).def("getVel", &PolySpline3D::getVel);
+  class_<PolySpline>("PolySpline")
+      .def("get", &PolySpline::get)
+      .def("getVel", &PolySpline::getVel)
+      .def("addPoint", &PolySpline::addPoint);
+  class_<PolySpline3D>("PolySpline3D")
+      .def("get", &PolySpline3D::get)
+      .def("getVel", &PolySpline3D::getVel)
+      .def("addPoint", &PolySpline::addPoint);
 }
