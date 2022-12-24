@@ -25,16 +25,16 @@ T_world_right = robot.get_T_world_right()
 T_world_leftTarget = T_world_left.copy()
 T_world_rightTarget = T_world_right.copy()
 
-T_world_leftTarget[0, 3] += 1.0
-T_world_rightTarget[0, 3] += 1.0
+T_world_leftTarget[0, 3] += 3.0
+T_world_rightTarget[0, 3] += 3.0
 # T_world_leftTarget[1, 3] += 1.5
 # T_world_rightTarget[1, 3] += 1.5
 
 # Creating the pattern generator to plan the trajectory
 walk = placo.WalkPatternGenerator(robot)
 walk.parameters.dt = 0.05
-walk.parameters.single_support_duration = 0.4
-walk.parameters.double_support_duration = 0.1
+walk.parameters.single_support_duration = .5
+walk.parameters.double_support_duration = .25
 walk.parameters.startend_double_support_duration = 0.5
 walk.parameters.maximum_steps = 1024
 walk.parameters.walk_com_height = 0.32
@@ -127,7 +127,7 @@ elif args.pybullet or args.meshcat:
         footsteps_viz(trajectory.footsteps)
 
     start_t = time.time()
-    t = -3. if args.pybullet else 0.
+    t = -10. if args.pybullet else 0.
     dt = 0.005
 
     while True:
