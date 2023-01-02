@@ -242,11 +242,11 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
       // In term of minimization, we want to minimize (Ax - b)^T (Ax - b)
       // Thus, (x^T A^T - b^T) (Ax - b) = x^T A^T A x - 2 b^T A
       // P (hessian) is A^T A
-      // q (linear) is - b^T A
+      // q (linear) is - A^T b
       // We removed the "2" because the solver already solves for 1/2 x^T P x + q^T x
 
       P += task->weight * (task->A.transpose() * task->A);
-      q += task->weight * (-task->b.transpose() * task->A);
+      q += task->weight * (-task->A.transpose() * task->b);
     }
     else
     {
