@@ -15,6 +15,12 @@ HumanoidRobot::Side HumanoidRobot::other_side(Side side)
 
 HumanoidRobot::HumanoidRobot(std::string model_directory) : RobotWrapper(model_directory)
 {
+}
+
+void HumanoidRobot::load()
+{
+  this->RobotWrapper::load();
+
   support_side = Right;
   T_world_support.setIdentity();
 

@@ -6,10 +6,9 @@ import numpy as np
 import tf
 from visualization import robot_viz, frame_viz, point_viz, robot_frame_viz
 
-# TODO: Update joint limits in URDF
-
 # Loading the robot
 robot = placo.HumanoidRobot("sigmaban/")
+robot.load()
 
 # robot.set_joint("left_knee", 0.1)
 # robot.set_joint("right_knee", 0.1)

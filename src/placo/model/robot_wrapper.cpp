@@ -15,7 +15,11 @@ bool RobotWrapper::Collision::operator==(const Collision& other)
   return (bodyA == other.bodyA && bodyB == other.bodyB && contacts == other.contacts);
 }
 
-RobotWrapper::RobotWrapper(std::string model_directory)
+RobotWrapper::RobotWrapper(std::string model_directory) : model_directory(model_directory)
+{
+}
+
+void RobotWrapper::load()
 {
   std::string urdf_filename = model_directory + "/robot.urdf";
   pinocchio::urdf::buildModel(urdf_filename, root_joint, model);

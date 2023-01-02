@@ -14,6 +14,11 @@ public:
   RobotWrapper(std::string model_directory = "robot/");
 
   /**
+   * @brief Starts loading the model and to check for the presence of everything
+   */
+  virtual void load();
+
+  /**
    * @brief The index of a frame (currently directly wrapped to pinocchio's FrameIndex)
    */
   typedef pinocchio::FrameIndex FrameIndex;
@@ -181,6 +186,7 @@ public:
   std::vector<std::string> frame_names();
 
   // Pinocchio model
+  std::string model_directory;
   pinocchio::Model model;
   pinocchio::GeometryModel collision_model;
   pinocchio::GeometryModel visual_model;

@@ -21,6 +21,8 @@ public:
 
   HumanoidRobot(std::string model_directory = "robot/");
 
+  virtual void load();
+
   /**
    * @brief Updates which frame should be the current support
    */

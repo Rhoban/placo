@@ -16,6 +16,7 @@ args = parser.parse_args()
 
 # Loading the robot
 robot = placo.HumanoidRobot("sigmaban/")
+robot.load()
 robot.ensure_on_floor()
 
 # Planning the steps
@@ -33,8 +34,8 @@ T_world_rightTarget[0, 3] += 3.0
 # Creating the pattern generator to plan the trajectory
 walk = placo.WalkPatternGenerator(robot)
 walk.parameters.dt = 0.05
-walk.parameters.single_support_duration = .5
-walk.parameters.double_support_duration = .25
+walk.parameters.single_support_duration = .4
+walk.parameters.double_support_duration = .05
 walk.parameters.startend_double_support_duration = 0.5
 walk.parameters.maximum_steps = 1024
 walk.parameters.walk_com_height = 0.32
