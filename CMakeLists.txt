@@ -2,9 +2,9 @@ project(placo)
 cmake_minimum_required(VERSION 3.10)
 
 find_package(Threads)
-
-link_directories("/opt/openrobots/lib/")
-include_directories("/opt/openrobots/include/")
+find_package(pinocchio REQUIRED)
+find_package(eiquadprog REQUIRED)
+find_package(eigenpy REQUIRED)
 
 # Enable C++17
 set(CMAKE_CXX_STANDARD 17)
@@ -50,12 +50,12 @@ target_link_libraries(libplaco PUBLIC
     CLI11::CLI11
     Eigen3::Eigen
     Threads::Threads
-    pinocchio
-    eigenpy
+    pinocchio::pinocchio
+    eigenpy::eigenpy
     rhoban_utils
     libzmq
     cppzmq
-    eiquadprog
+    eiquadprog::eiquadprog
   ${PROTOBUF_LIBRARIES}
 )
 target_compile_definitions(libplaco PUBLIC -DMOTORS_CONFIGURATION_${MOTORS_CONFIGURATION}
