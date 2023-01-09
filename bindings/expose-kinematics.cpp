@@ -62,13 +62,13 @@ void exposeKinematics()
               "R_a_b", +[](const RelativeOrientationTask& task) { return task.R_a_b; },
               &RelativeOrientationTask::R_a_b));
 
-  class_<FrameTask>("FrameTask", init<PositionTask&, OrientationTask&>())
+  class_<FrameTask>("FrameTask", init<>())
       .def(
-          "position", +[](const FrameTask& task) -> PositionTask& { return task.position; },
+          "position", +[](const FrameTask& task) -> PositionTask& { return *task.position; },
           return_internal_reference<>())
 
       .def(
-          "orientation", +[](const FrameTask& task) -> OrientationTask& { return task.orientation; },
+          "orientation", +[](const FrameTask& task) -> OrientationTask& { return *task.orientation; },
           return_internal_reference<>())
       .def("configure", &FrameTask::configure)
       .add_property("T_world_frame", &FrameTask::get_T_world_frame, &FrameTask::set_T_world_frame);

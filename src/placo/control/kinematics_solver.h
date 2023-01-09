@@ -100,8 +100,8 @@ public:
    * @param T_world_frame the target for the frame we want to control, expressed in the world (as T_world_frame)
    * @param priority task priority (hard: equality constraint, soft: objective function)
    */
-  FrameTask add_frame_task(RobotWrapper::FrameIndex frame, Eigen::Affine3d T_world_frame);
-  FrameTask add_frame_task(std::string frame, Eigen::Affine3d T_world_frame);
+  FrameTask add_frame_task(RobotWrapper::FrameIndex frame, Eigen::Affine3d T_world_frame = Eigen::Affine3d::Identity());
+  FrameTask add_frame_task(std::string frame, Eigen::Affine3d T_world_frame = Eigen::Affine3d::Identity());
 
   /**
    * @brief Adds a relative frame task

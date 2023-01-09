@@ -22,7 +22,7 @@ public:
   {
     double com_height;
     double trunk_pitch;
-    
+
     // Planned footsteps
     std::vector<FootstepsPlanner::Support> footsteps;
 
@@ -50,11 +50,18 @@ public:
 
   WalkPatternGenerator(HumanoidRobot& robot);
 
-  void planFootsteps(Trajectory& trajectory, Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right);
+  void planFootsteps(Trajectory& trajectory, Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right,
+                     Eigen::Affine3d T_world_targetLeft, Eigen::Affine3d T_world_targetRight);
   void planCoM(Trajectory& trajectory);
   void planFeetTrajctories(Trajectory& trajectory);
 
-  Trajectory plan(Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right);
+  Trajectory plan(Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right, Eigen::Affine3d T_world_targetLeft,
+                  Eigen::Affine3d T_world_targetRight);
+  Trajectory plan(std::vector<FootstepsPlanner::Support> footsteps);
+
+  // For python binding
+  Trajectory plan_by_frames(Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right,
+                            Eigen::Affine3d T_world_targetLeft, Eigen::Affine3d T_world_targetRight);
 
   HumanoidRobot& robot;
 };

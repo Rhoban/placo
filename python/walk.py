@@ -26,8 +26,8 @@ T_world_right = robot.get_T_world_right()
 T_world_leftTarget = T_world_left.copy()
 T_world_rightTarget = T_world_right.copy()
 
-T_world_leftTarget[0, 3] += 3.0
-T_world_rightTarget[0, 3] += 3.0
+T_world_leftTarget[0, 3] += 1.0
+T_world_rightTarget[0, 3] += 1.0
 # T_world_leftTarget[1, 3] += 1.5
 # T_world_rightTarget[1, 3] += 1.5
 
@@ -39,7 +39,7 @@ walk.parameters.double_support_duration = .05
 walk.parameters.startend_double_support_duration = 0.5
 walk.parameters.maximum_steps = 1024
 walk.parameters.walk_com_height = 0.32
-walk.parameters.pendulum_height = 0.3
+walk.parameters.pendulum_height = 0.7
 walk.parameters.walk_trunk_pitch = 0.2
 walk.parameters.foot_length = 0.1576
 walk.parameters.foot_width = 0.092
@@ -47,7 +47,7 @@ walk.parameters.feet_spacing = 0.122
 walk.parameters.zmp_margin = 0.045
 
 start_t = time.time()
-trajectory = walk.plan(T_world_leftTarget, T_world_rightTarget)
+trajectory = walk.plan(T_world_left, T_world_right, T_world_leftTarget, T_world_rightTarget)
 elapsed = time.time() - start_t
 print(f"Computation time: {elapsed*1e6}µs")
 

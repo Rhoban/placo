@@ -9,17 +9,14 @@ WalkPatternGenerator::WalkPatternGenerator(HumanoidRobot& robot) : robot(robot)
 }
 
 void WalkPatternGenerator::planFootsteps(Trajectory& trajectory, Eigen::Affine3d T_world_left,
-                                         Eigen::Affine3d T_world_right)
+                                         Eigen::Affine3d T_world_right, Eigen::Affine3d T_world_targetLeft,
+                                         Eigen::Affine3d T_world_targetRight)
 {
-  // Retrieving current foot frames
-  auto T_world_leftCurrent = flatten_on_floor(robot.get_T_world_left());
-  auto T_world_rightCurrent = flatten_on_floor(robot.get_T_world_right());
-
   // Creates the planner and run the planning
-  FootstepsPlannerNaive planner(robot.support_side, T_world_leftCurrent, T_world_rightCurrent);
+  FootstepsPlannerNaive planner(robot.support_side, T_world_left, T_world_right);
   planner.parameters = parameters;
 
-  auto footsteps = planner.plan(T_world_left, T_world_right);
+  auto footsteps = planner.plan(T_world_targetLeft, T_world_targetRight);
 
   int dsp_steps = std::round(parameters.double_support_duration / parameters.dt);
 
@@ -76,7 +73,8 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory)
         if (k == (ssp_steps / 2))
         {
           // Adding a constraint at the begining of the stem
-          // planner.add_polygon_constraint(steps + k, support.support_polygon(), JerkPlanner::ZMP, parameters.zmp_margin);
+          // planner.add_polygon_constraint(steps + k, support.support_polygon(), JerkPlanner::ZMP,
+          // parameters.zmp_margin);
           auto target = support.frame().translation();
           planner.add_equality_constraint(steps + k, Eigen::Vector2d(target.x(), target.y()), JerkPlanner::ZMP);
         }
@@ -240,14 +238,16 @@ void WalkPatternGenerator::planFeetTrajctories(Trajectory& trajectory)
   trajectory.duration = t;
 }
 
-WalkPatternGenerator::Trajectory WalkPatternGenerator::plan(Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right)
+WalkPatternGenerator::Trajectory WalkPatternGenerator::plan(Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right,
+                                                            Eigen::Affine3d T_world_targetLeft,
+                                                            Eigen::Affine3d T_world_targetRight)
 {
   Trajectory trajectory;
   trajectory.com_height = parameters.walk_com_height;
   trajectory.trunk_pitch = parameters.walk_trunk_pitch;
 
   // Planning the footsteps to take
-  planFootsteps(trajectory, T_world_left, T_world_right);
+  planFootsteps(trajectory, T_world_left, T_world_right, T_world_targetLeft, T_world_targetRight);
 
   // Planning the center of mass trajectory
   planCoM(trajectory);
@@ -256,5 +256,30 @@ WalkPatternGenerator::Trajectory WalkPatternGenerator::plan(Eigen::Affine3d T_wo
   planFeetTrajctories(trajectory);
 
   return trajectory;
+}
+
+WalkPatternGenerator::Trajectory WalkPatternGenerator::plan(std::vector<FootstepsPlanner::Support> footsteps)
+{
+  Trajectory trajectory;
+  trajectory.com_height = parameters.walk_com_height;
+  trajectory.trunk_pitch = parameters.walk_trunk_pitch;
+  trajectory.footsteps = footsteps;
+
+  // Planning the center of mass trajectory
+  planCoM(trajectory);
+
+  // Planning the footsteps trajectories
+  planFeetTrajctories(trajectory);
+
+  return trajectory;
+}
+
+// For python binding
+WalkPatternGenerator::Trajectory WalkPatternGenerator::plan_by_frames(Eigen::Affine3d T_world_left,
+                                                                      Eigen::Affine3d T_world_right,
+                                                                      Eigen::Affine3d T_world_targetLeft,
+                                                                      Eigen::Affine3d T_world_targetRight)
+{
+  return plan(T_world_left, T_world_right, T_world_targetLeft, T_world_targetRight);
 }
 }  // namespace placo

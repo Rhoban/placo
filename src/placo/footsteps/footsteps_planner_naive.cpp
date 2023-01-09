@@ -75,7 +75,6 @@ std::vector<FootstepsPlanner::Footstep> FootstepsPlannerNaive::plan(Eigen::Affin
         T_world_support.inverse() *
         ((support_side == HumanoidRobot::Side::Left) ? T_world_targetRight : T_world_targetLeft);
 
-
     T_support_target.translation().z() = 0.;
 
     if (support_side == HumanoidRobot::Side::Left)

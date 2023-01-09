@@ -96,7 +96,7 @@ FrameTask KinematicsSolver::add_frame_task(RobotWrapper::FrameIndex frame, Eigen
   PositionTask& position = add_position_task(frame, T_world_frame.translation());
   OrientationTask& orientation = add_orientation_task(frame, T_world_frame.rotation());
 
-  return FrameTask(position, orientation);
+  return FrameTask(&position, &orientation);
 }
 
 FrameTask KinematicsSolver::add_frame_task(std::string frame, Eigen::Affine3d T_world_frame)

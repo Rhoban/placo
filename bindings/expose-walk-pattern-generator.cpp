@@ -22,5 +22,5 @@ void exposeWalkPatternGenerator()
 
   class_<WalkPatternGenerator>("WalkPatternGenerator", init<HumanoidRobot&>())
       .add_property("parameters", &WalkPatternGenerator::parameters, &WalkPatternGenerator::parameters)
-      .def("plan", &WalkPatternGenerator::plan);
+      .def("plan", &WalkPatternGenerator::plan_by_frames);
 }
