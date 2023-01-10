@@ -216,16 +216,14 @@ void WalkPatternGenerator::planFeetTrajctories(Trajectory& trajectory)
       auto T_world_startTarget = trajectory.footsteps[step - 1].frame(flying_side);
       auto T_world_flyingTarget = trajectory.footsteps[step + 1].frame(flying_side);
 
-      Eigen::Vector3d delta_step = T_world_flyingTarget.translation() - T_world_startTarget.translation();
-      Eigen::Vector3d flying_mid = T_world_startTarget.translation() + (delta_step) / 2.;
-
-      flying_mid.z() = parameters.walk_foot_height;
-
-      // XXX: The speed at inflection point could be parametrized
-      Eigen::Vector3d flying_mid_delta = delta_step * 3 / parameters.single_support_duration;
+      trajectory.position(flying_side)
+          .zSpline.addPoint(t + parameters.single_support_duration * (0.5 - parameters.walk_high_duration / 2),
+                            parameters.walk_foot_height, 0);
 
       trajectory.position(flying_side)
-          .addPoint(t + parameters.single_support_duration / 2., flying_mid, flying_mid_delta);
+          .zSpline.addPoint(t + parameters.single_support_duration * (0.5 + parameters.walk_high_duration / 2),
+                            parameters.walk_foot_height, 0);
+
       trajectory.tilt(flying_side).addPoint(t + parameters.single_support_duration / 4, -parameters.walk_foot_tilt, 0.);
       trajectory.tilt(flying_side)
           .addPoint(t + parameters.single_support_duration * 3 / 4, parameters.walk_foot_tilt, 0.);
@@ -234,6 +232,7 @@ void WalkPatternGenerator::planFeetTrajctories(Trajectory& trajectory)
 
       // Flying foot reaching its position
       trajectory.position(flying_side).addPoint(t, T_world_flyingTarget.translation(), Eigen::Vector3d::Zero());
+
       trajectory.yaw(flying_side).addPoint(t, frame_yaw(T_world_flyingTarget.rotation()), 0);
       trajectory.trunk_yaw.addPoint(t, frame_yaw(T_world_flyingTarget.rotation()), 0);
 

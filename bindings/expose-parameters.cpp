@@ -31,6 +31,8 @@ void exposeParameters()
       .add_property("feet_spacing", &HumanoidParameters::feet_spacing, &HumanoidParameters::feet_spacing)
       .add_property("foot_width", &HumanoidParameters::foot_width, &HumanoidParameters::foot_width)
       .add_property("foot_length", &HumanoidParameters::foot_length, &HumanoidParameters::foot_length)
+      .add_property("walk_high_duration", &HumanoidParameters::walk_high_duration,
+                    &HumanoidParameters::walk_high_duration)
 
       ;
 }
