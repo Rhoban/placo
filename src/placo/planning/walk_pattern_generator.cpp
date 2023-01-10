@@ -141,7 +141,6 @@ static SwingFoot& _findSwingFoot(std::vector<SwingFoot>& swings, double t)
 Eigen::Affine3d WalkPatternGenerator::Trajectory::get_T_world_left(double t)
 {
   SwingFoot& swing = _findSwingFoot(left_foot, t);
-  std::cout << "Left: " << swing.pos(t) << std::endl;
 
   return _buildFrame(swing.pos(t), swing.vel(t), left_foot_yaw.get(t), left_foot_tilt.get(t));
 }
@@ -149,7 +148,6 @@ Eigen::Affine3d WalkPatternGenerator::Trajectory::get_T_world_left(double t)
 Eigen::Affine3d WalkPatternGenerator::Trajectory::get_T_world_right(double t)
 {
   SwingFoot& swing = _findSwingFoot(right_foot, t);
-  std::cout << "Right: " << swing.pos(t) << std::endl;
 
   return _buildFrame(swing.pos(t), swing.vel(t), right_foot_yaw.get(t), right_foot_tilt.get(t));
 }
