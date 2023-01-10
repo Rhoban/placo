@@ -3,6 +3,7 @@
 #include "expose-utils.hpp"
 #include "module.h"
 #include "placo/planning/walk_pattern_generator.h"
+#include "placo/planning/swing_foot.h"
 #include <Eigen/Dense>
 #include <boost/python.hpp>
 
@@ -23,4 +24,6 @@ void exposeWalkPatternGenerator()
   class_<WalkPatternGenerator>("WalkPatternGenerator", init<HumanoidRobot&>())
       .add_property("parameters", &WalkPatternGenerator::parameters, &WalkPatternGenerator::parameters)
       .def("plan", &WalkPatternGenerator::plan_by_frames);
+
+  class_<SwingFoot>("SwingFoot", init<double, double, Eigen::Vector3d, Eigen::Vector3d>()).def("pos", &SwingFoot::pos);
 }
