@@ -32,7 +32,8 @@ struct FactorCubicHermiteCurve
   Eigen::Vector3d n1;
 };
 
-SwingFoot::SwingFoot(double duration, double height, Eigen::Vector3d start, Eigen::Vector3d target) : duration(duration)
+SwingFoot::SwingFoot(double t_start, double t_end, double height, Eigen::Vector3d start, Eigen::Vector3d target)
+  : t_start(t_start), t_end(t_end)
 {
   Eigen::Vector3d n0(0., 0., 1.);
   Eigen::Vector3d n1(0., 0., 1.);
@@ -88,7 +89,7 @@ void SwingFoot::compute_abcd(Eigen::Vector3d p0, Eigen::Vector3d m0, Eigen::Vect
 
 Eigen::Vector3d SwingFoot::pos(double t_)
 {
-  double t = (t_ - t_start) / duration;
+  double t = (t_ - t_start) / (t_end - t_start);
   double t_2 = t * t;
   double t_3 = t_2 * t;
 
@@ -97,9 +98,9 @@ Eigen::Vector3d SwingFoot::pos(double t_)
 
 Eigen::Vector3d SwingFoot::vel(double t_)
 {
-  double t = (t_ - t_start) / duration;
+  double t = (t_ - t_start) / (t_end - t_start);
   double t_2 = t * t;
 
-  return (3 * a * t_2 + 2 * b * t + c) * duration;
+  return (3 * a * t_2 + 2 * b * t + c) / (t_end - t_start);
 }
 }  // namespace placo

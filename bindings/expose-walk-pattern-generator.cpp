@@ -25,5 +25,6 @@ void exposeWalkPatternGenerator()
       .add_property("parameters", &WalkPatternGenerator::parameters, &WalkPatternGenerator::parameters)
       .def("plan", &WalkPatternGenerator::plan_by_frames);
 
-  class_<SwingFoot>("SwingFoot", init<double, double, Eigen::Vector3d, Eigen::Vector3d>()).def("pos", &SwingFoot::pos);
+  class_<SwingFoot>("SwingFoot", init<double, double, double, Eigen::Vector3d, Eigen::Vector3d>())
+      .def("pos", &SwingFoot::pos);
 }
