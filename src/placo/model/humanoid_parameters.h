@@ -42,19 +42,24 @@ public:
   double zmp_margin = 0.025;
 
   /**
-   * @brief How height the feet are rising while walking
+   * @brief How height the feet are rising while walking [m]
    */
   double walk_foot_height = 0.05;
 
   /**
-   * @brief CoM height while walking
+   * @brief CoM height while walking [m]
    */
   double walk_com_height = 0.4;
 
   /**
-   * @brief Trunk pitch while walking
+   * @brief Trunk pitch while walking [rad]
    */
   double walk_trunk_pitch = 0.0;
+
+  /**
+   * @brief How muc hthe foot tilts during the walk [rad]
+   */
+  double walk_foot_tilt = 0.2;
 
   /**
    * @brief Robot center of mass height for LIPM model. This is used to compute the pendulum constant

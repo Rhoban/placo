@@ -110,24 +110,29 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory)
   trajectory.com = planner.plan();
 }
 
-static Eigen::Affine3d _buildFrame(Eigen::Vector3d position, double orientation)
+static Eigen::Affine3d _buildFrame(Eigen::Vector3d position, Eigen::Vector3d velocity, double orientation, double tilt)
 {
   Eigen::Affine3d frame = Eigen::Affine3d::Identity();
 
   frame.translation() = position;
   frame.linear() = Eigen::AngleAxisd(orientation, Eigen::Vector3d::UnitZ()).matrix();
+  if (velocity.norm() > 1e-3)
+  {
+    frame.linear() = frame.linear() *
+                     Eigen::AngleAxisd(-tilt, Eigen::Vector3d(-velocity.y(), velocity.x(), 0.).normalized()).matrix();
+  }
 
   return frame;
 }
 
 Eigen::Affine3d WalkPatternGenerator::Trajectory::get_T_world_left(double t)
 {
-  return _buildFrame(left_foot.get(t), left_foot_yaw.get(t));
+  return _buildFrame(left_foot.get(t), left_foot.getVel(t), left_foot_yaw.get(t), left_foot_tilt.get(t));
 }
 
 Eigen::Affine3d WalkPatternGenerator::Trajectory::get_T_world_right(double t)
 {
-  return _buildFrame(right_foot.get(t), right_foot_yaw.get(t));
+  return _buildFrame(right_foot.get(t), right_foot.getVel(t), right_foot_yaw.get(t), right_foot_tilt.get(t));
 }
 
 Eigen::Vector3d WalkPatternGenerator::Trajectory::get_CoM_world(double t)
@@ -167,6 +172,18 @@ rhoban_utils::PolySpline& WalkPatternGenerator::Trajectory::yaw(HumanoidRobot::S
   }
 }
 
+rhoban_utils::PolySpline& WalkPatternGenerator::Trajectory::tilt(HumanoidRobot::Side side)
+{
+  if (side == HumanoidRobot::Left)
+  {
+    return left_foot_tilt;
+  }
+  else
+  {
+    return right_foot_tilt;
+  }
+}
+
 static void _addSupports(WalkPatternGenerator::Trajectory& trajectory, double t, FootstepsPlanner::Support& support)
 {
   for (auto footstep : support.footsteps)
@@ -174,6 +191,7 @@ static void _addSupports(WalkPatternGenerator::Trajectory& trajectory, double t,
     auto T_world_foot = footstep.frame;
     trajectory.position(footstep.side).addPoint(t, T_world_foot.translation(), Eigen::Vector3d::Zero());
     trajectory.yaw(footstep.side).addPoint(t, frame_yaw(T_world_foot.rotation()), 0);
+    trajectory.tilt(footstep.side).addPoint(t, 0, 0);
   }
 }
 
@@ -208,6 +226,9 @@ void WalkPatternGenerator::planFeetTrajctories(Trajectory& trajectory)
 
       trajectory.position(flying_side)
           .addPoint(t + parameters.single_support_duration / 2., flying_mid, flying_mid_delta);
+      trajectory.tilt(flying_side).addPoint(t + parameters.single_support_duration / 4, -parameters.walk_foot_tilt, 0.);
+      trajectory.tilt(flying_side)
+          .addPoint(t + parameters.single_support_duration * 3 / 4, parameters.walk_foot_tilt, 0.);
 
       t += parameters.single_support_duration;
 
@@ -215,6 +236,8 @@ void WalkPatternGenerator::planFeetTrajctories(Trajectory& trajectory)
       trajectory.position(flying_side).addPoint(t, T_world_flyingTarget.translation(), Eigen::Vector3d::Zero());
       trajectory.yaw(flying_side).addPoint(t, frame_yaw(T_world_flyingTarget.rotation()), 0);
       trajectory.trunk_yaw.addPoint(t, frame_yaw(T_world_flyingTarget.rotation()), 0);
+
+      trajectory.tilt(flying_side).addPoint(t, 0., 0);
 
       // Support foot remaining steady
       _addSupports(trajectory, t, support);
