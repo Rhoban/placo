@@ -19,6 +19,15 @@ public:
    */
   HumanoidParameters parameters;
 
+  struct TrajectoryPart
+  {
+    SwingFoot::Trajectory swing_trajectory;
+    double t_start;
+    double t_end;
+
+    FootstepsPlanner::Support support;
+  };
+
   struct Trajectory
   {
     double com_height;
@@ -27,23 +36,25 @@ public:
     // Planned footsteps
     std::vector<FootstepsPlanner::Support> footsteps;
 
+    // A part is the support and the swing trajectory
+    std::vector<TrajectoryPart> parts;
+
     // CoM trajectory
     JerkPlanner::JerkTrajectory2D com;
 
     // Feet trajectory
-    std::vector<SwingFoot> left_foot;
     rhoban_utils::PolySpline left_foot_yaw;
-    std::vector<SwingFoot> right_foot;
     rhoban_utils::PolySpline right_foot_yaw;
     rhoban_utils::PolySpline trunk_yaw;
 
-    std::vector<SwingFoot>& swing_foot(HumanoidRobot::Side side);
     rhoban_utils::PolySpline& yaw(HumanoidRobot::Side side);
 
     Eigen::Affine3d get_T_world_left(double t);
     Eigen::Affine3d get_T_world_right(double t);
     Eigen::Vector3d get_CoM_world(double t);
     Eigen::Matrix3d get_R_world_trunk(double t);
+
+    HumanoidRobot::Side support_side(double t);
 
     // Trajectory duration
     double duration = 0.0;

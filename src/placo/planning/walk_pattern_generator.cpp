@@ -121,46 +121,61 @@ static Eigen::Affine3d _buildFrame(Eigen::Vector3d position, double orientation)
   return frame;
 }
 
-static SwingFoot& _findSwingFoot(std::vector<SwingFoot>& swings, double t)
+static WalkPatternGenerator::TrajectoryPart& _findPart(std::vector<WalkPatternGenerator::TrajectoryPart>& parts,
+                                                       double t)
 {
   int low = 0;
-  int high = swings.size() - 1;
+  int high = parts.size() - 1;
 
   while (low != high)
   {
     int mid = (low + high) / 2;
 
-    SwingFoot& swing = swings[mid];
+    WalkPatternGenerator::TrajectoryPart& part = parts[mid];
 
-    if (t < swing.t_start)
+    if (t < part.t_start)
     {
       high = mid;
     }
-    else if (t > swing.t_end)
+    else if (t > part.t_end)
     {
       low = mid + 1;
     }
     else
     {
-      return swing;
+      return part;
     }
   }
 
-  return swings[low];
+  return parts[low];
 }
 
 Eigen::Affine3d WalkPatternGenerator::Trajectory::get_T_world_left(double t)
 {
-  SwingFoot& swing = _findSwingFoot(left_foot, t);
+  TrajectoryPart& part = _findPart(parts, t);
 
-  return _buildFrame(swing.pos(t), left_foot_yaw.get(t));
+  if (part.support.side() == HumanoidRobot::Right)
+  {
+    return _buildFrame(part.swing_trajectory.pos(t), left_foot_yaw.get(t));
+  }
+  else
+  {
+    return _buildFrame(part.support.frame(HumanoidRobot::Left).translation(), left_foot_yaw.get(t));
+  }
 }
 
 Eigen::Affine3d WalkPatternGenerator::Trajectory::get_T_world_right(double t)
 {
-  SwingFoot& swing = _findSwingFoot(right_foot, t);
+  TrajectoryPart& part = _findPart(parts, t);
 
-  return _buildFrame(swing.pos(t), right_foot_yaw.get(t));
+  if (part.support.side() == HumanoidRobot::Left)
+  {
+    return _buildFrame(part.swing_trajectory.pos(t), right_foot_yaw.get(t));
+  }
+  else
+  {
+    return _buildFrame(part.support.frame(HumanoidRobot::Right).translation(), right_foot_yaw.get(t));
+  }
 }
 
 Eigen::Vector3d WalkPatternGenerator::Trajectory::get_CoM_world(double t)
@@ -176,6 +191,11 @@ Eigen::Matrix3d WalkPatternGenerator::Trajectory::get_R_world_trunk(double t)
          Eigen::AngleAxisd(trunk_pitch, Eigen::Vector3d::UnitY()).matrix();
 }
 
+HumanoidRobot::Side WalkPatternGenerator::Trajectory::support_side(double t)
+{
+  return _findPart(parts, t).support.side();
+}
+
 rhoban_utils::PolySpline& WalkPatternGenerator::Trajectory::yaw(HumanoidRobot::Side side)
 {
   if (side == HumanoidRobot::Left)
@@ -188,32 +208,12 @@ rhoban_utils::PolySpline& WalkPatternGenerator::Trajectory::yaw(HumanoidRobot::S
   }
 }
 
-std::vector<SwingFoot>& WalkPatternGenerator::Trajectory::swing_foot(HumanoidRobot::Side side)
-{
-  if (side == HumanoidRobot::Left)
-  {
-    return left_foot;
-  }
-  else
-  {
-    return right_foot;
-  }
-}
-
-static void _addSupports(WalkPatternGenerator::Trajectory& trajectory, double t, FootstepsPlanner::Support& support,
-                         double duration)
+static void _addSupports(WalkPatternGenerator::Trajectory& trajectory, double t, FootstepsPlanner::Support& support)
 {
   for (auto footstep : support.footsteps)
   {
     auto T_world_foot = footstep.frame;
     trajectory.yaw(footstep.side).addPoint(t, frame_yaw(T_world_foot.rotation()), 0);
-
-    if (duration > 0.)
-    {
-      auto pos = flatten_on_floor(T_world_foot).translation();
-      SwingFoot no_swing(t - duration, t, 0., pos, pos);
-      trajectory.swing_foot(footstep.side).push_back(no_swing);
-    }
   }
 }
 
@@ -222,12 +222,16 @@ void WalkPatternGenerator::planFeetTrajctories(Trajectory& trajectory)
   double t = 0.0;
 
   // First, adds the initial position to the trajectory
-  _addSupports(trajectory, 0., trajectory.footsteps[0], 0.);
+  _addSupports(trajectory, 0., trajectory.footsteps[0]);
   trajectory.trunk_yaw.addPoint(0, frame_yaw(trajectory.footsteps[0].frame().rotation()), 0);
 
   for (int step = 0; step < trajectory.footsteps.size(); step++)
   {
     auto& support = trajectory.footsteps[step];
+
+    TrajectoryPart part;
+    part.support = support;
+    part.t_start = t;
 
     if (support.footsteps.size() == 1)
     {
@@ -241,15 +245,15 @@ void WalkPatternGenerator::planFeetTrajctories(Trajectory& trajectory)
       t += parameters.single_support_duration;
 
       // Flying foot reaching its position
-      SwingFoot swing(t - parameters.single_support_duration, t, parameters.walk_foot_height,
-                      T_world_startTarget.translation(), T_world_flyingTarget.translation());
+      part.swing_trajectory =
+          SwingFoot::make_trajectory(t - parameters.single_support_duration, t, parameters.walk_foot_height,
+                                     T_world_startTarget.translation(), T_world_flyingTarget.translation());
 
-      trajectory.swing_foot(flying_side).push_back(swing);
       trajectory.yaw(flying_side).addPoint(t, frame_yaw(T_world_flyingTarget.rotation()), 0);
       trajectory.trunk_yaw.addPoint(t, frame_yaw(T_world_flyingTarget.rotation()), 0);
 
       // Support foot remaining steady
-      _addSupports(trajectory, t, support, parameters.single_support_duration);
+      _addSupports(trajectory, t, support);
     }
     else
     {
@@ -257,15 +261,17 @@ void WalkPatternGenerator::planFeetTrajctories(Trajectory& trajectory)
       if (support.start_end)
       {
         t += parameters.startend_double_support_duration;
-        _addSupports(trajectory, t, support, parameters.startend_double_support_duration);
       }
       else
       {
         t += parameters.double_support_duration;
-        _addSupports(trajectory, t, support, parameters.double_support_duration);
       }
+      _addSupports(trajectory, t, support);
       trajectory.trunk_yaw.addPoint(t, frame_yaw(support.frame().rotation()), 0);
     }
+
+    part.t_end = t;
+    trajectory.parts.push_back(part);
   }
 
   trajectory.duration = t;

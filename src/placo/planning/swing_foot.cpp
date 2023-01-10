@@ -32,9 +32,13 @@ struct FactorCubicHermiteCurve
   Eigen::Vector3d n1;
 };
 
-SwingFoot::SwingFoot(double t_start, double t_end, double height, Eigen::Vector3d start, Eigen::Vector3d target)
-  : t_start(t_start), t_end(t_end)
+SwingFoot::Trajectory SwingFoot::make_trajectory(double t_start, double t_end, double height, Eigen::Vector3d start,
+                                                 Eigen::Vector3d target)
 {
+  Trajectory trajectory;
+  trajectory.t_start = t_start;
+  trajectory.t_end = t_end;
+
   Eigen::Vector3d n0(0., 0., 1.);
   Eigen::Vector3d n1(0., 0., 1.);
 
@@ -76,10 +80,12 @@ SwingFoot::SwingFoot(double t_start, double t_end, double height, Eigen::Vector3
     throw std::runtime_error("SwingFoot: Infeasible QP (check your equality and inequality constraints)");
   }
 
-  compute_abcd(start, n0 * x[0], target, n1 * x[1]);
+  trajectory.compute_abcd(start, n0 * x[0], target, n1 * x[1]);
+
+  return trajectory;
 }
 
-void SwingFoot::compute_abcd(Eigen::Vector3d p0, Eigen::Vector3d m0, Eigen::Vector3d p1, Eigen::Vector3d m1)
+void SwingFoot::Trajectory::compute_abcd(Eigen::Vector3d p0, Eigen::Vector3d m0, Eigen::Vector3d p1, Eigen::Vector3d m1)
 {
   a = 2 * p0 - 2 * p1 + m0 + m1;
   b = -3 * p0 + 3 * p1 - 2 * m0 - m1;
@@ -87,7 +93,7 @@ void SwingFoot::compute_abcd(Eigen::Vector3d p0, Eigen::Vector3d m0, Eigen::Vect
   d = p0;
 }
 
-Eigen::Vector3d SwingFoot::pos(double t_)
+Eigen::Vector3d SwingFoot::Trajectory::pos(double t_)
 {
   double t = (t_ - t_start) / (t_end - t_start);
   double t_2 = t * t;
@@ -96,7 +102,7 @@ Eigen::Vector3d SwingFoot::pos(double t_)
   return a * t_3 + b * t_2 + c * t + d;
 }
 
-Eigen::Vector3d SwingFoot::vel(double t_)
+Eigen::Vector3d SwingFoot::Trajectory::vel(double t_)
 {
   double t = (t_ - t_start) / (t_end - t_start);
   double t_2 = t * t;

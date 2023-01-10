@@ -33,7 +33,7 @@ T_world_rightTarget[0, 3] += 1.0
 
 # Creating the pattern generator to plan the trajectory
 walk = placo.WalkPatternGenerator(robot)
-walk.parameters.dt = 0.05
+walk.parameters.dt = 0.025
 walk.parameters.single_support_duration = .35
 walk.parameters.double_support_duration = .35
 walk.parameters.startend_double_support_duration = 0.5

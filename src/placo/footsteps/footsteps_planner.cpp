@@ -136,6 +136,18 @@ bool FootstepsPlanner::Support::operator==(const Support& other)
   return true;
 }
 
+HumanoidRobot::Side FootstepsPlanner::Support::side()
+{
+  if (footsteps.size() == 2)
+  {
+    return HumanoidRobot::Side::Both;
+  }
+  else
+  {
+    return footsteps[0].side;
+  }
+}
+
 std::vector<FootstepsPlanner::Support> FootstepsPlanner::make_double_supports(const std::vector<Footstep>& footsteps,
                                                                               bool start, bool middle, bool end)
 {

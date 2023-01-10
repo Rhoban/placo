@@ -61,6 +61,11 @@ public:
     Eigen::Affine3d frame(HumanoidRobot::Side side);
 
     bool operator==(const Support& other);
+
+    /**
+     * @brief The support side (or Both if it's a double support)
+     */
+    HumanoidRobot::Side side();
   };
 
   /**
@@ -99,7 +104,6 @@ public:
    */
   std::vector<Support> make_double_supports(const std::vector<Footstep>& footsteps, bool start = false,
                                             bool middle = false, bool end = false);
-
 
 protected:
   // Frames for initial and target feet placements

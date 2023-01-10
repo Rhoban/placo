@@ -3,7 +3,7 @@ import pinocchio as pin
 import numpy as np
 import matplotlib.pyplot as plt
 
-swing = placo.SwingFoot(0., 2.5, 0.1, np.array([0., 0., 0.]), np.array([1., 0., 0.]))
+swing = placo.SwingFoot.make_trajectory(0., 2.5, 0.1, np.array([0., 0., 0.]), np.array([1., 0., 0.]))
 
 ts = np.linspace(0., 2.5, 1000)
 pos = np.array([swing.pos(t) for t in ts])

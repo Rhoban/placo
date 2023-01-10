@@ -13,10 +13,11 @@ public:
   enum Side
   {
     Left = 0,
-    Right
+    Right,
+    Both
   };
 
-  static Side string_to_side(const std::string &str);
+  static Side string_to_side(const std::string& str);
   static Side other_side(Side side);
 
   HumanoidRobot(std::string model_directory = "robot/");
