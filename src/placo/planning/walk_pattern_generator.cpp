@@ -129,7 +129,7 @@ static SwingFoot& _findSwingFoot(std::vector<SwingFoot>& swings, double t)
 {
   for (auto& swing : swings)
   {
-    if (t > swing.t_start && t < swing.t_start + swing.duration)
+    if (t >= swing.t_start && t <= swing.t_start + swing.duration)
     {
       return swing;
     }
