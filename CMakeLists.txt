@@ -18,6 +18,7 @@ add_library(libplaco
     src/placo/footsteps/footsteps_planner_naive.cpp
     src/placo/planning/jerk_planner.cpp
     src/placo/planning/walk_pattern_generator.cpp
+    src/placo/planning/swing_foot.cpp
     src/placo/model/robot_wrapper.cpp
     src/placo/model/humanoid_robot.cpp
     src/placo/model/humanoid_parameters.cpp
