@@ -111,46 +111,56 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory)
   trajectory.com = planner.plan();
 }
 
-static Eigen::Affine3d _buildFrame(Eigen::Vector3d position, Eigen::Vector3d velocity, double orientation, double tilt)
+static Eigen::Affine3d _buildFrame(Eigen::Vector3d position, double orientation)
 {
   Eigen::Affine3d frame = Eigen::Affine3d::Identity();
 
   frame.translation() = position;
   frame.linear() = Eigen::AngleAxisd(orientation, Eigen::Vector3d::UnitZ()).matrix();
-  if (velocity.norm() > 1e-3)
-  {
-    frame.linear() = frame.linear() *
-                     Eigen::AngleAxisd(-tilt, Eigen::Vector3d(-velocity.y(), velocity.x(), 0.).normalized()).matrix();
-  }
 
   return frame;
 }
 
 static SwingFoot& _findSwingFoot(std::vector<SwingFoot>& swings, double t)
 {
-  for (auto& swing : swings)
+  int low = 0;
+  int high = swings.size() - 1;
+
+  while (low != high)
   {
-    if (t >= swing.t_start && t <= swing.t_start + swing.duration)
+    int mid = (low + high) / 2;
+
+    SwingFoot& swing = swings[mid];
+
+    if (t < swing.t_start)
+    {
+      high = mid;
+    }
+    else if (t > swing.t_end)
+    {
+      low = mid + 1;
+    }
+    else
     {
       return swing;
     }
   }
 
-  return swings[swings.size() - 1];
+  return swings[low];
 }
 
 Eigen::Affine3d WalkPatternGenerator::Trajectory::get_T_world_left(double t)
 {
   SwingFoot& swing = _findSwingFoot(left_foot, t);
 
-  return _buildFrame(swing.pos(t), swing.vel(t), left_foot_yaw.get(t), left_foot_tilt.get(t));
+  return _buildFrame(swing.pos(t), left_foot_yaw.get(t));
 }
 
 Eigen::Affine3d WalkPatternGenerator::Trajectory::get_T_world_right(double t)
 {
   SwingFoot& swing = _findSwingFoot(right_foot, t);
 
-  return _buildFrame(swing.pos(t), swing.vel(t), right_foot_yaw.get(t), right_foot_tilt.get(t));
+  return _buildFrame(swing.pos(t), right_foot_yaw.get(t));
 }
 
 Eigen::Vector3d WalkPatternGenerator::Trajectory::get_CoM_world(double t)
@@ -178,18 +188,6 @@ rhoban_utils::PolySpline& WalkPatternGenerator::Trajectory::yaw(HumanoidRobot::S
   }
 }
 
-rhoban_utils::PolySpline& WalkPatternGenerator::Trajectory::tilt(HumanoidRobot::Side side)
-{
-  if (side == HumanoidRobot::Left)
-  {
-    return left_foot_tilt;
-  }
-  else
-  {
-    return right_foot_tilt;
-  }
-}
-
 std::vector<SwingFoot>& WalkPatternGenerator::Trajectory::swing_foot(HumanoidRobot::Side side)
 {
   if (side == HumanoidRobot::Left)
@@ -209,13 +207,11 @@ static void _addSupports(WalkPatternGenerator::Trajectory& trajectory, double t,
   {
     auto T_world_foot = footstep.frame;
     trajectory.yaw(footstep.side).addPoint(t, frame_yaw(T_world_foot.rotation()), 0);
-    trajectory.tilt(footstep.side).addPoint(t, 0, 0);
 
     if (duration > 0.)
     {
       auto pos = flatten_on_floor(T_world_foot).translation();
-      SwingFoot no_swing(duration, 0., pos, pos);
-      no_swing.t_start = t - duration;
+      SwingFoot no_swing(t - duration, t, 0., pos, pos);
       trajectory.swing_foot(footstep.side).push_back(no_swing);
     }
   }
@@ -242,22 +238,15 @@ void WalkPatternGenerator::planFeetTrajctories(Trajectory& trajectory)
       auto T_world_startTarget = trajectory.footsteps[step - 1].frame(flying_side);
       auto T_world_flyingTarget = trajectory.footsteps[step + 1].frame(flying_side);
 
-      trajectory.tilt(flying_side).addPoint(t + parameters.single_support_duration / 4, -parameters.walk_foot_tilt, 0.);
-      trajectory.tilt(flying_side)
-          .addPoint(t + parameters.single_support_duration * 3 / 4, parameters.walk_foot_tilt, 0.);
-
       t += parameters.single_support_duration;
 
       // Flying foot reaching its position
-      SwingFoot swing(parameters.single_support_duration, parameters.walk_foot_height,
+      SwingFoot swing(t - parameters.single_support_duration, t, parameters.walk_foot_height,
                       T_world_startTarget.translation(), T_world_flyingTarget.translation());
-      swing.t_start = t - parameters.single_support_duration;
 
       trajectory.swing_foot(flying_side).push_back(swing);
       trajectory.yaw(flying_side).addPoint(t, frame_yaw(T_world_flyingTarget.rotation()), 0);
       trajectory.trunk_yaw.addPoint(t, frame_yaw(T_world_flyingTarget.rotation()), 0);
-
-      trajectory.tilt(flying_side).addPoint(t, 0., 0);
 
       // Support foot remaining steady
       _addSupports(trajectory, t, support, parameters.single_support_duration);

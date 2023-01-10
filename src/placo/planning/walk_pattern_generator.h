@@ -33,15 +33,12 @@ public:
     // Feet trajectory
     std::vector<SwingFoot> left_foot;
     rhoban_utils::PolySpline left_foot_yaw;
-    rhoban_utils::PolySpline left_foot_tilt;
     std::vector<SwingFoot> right_foot;
     rhoban_utils::PolySpline right_foot_yaw;
-    rhoban_utils::PolySpline right_foot_tilt;
     rhoban_utils::PolySpline trunk_yaw;
 
     std::vector<SwingFoot>& swing_foot(HumanoidRobot::Side side);
     rhoban_utils::PolySpline& yaw(HumanoidRobot::Side side);
-    rhoban_utils::PolySpline& tilt(HumanoidRobot::Side side);
 
     Eigen::Affine3d get_T_world_left(double t);
     Eigen::Affine3d get_T_world_right(double t);
