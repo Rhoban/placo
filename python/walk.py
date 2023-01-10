@@ -34,13 +34,14 @@ T_world_rightTarget[0, 3] += 1.0
 # Creating the pattern generator to plan the trajectory
 walk = placo.WalkPatternGenerator(robot)
 walk.parameters.dt = 0.05
-walk.parameters.single_support_duration = .4
-walk.parameters.double_support_duration = .05
+walk.parameters.single_support_duration = .35
+walk.parameters.double_support_duration = .35
 walk.parameters.startend_double_support_duration = 0.5
 walk.parameters.maximum_steps = 1024
 walk.parameters.walk_com_height = 0.32
-walk.parameters.pendulum_height = 0.7
+walk.parameters.pendulum_height = 0.32
 walk.parameters.walk_trunk_pitch = 0.2
+walk.parameters.walk_foot_tilt = 0.2
 walk.parameters.foot_length = 0.1576
 walk.parameters.foot_width = 0.092
 walk.parameters.feet_spacing = 0.122
@@ -128,7 +129,7 @@ elif args.pybullet or args.meshcat:
         footsteps_viz(trajectory.footsteps)
 
     start_t = time.time()
-    t = -10. if args.pybullet else 0.
+    t = -3. if args.pybullet else 0.
     dt = 0.005
 
     while True:
