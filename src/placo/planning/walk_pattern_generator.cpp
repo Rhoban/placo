@@ -56,6 +56,7 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory)
   }
 
   auto com_world = robot.com_world();
+  trajectory.jerk_planner_steps = total_steps;
 
   // Creating the planner
   JerkPlanner planner(total_steps, Eigen::Vector2d(com_world.x(), com_world.y()), Eigen::Vector2d(0., 0.),

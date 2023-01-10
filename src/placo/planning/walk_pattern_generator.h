@@ -39,7 +39,7 @@ public:
     rhoban_utils::PolySpline right_foot_tilt;
     rhoban_utils::PolySpline trunk_yaw;
 
-    std::vector<SwingFoot> &swing_foot(HumanoidRobot::Side side);
+    std::vector<SwingFoot>& swing_foot(HumanoidRobot::Side side);
     rhoban_utils::PolySpline& yaw(HumanoidRobot::Side side);
     rhoban_utils::PolySpline& tilt(HumanoidRobot::Side side);
 
@@ -50,6 +50,9 @@ public:
 
     // Trajectory duration
     double duration = 0.0;
+
+    // Number of steps planned by the jerk planner
+    int jerk_planner_steps;
   };
 
   WalkPatternGenerator(HumanoidRobot& robot);

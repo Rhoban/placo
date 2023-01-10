@@ -51,7 +51,7 @@ walk.parameters.zmp_margin = 0.045
 start_t = time.time()
 trajectory = walk.plan(T_world_left, T_world_right, T_world_leftTarget, T_world_rightTarget)
 elapsed = time.time() - start_t
-print(f"Computation time: {elapsed*1e6}µs")
+print(f"Computation time: {elapsed*1e6}µs, Jerk planner steps: {trajectory.jerk_planner_steps}")
 
 # Creating the kinematics solver
 solver = robot.make_solver()
