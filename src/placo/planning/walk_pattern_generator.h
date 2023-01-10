@@ -7,6 +7,7 @@
 #include "placo/planning/jerk_planner.h"
 #include "rhoban_utils/spline/poly_spline.h"
 #include "rhoban_utils/spline/poly_spline_3d.h"
+#include "placo/planning/swing_foot.h"
 
 namespace placo
 {
@@ -30,15 +31,15 @@ public:
     JerkPlanner::JerkTrajectory2D com;
 
     // Feet trajectory
-    rhoban_utils::PolySpline3D left_foot;
+    std::vector<SwingFoot> left_foot;
     rhoban_utils::PolySpline left_foot_yaw;
     rhoban_utils::PolySpline left_foot_tilt;
-    rhoban_utils::PolySpline3D right_foot;
+    std::vector<SwingFoot> right_foot;
     rhoban_utils::PolySpline right_foot_yaw;
     rhoban_utils::PolySpline right_foot_tilt;
     rhoban_utils::PolySpline trunk_yaw;
 
-    rhoban_utils::PolySpline3D& position(HumanoidRobot::Side side);
+    std::vector<SwingFoot> &swing_foot(HumanoidRobot::Side side);
     rhoban_utils::PolySpline& yaw(HumanoidRobot::Side side);
     rhoban_utils::PolySpline& tilt(HumanoidRobot::Side side);
 

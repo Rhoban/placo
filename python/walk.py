@@ -39,6 +39,7 @@ walk.parameters.double_support_duration = .35
 walk.parameters.startend_double_support_duration = 0.5
 walk.parameters.maximum_steps = 1024
 walk.parameters.walk_com_height = 0.32
+walk.parameters.walk_foot_height = 0.04
 walk.parameters.pendulum_height = 0.32
 walk.parameters.walk_trunk_pitch = 0.2
 walk.parameters.walk_foot_tilt = 0.2
