@@ -10,8 +10,28 @@ namespace placo
 class FootstepsPlannerRepetitive : public FootstepsPlanner
 {
 public:
-  // FootstepsPlannerRepetitive();
+  FootstepsPlannerRepetitive(HumanoidRobot::Side initial_side, Eigen::Affine3d T_world_left,
+                             Eigen::Affine3d T_world_right);
 
-  virtual std::vector<Footstep> plan();
+  FootstepsPlannerRepetitive(std::string initial_side, Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right);
+
+  /// @brief Compute the next footsteps based on coordinates expressed in the support frame
+  /// laterally translated of +/- feet_spacing
+  /// @param d_x Longitudinal distance
+  /// @param d_y Lateral distance
+  /// @param d_theta Angle
+  /// @param nb_steps Number of steps
+  /// @return List of footsteps
+  std::vector<Footstep> plan(double d_x, double d_y, double d_theta, int nb_steps);
+
+protected:
+  // Maximum absolute value of d_x in meters
+  double max_d_x = 0.2;
+
+  // Maximum absolute value of d_y in meters
+  double max_d_y = 0.1;
+
+  // Maximum absolute value of d_theta in radians
+  double max_d_theta = 0.785;
 };
 }  // namespace placo

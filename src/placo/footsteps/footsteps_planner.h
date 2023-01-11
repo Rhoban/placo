@@ -84,16 +84,6 @@ public:
   FootstepsPlanner(std::string initial_side, Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right);
 
   /**
-   * @brief Plan the footsteps
-   * @param T_world_targetLeft target frame for left foot
-   * @param T_world_targetRight target frame for right foot
-   * @return vector of footsteps to apply. It starts with initial footsteps
-   * (the first is the current flying foot, the second the current support foot)
-   * and ends with the footsteps that reached the given target
-   */
-  virtual std::vector<Footstep> plan(Eigen::Affine3d T_world_targetLeft, Eigen::Affine3d T_world_targetRight) = 0;
-
-  /**
    * @brief From planned footsteps, this method adds the double support phases
    * @param footsteps a vector of footsteps ad produces by plan
    * @param start should we add a double support at the begining of the move?
