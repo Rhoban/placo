@@ -13,8 +13,8 @@ public:
   enum Side
   {
     Left = 0,
-    Right,
-    Both
+    Right = 1,
+    Both = 2
   };
 
   static Side string_to_side(const std::string& str);
