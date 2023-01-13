@@ -16,6 +16,7 @@ find_package (Eigen3 3 REQUIRED NO_MODULE)
 add_library(libplaco
     src/placo/footsteps/footsteps_planner.cpp
     src/placo/footsteps/footsteps_planner_naive.cpp
+    src/placo/footsteps/footsteps_planner_repetitive.cpp
     src/placo/planning/jerk_planner.cpp
     src/placo/planning/walk_pattern_generator.cpp
     src/placo/planning/swing_foot.cpp

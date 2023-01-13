@@ -80,12 +80,19 @@ if __name__ == "__main__":
 
     start = time.time()
 
-    # Currently, the naive planner is the only one implemented
-    planner = placo.FootstepsPlannerNaive("left", placo.frame(T_center_left), placo.frame(T_center_right))
+    # Naive planner
+    # planner = placo.FootstepsPlannerNaive("left", placo.frame(T_center_left), placo.frame(T_center_right))
+    # planner.parameters.feet_spacing = args.feet_spacing
+    # planner.parameters.foot_width = args.foot_width
+    # planner.parameters.foot_length = args.foot_length
+    # footsteps = planner.plan(placo.frame(T_world_targetLeft), placo.frame(T_world_targetRight))
+
+    # Repetitive planner
+    planner = placo.FootstepsPlannerRepetitive("left", placo.frame(T_center_left), placo.frame(T_center_right))
     planner.parameters.feet_spacing = args.feet_spacing
     planner.parameters.foot_width = args.foot_width
     planner.parameters.foot_length = args.foot_length
-    footsteps = planner.plan(placo.frame(T_world_targetLeft), placo.frame(T_world_targetRight))
+    footsteps = planner.plan(0.1, 0., 0.314, 10)
 
     # If using double support, transform the result in supports instead of footsteps
     if args.double_supports_start or args.double_supports_middle or args.double_supports_end:

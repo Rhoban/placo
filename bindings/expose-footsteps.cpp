@@ -4,6 +4,7 @@
 #include "module.h"
 #include "placo/footsteps/footsteps_planner.h"
 #include "placo/footsteps/footsteps_planner_naive.h"
+#include "placo/footsteps/footsteps_planner_repetitive.h"
 #include <Eigen/Dense>
 #include <boost/python.hpp>
 
@@ -29,6 +30,11 @@ void exposeFootsteps()
       .def("plan", &FootstepsPlannerNaive::plan)
       .def("make_double_supports", &FootstepsPlannerNaive::make_double_supports)
       .add_property("parameters", &FootstepsPlannerNaive::parameters, &FootstepsPlannerNaive::parameters);
+
+  class_<FootstepsPlannerRepetitive>("FootstepsPlannerRepetitive",
+                                     init<std::string, Eigen::Affine3d, Eigen::Affine3d>())
+      .def("plan", &FootstepsPlannerRepetitive::plan)
+      .add_property("parameters", &FootstepsPlannerRepetitive::parameters, &FootstepsPlannerRepetitive::parameters);
 
   // Exposing vector of footsteps
   exposeStdVector<FootstepsPlanner::Footstep>("Footsteps");
