@@ -6,10 +6,9 @@
 namespace placo
 {
 /**
- * @brief A cubic fitting of swing foot, see:
- * https://scaron.info/doc/pymanoid/walking-pattern-generation.html#pymanoid.swing_foot.SwingFoot
+ * @brief A quintic fitting of the swing foot
  */
-class SwingFoot
+class SwingFootQuintic
 {
 public:
   struct Trajectory
@@ -17,10 +16,8 @@ public:
     Eigen::Vector3d pos(double t);
     Eigen::Vector3d vel(double t);
 
-    void compute_abcd(Eigen::Vector3d p0, Eigen::Vector3d m0, Eigen::Vector3d p1, Eigen::Vector3d m1);
-
-    // Computed polynom (ax^3 + bx^2 + cx + d)
-    Eigen::Vector3d a, b, c, d;
+    // Computed polynom (ax^5 + bx^4 + cx^3 + dx^2 + ex + f)
+    Eigen::Vector3d a, b, c, d, e, f;
 
     double t_start, t_end;
   };

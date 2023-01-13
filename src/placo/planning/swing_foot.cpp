@@ -3,7 +3,6 @@
 
 namespace placo
 {
-// See https://scaron.info/doc/pymanoid/walking-pattern-generation.html#pymanoid.swing_foot.SwingFoot
 struct FactorCubicHermiteCurve
 {
   FactorCubicHermiteCurve(Eigen::Vector3d p0, Eigen::Vector3d n0, Eigen::Vector3d p1, Eigen::Vector3d n1)
