@@ -4,6 +4,7 @@
 #include "module.h"
 #include "placo/planning/walk_pattern_generator.h"
 #include "placo/planning/swing_foot.h"
+#include "placo/planning/swing_foot_quintic.h"
 #include <Eigen/Dense>
 #include <boost/python.hpp>
 
@@ -35,4 +36,10 @@ void exposeWalkPatternGenerator()
   class_<SwingFoot::Trajectory>("SwingFootTrajectory", init<>())
       .def("pos", &SwingFoot::Trajectory::pos)
       .def("vel", &SwingFoot::Trajectory::vel);
+
+  class_<SwingFootQuintic>("SwingFootQuintic", init<>()).def("make_trajectory", &SwingFootQuintic::make_trajectory);
+
+  class_<SwingFootQuintic::Trajectory>("SwingFootQuinticTrajectory", init<>())
+      .def("pos", &SwingFootQuintic::Trajectory::pos)
+      .def("vel", &SwingFootQuintic::Trajectory::vel);
 }
