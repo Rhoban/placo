@@ -1,6 +1,7 @@
 import time
 import placo
 import argparse
+import tf
 import pinocchio as pin
 import numpy as np
 
@@ -10,8 +11,10 @@ import numpy as np
 
 parser = argparse.ArgumentParser(description="Process some integers.")
 parser.add_argument("-g", "--graph", action="store_true", help="Plot")
-parser.add_argument("-p", "--pybullet", action="store_true", help="PyBullet visualization")
-parser.add_argument("-m", "--meshcat", action="store_true", help="MeshCat visualization")
+parser.add_argument("-p", "--pybullet", action="store_true",
+                    help="PyBullet visualization")
+parser.add_argument("-m", "--meshcat", action="store_true",
+                    help="MeshCat visualization")
 args = parser.parse_args()
 
 # Loading the robot
@@ -20,6 +23,13 @@ robot.load()
 robot.ensure_on_floor()
 
 # Planning the steps
+# T_center_left = tf.translation([0.1, 0.061, 0.0])
+# T_center_right = tf.translation([0.0, -0.061, 0.0])
+
+# T_world_center = tf.frame([0, 0, 1], 0, [0, 0, 0])
+# T_world_left = T_world_center @ T_center_left
+# T_world_right = T_world_center @ T_center_right
+
 T_world_left = robot.get_T_world_left()
 T_world_right = robot.get_T_world_right()
 
@@ -35,7 +45,7 @@ T_world_rightTarget[0, 3] += 1.0
 walk = placo.WalkPatternGenerator(robot)
 walk.parameters.dt = 0.025
 walk.parameters.single_support_duration = .35
-walk.parameters.double_support_duration = .35
+walk.parameters.double_support_duration = .0
 walk.parameters.startend_double_support_duration = 0.5
 walk.parameters.maximum_steps = 1024
 walk.parameters.walk_com_height = 0.32
@@ -49,9 +59,24 @@ walk.parameters.feet_spacing = 0.122
 walk.parameters.zmp_margin = 0.045
 
 start_t = time.time()
-trajectory = walk.plan(T_world_left, T_world_right, T_world_leftTarget, T_world_rightTarget)
+
+# Naive footsteps planner
+# trajectory = walk.plan(T_world_left, T_world_right,
+#                        T_world_leftTarget, T_world_rightTarget)
+
+# Repetitive footsteps planner
+planner = placo.FootstepsPlannerRepetitive(
+    "right", T_world_left, T_world_right)
+planner.parameters.feet_spacing = 0.122
+planner.parameters.foot_width = 0.092
+planner.parameters.foot_length = 0.1576
+footsteps = planner.plan(0.1, 0., 0., 20)
+supports = planner.make_double_supports(footsteps, True, False, True)
+trajectory = walk.plan_by_supports(supports)
+
 elapsed = time.time() - start_t
-print(f"Computation time: {elapsed*1e6}µs, Jerk planner steps: {trajectory.jerk_planner_steps}")
+print(
+    f"Computation time: {elapsed*1e6}µs, Jerk planner steps: {trajectory.jerk_planner_steps}")
 
 # Creating the kinematics solver
 solver = robot.make_solver()
@@ -97,7 +122,8 @@ if args.graph:
         T = trajectory.get_T_world_right(t)
         data_right.append(T[:3, 3])
 
-    data = np.array([[trajectory.com.pos(t), trajectory.com.zmp(t), trajectory.com.dcm(t)] for t in ts])
+    data = np.array([[trajectory.com.pos(t), trajectory.com.zmp(
+        t), trajectory.com.dcm(t)] for t in ts])
 
     data_left = np.array(data_left)
     data_right = np.array(data_right)
@@ -130,7 +156,7 @@ elif args.pybullet or args.meshcat:
         footsteps_viz(trajectory.footsteps)
 
     start_t = time.time()
-    t = -3. if args.pybullet else 0.
+    t = -3. if args.pybullet or args.meshcat else 0.
     dt = 0.005
 
     while True:
@@ -162,7 +188,8 @@ elif args.pybullet or args.meshcat:
             point_viz("com", com)
 
         if args.pybullet:
-            joints = {joint: robot.get_joint(joint) for joint in sim.getJoints()}
+            joints = {joint: robot.get_joint(joint)
+                      for joint in sim.getJoints()}
             applied = sim.setJoints(joints)
             sim.tick()
 

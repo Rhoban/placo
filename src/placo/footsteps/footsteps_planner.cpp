@@ -161,6 +161,13 @@ std::vector<FootstepsPlanner::Support> FootstepsPlanner::make_double_supports(co
     support.footsteps = { footsteps[0], footsteps[1] };
     supports.push_back(support);
   }
+  else
+  {
+    FootstepsPlanner::Support support;
+    support.start_end = true;
+    support.footsteps = { footsteps[0] };
+    supports.push_back(support);
+  }
 
   // Adding single/double support phases
   for (int step = 1; step < footsteps.size() - 1; step++)

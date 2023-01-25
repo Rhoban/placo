@@ -72,7 +72,9 @@ void exposeRobotWrapper()
       .def("swap_support_side", &HumanoidRobot::swap_support_side)
       .def(
           "get_support_side", +[](const HumanoidRobot& robot) {
-            return robot.support_side == HumanoidRobot::Side::Left ? "left" : "right";
+            return robot.support_side == HumanoidRobot::Side::Left  ? "left" :
+                   robot.support_side == HumanoidRobot::Side::Right ? "right" :
+                                                                      "both";
           });
 
   exposeStdVector<RobotWrapper::Collision>("vector_Collision");

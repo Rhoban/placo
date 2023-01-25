@@ -56,6 +56,10 @@ public:
 
     HumanoidRobot::Side support_side(double t);
 
+    std::vector<Eigen::Affine3d> get_last_footsteps(double t, bool double_support);
+    Eigen::Affine3d get_last_footstep(double t, bool double_support);
+    Eigen::Affine3d get_last_last_footstep(double t, bool double_support);
+
     // Trajectory duration
     double duration = 0.0;
 
@@ -68,7 +72,7 @@ public:
   void planFootsteps(Trajectory& trajectory, Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right,
                      Eigen::Affine3d T_world_targetLeft, Eigen::Affine3d T_world_targetRight);
   void planCoM(Trajectory& trajectory);
-  void planFeetTrajctories(Trajectory& trajectory);
+  void planFeetTrajectories(Trajectory& trajectory);
 
   Trajectory plan(Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right, Eigen::Affine3d T_world_targetLeft,
                   Eigen::Affine3d T_world_targetRight);
@@ -77,6 +81,7 @@ public:
   // For python binding
   Trajectory plan_by_frames(Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right,
                             Eigen::Affine3d T_world_targetLeft, Eigen::Affine3d T_world_targetRight);
+  Trajectory plan_by_supports(std::vector<FootstepsPlanner::Support> footsteps);
 
   HumanoidRobot& robot;
 };

@@ -15,7 +15,8 @@ void exposeFootsteps()
 {
   enum_<HumanoidRobot::Side>("HumanoidRobot_Side")
       .value("left", HumanoidRobot::Side::Left)
-      .value("right", HumanoidRobot::Side::Right);
+      .value("right", HumanoidRobot::Side::Right)
+      .value("both", HumanoidRobot::Side::Both);
 
   class_<FootstepsPlanner::Footstep>("Footstep", init<double, double>())
       .add_property("side", &FootstepsPlanner::Footstep::side)
@@ -34,6 +35,7 @@ void exposeFootsteps()
   class_<FootstepsPlannerRepetitive>("FootstepsPlannerRepetitive",
                                      init<std::string, Eigen::Affine3d, Eigen::Affine3d>())
       .def("plan", &FootstepsPlannerRepetitive::plan)
+      .def("make_double_supports", &FootstepsPlannerRepetitive::make_double_supports)
       .add_property("parameters", &FootstepsPlannerRepetitive::parameters, &FootstepsPlannerRepetitive::parameters);
 
   // Exposing vector of footsteps

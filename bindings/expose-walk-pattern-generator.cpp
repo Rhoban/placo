@@ -21,11 +21,14 @@ void exposeWalkPatternGenerator()
       .def("get_T_world_right", &WalkPatternGenerator::Trajectory::get_T_world_right)
       .def("get_CoM_world", &WalkPatternGenerator::Trajectory::get_CoM_world)
       .def("get_R_world_trunk", &WalkPatternGenerator::Trajectory::get_R_world_trunk)
-      .def("support_side", &WalkPatternGenerator::Trajectory::support_side);
+      .def("support_side", &WalkPatternGenerator::Trajectory::support_side)
+      .def("get_last_footstep", &WalkPatternGenerator::Trajectory::get_last_footstep)
+      .def("get_last_last_footstep", &WalkPatternGenerator::Trajectory::get_last_last_footstep);
 
   class_<WalkPatternGenerator>("WalkPatternGenerator", init<HumanoidRobot&>())
       .add_property("parameters", &WalkPatternGenerator::parameters, &WalkPatternGenerator::parameters)
-      .def("plan", &WalkPatternGenerator::plan_by_frames);
+      .def("plan", &WalkPatternGenerator::plan_by_frames)
+      .def("plan_by_supports", &WalkPatternGenerator::plan_by_supports);
 
   class_<SwingFoot>("SwingFoot", init<>()).def("make_trajectory", &SwingFoot::make_trajectory);
 

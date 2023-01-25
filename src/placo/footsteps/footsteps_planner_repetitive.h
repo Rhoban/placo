@@ -24,6 +24,17 @@ public:
   /// @return List of footsteps
   std::vector<Footstep> plan(double d_x, double d_y, double d_theta, int nb_steps);
 
+  /// @brief Compute the next footsteps based on coordinates expressed in the support frame
+  /// laterally translated of +/- feet_spacing
+  /// @param d_x Longitudinal distance
+  /// @param d_y Lateral distance
+  /// @param d_theta Angle
+  /// @param nb_steps Number of steps
+  /// @param config HumanoidParameters
+  /// @return List of footsteps
+  std::vector<Footstep> plan_with_config(double d_x, double d_y, double d_theta, int nb_steps,
+                                         HumanoidParameters config);
+
 protected:
   // Maximum absolute value of d_x in meters
   double max_d_x = 0.2;

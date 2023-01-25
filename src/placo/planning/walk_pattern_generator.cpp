@@ -25,6 +25,9 @@ void WalkPatternGenerator::planFootsteps(Trajectory& trajectory, Eigen::Affine3d
 
 void WalkPatternGenerator::planCoM(Trajectory& trajectory)
 {
+  // Test if the first support is a single support
+  int first_is_single = (trajectory.footsteps[0].footsteps.size() == 1) ? 1 : 0;
+
   // Computing how many steps are required
   int ssp_steps = std::round(parameters.single_support_duration / parameters.dt);
   int dsp_steps = std::round(parameters.double_support_duration / parameters.dt);
@@ -33,11 +36,11 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory)
 
   for (auto& support : trajectory.footsteps)
   {
-    if (support.footsteps.size() == 1)
+    if (support.footsteps.size() == 1 && support.start_end == false)
     {
       total_steps += ssp_steps;
     }
-    else
+    else if (support.footsteps.size() == 2)
     {
       if (support.start_end)
       {
@@ -63,10 +66,12 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory)
                       Eigen::Vector2d(0., 0.), parameters.dt, parameters.omega());
 
   // Adding constraints
+  bool double_support = (parameters.double_support_duration / parameters.dt) > 1;
   int steps = 0;
-  for (auto& support : trajectory.footsteps)
+  for (int i = 0; i < trajectory.footsteps.size(); i++)
   {
-    if (support.footsteps.size() == 1)
+    auto support = trajectory.footsteps[i];
+    if (support.footsteps.size() == 1 && support.start_end == false)
     {
       // XXX: To investigate
       for (int k = 0; k < ssp_steps; k++)
@@ -77,13 +82,23 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory)
           // planner.add_polygon_constraint(steps + k, support.support_polygon(), JerkPlanner::ZMP,
           // parameters.zmp_margin);
           auto target = support.frame().translation();
-          planner.add_equality_constraint(steps + k, Eigen::Vector2d(target.x(), target.y()), JerkPlanner::ZMP);
+          planner.add_equality_constraint(steps + k + first_is_single, Eigen::Vector2d(target.x(), target.y()),
+                                          JerkPlanner::ZMP);
         }
       }
 
       steps += ssp_steps;
+
+      // Adding a constraint to have the ZMP between the 2 feet at the end of
+      // the step if there is no double support phase
+      if (!double_support)
+      {
+        auto target = (support.frame().translation() + trajectory.footsteps[i + 1].frame().translation()) / 2;
+        planner.add_equality_constraint(steps, Eigen::Vector2d(target.x(), target.y()), JerkPlanner::ZMP);
+      }
     }
-    else
+
+    else if (support.footsteps.size() == 2)
     {
       if (support.start_end)
       {
@@ -217,7 +232,7 @@ static void _addSupports(WalkPatternGenerator::Trajectory& trajectory, double t,
   }
 }
 
-void WalkPatternGenerator::planFeetTrajctories(Trajectory& trajectory)
+void WalkPatternGenerator::planFeetTrajectories(Trajectory& trajectory)
 {
   double t = 0.0;
 
@@ -233,7 +248,7 @@ void WalkPatternGenerator::planFeetTrajctories(Trajectory& trajectory)
     part.support = support;
     part.t_start = t;
 
-    if (support.footsteps.size() == 1)
+    if (support.footsteps.size() == 1 && support.start_end == false)
     {
       // Single support, add the flying trajectory
       auto flying_side = HumanoidRobot::other_side(support.footsteps[0].side);
@@ -255,7 +270,7 @@ void WalkPatternGenerator::planFeetTrajctories(Trajectory& trajectory)
       // Support foot remaining steady
       _addSupports(trajectory, t, support);
     }
-    else
+    else if (support.footsteps.size() == 2)
     {
       // Double support, adding the support foot at the begining and at the end of the trajectory
       if (support.start_end)
@@ -292,7 +307,7 @@ WalkPatternGenerator::Trajectory WalkPatternGenerator::plan(Eigen::Affine3d T_wo
   planCoM(trajectory);
 
   // Planning the footsteps trajectories
-  planFeetTrajctories(trajectory);
+  planFeetTrajectories(trajectory);
 
   return trajectory;
 }
@@ -308,7 +323,7 @@ WalkPatternGenerator::Trajectory WalkPatternGenerator::plan(std::vector<Footstep
   planCoM(trajectory);
 
   // Planning the footsteps trajectories
-  planFeetTrajctories(trajectory);
+  planFeetTrajectories(trajectory);
 
   return trajectory;
 }
@@ -320,5 +335,37 @@ WalkPatternGenerator::Trajectory WalkPatternGenerator::plan_by_frames(Eigen::Aff
                                                                       Eigen::Affine3d T_world_targetRight)
 {
   return plan(T_world_left, T_world_right, T_world_targetLeft, T_world_targetRight);
+}
+
+WalkPatternGenerator::Trajectory
+WalkPatternGenerator::plan_by_supports(std::vector<FootstepsPlanner::Support> footsteps)
+{
+  return plan(footsteps);
+}
+
+std::vector<Eigen::Affine3d> WalkPatternGenerator::Trajectory::get_last_footsteps(double t, bool double_support)
+{
+  TrajectoryPart& part_current = _findPart(parts, t);
+
+  if (double_support)
+  {
+    return { part_current.support.footsteps[0].frame, part_current.support.footsteps[1].frame };
+  }
+
+  TrajectoryPart& part_prev = _findPart(parts, t - 0.025);  // TO CHANGE
+
+  return { part_prev.support.footsteps[0].frame, part_current.support.footsteps[0].frame };
+}
+
+Eigen::Affine3d WalkPatternGenerator::Trajectory::get_last_footstep(double t, bool double_support)
+{
+  auto footsteps = get_last_footsteps(t, double_support);
+  return footsteps[1];
+}
+
+Eigen::Affine3d WalkPatternGenerator::Trajectory::get_last_last_footstep(double t, bool double_support)
+{
+  auto footsteps = get_last_footsteps(t, double_support);
+  return footsteps[0];
 }
 }  // namespace placo

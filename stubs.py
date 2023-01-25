@@ -4,6 +4,7 @@ import inspect
 import placo
 import os
 
+
 def parse_doc(name: str, doc: str) -> dict:
     definition = {"name": name, "args": [], "returns": "Any"}
 
@@ -29,7 +30,8 @@ def print_def(name: str, doc: str, prefix: str = ""):
     definition = parse_doc(name, doc)
     str_definition = prefix
     str_definition += f"def {definition['name']}("
-    str_definition += ",".join([f"{arg_name}: {arg_type}" for arg_type, arg_name in definition["args"]])
+    str_definition += ",".join([f"{arg_name}: {arg_type}" for arg_type,
+                               arg_name in definition["args"]])
     str_definition += f") -> {definition['returns']}: ..."
     print(str_definition)
 
@@ -38,7 +40,7 @@ for name, object in inspect.getmembers(placo):
     if isinstance(object, type):
         print(f"class {object.__name__}:")
         for _name, _object in inspect.getmembers(object):
-            if not _name.startswith("_"):
+            if not _name.startswith("_") or _name == "__init__":
                 if callable(_object):
                     print_def(_name, _object.__doc__, "  ")
                 else:
@@ -49,4 +51,3 @@ for name, object in inspect.getmembers(placo):
         print("")
     else:
         ...
-
