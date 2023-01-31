@@ -3,7 +3,8 @@
 #include "expose-utils.hpp"
 #include "module.h"
 #include "placo/planning/walk_pattern_generator.h"
-#include "placo/planning/swing_foot.h"
+#include "placo/control/kinematics_solver.h"
+#include "placo/footsteps/footsteps_planner.h"
 #include "placo/planning/swing_foot_quintic.h"
 #include <Eigen/Dense>
 #include <boost/python.hpp>
@@ -14,7 +15,7 @@ using namespace placo;
 void exposeWalkPatternGenerator()
 {
   class_<WalkPatternGenerator::Trajectory>("WalkTrajectory")
-      .add_property("footsteps", &WalkPatternGenerator::Trajectory::footsteps)
+      .add_property("supports", &WalkPatternGenerator::Trajectory::supports)
       .add_property("com", &WalkPatternGenerator::Trajectory::com)
       .add_property("duration", &WalkPatternGenerator::Trajectory::duration)
       .add_property("jerk_planner_steps", &WalkPatternGenerator::Trajectory::jerk_planner_steps)
@@ -23,13 +24,13 @@ void exposeWalkPatternGenerator()
       .def("get_CoM_world", &WalkPatternGenerator::Trajectory::get_CoM_world)
       .def("get_R_world_trunk", &WalkPatternGenerator::Trajectory::get_R_world_trunk)
       .def("support_side", &WalkPatternGenerator::Trajectory::support_side)
-      .def("get_last_footstep", &WalkPatternGenerator::Trajectory::get_last_footstep)
-      .def("get_last_last_footstep", &WalkPatternGenerator::Trajectory::get_last_last_footstep);
+      .def("get_last_footstep_frame", &WalkPatternGenerator::Trajectory::get_last_footstep_frame);
 
-  class_<WalkPatternGenerator>("WalkPatternGenerator", init<HumanoidRobot&>())
+  class_<WalkPatternGenerator>("WalkPatternGenerator", init<HumanoidRobot&, KinematicsSolver&, FootstepsPlanner&>())
       .add_property("parameters", &WalkPatternGenerator::parameters, &WalkPatternGenerator::parameters)
-      .def("plan", &WalkPatternGenerator::plan_by_frames)
-      .def("plan_by_supports", &WalkPatternGenerator::plan_by_supports);
+      .add_property("trajectory", &WalkPatternGenerator::trajectory)
+      .add_property("time", &WalkPatternGenerator::time)
+      .def("next", &WalkPatternGenerator::next);
 
   class_<SwingFoot>("SwingFoot", init<>()).def("make_trajectory", &SwingFoot::make_trajectory);
 

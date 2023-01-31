@@ -84,19 +84,40 @@ public:
   FootstepsPlanner(std::string initial_side, Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right);
 
   /**
-   * @brief From planned footsteps, this method adds the double support phases
-   * @param footsteps a vector of footsteps ad produces by plan
+   * @brief Generate the footsteps
+   */
+  virtual void plan();
+
+  /**
+   * @brief Generate the supports from the footsteps
    * @param start should we add a double support at the begining of the move?
    * @param middle should we add a double support between each step ?
    * @param end should we add a double support at the end of the move?
    * @return vector of supports to use. It starts with initial double supports,
    * and add double support phases between footsteps.
    */
-  std::vector<Support> make_double_supports(const std::vector<Footstep>& footsteps, bool start = false,
-                                            bool middle = false, bool end = false);
+  void make_supports(bool start = false, bool middle = false, bool end = false);
+
+  /**
+   * @brief Regenerate the footsteps and the supports based on the current configuration of the robot and the current
+   * parameters of the planner. The function configure() of the planner is generally called before replan() to
+   * update these parameters.
+   * @param flying_side next flying foot side
+   * @param T_world_left frame of the last left footstep
+   * @param T_world_right frame of the last right footstep
+   */
+  void replan(HumanoidRobot::Side flying_side, Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right);
+
+  // Planned footsteps
+  std::vector<Footstep> footsteps;
+
+  // Planned supports
+  std::vector<Support> supports;
+
+  bool new_supports = true;
 
 protected:
-  // Frames for initial and target feet placements
+  // Initial configuration of the robot
   HumanoidRobot::Side initial_side;
   Eigen::Affine3d T_world_left;
   Eigen::Affine3d T_world_right;

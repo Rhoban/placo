@@ -80,7 +80,7 @@ Eigen::Affine3d FootstepsPlanner::Support::frame()
     }
     else
     {
-      f = placo::interpolate_frames(f, footstep.frame, 1. / n);
+      f = interpolate_frames(f, footstep.frame, 1. / n);
     }
 
     n += 1;
@@ -148,39 +148,38 @@ HumanoidRobot::Side FootstepsPlanner::Support::side()
   }
 }
 
-std::vector<FootstepsPlanner::Support> FootstepsPlanner::make_double_supports(const std::vector<Footstep>& footsteps,
-                                                                              bool start, bool middle, bool end)
+void FootstepsPlanner::make_supports(bool start, bool middle, bool end)
 {
-  std::vector<FootstepsPlanner::Support> supports;
+  std::vector<Support> computed_supports;
 
   if (start)
   {
     // Creating the first (double-support) initial state
-    FootstepsPlanner::Support support;
+    Support support;
     support.start_end = true;
     support.footsteps = { footsteps[0], footsteps[1] };
-    supports.push_back(support);
+    computed_supports.push_back(support);
   }
   else
   {
-    FootstepsPlanner::Support support;
+    Support support;
     support.start_end = true;
     support.footsteps = { footsteps[0] };
-    supports.push_back(support);
+    computed_supports.push_back(support);
   }
 
   // Adding single/double support phases
   for (int step = 1; step < footsteps.size() - 1; step++)
   {
-    FootstepsPlanner::Support single_support;
+    Support single_support;
     single_support.footsteps = { footsteps[step] };
-    supports.push_back(single_support);
+    computed_supports.push_back(single_support);
 
     bool is_end = (step == footsteps.size() - 2);
 
     if ((!is_end && middle) || (is_end && end))
     {
-      FootstepsPlanner::Support double_support;
+      Support double_support;
       double_support.footsteps = { footsteps[step], footsteps[step + 1] };
 
       if (is_end)
@@ -188,10 +187,25 @@ std::vector<FootstepsPlanner::Support> FootstepsPlanner::make_double_supports(co
         double_support.start_end = true;
       }
 
-      supports.push_back(double_support);
+      computed_supports.push_back(double_support);
     }
   }
 
-  return supports;
+  supports = computed_supports;
+}
+
+void FootstepsPlanner::replan(HumanoidRobot::Side flying_side, Eigen::Affine3d T_world_left,
+                              Eigen::Affine3d T_world_right)
+{
+  initial_side = flying_side;
+
+  T_world_left = T_world_left;
+  T_world_right = T_world_right;
+
+  plan();
+
+  bool double_support = parameters.double_support_duration / parameters.dt > 1;
+  make_supports(double_support, double_support, true);
+  new_supports = true;
 }
 }  // namespace placo

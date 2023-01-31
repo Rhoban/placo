@@ -7,14 +7,19 @@ import numpy as np
 
 dt = 0.1
 
-jerk_planner = placo.JerkPlanner(100, np.array([0., 0]), np.array([0., 0]), np.array([0., 0]), dt, 0.)
-jerk_planner.add_equality_constraint(100, np.array([1., 1]), ConstraintType.position)
-jerk_planner.add_equality_constraint(100, np.array([0., 0]), ConstraintType.velocity)
-jerk_planner.add_equality_constraint(100, np.array([0., 0]), ConstraintType.acceleration)
+jerk_planner = placo.JerkPlanner(100, np.array(
+    [0.1, 0.1]), np.array([0.2, 0]), np.array([0., 0]), dt, 0.)
+jerk_planner.add_equality_constraint(
+    100, np.array([1., 1]), ConstraintType.position)
+jerk_planner.add_equality_constraint(
+    100, np.array([0., 0]), ConstraintType.velocity)
+jerk_planner.add_equality_constraint(
+    100, np.array([0., 0]), ConstraintType.acceleration)
 
 limits = jerk_planner.add_limit_constraint(.35, ConstraintType.velocity)
 
-ineq = jerk_planner.add_lower_than_constraint(75, np.array([10, .5]), ConstraintType.position)
+ineq = jerk_planner.add_lower_than_constraint(
+    75, np.array([10, .5]), ConstraintType.position)
 
 polygon1 = np.array([
     [-1, 0.5],
@@ -22,7 +27,8 @@ polygon1 = np.array([
     [-.5, 0.65],
 ])
 
-constraint1 = jerk_planner.add_polygon_constraint(50, polygon1, ConstraintType.position, 0.1)
+constraint1 = jerk_planner.add_polygon_constraint(
+    50, polygon1, ConstraintType.position, 0.1)
 
 polygon2 = np.array([
     [-1.5, 0.25],
@@ -30,7 +36,8 @@ polygon2 = np.array([
     [-.25, 0.25],
 ])
 
-constraint2 = jerk_planner.add_polygon_constraint(50, polygon2, ConstraintType.position, 0.1)
+constraint2 = jerk_planner.add_polygon_constraint(
+    50, polygon2, ConstraintType.position, 0.1)
 
 print(jerk_planner)
 
@@ -46,7 +53,8 @@ print("Constraint for polygon2: ", constraint2.is_active())
 
 # Gathering 100 data points along the trajectory
 ts = np.linspace(0, trajectory.duration(), 100)
-data = np.array([[trajectory.pos(t), trajectory.vel(t), trajectory.acc(t)] for t in ts])
+data = np.array(
+    [[trajectory.pos(t), trajectory.vel(t), trajectory.acc(t)] for t in ts])
 
 # Pos, speed and vel for x and y
 for name, axis in ['x', 0], ['y', 1]:

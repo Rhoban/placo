@@ -41,9 +41,14 @@ public:
   RobotWrapper::FrameIndex flying_frame();
 
   /**
-   * @brief The current side (left foot or right foot) supporting the robot
+   * @brief The current side (left, right or both) supporting the robot
    */
-  Side support_side;
+  Side support_side = placo::HumanoidRobot::Side::Both;
+
+  /**
+   * @brief The current flying foot or the next flying foot if the support_side is both
+   */
+  Side flying_side = placo::HumanoidRobot::Side::Both;
 
   /**
    * @brief Transformation from support to world

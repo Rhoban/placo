@@ -31,10 +31,9 @@ FootstepsPlannerNaive::FootstepsPlannerNaive(std::string initial_side, Eigen::Af
 {
 }
 
-std::vector<FootstepsPlanner::Footstep> FootstepsPlannerNaive::plan(Eigen::Affine3d T_world_targetLeft,
-                                                                    Eigen::Affine3d T_world_targetRight)
+void FootstepsPlannerNaive::plan()
 {
-  std::vector<FootstepsPlanner::Footstep> footsteps;
+  std::vector<FootstepsPlanner::Footstep> computed_footsteps;
 
   Eigen::Affine3d T_world_target = rhoban_utils::averageFrames(T_world_targetLeft, T_world_targetRight, 0.5);
 
@@ -50,11 +49,11 @@ std::vector<FootstepsPlanner::Footstep> FootstepsPlannerNaive::plan(Eigen::Affin
   FootstepsPlanner::Footstep footstep(parameters.foot_width, parameters.foot_length);
   footstep.side = support_side == HumanoidRobot::Side::Left ? HumanoidRobot::Side::Right : HumanoidRobot::Side::Left;
   footstep.frame = support_side == HumanoidRobot::Side::Left ? T_world_right : T_world_left;
-  footsteps.push_back(footstep);
+  computed_footsteps.push_back(footstep);
 
   footstep.side = support_side;
   footstep.frame = support_side == HumanoidRobot::Side::Left ? T_world_left : T_world_right;
-  footsteps.push_back(footstep);
+  computed_footsteps.push_back(footstep);
 
   while ((!left_arrived || !right_arrived) && steps < max_steps)
   {
@@ -151,7 +150,7 @@ std::vector<FootstepsPlanner::Footstep> FootstepsPlannerNaive::plan(Eigen::Affin
     FootstepsPlanner::Footstep footstep(parameters.foot_width, parameters.foot_length);
     footstep.side = HumanoidRobot::other_side(support_side);
     footstep.frame = T_world_support * new_step;
-    footsteps.push_back(footstep);
+    computed_footsteps.push_back(footstep);
 
     if (support_side == HumanoidRobot::Side::Left)
     {
@@ -167,7 +166,38 @@ std::vector<FootstepsPlanner::Footstep> FootstepsPlannerNaive::plan(Eigen::Affin
     }
   }
 
-  return footsteps;
+  footsteps = computed_footsteps;
 }
 
+void FootstepsPlannerNaive::configure(Eigen::Affine3d T_world_targetLeft, Eigen::Affine3d T_world_targetRight,
+                                      int max_steps, double accessibility_width, double accessibility_length,
+                                      double accessibility_yaw, double place_threshold)
+{
+  // Targetted position for the robot
+  T_world_targetLeft = T_world_targetLeft;
+  T_world_targetRight = T_world_targetRight;
+
+  // Optionnal parameters
+  max_steps = max_steps;
+  accessibility_width = accessibility_width;
+  accessibility_length = accessibility_length;
+  accessibility_yaw = accessibility_yaw;
+  place_threshold = place_threshold;
+}
+
+// // For Python binding - can't have default values
+// void FootstepsPlannerNaive::configure_for_python_binding(Eigen::Affine3d T_world_targetLeft,
+//                                                          Eigen::Affine3d T_world_targetRight)
+// {
+//   // Targetted position for the robot
+//   T_world_targetLeft = T_world_targetLeft;
+//   T_world_targetRight = T_world_targetRight;
+
+//   // Optionnal parameters
+//   max_steps = max_steps;
+//   accessibility_width = accessibility_width;
+//   accessibility_length = accessibility_length;
+//   accessibility_yaw = accessibility_yaw;
+//   place_threshold = place_threshold;
+// }
 }  // namespace placo

@@ -8,6 +8,10 @@
 #include "rhoban_utils/spline/poly_spline.h"
 #include "rhoban_utils/spline/poly_spline_3d.h"
 #include "placo/planning/swing_foot.h"
+#include "placo/control/kinematics_solver.h"
+#include "placo/control/frame_task.h"
+#include "placo/control/com_task.h"
+#include "placo/control/orientation_task.h"
 
 namespace placo
 {
@@ -33,8 +37,8 @@ public:
     double com_height;
     double trunk_pitch;
 
-    // Planned footsteps
-    std::vector<FootstepsPlanner::Support> footsteps;
+    // Planned supports
+    std::vector<FootstepsPlanner::Support> supports;
 
     // A part is the support and the swing trajectory
     std::vector<TrajectoryPart> parts;
@@ -56,9 +60,11 @@ public:
 
     HumanoidRobot::Side support_side(double t);
 
-    std::vector<Eigen::Affine3d> get_last_footsteps(double t, bool double_support);
-    Eigen::Affine3d get_last_footstep(double t, bool double_support);
-    Eigen::Affine3d get_last_last_footstep(double t, bool double_support);
+    /// @brief Return the frame of the last left or right footstep before a certain moment in the trajectory
+    /// @param side Side of the footstep
+    /// @param t Moment in the trajectory
+    /// @return Frame of the footstep
+    Eigen::Affine3d get_last_footstep_frame(HumanoidRobot::Side side, double t);
 
     // Trajectory duration
     double duration = 0.0;
@@ -67,22 +73,42 @@ public:
     int jerk_planner_steps;
   };
 
-  WalkPatternGenerator(HumanoidRobot& robot);
+  WalkPatternGenerator(HumanoidRobot& robot, KinematicsSolver& solver, FootstepsPlanner& planner);
 
-  void planFootsteps(Trajectory& trajectory, Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right,
-                     Eigen::Affine3d T_world_targetLeft, Eigen::Affine3d T_world_targetRight);
-  void planCoM(Trajectory& trajectory);
-  void planFeetTrajectories(Trajectory& trajectory);
+  void planCoM(Eigen::Vector2d initial_vel = Eigen::Vector2d::Zero(),
+               Eigen::Vector2d initial_acc = Eigen::Vector2d::Zero());
 
-  Trajectory plan(Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right, Eigen::Affine3d T_world_targetLeft,
-                  Eigen::Affine3d T_world_targetRight);
-  Trajectory plan(std::vector<FootstepsPlanner::Support> footsteps);
+  void planFeetTrajectories();
 
-  // For python binding
-  Trajectory plan_by_frames(Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right,
-                            Eigen::Affine3d T_world_targetLeft, Eigen::Affine3d T_world_targetRight);
-  Trajectory plan_by_supports(std::vector<FootstepsPlanner::Support> footsteps);
+  void init_default_solver_tasks();
 
+  /// @brief Move forward in the trajectory and update it if needed
+  /// @param elapsed_time Elapsed time since the last call of the function
+  void next(double elapsed_time);
+
+  // Robot associated to the WPG
   HumanoidRobot& robot;
+
+  // Trajectory of the movement
+  Trajectory trajectory;
+
+  double time;
+
+protected:
+  // Kinematic solver used by the WPG - TO MOVE TO A SEPARATE CLASS
+  KinematicsSolver& solver;
+
+  FrameTask left_foot;
+  FrameTask right_foot;
+  CoMTask com_task = solver.add_com_task(Eigen::Vector3d::Zero());
+  OrientationTask trunk_orientation_task = solver.add_orientation_task("trunk", Eigen::Matrix3d::Identity());
+
+  // Planner used to generate the footsteps
+  FootstepsPlanner& footsteps_planner;
+
+  // Supports the WPG is currently following
+  std::vector<FootstepsPlanner::Support> supports;
+
+  void update_trajectory();
 };
 }  // namespace placo

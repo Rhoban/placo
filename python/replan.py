@@ -1,21 +1,58 @@
 import time
 import placo
+import argparse
 import pinocchio as pin
 import numpy as np
+import matplotlib.pyplot as plt
+from footsteps_planner import draw_footsteps
 from visualization import robot_viz, frame_viz, point_viz, robot_frame_viz, footsteps_viz
+
+parser = argparse.ArgumentParser(description="Process some integers.")
+parser.add_argument("-g", "--graph", action="store_true", help="Plot")
+parser.add_argument("-p", "--pybullet", action="store_true",
+                    help="PyBullet visualization")
+parser.add_argument("-m", "--meshcat", action="store_true",
+                    help="MeshCat visualization")
+args = parser.parse_args()
+
+# Plotting
+nb_plotted_steps = 10
 
 # Loading the robot
 robot = placo.HumanoidRobot("sigmaban/")
 robot.load()
 robot.ensure_on_floor()
 
-# Creating the pattern generator to plan the trajectory
-walk = placo.WalkPatternGenerator(robot)
+# Creating the kinematics solver
+solver = robot.make_solver()
+
+# Creating the FootstepsPlanner
+T_world_left = placo.flatten_on_floor(robot.get_T_world_left())
+T_world_right = placo.flatten_on_floor(robot.get_T_world_right())
+
+####### Naive FootstepsPlanner ########
+planner = placo.FootstepsPlannerNaive("left", T_world_left, T_world_right)
+T_world_leftTarget = T_world_left.copy()
+T_world_rightTarget = T_world_right.copy()
+T_world_leftTarget[0, 3] += 1.0
+T_world_rightTarget[0, 3] += 1.0
+planner.configure(T_world_leftTarget, T_world_rightTarget)
+
+##### Repetitive FootstepsPlanner #####
+# planner = placo.FootstepsPlannerRepetitive("left", T_world_left, T_world_right)
+# d_x = 0.1
+# d_y = 0.
+# d_theta = 0.
+# nb_steps = 5
+# planner.config(d_x, d_y, d_theta, nb_steps)
+
+# Creating the pattern generator
+walk = placo.WalkPatternGenerator(robot, solver, planner)
 walk.parameters.dt = 0.025
 walk.parameters.single_support_duration = .35
-walk.parameters.double_support_duration = 0.
+walk.parameters.double_support_duration = 0.0
 walk.parameters.startend_double_support_duration = 0.5
-walk.parameters.maximum_steps = 64
+walk.parameters.maximum_steps = 500
 walk.parameters.walk_com_height = 0.32
 walk.parameters.walk_foot_height = 0.04
 walk.parameters.pendulum_height = 0.32
@@ -26,121 +63,98 @@ walk.parameters.foot_width = 0.092
 walk.parameters.feet_spacing = 0.122
 walk.parameters.zmp_margin = 0.045
 
-# Repetitive footsteps planner parameters
-d_x = 0.1
-d_y = 0.
-d_theta = 0.
-nb_steps = 5
-previous_support = "both"
-previous_flying_foot = "right"
-double_support = (walk.parameters.double_support_duration /
-                  walk.parameters.dt) > 1
+# Initial steps planification
+planner.plan()
+double_support = walk.parameters.double_support_duration / walk.parameters.dt > 1
+planner.make_supports(True, double_support, True)
 
-# Planning the first steps
-T_world_left = placo.flatten_on_floor(robot.get_T_world_left())
-T_world_right = placo.flatten_on_floor(robot.get_T_world_right())
+if args.graph:
+    data_left = []
+    data_right = []
+    data = []
+    draw_footsteps(walk.get_trajectory().footsteps, show=False)
 
-planner = placo.FootstepsPlannerRepetitive(
-    previous_flying_foot, T_world_left, T_world_right)
-planner.parameters.feet_spacing = walk.parameters.feet_spacing
-planner.parameters.foot_width = walk.parameters.foot_width
-planner.parameters.foot_length = walk.parameters.foot_length
-footsteps = planner.plan(d_x, d_y, d_theta, nb_steps)
-supports = planner.make_double_supports(footsteps, True, double_support, True)
-trajectory = walk.plan_by_supports(supports)
+if args.pybullet:
+    import pybullet as p
+    from onshape_to_robot.simulation import Simulation
+    sim = Simulation("sigmaban/robot.urdf", realTime=True, dt=0.005)
 
-# Creating the kinematics solver
-solver = robot.make_solver()
-solver.add_regularization_task(1e-6)
-solver.mask_dof("head_pitch")
-solver.mask_dof("head_yaw")
-solver.mask_dof("left_elbow")
-solver.mask_dof("right_elbow")
-solver.mask_dof("left_shoulder_pitch")
-solver.mask_dof("right_shoulder_pitch")
-solver.mask_dof("left_shoulder_roll")
-solver.mask_dof("right_shoulder_roll")
-
-left_foot = solver.add_frame_task("left_foot", T_world_left)
-left_foot.configure("left_foot", "soft", 1., 1.)
-
-right_foot = solver.add_frame_task("right_foot", T_world_left)
-right_foot.configure("right_foot", "soft", 1., 1.)
-
-com_task = solver.add_com_task(np.array([0., 0., 0.]))
-com_task.configure("com", "soft", 1.0)
-
-trunk_orientation_task = solver.add_orientation_task("trunk", np.eye(3))
-trunk_orientation_task.configure("trunk", "soft", 1.0)
-
-# Meshcat
-viz = robot_viz(robot)
-footsteps_viz(trajectory.footsteps)
+if args.meshcat:
+    viz = robot_viz(robot)
+    footsteps_viz(walk.get_trajectory().footsteps)
 
 start_t = time.time()
 t = -2.
 dt = 0.005
 
-while True:
-
-    robot.update_kinematics()
+while nb_plotted_steps > 0:
 
     T = max(0, t)
 
-    left_foot.T_world_frame = trajectory.get_T_world_left(T)
-    right_foot.T_world_frame = trajectory.get_T_world_right(T)
-    com_task.target_world = trajectory.get_CoM_world(T)
-    trunk_orientation_task.R_world_frame = trajectory.get_R_world_trunk(T)
-
-    solver.solve(True)
-    # solver.dump_status()
-
-    # Meshcat
-    viz.display(robot.state.q)
-    robot_frame_viz(robot, "left_foot")
-    robot_frame_viz(robot, "right_foot")
-    com = robot.com_world()
-    com[2] = 0
-    point_viz("com", com)
+    walk.next(dt)
 
     # Replan
-    if previous_support != trajectory.support_side(T) and str(previous_support) != "both":
-        print("REPLAN")
-        # start_t = time.time()
+    if str(previous_support) != robot.get_support_side() and str(previous_support) != "both":
+        print("\nREPLAN")
 
-        last_footstep = placo.flatten_on_floor(
-            trajectory.get_last_footstep(T, double_support))
-        last_last_footstep = placo.flatten_on_floor(
-            trajectory.get_last_last_footstep(T, double_support))
+        if args.graph:
+            nb_plotted_steps -= 1
 
-        if previous_flying_foot == "right":
-            planner = placo.FootstepsPlannerRepetitive(
-                "left", last_last_footstep, last_footstep)
-            previous_flying_foot = "left"
+        # start_timer = time.time()
 
-        else:
-            planner = placo.FootstepsPlannerRepetitive(
-                "right", last_footstep, last_last_footstep)
-            previous_flying_foot = "right"
+        # Naive
+        T_world_leftTarget[0, 3] += 0.08
+        T_world_rightTarget[0, 3] += 0.08
+        planner.configure(T_world_leftTarget, T_world_rightTarget)
 
-        planner.parameters.feet_spacing = walk.parameters.feet_spacing
-        planner.parameters.foot_width = walk.parameters.foot_width
-        planner.parameters.foot_length = walk.parameters.foot_length
+        # Repetitive
+        # planner.configure(d_x, d_y, d_theta, nb_steps)
 
-        footsteps = planner.plan(d_x, d_y, d_theta, nb_steps)
-        supports = planner.make_double_supports(
-            footsteps, double_support, double_support, True)
-        trajectory = walk.plan_by_supports(supports)
+        planner.replan()
 
-        # elapsed = time.time() - start_t
-        # print(f"Replan computation time: {elapsed*1e6}µs")
+        # elapsed_time = time.time() - start_timer
+        # print(f"Replan computation time: {elapsed_time*1e6}µs")
 
-        t = 0
-        T = 0
+    previous_support = robot.get_support_side()
 
-    previous_support = trajectory.support_side(T)
+    if args.meshcat:
+        viz.display(robot.state.q)
+        robot_frame_viz(robot, "left_foot")
+        robot_frame_viz(robot, "right_foot")
+        com = robot.com_world()
+        com[2] = 0
+        point_viz("com", com)
+
+    if args.pybullet:
+        joints = {joint: robot.get_joint(joint)
+                  for joint in sim.getJoints()}
+        applied = sim.setJoints(joints)
+        sim.tick()
+
+    if args.graph:
+        lf = walk.get_trajectory().get_T_world_left(T)
+        data_left.append(lf[:3, 3])
+
+        rf = walk.get_trajectory().get_T_world_right(T)
+        data_right.append(rf[:3, 3])
+
+        data.append(
+            [walk.get_trajectory().com.pos(T), walk.get_trajectory().com.zmp(T), walk.get_trajectory().com.dcm(T)])
 
     # Spin-lock until the next tick
     t += dt
     while time.time() < start_t + t:
         time.sleep(1e-3)
+
+if args.graph:
+    data_left = np.array(data_left)
+    data_right = np.array(data_right)
+    data = np.array(data)
+
+    plt.plot(data.T[0][0], data.T[1][0], label="CoM", lw=3)
+    plt.plot(data.T[0][1], data.T[1][1], label="ZMP", lw=3)
+    plt.plot(data.T[0][2], data.T[1][2], label="DCM", lw=3)
+
+    plt.legend()
+    plt.grid()
+    plt.show()

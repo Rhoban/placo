@@ -27,16 +27,17 @@ void exposeFootsteps()
       .def("support_polygon", &FootstepsPlanner::Support::support_polygon)
       .add_property("footsteps", &FootstepsPlanner::Support::footsteps);
 
-  class_<FootstepsPlannerNaive>("FootstepsPlannerNaive", init<std::string, Eigen::Affine3d, Eigen::Affine3d>())
-      .def("plan", &FootstepsPlannerNaive::plan)
-      .def("make_double_supports", &FootstepsPlannerNaive::make_double_supports)
-      .add_property("parameters", &FootstepsPlannerNaive::parameters, &FootstepsPlannerNaive::parameters);
+  class_<FootstepsPlanner>("FootstepsPlanner", init<std::string, Eigen::Affine3d, Eigen::Affine3d>())
+      .def("replan", &FootstepsPlannerNaive::replan)
+      .add_property("parameters", &FootstepsPlannerNaive::parameters);
 
-  class_<FootstepsPlannerRepetitive>("FootstepsPlannerRepetitive",
-                                     init<std::string, Eigen::Affine3d, Eigen::Affine3d>())
+  class_<FootstepsPlannerNaive, bases<FootstepsPlanner>>("FootstepsPlannerNaive")
+      .def("plan", &FootstepsPlannerNaive::plan)
+      .def("configure", &FootstepsPlannerNaive::configure);
+
+  class_<FootstepsPlannerRepetitive, bases<FootstepsPlanner>>("FootstepsPlannerRepetitive")
       .def("plan", &FootstepsPlannerRepetitive::plan)
-      .def("make_double_supports", &FootstepsPlannerRepetitive::make_double_supports)
-      .add_property("parameters", &FootstepsPlannerRepetitive::parameters, &FootstepsPlannerRepetitive::parameters);
+      .def("configure", &FootstepsPlannerRepetitive::configure);
 
   // Exposing vector of footsteps
   exposeStdVector<FootstepsPlanner::Footstep>("Footsteps");

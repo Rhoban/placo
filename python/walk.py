@@ -61,18 +61,12 @@ walk.parameters.zmp_margin = 0.045
 start_t = time.time()
 
 # Naive footsteps planner
-# trajectory = walk.plan(T_world_left, T_world_right,
-#                        T_world_leftTarget, T_world_rightTarget)
+# trajectory = walk.plan_naive(T_world_left, T_world_right,
+#                              T_world_leftTarget, T_world_rightTarget)
 
 # Repetitive footsteps planner
-planner = placo.FootstepsPlannerRepetitive(
-    "right", T_world_left, T_world_right)
-planner.parameters.feet_spacing = 0.122
-planner.parameters.foot_width = 0.092
-planner.parameters.foot_length = 0.1576
-footsteps = planner.plan(0.1, 0., 0., 20)
-supports = planner.make_double_supports(footsteps, True, False, True)
-trajectory = walk.plan_by_supports(supports)
+trajectory = walk.plan_repetitive(T_world_left, T_world_right, 0.1, 0., 0., 5)
+trajectory = walk.replan_repetitive(0.1, 0., 0., 5, trajectory, 0.)
 
 elapsed = time.time() - start_t
 print(
