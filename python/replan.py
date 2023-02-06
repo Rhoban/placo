@@ -23,56 +23,56 @@ robot = placo.HumanoidRobot("sigmaban/")
 robot.load()
 robot.ensure_on_floor()
 
+# Walk parameters
+parameters = placo.HumanoidParameters()
+parameters.dt = 0.025
+parameters.single_support_duration = .35
+parameters.double_support_duration = 0.0
+parameters.startend_double_support_duration = 0.5
+parameters.maximum_steps = 500
+parameters.walk_com_height = 0.32
+parameters.walk_foot_height = 0.04
+parameters.pendulum_height = 0.32
+parameters.walk_trunk_pitch = 0.2
+parameters.walk_foot_tilt = 0.2
+parameters.foot_length = 0.1576
+parameters.foot_width = 0.092
+parameters.feet_spacing = 0.122
+parameters.zmp_margin = 0.045
+
 # Creating the kinematics solver
 solver = robot.make_solver()
+task_holder = placo.SolverTaskHolder(robot, solver)
 
 # Creating the FootstepsPlanner
 T_world_left = placo.flatten_on_floor(robot.get_T_world_left())
 T_world_right = placo.flatten_on_floor(robot.get_T_world_right())
 
 ####### Naive FootstepsPlanner ########
-planner = placo.FootstepsPlannerNaive("left", T_world_left, T_world_right)
-T_world_leftTarget = T_world_left.copy()
-T_world_rightTarget = T_world_right.copy()
-T_world_leftTarget[0, 3] += 1.0
-T_world_rightTarget[0, 3] += 1.0
-planner.configure(T_world_leftTarget, T_world_rightTarget)
+# planner = placo.FootstepsPlannerNaive(parameters)
+# T_world_leftTarget = T_world_left.copy()
+# T_world_rightTarget = T_world_right.copy()
+# T_world_leftTarget[0, 3] += 1.0
+# T_world_rightTarget[0, 3] += 1.0
+# planner.configure(T_world_leftTarget, T_world_rightTarget)
 
 ##### Repetitive FootstepsPlanner #####
-# planner = placo.FootstepsPlannerRepetitive("left", T_world_left, T_world_right)
-# d_x = 0.1
-# d_y = 0.
-# d_theta = 0.
-# nb_steps = 5
-# planner.config(d_x, d_y, d_theta, nb_steps)
+planner = placo.FootstepsPlannerRepetitive(parameters)
+d_x = 0.1
+d_y = 0.
+d_theta = 0.
+nb_steps = 5
+planner.configure(d_x, d_y, d_theta, nb_steps)
 
 # Creating the pattern generator
-walk = placo.WalkPatternGenerator(robot, solver, planner)
-walk.parameters.dt = 0.025
-walk.parameters.single_support_duration = .35
-walk.parameters.double_support_duration = 0.0
-walk.parameters.startend_double_support_duration = 0.5
-walk.parameters.maximum_steps = 500
-walk.parameters.walk_com_height = 0.32
-walk.parameters.walk_foot_height = 0.04
-walk.parameters.pendulum_height = 0.32
-walk.parameters.walk_trunk_pitch = 0.2
-walk.parameters.walk_foot_tilt = 0.2
-walk.parameters.foot_length = 0.1576
-walk.parameters.foot_width = 0.092
-walk.parameters.feet_spacing = 0.122
-walk.parameters.zmp_margin = 0.045
-
-# Initial steps planification
-planner.plan()
-double_support = walk.parameters.double_support_duration / walk.parameters.dt > 1
-planner.make_supports(True, double_support, True)
+walk = placo.WalkPatternGenerator(robot, planner, parameters)
+trajectory = walk.plan()
 
 if args.graph:
     data_left = []
     data_right = []
     data = []
-    draw_footsteps(walk.get_trajectory().footsteps, show=False)
+    draw_footsteps(trajectory.supports, show=False)
 
 if args.pybullet:
     import pybullet as p
@@ -81,21 +81,26 @@ if args.pybullet:
 
 if args.meshcat:
     viz = robot_viz(robot)
-    footsteps_viz(walk.get_trajectory().footsteps)
+    footsteps_viz(trajectory.supports)
 
 start_t = time.time()
 t = -2.
 dt = 0.005
 
 while nb_plotted_steps > 0:
-
     T = max(0, t)
 
-    walk.next(dt)
+    task_holder.update_tasks(trajectory.get_T_world_left(T), trajectory.get_T_world_right(T),
+                             trajectory.get_CoM_world(T), trajectory.get_R_world_trunk(T))
+
+    previous_support = robot.get_support_side()
+
+    robot.update_kinematics()
+    robot.update_support_side(str(trajectory.support_side(T)))
 
     # Replan
     if str(previous_support) != robot.get_support_side() and str(previous_support) != "both":
-        print("\nREPLAN")
+        print("REPLAN")
 
         if args.graph:
             nb_plotted_steps -= 1
@@ -103,19 +108,18 @@ while nb_plotted_steps > 0:
         # start_timer = time.time()
 
         # Naive
-        T_world_leftTarget[0, 3] += 0.08
-        T_world_rightTarget[0, 3] += 0.08
-        planner.configure(T_world_leftTarget, T_world_rightTarget)
+        # T_world_leftTarget[0, 3] += 0.08
+        # T_world_rightTarget[0, 3] += 0.08
+        # planner.configure(T_world_leftTarget, T_world_rightTarget)
 
         # Repetitive
-        # planner.configure(d_x, d_y, d_theta, nb_steps)
+        planner.configure(d_x, d_y, d_theta, nb_steps)
 
-        planner.replan()
+        trajectory = walk.replan(trajectory, T)
+        t = T = 0.
 
         # elapsed_time = time.time() - start_timer
         # print(f"Replan computation time: {elapsed_time*1e6}µs")
-
-    previous_support = robot.get_support_side()
 
     if args.meshcat:
         viz.display(robot.state.q)
@@ -132,14 +136,14 @@ while nb_plotted_steps > 0:
         sim.tick()
 
     if args.graph:
-        lf = walk.get_trajectory().get_T_world_left(T)
+        lf = trajectory.get_T_world_left(T)
         data_left.append(lf[:3, 3])
 
-        rf = walk.get_trajectory().get_T_world_right(T)
+        rf = trajectory.get_T_world_right(T)
         data_right.append(rf[:3, 3])
 
         data.append(
-            [walk.get_trajectory().com.pos(T), walk.get_trajectory().com.zmp(T), walk.get_trajectory().com.dcm(T)])
+            [trajectory.com.pos(T), trajectory.com.zmp(T), trajectory.com.dcm(T)])
 
     # Spin-lock until the next tick
     t += dt
@@ -152,8 +156,8 @@ if args.graph:
     data = np.array(data)
 
     plt.plot(data.T[0][0], data.T[1][0], label="CoM", lw=3)
-    plt.plot(data.T[0][1], data.T[1][1], label="ZMP", lw=3)
-    plt.plot(data.T[0][2], data.T[1][2], label="DCM", lw=3)
+    # plt.plot(data.T[0][1], data.T[1][1], label="ZMP", lw=3)
+    # plt.plot(data.T[0][2], data.T[1][2], label="DCM", lw=3)
 
     plt.legend()
     plt.grid()

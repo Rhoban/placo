@@ -12,11 +12,6 @@ class FootstepsPlanner
 {
 public:
   /**
-   * @brief Humanoid parameters for planning and control
-   */
-  HumanoidParameters parameters;
-
-  /**
    * @brief A footstep is the position of a specific foot on the ground
    */
   struct Footstep
@@ -70,23 +65,18 @@ public:
 
   /**
    * @brief Initializes the solver
-   * @param initial_side side that is initially supporting the robot
-   * @param T_world_left frame of the initial left foot
-   * @param T_world_right frame of the initial right foot
-   * @param feet_spacing spacing between feet
+   * @param parameters Parameters of the walk
    */
-  FootstepsPlanner(HumanoidRobot::Side initial_side, Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right);
-
-  /**
-   * @brief This constructors allow the initial_side to be a string (useful for
-   * Python bindings)
-   */
-  FootstepsPlanner(std::string initial_side, Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right);
+  FootstepsPlanner(HumanoidParameters& parameters);
 
   /**
    * @brief Generate the footsteps
+   * @param flying_side first step side
+   * @param T_world_left frame of the initial left foot
+   * @param T_world_right frame of the initial right foot
    */
-  virtual void plan();
+  virtual std::vector<Footstep> plan(HumanoidRobot::Side flying_side, Eigen::Affine3d T_world_left,
+                                     Eigen::Affine3d T_world_right) = 0;
 
   /**
    * @brief Generate the supports from the footsteps
@@ -96,30 +86,10 @@ public:
    * @return vector of supports to use. It starts with initial double supports,
    * and add double support phases between footsteps.
    */
-  void make_supports(bool start = false, bool middle = false, bool end = false);
+  std::vector<Support> make_supports(std::vector<Footstep> footsteps, bool start = true, bool middle = false,
+                                     bool end = true);
 
-  /**
-   * @brief Regenerate the footsteps and the supports based on the current configuration of the robot and the current
-   * parameters of the planner. The function configure() of the planner is generally called before replan() to
-   * update these parameters.
-   * @param flying_side next flying foot side
-   * @param T_world_left frame of the last left footstep
-   * @param T_world_right frame of the last right footstep
-   */
-  void replan(HumanoidRobot::Side flying_side, Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right);
-
-  // Planned footsteps
-  std::vector<Footstep> footsteps;
-
-  // Planned supports
-  std::vector<Support> supports;
-
-  bool new_supports = true;
-
-protected:
-  // Initial configuration of the robot
-  HumanoidRobot::Side initial_side;
-  Eigen::Affine3d T_world_left;
-  Eigen::Affine3d T_world_right;
+  // Humanoid parameters for planning and control
+  HumanoidParameters& parameters;
 };
 }  // namespace placo

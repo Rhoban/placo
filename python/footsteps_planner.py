@@ -39,7 +39,7 @@ def draw_footsteps(footsteps, animate=False, show=True):
     if animate:
         # Handling footsteps animation
         all_points = np.vstack([list(footstep.support_polygon())
-                               for footstep in footsteps])
+                                for footstep in footsteps])
         x_min, x_max = np.min(
             all_points.T[0]) - 0.1, np.max(all_points.T[0]) + 0.1
         y_min, y_max = np.min(

@@ -3,35 +3,29 @@
 
 namespace placo
 {
-FootstepsPlannerRepetitive::FootstepsPlannerRepetitive(HumanoidRobot::Side initial_side, Eigen::Affine3d T_world_left,
-                                                       Eigen::Affine3d T_world_right)
-  : FootstepsPlanner(initial_side, T_world_left, T_world_right)
+FootstepsPlannerRepetitive::FootstepsPlannerRepetitive(HumanoidParameters& parameters) : FootstepsPlanner(parameters)
 {
 }
 
-FootstepsPlannerRepetitive::FootstepsPlannerRepetitive(std::string initial_side, Eigen::Affine3d T_world_left,
-                                                       Eigen::Affine3d T_world_right)
-  : FootstepsPlanner(initial_side, T_world_left, T_world_right)
+std::vector<FootstepsPlanner::Footstep> FootstepsPlannerRepetitive::plan(HumanoidRobot::Side flying_side,
+                                                                         Eigen::Affine3d T_world_left,
+                                                                         Eigen::Affine3d T_world_right)
 {
-}
-
-void FootstepsPlannerRepetitive::plan()
-{
-  std::vector<FootstepsPlanner::Footstep> computed_footsteps;
+  std::vector<FootstepsPlanner::Footstep> footsteps;
 
   // Including initial footsteps
-  auto current_side = initial_side;
+  auto current_side = flying_side;
   auto T_world_current_frame = (current_side == HumanoidRobot::Side::Left) ? T_world_left : T_world_right;
   FootstepsPlanner::Footstep footstep(parameters.foot_width, parameters.foot_length);
   footstep.side = current_side;
   footstep.frame = T_world_current_frame;
-  computed_footsteps.push_back(footstep);
+  footsteps.push_back(footstep);
 
   current_side = HumanoidRobot::other_side(current_side);
   T_world_current_frame = (current_side == HumanoidRobot::Side::Left) ? T_world_left : T_world_right;
   footstep.side = current_side;
   footstep.frame = T_world_current_frame;
-  computed_footsteps.push_back(footstep);
+  footsteps.push_back(footstep);
 
   int steps = 0;
   while (steps < nb_steps)
@@ -48,7 +42,7 @@ void FootstepsPlannerRepetitive::plan()
     // Adding the footstep
     footstep.side = current_side;
     footstep.frame = T_world_current_frame;
-    computed_footsteps.push_back(footstep);
+    footsteps.push_back(footstep);
 
     steps += 1;
   }
@@ -60,15 +54,15 @@ void FootstepsPlannerRepetitive::plan()
   footstep.frame = T_world_current_frame;
   footsteps.push_back(footstep);
 
-  footsteps = computed_footsteps;
+  return footsteps;
 }
 
-void FootstepsPlannerRepetitive::configure(double d_x, double d_y, double d_theta, int nb_steps)
+void FootstepsPlannerRepetitive::configure(double x, double y, double theta, int steps)
 {
-  d_x = (d_x > max_d_x) ? max_d_x : d_x;
-  d_y = (d_y > max_d_y) ? max_d_y : d_y;
-  d_theta = (d_theta > max_d_theta) ? max_d_theta : d_theta;
+  d_x = (x > max_d_x) ? max_d_x : x;
+  d_y = (y > max_d_y) ? max_d_y : y;
+  d_theta = (theta > max_d_theta) ? max_d_theta : theta;
 
-  nb_steps = nb_steps;
+  nb_steps = steps;
 }
 }  // namespace placo

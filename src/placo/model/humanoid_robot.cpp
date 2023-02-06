@@ -21,7 +21,7 @@ void HumanoidRobot::load()
 {
   this->RobotWrapper::load();
 
-  support_side = Right;
+  support_side = Both;
   T_world_support.setIdentity();
 
   left_foot = get_frame_index("left_foot");
@@ -50,15 +50,15 @@ void HumanoidRobot::update_support_side(HumanoidRobot::Side new_side)
 {
   if (new_side != support_side)
   {
-    // Updating the support frame to this frame
-    support_side = new_side;
-
-    if (new_side == Both)
+    if (support_side != Both)
     {
       flying_side = other_side(flying_side);
     }
 
-    else
+    // Updating the support frame to this frame
+    support_side = new_side;
+
+    if (support_side != Both)
     {
       update_kinematics();
 
@@ -68,7 +68,8 @@ void HumanoidRobot::update_support_side(HumanoidRobot::Side new_side)
       // Projecting it on the floor
       T_world_support = flatten_on_floor(T_world_newSupport);
 
-      ensure_on_floor();
+      // GOOD PRACTICE BUT CAUSE A JUMP
+      // ensure_on_floor();
     }
   }
 }

@@ -4,6 +4,7 @@
 #include "placo/footsteps/footsteps_planner.h"
 #include "placo/model/humanoid_robot.h"
 #include "placo/model/humanoid_parameters.h"
+#include "placo/planning/solver_task_holder.h"
 #include "placo/planning/jerk_planner.h"
 #include "rhoban_utils/spline/poly_spline.h"
 #include "rhoban_utils/spline/poly_spline_3d.h"
@@ -18,11 +19,6 @@ namespace placo
 class WalkPatternGenerator
 {
 public:
-  /**
-   * @brief The parameters to use for planning. The values are forwarded to the relevant solvers when needed.
-   */
-  HumanoidParameters parameters;
-
   struct TrajectoryPart
   {
     SwingFoot::Trajectory swing_trajectory;
@@ -73,42 +69,29 @@ public:
     int jerk_planner_steps;
   };
 
-  WalkPatternGenerator(HumanoidRobot& robot, KinematicsSolver& solver, FootstepsPlanner& planner);
+  WalkPatternGenerator(HumanoidRobot& robot, FootstepsPlanner& footsteps_planner, HumanoidParameters& parameters);
 
-  void planCoM(Eigen::Vector2d initial_vel = Eigen::Vector2d::Zero(),
-               Eigen::Vector2d initial_acc = Eigen::Vector2d::Zero());
+  /// @brief Plan a trajectory based on the footsteps planner and the parameters of the WPG
+  Trajectory plan();
 
-  void planFeetTrajectories();
-
-  void init_default_solver_tasks();
-
-  /// @brief Move forward in the trajectory and update it if needed
-  /// @param elapsed_time Elapsed time since the last call of the function
-  void next(double elapsed_time);
-
-  // Robot associated to the WPG
-  HumanoidRobot& robot;
-
-  // Trajectory of the movement
-  Trajectory trajectory;
-
-  double time;
+  /// @brief Replan a trajectory adapted to the previous one
+  /// @param trajectory Previous trajectory
+  /// @param elapsed_time Elapsed time on the previous trajectory
+  Trajectory replan(Trajectory& previous_trajectory, double elapsed_time);
 
 protected:
-  // Kinematic solver used by the WPG - TO MOVE TO A SEPARATE CLASS
-  KinematicsSolver& solver;
-
-  FrameTask left_foot;
-  FrameTask right_foot;
-  CoMTask com_task = solver.add_com_task(Eigen::Vector3d::Zero());
-  OrientationTask trunk_orientation_task = solver.add_orientation_task("trunk", Eigen::Matrix3d::Identity());
+  // Robot associated to the WPG
+  HumanoidRobot& robot;
 
   // Planner used to generate the footsteps
   FootstepsPlanner& footsteps_planner;
 
-  // Supports the WPG is currently following
-  std::vector<FootstepsPlanner::Support> supports;
+  // The parameters to use for planning. The values are forwarded to the relevant solvers when needed.
+  HumanoidParameters& parameters;
 
-  void update_trajectory();
+  void planCoM(Trajectory& trajectory, Eigen::Vector2d initial_vel = Eigen::Vector2d::Zero(),
+               Eigen::Vector2d initial_acc = Eigen::Vector2d::Zero());
+
+  void planFeetTrajectories(Trajectory& trajectory);
 };
 }  // namespace placo

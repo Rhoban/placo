@@ -10,43 +10,38 @@ namespace placo
 class FootstepsPlannerNaive : public FootstepsPlanner
 {
 public:
-  FootstepsPlannerNaive(HumanoidRobot::Side initial_side, Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right);
-
-  FootstepsPlannerNaive(std::string initial_side, Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right);
+  FootstepsPlannerNaive(HumanoidParameters& parameters);
 
   /**
    * @brief Generate the footsteps
+   * @param flying_side first step side
+   * @param T_world_left frame of the initial left foot
+   * @param T_world_right frame of the initial right foot
    */
-  void plan();
+  std::vector<Footstep> plan(HumanoidRobot::Side flying_side, Eigen::Affine3d T_world_left,
+                             Eigen::Affine3d T_world_right);
 
   /**
    * @brief Configure the naive footsteps planner
-   * @param T_world_targetLeft Targetted frame for the left foot
-   * @param T_world_targetRight Targetted frame for the right foot
-   * @param max_steps Maximum number of steps
-   * @param accessibility_width Width of accessibility window for the opposite foot
-   * @param accessibility_length Length of accessibility window for the opposite foot
-   * @param accessibility_yaw Yaw of accessibility window for the opposite foot
-   * @param place_treshold Distance where the robot walks forward instead of aligning with target
+   * @param T_world_left_target Targetted frame for the left foot
+   * @param T_world_right_target Targetted frame for the right foot
    */
-  void configure(Eigen::Affine3d T_world_targetLeft, Eigen::Affine3d T_world_targetRight, int max_steps = 100,
-                 double accessibility_width = 0.025, double accessibility_length = 0.08, double accessibility_yaw = 0.2,
-                 double place_threshold = 0.5);
+  void configure(Eigen::Affine3d T_world_left_target, Eigen::Affine3d T_world_right_target);
 
 protected:
   // Maximum steps to plan
-  int max_steps;
+  int max_steps = 100;
 
   // Targetted position for the robot
   Eigen::Affine3d T_world_targetLeft;
   Eigen::Affine3d T_world_targetRight;
 
   // Dimension of the accessibility window for the opposite foot
-  double accessibility_width;
-  double accessibility_length;
-  double accessibility_yaw;
+  double accessibility_width = 0.025;
+  double accessibility_length = 0.08;
+  double accessibility_yaw = 0.2;
 
   // Distance where the robot walks forward instead of aligning with target
-  double place_threshold;
+  double place_threshold = 0.5;
 };
 }  // namespace placo

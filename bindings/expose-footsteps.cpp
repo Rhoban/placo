@@ -27,15 +27,14 @@ void exposeFootsteps()
       .def("support_polygon", &FootstepsPlanner::Support::support_polygon)
       .add_property("footsteps", &FootstepsPlanner::Support::footsteps);
 
-  class_<FootstepsPlanner>("FootstepsPlanner", init<std::string, Eigen::Affine3d, Eigen::Affine3d>())
-      .def("replan", &FootstepsPlannerNaive::replan)
-      .add_property("parameters", &FootstepsPlannerNaive::parameters);
+  class_<FootstepsPlanner, boost::noncopyable>("FootstepsPlanner", no_init)
+      .def("make_supports", &FootstepsPlannerNaive::make_supports);
 
-  class_<FootstepsPlannerNaive, bases<FootstepsPlanner>>("FootstepsPlannerNaive")
+  class_<FootstepsPlannerNaive, bases<FootstepsPlanner>>("FootstepsPlannerNaive", init<HumanoidParameters&>())
       .def("plan", &FootstepsPlannerNaive::plan)
       .def("configure", &FootstepsPlannerNaive::configure);
 
-  class_<FootstepsPlannerRepetitive, bases<FootstepsPlanner>>("FootstepsPlannerRepetitive")
+  class_<FootstepsPlannerRepetitive, bases<FootstepsPlanner>>("FootstepsPlannerRepetitive", init<HumanoidParameters&>())
       .def("plan", &FootstepsPlannerRepetitive::plan)
       .def("configure", &FootstepsPlannerRepetitive::configure);
 

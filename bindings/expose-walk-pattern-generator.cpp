@@ -5,6 +5,7 @@
 #include "placo/planning/walk_pattern_generator.h"
 #include "placo/control/kinematics_solver.h"
 #include "placo/footsteps/footsteps_planner.h"
+#include "placo/planning/solver_task_holder.h"
 #include "placo/planning/swing_foot_quintic.h"
 #include <Eigen/Dense>
 #include <boost/python.hpp>
@@ -26,11 +27,12 @@ void exposeWalkPatternGenerator()
       .def("support_side", &WalkPatternGenerator::Trajectory::support_side)
       .def("get_last_footstep_frame", &WalkPatternGenerator::Trajectory::get_last_footstep_frame);
 
-  class_<WalkPatternGenerator>("WalkPatternGenerator", init<HumanoidRobot&, KinematicsSolver&, FootstepsPlanner&>())
-      .add_property("parameters", &WalkPatternGenerator::parameters, &WalkPatternGenerator::parameters)
-      .add_property("trajectory", &WalkPatternGenerator::trajectory)
-      .add_property("time", &WalkPatternGenerator::time)
-      .def("next", &WalkPatternGenerator::next);
+  class_<WalkPatternGenerator>("WalkPatternGenerator", init<HumanoidRobot&, FootstepsPlanner&, HumanoidParameters&>())
+      .def("plan", &WalkPatternGenerator::plan)
+      .def("replan", &WalkPatternGenerator::replan);
+
+  class_<SolverTaskHolder>("SolverTaskHolder", init<HumanoidRobot&, KinematicsSolver&>())
+      .def("update_tasks", &SolverTaskHolder::update_tasks);
 
   class_<SwingFoot>("SwingFoot", init<>()).def("make_trajectory", &SwingFoot::make_trajectory);
 
