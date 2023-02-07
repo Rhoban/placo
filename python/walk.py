@@ -19,8 +19,6 @@ args = parser.parse_args()
 
 # Loading the robot
 robot = placo.HumanoidRobot("sigmaban/")
-robot.load()
-robot.ensure_on_floor()
 
 # Walk parameters
 parameters = placo.HumanoidParameters()
@@ -144,7 +142,7 @@ elif args.pybullet or args.meshcat:
         T = max(0, t)
 
         task_holder.update_tasks(trajectory.get_T_world_left(T), trajectory.get_T_world_right(T),
-                                 trajectory.get_CoM_world(T), trajectory.get_R_world_trunk(T))
+                                 trajectory.get_CoM_world(T), trajectory.get_R_world_trunk(T), False)
 
         robot.update_kinematics()
         robot.update_support_side(str(trajectory.support_side(T)))

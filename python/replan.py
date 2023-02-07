@@ -20,8 +20,6 @@ nb_plotted_steps = 10
 
 # Loading the robot
 robot = placo.HumanoidRobot("sigmaban/")
-robot.load()
-robot.ensure_on_floor()
 
 # Walk parameters
 parameters = placo.HumanoidParameters()
@@ -91,7 +89,7 @@ while nb_plotted_steps > 0:
     T = max(0, t)
 
     task_holder.update_tasks(trajectory.get_T_world_left(T), trajectory.get_T_world_right(T),
-                             trajectory.get_CoM_world(T), trajectory.get_R_world_trunk(T))
+                             trajectory.get_CoM_world(T), trajectory.get_R_world_trunk(T), False)
 
     previous_support = robot.get_support_side()
 
@@ -156,8 +154,8 @@ if args.graph:
     data = np.array(data)
 
     plt.plot(data.T[0][0], data.T[1][0], label="CoM", lw=3)
-    # plt.plot(data.T[0][1], data.T[1][1], label="ZMP", lw=3)
-    # plt.plot(data.T[0][2], data.T[1][2], label="DCM", lw=3)
+    plt.plot(data.T[0][1], data.T[1][1], label="ZMP", lw=3)
+    plt.plot(data.T[0][2], data.T[1][2], label="DCM", lw=3)
 
     plt.legend()
     plt.grid()
