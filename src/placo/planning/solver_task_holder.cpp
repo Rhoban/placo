@@ -41,7 +41,7 @@ void SolverTaskHolder::init_tasks()
 }
 
 void SolverTaskHolder::update_tasks(Eigen::Affine3d left_frame, Eigen::Affine3d right_frame, Eigen::Vector3d com_vector,
-                                    Eigen::Matrix3d trunk_orientation)
+                                    Eigen::Matrix3d trunk_orientation, bool dump_status)
 {
   left_foot.set_T_world_frame(left_frame);
   right_foot.set_T_world_frame(right_frame);
@@ -49,5 +49,9 @@ void SolverTaskHolder::update_tasks(Eigen::Affine3d left_frame, Eigen::Affine3d 
   trunk_orientation_task.R_world_frame = trunk_orientation;
 
   solver.solve(true);
+  if (dump_status)
+  {
+    solver.dump_status();
+  }
 }
 }  // namespace placo

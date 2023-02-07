@@ -15,6 +15,8 @@ HumanoidRobot::Side HumanoidRobot::other_side(Side side)
 
 HumanoidRobot::HumanoidRobot(std::string model_directory) : RobotWrapper(model_directory)
 {
+  load();
+  ensure_on_floor();
 }
 
 void HumanoidRobot::load()
