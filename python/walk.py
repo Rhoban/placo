@@ -13,12 +13,18 @@ parser = argparse.ArgumentParser(description="Process some integers.")
 parser.add_argument("-g", "--graph", action="store_true", help="Plot")
 parser.add_argument("-p", "--pybullet", action="store_true",
                     help="PyBullet visualization")
+parser.add_argument("-t", "--torque", action="store_true",
+                    help="Torque visualization")
 parser.add_argument("-m", "--meshcat", action="store_true",
                     help="MeshCat visualization")
 args = parser.parse_args()
 
 # Loading the robot
 robot = placo.HumanoidRobot("sigmaban/")
+
+# Displayed joints (if argument --torque)
+displayed_joints = {"left_hip_roll", "left_hip_pitch",
+                    "right_hip_roll", "right_hip_pitch"}
 
 # Walk parameters
 parameters = placo.HumanoidParameters()
@@ -122,20 +128,25 @@ if args.graph:
     plt.grid()
     plt.show()
 
-elif args.pybullet or args.meshcat:
+elif args.pybullet or args.meshcat or args.torque:
     from visualization import robot_viz, frame_viz, point_viz, robot_frame_viz, footsteps_viz
 
-    if args.pybullet:
+    if args.pybullet or args.torque:
         import pybullet as p
         from onshape_to_robot.simulation import Simulation
         sim = Simulation("sigmaban/robot.urdf", realTime=True, dt=0.005)
+
+        if args.torque:
+            import matplotlib.pyplot as plt
+            torques = {joint: [] for joint in displayed_joints}
+            timeline = []
 
     if args.meshcat:
         viz = robot_viz(robot)
         footsteps_viz(trajectory.supports)
 
     start_t = time.time()
-    t = -1.5 if args.pybullet or args.meshcat else 0.
+    t = -3 if args.pybullet or args.meshcat or args.torque else 0.
     dt = 0.005
 
     while True:
@@ -147,7 +158,7 @@ elif args.pybullet or args.meshcat:
         robot.update_kinematics()
         robot.update_support_side(str(trajectory.support_side(T)))
 
-        if args.pybullet and t < -2:
+        if (args.pybullet or args.torque) and t < -2:
             T_left_origin = sim.transformation("origin", "left_foot_frame")
             T_world_left = sim.poseToMatrix(([0., 0., 0.05], [0., 0., 0., 1.]))
             T_world_origin = T_world_left @ T_left_origin
@@ -163,13 +174,37 @@ elif args.pybullet or args.meshcat:
             com[2] = 0
             point_viz("com", com)
 
-        if args.pybullet:
+        if args.pybullet or args.torque:
             joints = {joint: robot.get_joint(joint)
                       for joint in sim.getJoints()}
             applied = sim.setJoints(joints)
             sim.tick()
 
+            # For torques info display
+            if args.torque and t >= 0:
+                for joint in displayed_joints:
+                    torques[joint].append(applied[joint][-1])
+                timeline.append(t)
+
         # Spin-lock until the next tick
         t += dt
         while time.time() < start_t + t:
             time.sleep(1e-3)
+
+        # If displaying torques info, stop the simulation after 5s
+        if args.torque and t > 5:
+            for joint in displayed_joints:
+                data = np.array(torques[joint])
+
+                # Filtering false torques due to instantaneous change of position
+                for i in range(1, data.size):
+                    if abs(data[i] - data[i-1]) > 2:
+                        data[i] = data[i-1]
+
+                plt.plot(np.array(timeline), data, label=joint)
+                print(joint + " max torque value : " +
+                      str(max(max(data), -min(data))))
+
+            plt.legend()
+            plt.show()
+            break

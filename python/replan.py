@@ -11,15 +11,21 @@ parser = argparse.ArgumentParser(description="Process some integers.")
 parser.add_argument("-g", "--graph", action="store_true", help="Plot")
 parser.add_argument("-p", "--pybullet", action="store_true",
                     help="PyBullet visualization")
+parser.add_argument("-t", "--torque", action="store_true",
+                    help="Torque visualization")
 parser.add_argument("-m", "--meshcat", action="store_true",
                     help="MeshCat visualization")
 args = parser.parse_args()
 
 # Plotting
-nb_plotted_steps = 10
+nb_plotted_steps = 16
 
 # Loading the robot
 robot = placo.HumanoidRobot("sigmaban/")
+
+# Displayed joints (if argument --torque)
+displayed_joints = {"left_hip_roll", "left_hip_pitch",
+                    "right_hip_roll", "right_hip_pitch"}
 
 # Walk parameters
 parameters = placo.HumanoidParameters()
@@ -72,18 +78,24 @@ if args.graph:
     data = []
     draw_footsteps(trajectory.supports, show=False)
 
-if args.pybullet:
+if args.pybullet or args.torque:
     import pybullet as p
     from onshape_to_robot.simulation import Simulation
     sim = Simulation("sigmaban/robot.urdf", realTime=True, dt=0.005)
+
+    if args.torque:
+        import matplotlib.pyplot as plt
+        torques = {joint: [] for joint in displayed_joints}
+        timeline = []
 
 if args.meshcat:
     viz = robot_viz(robot)
     footsteps_viz(trajectory.supports)
 
 start_t = time.time()
-t = -2.
+t = -3.
 dt = 0.005
+real_time_offset = 0
 
 while nb_plotted_steps > 0:
     T = max(0, t)
@@ -100,7 +112,7 @@ while nb_plotted_steps > 0:
     if str(previous_support) != robot.get_support_side() and str(previous_support) != "both":
         print("REPLAN")
 
-        if args.graph:
+        if args.graph or args.torque:
             nb_plotted_steps -= 1
 
         # start_timer = time.time()
@@ -114,10 +126,18 @@ while nb_plotted_steps > 0:
         planner.configure(d_x, d_y, d_theta, nb_steps)
 
         trajectory = walk.replan(trajectory, T)
+        real_time_offset += T
         t = T = 0.
 
         # elapsed_time = time.time() - start_timer
         # print(f"Replan computation time: {elapsed_time*1e6}µs")
+
+    if (args.pybullet or args.torque) and t < -2:
+        T_left_origin = sim.transformation("origin", "left_foot_frame")
+        T_world_left = sim.poseToMatrix(([0., 0., 0.05], [0., 0., 0., 1.]))
+        T_world_origin = T_world_left @ T_left_origin
+
+        sim.setRobotPose(*sim.matrixToPose(T_world_origin))
 
     if args.meshcat:
         viz.display(robot.state.q)
@@ -127,11 +147,17 @@ while nb_plotted_steps > 0:
         com[2] = 0
         point_viz("com", com)
 
-    if args.pybullet:
+    if args.pybullet or args.torque:
         joints = {joint: robot.get_joint(joint)
                   for joint in sim.getJoints()}
         applied = sim.setJoints(joints)
         sim.tick()
+
+        # For torques info display
+        if args.torque and t >= 0:
+            for joint in displayed_joints:
+                torques[joint].append(applied[joint][-1])
+            timeline.append(t + real_time_offset)
 
     if args.graph:
         lf = trajectory.get_T_world_left(T)
@@ -159,4 +185,21 @@ if args.graph:
 
     plt.legend()
     plt.grid()
+    plt.show()
+
+# Displaying torques info
+if args.torque:
+    for joint in displayed_joints:
+        data = np.array(torques[joint])
+
+        # Filtering false torques due to instantaneous change of position
+        for i in range(1, data.size):
+            if abs(data[i] - data[i-1]) > 2:
+                data[i] = data[i-1]
+
+        plt.plot(np.array(timeline), data, label=joint)
+        print(joint + " max torque value : " +
+              str(max(max(data), -min(data))) + " N.m")
+
+    plt.legend()
     plt.show()
