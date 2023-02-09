@@ -70,16 +70,9 @@ void exposeRobotWrapper()
       .def("get_T_world_right", &HumanoidRobot::get_T_world_right)
       .def("get_T_world_trunk", &HumanoidRobot::get_T_world_trunk)
       .def(
-          "get_support_side",
-          +[](const HumanoidRobot& robot) {
-            return robot.support_side == HumanoidRobot::Side::Left  ? "left" :
-                   robot.support_side == HumanoidRobot::Side::Right ? "right" :
-                                                                      "both";
-          })
+          "get_support_side", +[](const HumanoidRobot& robot) { return robot.support_side; })
       .def(
-          "get_flying_side", +[](const HumanoidRobot& robot) {
-            return robot.flying_side == HumanoidRobot::Side::Left ? "left" : "right";
-          });
+          "get_flying_side", +[](const HumanoidRobot& robot) { return robot.flying_side; });
 
   exposeStdVector<RobotWrapper::Collision>("vector_Collision");
 }

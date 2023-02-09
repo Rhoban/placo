@@ -20,19 +20,19 @@ v = 0
 while True:
     viz.display(robot.state.q)
 
-    if robot.get_support_side() == "right":
+    if str(robot.get_support_side()) == "right":
         v += dt*.1
         over = v > .3
     else:
         v -= dt*.1
         over = v < -.3
-    
+
     robot.set_joint("right_hip_pitch", v)
     robot.set_joint("left_hip_pitch", -v)
 
     print(f"v={v}, over={over}")
     if over:
-        robot.swap_support_side()        
+        robot.swap_support_side()
     robot.ensure_on_floor()
 
     # Show some frames

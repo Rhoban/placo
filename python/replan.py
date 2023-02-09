@@ -17,8 +17,11 @@ parser.add_argument("-m", "--meshcat", action="store_true",
                     help="MeshCat visualization")
 args = parser.parse_args()
 
-# Plotting
-nb_plotted_steps = 16
+# Plotting (options --graph and --torque)
+nb_plotted_steps = 10
+
+# Kick
+nb_steps_before_kick = 6
 
 # Loading the robot
 robot = placo.HumanoidRobot("sigmaban/")
@@ -65,8 +68,8 @@ planner = placo.FootstepsPlannerRepetitive(parameters)
 d_x = 0.1
 d_y = 0.
 d_theta = 0.
-nb_steps = 5
-planner.configure(d_x, d_y, d_theta, nb_steps)
+nb_planned_steps = 6
+planner.configure(d_x, d_y, d_theta, nb_planned_steps)
 
 # Creating the pattern generator
 walk = placo.WalkPatternGenerator(robot, planner, parameters)
@@ -76,7 +79,7 @@ if args.graph:
     data_left = []
     data_right = []
     data = []
-    draw_footsteps(trajectory.supports, show=False)
+    # draw_footsteps(trajectory.supports, show=False)
 
 if args.pybullet or args.torque:
     import pybullet as p
@@ -96,9 +99,26 @@ start_t = time.time()
 t = -3.
 dt = 0.005
 real_time_offset = 0
+steps = 0
 
-while nb_plotted_steps > 0:
+while True:
     T = max(0, t)
+
+    if (T > trajectory.duration):
+        if args.graph:
+            data_left = np.array(data_left)
+            data_right = np.array(data_right)
+            data = np.array(data)
+
+            plt.plot(data.T[0][0], data.T[1][0], label="CoM", lw=3)
+            plt.plot(data.T[0][1], data.T[1][1], label="ZMP", lw=3)
+            plt.plot(data.T[0][2], data.T[1][2], label="DCM", lw=3)
+
+            plt.legend()
+            plt.grid()
+            plt.show()
+
+        continue
 
     task_holder.update_tasks(trajectory.get_T_world_left(T), trajectory.get_T_world_right(T),
                              trajectory.get_CoM_world(T), trajectory.get_R_world_trunk(T), False)
@@ -109,28 +129,44 @@ while nb_plotted_steps > 0:
     robot.update_support_side(str(trajectory.support_side(T)))
 
     # Replan
-    if str(previous_support) != robot.get_support_side() and str(previous_support) != "both":
-        print("REPLAN")
+    if previous_support != robot.get_support_side() and str(previous_support) != "both":
+        print("\n----- Replanning -----")
+        steps += 1
 
-        if args.graph or args.torque:
-            nb_plotted_steps -= 1
+        if steps < nb_steps_before_kick:
+            print("Replanning a new walk trajectory")
+            # start_timer = time.time()
 
-        # start_timer = time.time()
+            # Naive
+            # T_world_leftTarget[0, 3] += 0.08
+            # T_world_rightTarget[0, 3] += 0.08
+            # planner.configure(T_world_leftTarget, T_world_rightTarget)
 
-        # Naive
-        # T_world_leftTarget[0, 3] += 0.08
-        # T_world_rightTarget[0, 3] += 0.08
-        # planner.configure(T_world_leftTarget, T_world_rightTarget)
+            # Repetitive
+            planner.configure(d_x, d_y, d_theta, nb_planned_steps)
 
-        # Repetitive
-        planner.configure(d_x, d_y, d_theta, nb_steps)
+            trajectory = walk.replan(trajectory, T)
 
-        trajectory = walk.replan(trajectory, T)
+            # elapsed_time = time.time() - start_timer
+            # print(f"Replan computation time: {elapsed_time*1e6}µs")
+
+        elif steps == nb_steps_before_kick:
+            print("Prepare for kicking")
+            print("Kicking side : ", previous_support)
+
+            T_world_target = placo.flatten_on_floor(robot.get_T_world_left()) if str(
+                previous_support) == "left" else placo.flatten_on_floor(robot.get_T_world_right())
+
+            # T_world_target[1, 3] += -parameters.feet_spacing if str(
+            #     previous_support) == "right" else parameters.feet_spacing
+            T_world_target[2, 3] += parameters.walk_foot_height
+            print(T_world_target)
+
+            trajectory = walk.prepare_kick(
+                trajectory, T, previous_support, T_world_target)
+
         real_time_offset += T
         t = T = 0.
-
-        # elapsed_time = time.time() - start_timer
-        # print(f"Replan computation time: {elapsed_time*1e6}µs")
 
     if (args.pybullet or args.torque) and t < -2:
         T_left_origin = sim.transformation("origin", "left_foot_frame")
@@ -174,32 +210,32 @@ while nb_plotted_steps > 0:
     while time.time() < start_t + t:
         time.sleep(1e-3)
 
-if args.graph:
-    data_left = np.array(data_left)
-    data_right = np.array(data_right)
-    data = np.array(data)
+    if args.graph and steps == nb_plotted_steps:
+        data_left = np.array(data_left)
+        data_right = np.array(data_right)
+        data = np.array(data)
 
-    plt.plot(data.T[0][0], data.T[1][0], label="CoM", lw=3)
-    plt.plot(data.T[0][1], data.T[1][1], label="ZMP", lw=3)
-    plt.plot(data.T[0][2], data.T[1][2], label="DCM", lw=3)
+        plt.plot(data.T[0][0], data.T[1][0], label="CoM", lw=3)
+        plt.plot(data.T[0][1], data.T[1][1], label="ZMP", lw=3)
+        plt.plot(data.T[0][2], data.T[1][2], label="DCM", lw=3)
 
-    plt.legend()
-    plt.grid()
-    plt.show()
+        plt.legend()
+        plt.grid()
+        plt.show()
 
-# Displaying torques info
-if args.torque:
-    for joint in displayed_joints:
-        data = np.array(torques[joint])
+    # Displaying torques info
+    if args.torque and steps == nb_plotted_steps:
+        for joint in displayed_joints:
+            data = np.array(torques[joint])
 
-        # Filtering false torques due to instantaneous change of position
-        for i in range(1, data.size):
-            if abs(data[i] - data[i-1]) > 2:
-                data[i] = data[i-1]
+            # Filtering false torques due to instantaneous change of position
+            for i in range(1, data.size):
+                if abs(data[i] - data[i-1]) > 2:
+                    data[i] = data[i-1]
 
-        plt.plot(np.array(timeline), data, label=joint)
-        print(joint + " max torque value : " +
-              str(max(max(data), -min(data))) + " N.m")
+            plt.plot(np.array(timeline), data, label=joint)
+            print(joint + " max torque value : " +
+                  str(max(max(data), -min(data))) + " N.m")
 
-    plt.legend()
-    plt.show()
+        plt.legend()
+        plt.show()

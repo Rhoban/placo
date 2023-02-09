@@ -29,7 +29,8 @@ void exposeWalkPatternGenerator()
 
   class_<WalkPatternGenerator>("WalkPatternGenerator", init<HumanoidRobot&, FootstepsPlanner&, HumanoidParameters&>())
       .def("plan", &WalkPatternGenerator::plan)
-      .def("replan", &WalkPatternGenerator::replan);
+      .def("replan", &WalkPatternGenerator::replan)
+      .def("prepare_kick", &WalkPatternGenerator::prepare_kick);
 
   class_<SolverTaskHolder>("SolverTaskHolder", init<HumanoidRobot&, KinematicsSolver&>())
       .def("update_tasks", &SolverTaskHolder::update_tasks);
