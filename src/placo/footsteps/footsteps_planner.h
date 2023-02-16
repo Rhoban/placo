@@ -12,11 +12,6 @@ class FootstepsPlanner
 {
 public:
   /**
-   * @brief Humanoid parameters for planning and control
-   */
-  HumanoidParameters parameters;
-
-  /**
    * @brief A footstep is the position of a specific foot on the ground
    */
   struct Footstep
@@ -70,35 +65,31 @@ public:
 
   /**
    * @brief Initializes the solver
-   * @param initial_side side that is initially supporting the robot
+   * @param parameters Parameters of the walk
+   */
+  FootstepsPlanner(HumanoidParameters& parameters);
+
+  /**
+   * @brief Generate the footsteps
+   * @param flying_side first step side
    * @param T_world_left frame of the initial left foot
    * @param T_world_right frame of the initial right foot
-   * @param feet_spacing spacing between feet
    */
-  FootstepsPlanner(HumanoidRobot::Side initial_side, Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right);
+  virtual std::vector<Footstep> plan(HumanoidRobot::Side flying_side, Eigen::Affine3d T_world_left,
+                                     Eigen::Affine3d T_world_right) = 0;
 
   /**
-   * @brief This constructors allow the initial_side to be a string (useful for
-   * Python bindings)
-   */
-  FootstepsPlanner(std::string initial_side, Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right);
-
-  /**
-   * @brief From planned footsteps, this method adds the double support phases
-   * @param footsteps a vector of footsteps ad produces by plan
+   * @brief Generate the supports from the footsteps
    * @param start should we add a double support at the begining of the move?
    * @param middle should we add a double support between each step ?
    * @param end should we add a double support at the end of the move?
    * @return vector of supports to use. It starts with initial double supports,
    * and add double support phases between footsteps.
    */
-  std::vector<Support> make_double_supports(const std::vector<Footstep>& footsteps, bool start = false,
-                                            bool middle = false, bool end = false);
+  std::vector<Support> make_supports(std::vector<Footstep> footsteps, bool start = true, bool middle = false,
+                                     bool end = true);
 
-protected:
-  // Frames for initial and target feet placements
-  HumanoidRobot::Side initial_side;
-  Eigen::Affine3d T_world_left;
-  Eigen::Affine3d T_world_right;
+  // Humanoid parameters for planning and control
+  HumanoidParameters& parameters;
 };
 }  // namespace placo

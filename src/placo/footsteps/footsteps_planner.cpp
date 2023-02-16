@@ -80,7 +80,7 @@ Eigen::Affine3d FootstepsPlanner::Support::frame()
     }
     else
     {
-      f = placo::interpolate_frames(f, footstep.frame, 1. / n);
+      f = interpolate_frames(f, footstep.frame, 1. / n);
     }
 
     n += 1;
@@ -102,15 +102,7 @@ Eigen::Affine3d FootstepsPlanner::Support::frame(HumanoidRobot::Side side)
   throw std::logic_error("Asked for a frame that doesn't exist");
 }
 
-FootstepsPlanner::FootstepsPlanner(HumanoidRobot::Side initial_side, Eigen::Affine3d T_world_left,
-                                   Eigen::Affine3d T_world_right)
-  : initial_side(initial_side), T_world_left(T_world_left), T_world_right(T_world_right)
-{
-}
-
-FootstepsPlanner::FootstepsPlanner(std::string initial_side, Eigen::Affine3d T_world_left,
-                                   Eigen::Affine3d T_world_right)
-  : initial_side(HumanoidRobot::string_to_side(initial_side)), T_world_left(T_world_left), T_world_right(T_world_right)
+FootstepsPlanner::FootstepsPlanner(HumanoidParameters& parameters) : parameters(parameters)
 {
 }
 
@@ -148,22 +140,22 @@ HumanoidRobot::Side FootstepsPlanner::Support::side()
   }
 }
 
-std::vector<FootstepsPlanner::Support> FootstepsPlanner::make_double_supports(const std::vector<Footstep>& footsteps,
-                                                                              bool start, bool middle, bool end)
+std::vector<FootstepsPlanner::Support> FootstepsPlanner::make_supports(
+    std::vector<FootstepsPlanner::Footstep> footsteps, bool start, bool middle, bool end)  // NEED TO CHANGE FOR REPLAN
 {
-  std::vector<FootstepsPlanner::Support> supports;
+  std::vector<Support> supports;
 
   if (start)
   {
     // Creating the first (double-support) initial state
-    FootstepsPlanner::Support support;
+    Support support;
     support.start_end = true;
     support.footsteps = { footsteps[0], footsteps[1] };
     supports.push_back(support);
   }
   else
   {
-    FootstepsPlanner::Support support;
+    Support support;
     support.start_end = true;
     support.footsteps = { footsteps[0] };
     supports.push_back(support);
@@ -172,7 +164,7 @@ std::vector<FootstepsPlanner::Support> FootstepsPlanner::make_double_supports(co
   // Adding single/double support phases
   for (int step = 1; step < footsteps.size() - 1; step++)
   {
-    FootstepsPlanner::Support single_support;
+    Support single_support;
     single_support.footsteps = { footsteps[step] };
     supports.push_back(single_support);
 
@@ -180,7 +172,7 @@ std::vector<FootstepsPlanner::Support> FootstepsPlanner::make_double_supports(co
 
     if ((!is_end && middle) || (is_end && end))
     {
-      FootstepsPlanner::Support double_support;
+      Support double_support;
       double_support.footsteps = { footsteps[step], footsteps[step + 1] };
 
       if (is_end)

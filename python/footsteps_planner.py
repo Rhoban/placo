@@ -39,7 +39,7 @@ def draw_footsteps(footsteps, animate=False, show=True):
     if animate:
         # Handling footsteps animation
         all_points = np.vstack([list(footstep.support_polygon())
-                               for footstep in footsteps])
+                                for footstep in footsteps])
         x_min, x_max = np.min(
             all_points.T[0]) - 0.1, np.max(all_points.T[0]) + 0.1
         y_min, y_max = np.min(
@@ -89,28 +89,29 @@ if __name__ == "__main__":
     T_world_targetLeft = T_world_center @ T_center_left
     T_world_targetRight = T_world_center @ T_center_right
 
+    parameters = placo.HumanoidParameters()
+    parameters.feet_spacing = .16
+    parameters.foot_width = args.foot_width
+    parameters.foot_length = args.foot_length
+
     start = time.time()
 
     # Naive planner
-    # planner = placo.FootstepsPlannerNaive("left", placo.frame(T_center_left), placo.frame(T_center_right))
-    # planner.parameters.feet_spacing = args.feet_spacing
-    # planner.parameters.foot_width = args.foot_width
-    # planner.parameters.foot_length = args.foot_length
-    # footsteps = planner.plan(placo.frame(T_world_targetLeft), placo.frame(T_world_targetRight))
+    # planner = placo.FootstepsPlannerNaive(parameters)
+    # planner.configure(placo.frame(T_world_targetLeft),
+    #                   placo.frame(T_world_targetRight))
 
     # Repetitive planner
-    planner = placo.FootstepsPlannerRepetitive(
-        "right", placo.frame(T_center_left), placo.frame(T_center_right))
-    planner.parameters.feet_spacing = .16
-    planner.parameters.foot_width = args.foot_width
-    planner.parameters.foot_length = args.foot_length
-    footsteps = planner.plan(0.1, 0.0, 0.12, 20)
+    planner = placo.FootstepsPlannerRepetitive(parameters)
+    planner.configure(0.1, 0.0, 0.12, 20)
 
-    # If using double support, transform the result in supports instead of footsteps
-    footsteps = planner.make_double_supports(footsteps, False, False, True)
-    print(footsteps[0].footsteps[0].side)
+    footsteps = planner.plan(placo.HumanoidRobot_Side.right, placo.frame(
+        T_center_left), placo.frame(T_center_right))
+
+    supports = planner.make_supports(footsteps, False, False, True)
+    print(supports[0].footsteps[0].side)
     elapsed = time.time() - start
 
-    print(f"{len(footsteps)} steps, computation time: {elapsed*1e6}µs.")
+    print(f"{len(supports)} steps, computation time: {elapsed*1e6}µs.")
 
-    draw_footsteps(footsteps, args.animate)
+    draw_footsteps(supports, args.animate)

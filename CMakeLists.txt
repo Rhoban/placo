@@ -18,6 +18,7 @@ add_library(libplaco
     src/placo/footsteps/footsteps_planner_naive.cpp
     src/placo/footsteps/footsteps_planner_repetitive.cpp
     src/placo/planning/jerk_planner.cpp
+    src/placo/planning/solver_task_holder.cpp
     src/placo/planning/walk_pattern_generator.cpp
     src/placo/planning/swing_foot.cpp
     src/placo/planning/swing_foot_quintic.cpp

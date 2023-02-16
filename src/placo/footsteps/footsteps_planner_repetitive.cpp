@@ -3,25 +3,18 @@
 
 namespace placo
 {
-FootstepsPlannerRepetitive::FootstepsPlannerRepetitive(HumanoidRobot::Side initial_side, Eigen::Affine3d T_world_left,
-                                                       Eigen::Affine3d T_world_right)
-  : FootstepsPlanner(initial_side, T_world_left, T_world_right)
+FootstepsPlannerRepetitive::FootstepsPlannerRepetitive(HumanoidParameters& parameters) : FootstepsPlanner(parameters)
 {
 }
 
-FootstepsPlannerRepetitive::FootstepsPlannerRepetitive(std::string initial_side, Eigen::Affine3d T_world_left,
-                                                       Eigen::Affine3d T_world_right)
-  : FootstepsPlanner(initial_side, T_world_left, T_world_right)
-{
-}
-
-std::vector<FootstepsPlanner::Footstep> FootstepsPlannerRepetitive::plan(double d_x, double d_y, double d_theta,
-                                                                         int nb_steps)
+std::vector<FootstepsPlanner::Footstep> FootstepsPlannerRepetitive::plan(HumanoidRobot::Side flying_side,
+                                                                         Eigen::Affine3d T_world_left,
+                                                                         Eigen::Affine3d T_world_right)
 {
   std::vector<FootstepsPlanner::Footstep> footsteps;
 
   // Including initial footsteps
-  auto current_side = initial_side;
+  auto current_side = flying_side;
   auto T_world_current_frame = (current_side == HumanoidRobot::Side::Left) ? T_world_left : T_world_right;
   FootstepsPlanner::Footstep footstep(parameters.foot_width, parameters.foot_length);
   footstep.side = current_side;
@@ -33,11 +26,6 @@ std::vector<FootstepsPlanner::Footstep> FootstepsPlannerRepetitive::plan(double 
   footstep.side = current_side;
   footstep.frame = T_world_current_frame;
   footsteps.push_back(footstep);
-
-  // Bounds
-  d_x = (d_x > max_d_x) ? max_d_x : d_x;
-  d_y = (d_y > max_d_y) ? max_d_y : d_y;
-  d_theta = (d_theta > max_d_theta) ? max_d_theta : d_theta;
 
   int steps = 0;
   while (steps < nb_steps)
@@ -69,11 +57,12 @@ std::vector<FootstepsPlanner::Footstep> FootstepsPlannerRepetitive::plan(double 
   return footsteps;
 }
 
-std::vector<FootstepsPlanner::Footstep> FootstepsPlannerRepetitive::plan_with_config(double d_x, double d_y,
-                                                                                     double d_theta, int nb_steps,
-                                                                                     placo::HumanoidParameters config)
+void FootstepsPlannerRepetitive::configure(double x, double y, double theta, int steps)
 {
-  parameters = config;
-  return FootstepsPlannerRepetitive::plan(d_x, d_y, d_theta, nb_steps);
+  d_x = (x > max_d_x) ? max_d_x : x;
+  d_y = (y > max_d_y) ? max_d_y : y;
+  d_theta = (theta > max_d_theta) ? max_d_theta : theta;
+
+  nb_steps = steps;
 }
 }  // namespace placo

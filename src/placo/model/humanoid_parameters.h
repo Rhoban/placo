@@ -64,7 +64,7 @@ public:
   /**
    * @brief Robot center of mass height for LIPM model. This is used to compute the pendulum constant
    * omega, which is sqrt(g/h)
-   * 
+   *
    * A higher pendulum height results in less left/right body swinging during the walk.
    */
   double pendulum_height = 0.4;

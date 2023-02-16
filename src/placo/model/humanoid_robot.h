@@ -29,7 +29,6 @@ public:
    */
   void update_support_side(Side side);
   void update_support_side(const std::string& side);
-  void swap_support_side();
   void ensure_on_floor();
 
   Eigen::Affine3d get_T_world_left();
@@ -41,9 +40,14 @@ public:
   RobotWrapper::FrameIndex flying_frame();
 
   /**
-   * @brief The current side (left foot or right foot) supporting the robot
+   * @brief The current side (left, right or both) supporting the robot
    */
-  Side support_side;
+  Side support_side = placo::HumanoidRobot::Side::Both;
+
+  /**
+   * @brief The current flying foot or the next flying foot if the support_side is both
+   */
+  Side flying_side = placo::HumanoidRobot::Side::Left;
 
   /**
    * @brief Transformation from support to world

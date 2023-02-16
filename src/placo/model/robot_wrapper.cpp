@@ -8,6 +8,7 @@
 #include "placo/utils.h"
 #include "rhoban_utils/util.h"
 #include <jsoncpp/json/json.h>
+#include <filesystem>
 
 namespace placo
 {
@@ -18,6 +19,11 @@ bool RobotWrapper::Collision::operator==(const Collision& other)
 
 RobotWrapper::RobotWrapper(std::string model_directory) : model_directory(model_directory)
 {
+  // Path to the model on the robot - Model used in priority
+  if (std::filesystem::exists("sigmaban/"))
+  {
+    model_directory = "sigmaban/";
+  }
 }
 
 void RobotWrapper::load()

@@ -10,23 +10,31 @@ namespace placo
 class FootstepsPlannerNaive : public FootstepsPlanner
 {
 public:
-  FootstepsPlannerNaive(HumanoidRobot::Side initial_side, Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right);
-
-  FootstepsPlannerNaive(std::string initial_side, Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right);
+  FootstepsPlannerNaive(HumanoidParameters& parameters);
 
   /**
-   * @brief Plan the footsteps
-   * @param T_world_targetLeft target frame for left foot
-   * @param T_world_targetRight target frame for right foot
-   * @return vector of footsteps to apply. It starts with initial footsteps
-   * (the first is the current flying foot, the second the current support foot)
-   * and ends with the footsteps that reached the given target
+   * @brief Generate the footsteps
+   * @param flying_side first step side
+   * @param T_world_left frame of the initial left foot
+   * @param T_world_right frame of the initial right foot
    */
-  std::vector<Footstep> plan(Eigen::Affine3d T_world_targetLeft, Eigen::Affine3d T_world_targetRight);
+  std::vector<Footstep> plan(HumanoidRobot::Side flying_side, Eigen::Affine3d T_world_left,
+                             Eigen::Affine3d T_world_right);
+
+  /**
+   * @brief Configure the naive footsteps planner
+   * @param T_world_left_target Targetted frame for the left foot
+   * @param T_world_right_target Targetted frame for the right foot
+   */
+  void configure(Eigen::Affine3d T_world_left_target, Eigen::Affine3d T_world_right_target);
 
 protected:
   // Maximum steps to plan
   int max_steps = 100;
+
+  // Targetted position for the robot
+  Eigen::Affine3d T_world_targetLeft;
+  Eigen::Affine3d T_world_targetRight;
 
   // Dimension of the accessibility window for the opposite foot
   double accessibility_width = 0.025;

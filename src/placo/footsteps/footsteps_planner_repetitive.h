@@ -10,32 +10,34 @@ namespace placo
 class FootstepsPlannerRepetitive : public FootstepsPlanner
 {
 public:
-  FootstepsPlannerRepetitive(HumanoidRobot::Side initial_side, Eigen::Affine3d T_world_left,
+  FootstepsPlannerRepetitive(HumanoidParameters& parameters);
+
+  /**
+   * @brief Generate the footsteps
+   * @param flying_side first step side
+   * @param T_world_left frame of the initial left foot
+   * @param T_world_right frame of the initial right foot
+   */
+  std::vector<Footstep> plan(HumanoidRobot::Side flying_side, Eigen::Affine3d T_world_left,
                              Eigen::Affine3d T_world_right);
 
-  FootstepsPlannerRepetitive(std::string initial_side, Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right);
-
   /// @brief Compute the next footsteps based on coordinates expressed in the support frame
   /// laterally translated of +/- feet_spacing
-  /// @param d_x Longitudinal distance
-  /// @param d_y Lateral distance
-  /// @param d_theta Angle
-  /// @param nb_steps Number of steps
-  /// @return List of footsteps
-  std::vector<Footstep> plan(double d_x, double d_y, double d_theta, int nb_steps);
-
-  /// @brief Compute the next footsteps based on coordinates expressed in the support frame
-  /// laterally translated of +/- feet_spacing
-  /// @param d_x Longitudinal distance
-  /// @param d_y Lateral distance
-  /// @param d_theta Angle
-  /// @param nb_steps Number of steps
-  /// @param config HumanoidParameters
-  /// @return List of footsteps
-  std::vector<Footstep> plan_with_config(double d_x, double d_y, double d_theta, int nb_steps,
-                                         HumanoidParameters config);
+  /// @param x Longitudinal distance
+  /// @param y Lateral distance
+  /// @param theta Angle
+  /// @param steps Number of steps
+  void configure(double x, double y, double theta, int steps);
 
 protected:
+  // Step configuration
+  double d_x;
+  double d_y;
+  double d_theta;
+
+  // Number of steps to plan
+  int nb_steps;
+
   // Maximum absolute value of d_x in meters
   double max_d_x = 0.2;
 

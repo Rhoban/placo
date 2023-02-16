@@ -50,7 +50,7 @@ public:
     Eigen::Vector2d zmp(double t) const;
     Eigen::Vector2d dcm(double t) const;
 
-    protected:
+  protected:
     double dt;
   };
 
@@ -61,8 +61,8 @@ public:
   typedef Eigen::Matrix<double, 6, 1> State;
 
   JerkPlanner(int nb_steps, Eigen::Vector2d initial_position = Eigen::Vector2d::Zero(),
-                            Eigen::Vector2d initial_velocity = Eigen::Vector2d::Zero(),
-                            Eigen::Vector2d initial_acceleration = Eigen::Vector2d::Zero(), double dt = 0.1, double omega = 0.);
+              Eigen::Vector2d initial_velocity = Eigen::Vector2d::Zero(),
+              Eigen::Vector2d initial_acceleration = Eigen::Vector2d::Zero(), double dt = 0.1, double omega = 0.);
 
   /**
    * @brief sqrt(g/h): constant for pendulum-based points (ZMP and DCM)
@@ -189,6 +189,9 @@ public:
   size_t set_size;
   int equalities_count = 0;
   int inequalities_count = 0;
+
+  std::vector<Eigen::Vector2d> zmp_constraints;
+  std::vector<double> zmp_constraints_time;
 
 protected:
   std::vector<ConstraintMatrices> equalities;
