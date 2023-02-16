@@ -167,6 +167,11 @@ DistanceTask& KinematicsSolver::add_distance_task(std::string frame_a, std::stri
   return add_distance_task(robot->get_frame_index(frame_a), robot->get_frame_index(frame_b), distance);
 }
 
+CentroidalMomentumTask& KinematicsSolver::add_centroidal_momentum_task(Eigen::Vector3d L_world)
+{
+  return add_task(new CentroidalMomentumTask(L_world));
+}
+
 JointsTask& KinematicsSolver::add_joints_task()
 {
   return add_task(new JointsTask());

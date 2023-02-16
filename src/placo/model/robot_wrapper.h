@@ -176,6 +176,12 @@ public:
   Eigen::Matrix3Xd com_jacobian();
 
   /**
+   * @brief Computes the centroidal map
+   * @return jacobian (6xn matrix)
+   */
+  Eigen::MatrixXd centroidal_map();
+
+  /**
    * @brief Return all the joint names
    */
   std::vector<std::string> joint_names();

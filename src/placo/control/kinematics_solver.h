@@ -20,6 +20,7 @@
 #include "placo/control/joint_task.h"
 #include "placo/control/joints_task.h"
 #include "placo/control/regularization_task.h"
+#include "placo/control/centroidal_momentum_task.h"
 
 namespace placo
 {
@@ -159,6 +160,13 @@ public:
   DistanceTask& add_distance_task(std::string frame_a, std::string frame_b, double distance);
 
   /**
+   * @brief Adding a centroidal momentum task
+   * @param L_world
+   * @return desired centroidal angular momentum in the world
+   */
+  CentroidalMomentumTask& add_centroidal_momentum_task(Eigen::Vector3d L_world);
+
+  /**
    * @brief Adds a regularization task for a given magnitude
    * @param magnitude regularization magnitude
    */
@@ -208,7 +216,7 @@ public:
   RobotWrapper* robot;
 
   /**
-   * @brief Size of the problem (number of variables we will search)
+   * @brief Size of the problem (number of variables)
    */
   int N;
 
