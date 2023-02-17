@@ -133,6 +133,10 @@ void exposeKinematics()
           .add_property("frame_b", &DistanceTask::frame_b)
           .add_property("distance", &DistanceTask::distance, &DistanceTask::distance));
 
+  registerTaskMethods(class_<CentroidalMomentumTask>("CentroidalMomentumTask", init<Eigen::Vector3d>())
+                          .def("mask_axis", &CentroidalMomentumTask::mask_axis)
+                          .add_property("L_world", &CentroidalMomentumTask::L_world, &CentroidalMomentumTask::L_world));
+
   auto regularizationTask = class_<RegularizationTask>("RegularizationTask");
   registerTaskMethods(regularizationTask);
 
@@ -183,6 +187,11 @@ void exposeKinematics()
       // Distance task
       .def<DistanceTask& (KinematicsSolver::*)(std::string, std::string, double)>(
           "add_distance_task", &KinematicsSolver::add_distance_task, return_internal_reference<>())
+
+      // Centroidal Momentum Task
+      .def<CentroidalMomentumTask& (KinematicsSolver::*)(Eigen::Vector3d)>(
+          "add_centroidal_momentum_task", &KinematicsSolver::add_centroidal_momentum_task,
+          return_internal_reference<>())
 
       // Regularization task
       .def("add_regularization_task", &KinematicsSolver::add_regularization_task, return_internal_reference<>())

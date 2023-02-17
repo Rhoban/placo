@@ -29,6 +29,7 @@ add_library(libplaco
     src/placo/control/task.cpp
     src/placo/control/position_task.cpp
     src/placo/control/orientation_task.cpp
+    src/placo/control/centroidal_momentum_task.cpp
     src/placo/control/frame_task.cpp
     src/placo/control/pose_task.cpp
     src/placo/control/relative_position_task.cpp

@@ -4,6 +4,7 @@
 #include "pinocchio/algorithm/compute-all-terms.hpp"
 #include "pinocchio/algorithm/geometry.hpp"
 #include "pinocchio/algorithm/rnea.hpp"
+#include "pinocchio/algorithm/centroidal.hpp"
 #include "placo/utils.h"
 #include "rhoban_utils/util.h"
 #include <jsoncpp/json/json.h>
@@ -305,6 +306,11 @@ Eigen::MatrixXd RobotWrapper::frame_jacobian(pinocchio::FrameIndex frame, pinocc
 Eigen::Matrix3Xd RobotWrapper::com_jacobian()
 {
   return pinocchio::jacobianCenterOfMass(model, *data, state.q);
+}
+
+Eigen::MatrixXd RobotWrapper::centroidal_map()
+{
+  return pinocchio::computeCentroidalMap(model, *data, state.q);
 }
 
 std::vector<std::string> RobotWrapper::joint_names()
