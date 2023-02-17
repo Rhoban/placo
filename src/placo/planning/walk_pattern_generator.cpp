@@ -343,9 +343,9 @@ WalkPatternGenerator::Trajectory WalkPatternGenerator::replan(WalkPatternGenerat
   return trajectory;
 }
 
-std::vector<FootstepsPlanner::Support> WalkPatternGenerator::planSupportsBeforeKick(
-    WalkPatternGenerator::Trajectory trajectory, HumanoidRobot::Side kicking_side, Eigen::Affine3d T_world_left,
-    Eigen::Affine3d T_world_right)
+std::vector<FootstepsPlanner::Support>
+WalkPatternGenerator::planSupportsKick(WalkPatternGenerator::Trajectory trajectory, HumanoidRobot::Side kicking_side,
+                                       Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right)
 {
   FootstepsPlanner::Footstep first_footstep(parameters.foot_width, parameters.foot_length);
   first_footstep.side = kicking_side;
@@ -354,6 +354,12 @@ std::vector<FootstepsPlanner::Support> WalkPatternGenerator::planSupportsBeforeK
   FootstepsPlanner::Footstep second_footstep(parameters.foot_width, parameters.foot_length);
   second_footstep.side = HumanoidRobot::other_side(kicking_side);
   second_footstep.frame = kicking_side == HumanoidRobot::Side::Left ? T_world_right : T_world_left;
+
+  FootstepsPlanner::Footstep third_footstep(parameters.foot_width, parameters.foot_length);
+  third_footstep.side = kicking_side;
+  third_footstep.frame = kicking_side == HumanoidRobot::Side::Left ? T_world_right : T_world_left;
+  third_footstep.frame.translation().y() +=
+      kicking_side == HumanoidRobot::Side::Left ? parameters.feet_spacing : -parameters.feet_spacing;
 
   std::vector<FootstepsPlanner::Support> supports;
   bool double_supports = parameters.double_support_duration / parameters.dt >= 1;
@@ -376,11 +382,56 @@ std::vector<FootstepsPlanner::Support> WalkPatternGenerator::planSupportsBeforeK
   support.footsteps = { second_footstep };
   supports.push_back(support);
 
+  // End support
+  support.start_end = true;
+  support.footsteps = { second_footstep, third_footstep };
+  supports.push_back(support);
+
   return supports;
 }
 
-void WalkPatternGenerator::planCoMBeforeKick(Trajectory& trajectory, Eigen::Vector2d initial_vel,
-                                             Eigen::Vector2d initial_acc, Eigen::Vector2d initial_ZMP)
+void WalkPatternGenerator::planCoMKick(Trajectory& trajectory, Eigen::Vector2d initial_vel, Eigen::Vector2d initial_acc)
+{
+  // Computing how many steps are required
+  int ssp_steps = std::round(parameters.single_support_duration / parameters.dt);
+  int dsp_steps = std::round(parameters.double_support_duration / parameters.dt);
+  int kick_steps = std::round(parameters.kick_duration / parameters.dt);
+
+  bool double_supports = parameters.double_support_duration / parameters.dt >= 1;
+  double total_steps = double_supports ? 2 * ssp_steps + dsp_steps + kick_steps : 2 * ssp_steps + kick_steps;
+  trajectory.jerk_planner_steps = total_steps;
+
+  // Creating the planner
+  auto com_world = robot.com_world();
+  auto target = trajectory.supports[1].frame().translation();
+  JerkPlanner planner(total_steps, Eigen::Vector2d(com_world.x(), com_world.y()), initial_vel, initial_acc,
+                      parameters.dt, parameters.omega());
+
+  // The CoM has to be above the support foot before kicking
+  planner.add_equality_constraint(total_steps - kick_steps - ssp_steps, Eigen::Vector2d(target.x(), target.y()),
+                                  JerkPlanner::Position);
+  planner.add_equality_constraint(total_steps - kick_steps - ssp_steps, Eigen::Vector2d(0., 0.), JerkPlanner::Velocity);
+  planner.add_equality_constraint(total_steps - kick_steps - ssp_steps, Eigen::Vector2d(0., 0.),
+                                  JerkPlanner::Acceleration);
+
+  // The CoM has to be above the support foot after kicking
+  planner.add_equality_constraint(total_steps - ssp_steps, Eigen::Vector2d(target.x(), target.y()),
+                                  JerkPlanner::Position);
+  planner.add_equality_constraint(total_steps - ssp_steps, Eigen::Vector2d(0., 0.), JerkPlanner::Velocity);
+  planner.add_equality_constraint(total_steps - ssp_steps, Eigen::Vector2d(0., 0.), JerkPlanner::Acceleration);
+
+  // The CoM has to be between the 2 feet at the end
+  target = trajectory.supports[2].frame().translation();
+  std::cout << target.x() << " " << target.y() << std::endl;
+  planner.add_equality_constraint(total_steps - 1, Eigen::Vector2d(target.x(), target.y()), JerkPlanner::Position);
+  planner.add_equality_constraint(total_steps - 1, Eigen::Vector2d(0., 0.), JerkPlanner::Velocity);
+  planner.add_equality_constraint(total_steps - 1, Eigen::Vector2d(0., 0.), JerkPlanner::Acceleration);
+
+  trajectory.com = planner.plan();
+}
+
+void WalkPatternGenerator::planCoMOneFoot(Trajectory& trajectory, Eigen::Vector2d initial_vel,
+                                          Eigen::Vector2d initial_acc)
 {
   // Computing how many steps are required
   int ssp_steps = std::round(parameters.single_support_duration / parameters.dt);
@@ -396,11 +447,7 @@ void WalkPatternGenerator::planCoMBeforeKick(Trajectory& trajectory, Eigen::Vect
   JerkPlanner planner(total_steps, Eigen::Vector2d(com_world.x(), com_world.y()), initial_vel, initial_acc,
                       parameters.dt, parameters.omega());
 
-  // ZMP constraints
-  // planner.add_equality_constraint(0, Eigen::Vector2d(initial_ZMP.x(), initial_ZMP.y()), JerkPlanner::ZMP);
-  planner.add_equality_constraint(total_steps - 1, Eigen::Vector2d(target.x(), target.y()), JerkPlanner::ZMP);
-
-  // The CoM has to be stopped above the support foot before kicking
+  // CoM constraints
   planner.add_equality_constraint(total_steps - 1, Eigen::Vector2d(target.x(), target.y()), JerkPlanner::Position);
   planner.add_equality_constraint(total_steps - 1, Eigen::Vector2d(0., 0.), JerkPlanner::Velocity);
   planner.add_equality_constraint(total_steps - 1, Eigen::Vector2d(0., 0.), JerkPlanner::Acceleration);
@@ -408,8 +455,91 @@ void WalkPatternGenerator::planCoMBeforeKick(Trajectory& trajectory, Eigen::Vect
   trajectory.com = planner.plan();
 }
 
-void WalkPatternGenerator::planFeetTrajectoriesBeforeKick(Trajectory& trajectory, HumanoidRobot::Side kicking_side,
-                                                          Eigen::Affine3d T_world_target)
+void WalkPatternGenerator::planFeetKick(Trajectory& trajectory, HumanoidRobot::Side kicking_side,
+                                        Eigen::Affine3d T_world_target)
+{
+  double t = 0.0;
+
+  // Initial support
+  _addSupports(trajectory, t, trajectory.supports[0]);
+  trajectory.trunk_yaw.addPoint(0., frame_yaw(trajectory.supports[0].frame().rotation()), 0);
+
+  // Double support phase if needed
+  bool double_supports = parameters.double_support_duration / parameters.dt >= 1;
+  if (double_supports)
+  {
+    TrajectoryPart part;
+    part.support = trajectory.supports[0];
+    part.t_start = t;
+    t += parameters.double_support_duration;
+    part.t_end = t;
+
+    _addSupports(trajectory, t, trajectory.supports[0]);
+    trajectory.trunk_yaw.addPoint(t, frame_yaw(trajectory.supports[0].frame().rotation()), 0);
+    trajectory.parts.push_back(part);
+  }
+
+  // Trajectory to go to the targeted flying position
+  TrajectoryPart init_part;
+  init_part.support = trajectory.supports[1];
+  init_part.t_start = t;
+  init_part.swing_trajectory.t_start = t;
+  t += parameters.single_support_duration;
+  init_part.t_end = t;
+  init_part.swing_trajectory.t_end = t;
+
+  init_part.swing_trajectory.a = Eigen::Vector3d::Zero();
+  init_part.swing_trajectory.b = Eigen::Vector3d::Zero();
+  init_part.swing_trajectory.c = T_world_target.translation() - trajectory.supports[0].footsteps[0].frame.translation();
+  init_part.swing_trajectory.d = trajectory.supports[0].footsteps[0].frame.translation();
+
+  trajectory.yaw(kicking_side).addPoint(t, frame_yaw(T_world_target.rotation()), 0);
+  _addSupports(trajectory, t, trajectory.supports[1]);
+  trajectory.trunk_yaw.addPoint(t, frame_yaw(trajectory.supports[1].frame().rotation()), 0);
+  trajectory.parts.push_back(init_part);
+
+  // Trajectory of the kick
+  TrajectoryPart kick_part;
+  kick_part.support = trajectory.supports[1];
+  kick_part.t_start = t;
+  kick_part.swing_trajectory.t_start = t;
+  t += parameters.kick_duration;
+  kick_part.t_end = t;
+  kick_part.swing_trajectory.t_end = t;
+
+  auto T_world_kick_end = T_world_target;
+  T_world_kick_end.translation().x() += 0.2;
+  kick_part.swing_trajectory.a = Eigen::Vector3d::Zero();
+  kick_part.swing_trajectory.b = T_world_kick_end.translation() - T_world_target.translation();
+  kick_part.swing_trajectory.c = Eigen::Vector3d::Zero();
+  kick_part.swing_trajectory.d = T_world_target.translation();
+
+  trajectory.parts.push_back(kick_part);
+
+  // Trajectory to go back to the ground
+  TrajectoryPart end_part;
+  end_part.support = trajectory.supports[1];
+  end_part.t_start = t;
+  end_part.swing_trajectory.t_start = t;
+  t += parameters.single_support_duration;
+  end_part.t_end = t;
+  end_part.swing_trajectory.t_end = t;
+
+  auto T_world_end = trajectory.supports[2].frame(kicking_side);
+  end_part.swing_trajectory.a = Eigen::Vector3d::Zero();
+  end_part.swing_trajectory.b = Eigen::Vector3d::Zero();
+  end_part.swing_trajectory.c = T_world_end.translation() - T_world_kick_end.translation();
+  end_part.swing_trajectory.d = T_world_kick_end.translation();
+
+  _addSupports(trajectory, t, trajectory.supports[2]);
+  trajectory.trunk_yaw.addPoint(t, frame_yaw(trajectory.supports[2].frame().rotation()), 0);
+  trajectory.parts.push_back(end_part);
+
+  trajectory.duration = t;
+}
+
+void WalkPatternGenerator::planFeetOneFoot(Trajectory& trajectory, HumanoidRobot::Side kicking_side,
+                                           Eigen::Affine3d T_world_target)
 {
   double t = 0.;
 
@@ -424,44 +554,39 @@ void WalkPatternGenerator::planFeetTrajectoriesBeforeKick(Trajectory& trajectory
     TrajectoryPart part;
     part.support = trajectory.supports[0];
     part.t_start = t;
-
     t += parameters.double_support_duration;
+    part.t_end = t;
+
     _addSupports(trajectory, t, trajectory.supports[0]);
     trajectory.trunk_yaw.addPoint(t, frame_yaw(trajectory.supports[0].frame().rotation()), 0);
-
-    part.t_end = t;
     trajectory.parts.push_back(part);
   }
 
-  // Trajectory part to go to the targeted flying position
-  TrajectoryPart part;
-  part.support = trajectory.supports[1];
-  part.t_start = t;
-  part.swing_trajectory.t_start = t;
-
+  // Trajectory to go to the targeted flying position
+  TrajectoryPart init_part;
+  init_part.support = trajectory.supports[1];
+  init_part.t_start = t;
+  init_part.swing_trajectory.t_start = t;
   t += parameters.single_support_duration;
-  part.t_end = t;
-  part.swing_trajectory.t_end = t;
+  init_part.t_end = t;
+  init_part.swing_trajectory.t_end = t;
 
-  // Linear interpolation
-  part.swing_trajectory.a = Eigen::Vector3d::Zero();
-  part.swing_trajectory.b = Eigen::Vector3d::Zero();
-  part.swing_trajectory.c = T_world_target.translation() - trajectory.supports[0].footsteps[0].frame.translation();
-  part.swing_trajectory.d = trajectory.supports[0].footsteps[0].frame.translation();
+  init_part.swing_trajectory.a = Eigen::Vector3d::Zero();
+  init_part.swing_trajectory.b = Eigen::Vector3d::Zero();
+  init_part.swing_trajectory.c = T_world_target.translation() - trajectory.supports[0].footsteps[0].frame.translation();
+  init_part.swing_trajectory.d = trajectory.supports[0].footsteps[0].frame.translation();
 
   trajectory.yaw(kicking_side).addPoint(t, frame_yaw(T_world_target.rotation()), 0);
-
   _addSupports(trajectory, t, trajectory.supports[1]);
   trajectory.trunk_yaw.addPoint(t, frame_yaw(trajectory.supports[1].frame().rotation()), 0);
-
-  trajectory.parts.push_back(part);
+  trajectory.parts.push_back(init_part);
 
   trajectory.duration = t;
 }
 
-WalkPatternGenerator::Trajectory
-WalkPatternGenerator::prepare_kick(WalkPatternGenerator::Trajectory& previous_trajectory, double elapsed_time,
-                                   HumanoidRobot::Side kicking_side, Eigen::Affine3d T_world_target)
+WalkPatternGenerator::Trajectory WalkPatternGenerator::plan_kick(WalkPatternGenerator::Trajectory& previous_trajectory,
+                                                                 double elapsed_time, HumanoidRobot::Side kicking_side,
+                                                                 Eigen::Affine3d T_world_target)
 {
   WalkPatternGenerator::Trajectory trajectory;
 
@@ -475,14 +600,41 @@ WalkPatternGenerator::prepare_kick(WalkPatternGenerator::Trajectory& previous_tr
       flatten_on_floor(previous_trajectory.get_last_footstep_frame(HumanoidRobot::Side::Right, elapsed_time));
 
   // Planning the supports
-  trajectory.supports = planSupportsBeforeKick(trajectory, kicking_side, T_world_left, T_world_right);
+  trajectory.supports = planSupportsKick(trajectory, kicking_side, T_world_left, T_world_right);
 
   // Planning the center of mass trajectory
-  planCoMBeforeKick(trajectory, previous_trajectory.com.vel(elapsed_time), previous_trajectory.com.acc(elapsed_time),
-                    previous_trajectory.com.zmp(elapsed_time));
+  planCoMKick(trajectory, previous_trajectory.com.vel(elapsed_time), previous_trajectory.com.acc(elapsed_time));
 
   // Planning the feet trajectories
-  planFeetTrajectoriesBeforeKick(trajectory, kicking_side, T_world_target);
+  planFeetKick(trajectory, kicking_side, T_world_target);
+
+  return trajectory;
+}
+
+WalkPatternGenerator::Trajectory
+WalkPatternGenerator::plan_one_foot_balance(WalkPatternGenerator::Trajectory& previous_trajectory, double elapsed_time,
+                                            HumanoidRobot::Side flying_side, Eigen::Affine3d T_world_target)
+{
+  WalkPatternGenerator::Trajectory trajectory;
+
+  // Update the supports followed by the walk
+  trajectory.com_height = parameters.walk_com_height;
+  trajectory.trunk_pitch = parameters.walk_trunk_pitch;
+
+  auto T_world_left =
+      flatten_on_floor(previous_trajectory.get_last_footstep_frame(HumanoidRobot::Side::Left, elapsed_time));
+  auto T_world_right =
+      flatten_on_floor(previous_trajectory.get_last_footstep_frame(HumanoidRobot::Side::Right, elapsed_time));
+
+  // Planning the supports
+  auto supports = planSupportsKick(trajectory, flying_side, T_world_left, T_world_right);
+  trajectory.supports = { supports[0], supports[1] };
+
+  // Planning the center of mass trajectory
+  planCoMOneFoot(trajectory, previous_trajectory.com.vel(elapsed_time), previous_trajectory.com.acc(elapsed_time));
+
+  // Planning the feet trajectories
+  planFeetOneFoot(trajectory, flying_side, T_world_target);
 
   return trajectory;
 }

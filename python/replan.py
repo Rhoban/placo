@@ -36,6 +36,7 @@ parameters.dt = 0.025
 parameters.single_support_duration = .35
 parameters.double_support_duration = 0.0
 parameters.startend_double_support_duration = 0.5
+parameters.kick_duration = 0.3
 parameters.maximum_steps = 500
 parameters.walk_com_height = 0.32
 parameters.walk_foot_height = 0.04
@@ -100,25 +101,10 @@ t = -3.
 dt = 0.005
 real_time_offset = 0
 steps = 0
+replan = True
 
 while True:
     T = max(0, t)
-
-    if (T > trajectory.duration):
-        if args.graph:
-            data_left = np.array(data_left)
-            data_right = np.array(data_right)
-            data = np.array(data)
-
-            plt.plot(data.T[0][0], data.T[1][0], label="CoM", lw=3)
-            plt.plot(data.T[0][1], data.T[1][1], label="ZMP", lw=3)
-            plt.plot(data.T[0][2], data.T[1][2], label="DCM", lw=3)
-
-            plt.legend()
-            plt.grid()
-            plt.show()
-
-        continue
 
     task_holder.update_tasks(trajectory.get_T_world_left(T), trajectory.get_T_world_right(T),
                              trajectory.get_CoM_world(T), trajectory.get_R_world_trunk(T), False)
@@ -129,7 +115,7 @@ while True:
     robot.update_support_side(str(trajectory.support_side(T)))
 
     # Replan
-    if previous_support != robot.get_support_side() and str(previous_support) != "both":
+    if replan and previous_support != robot.get_support_side() and str(previous_support) != "both":
         print("\n----- Replanning -----")
         steps += 1
 
@@ -154,16 +140,19 @@ while True:
             print("Prepare for kicking")
             print("Kicking side : ", previous_support)
 
+            replan = False
+
             T_world_target = placo.flatten_on_floor(robot.get_T_world_left()) if str(
                 previous_support) == "left" else placo.flatten_on_floor(robot.get_T_world_right())
 
             # T_world_target[1, 3] += -parameters.feet_spacing if str(
             #     previous_support) == "right" else parameters.feet_spacing
             T_world_target[2, 3] += parameters.walk_foot_height
-            print(T_world_target)
 
-            trajectory = walk.prepare_kick(
+            trajectory = walk.plan_kick(
                 trajectory, T, previous_support, T_world_target)
+
+            draw_footsteps(trajectory.supports, False, False)
 
         real_time_offset += T
         t = T = 0.
@@ -211,6 +200,19 @@ while True:
         time.sleep(1e-3)
 
     if args.graph and steps == nb_plotted_steps:
+        data_left = np.array(data_left)
+        data_right = np.array(data_right)
+        data = np.array(data)
+
+        plt.plot(data.T[0][0], data.T[1][0], label="CoM", lw=3)
+        plt.plot(data.T[0][1], data.T[1][1], label="ZMP", lw=3)
+        plt.plot(data.T[0][2], data.T[1][2], label="DCM", lw=3)
+
+        plt.legend()
+        plt.grid()
+        plt.show()
+
+    if args.graph and (T > trajectory.duration):
         data_left = np.array(data_left)
         data_right = np.array(data_right)
         data = np.array(data)

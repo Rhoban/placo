@@ -95,6 +95,10 @@ void SwingFoot::Trajectory::compute_abcd(Eigen::Vector3d p0, Eigen::Vector3d m0,
 Eigen::Vector3d SwingFoot::Trajectory::pos(double t_)
 {
   double t = (t_ - t_start) / (t_end - t_start);
+  if (t > 1)
+  {
+    t = 1;
+  }
   double t_2 = t * t;
   double t_3 = t_2 * t;
 
@@ -104,6 +108,10 @@ Eigen::Vector3d SwingFoot::Trajectory::pos(double t_)
 Eigen::Vector3d SwingFoot::Trajectory::vel(double t_)
 {
   double t = (t_ - t_start) / (t_end - t_start);
+  if (t > 1)
+  {
+    t = 1;
+  }
   double t_2 = t * t;
 
   return (3 * a * t_2 + 2 * b * t + c) / (t_end - t_start);

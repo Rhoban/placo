@@ -254,6 +254,14 @@ JerkPlanner::ConstraintMatrices JerkPlanner::make_constraint(int step, JerkPlann
 
 void JerkPlanner::add_equality_constraint(int step, Eigen::Vector2d value, JerkPlanner::ConstraintType type)
 {
+  // if (type == Position)
+  // {
+  //   std::cout << "#########################" << std::endl
+  //             << "COM constraint of step " << step << std::endl
+  //             << "x : " << round(100 * value.x()) / 100 << std::endl
+  //             << "y : " << round(100 * value.y()) / 100 << std::endl;
+  // }
+
   // if (type == ZMP)
   // {
   //   std::cout << "#########################" << std::endl
@@ -261,6 +269,7 @@ void JerkPlanner::add_equality_constraint(int step, Eigen::Vector2d value, JerkP
   //             << "x : " << round(100 * value.x()) / 100 << std::endl
   //             << "y : " << round(100 * value.y()) / 100 << std::endl;
   // }
+
   _push_equality(make_constraint(step, type, value));
 }
 

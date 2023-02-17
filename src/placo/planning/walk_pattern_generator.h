@@ -88,8 +88,11 @@ public:
   /// Has to be the next flying foot when prepare_kick() is called
   /// @param T_world_target Targeted frame for the foot in the air
   /// @return Planned trajectory
-  Trajectory prepare_kick(Trajectory& previous_trajectory, double elapsed_time, HumanoidRobot::Side kicking_side,
-                          Eigen::Affine3d T_world_target);
+  Trajectory plan_kick(Trajectory& previous_trajectory, double elapsed_time, HumanoidRobot::Side kicking_side,
+                       Eigen::Affine3d T_world_target);
+
+  Trajectory plan_one_foot_balance(Trajectory& previous_trajectory, double elapsed_time,
+                                   HumanoidRobot::Side flying_side, Eigen::Affine3d T_world_target);
 
 protected:
   // Robot associated to the WPG
@@ -106,14 +109,15 @@ protected:
 
   void planFeetTrajectories(Trajectory& trajectory);
 
-  std::vector<FootstepsPlanner::Support> planSupportsBeforeKick(Trajectory trajectory, HumanoidRobot::Side kicking_side,
-                                                                Eigen::Affine3d T_world_left,
-                                                                Eigen::Affine3d T_world_right);
+  std::vector<FootstepsPlanner::Support> planSupportsKick(Trajectory trajectory, HumanoidRobot::Side kicking_side,
+                                                          Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right);
 
-  void planCoMBeforeKick(Trajectory& trajectory, Eigen::Vector2d initial_vel, Eigen::Vector2d initial_acc,
-                         Eigen::Vector2d initial_ZMP);
+  void planCoMKick(Trajectory& trajectory, Eigen::Vector2d initial_vel, Eigen::Vector2d initial_acc);
 
-  void planFeetTrajectoriesBeforeKick(Trajectory& trajectory, HumanoidRobot::Side kicking_side,
-                                      Eigen::Affine3d T_world_target);
+  void planCoMOneFoot(Trajectory& trajectory, Eigen::Vector2d initial_vel, Eigen::Vector2d initial_acc);
+
+  void planFeetKick(Trajectory& trajectory, HumanoidRobot::Side kicking_side, Eigen::Affine3d T_world_target);
+
+  void planFeetOneFoot(Trajectory& trajectory, HumanoidRobot::Side kicking_side, Eigen::Affine3d T_world_target);
 };
 }  // namespace placo

@@ -21,6 +21,7 @@ void exposeParameters()
                     &HumanoidParameters::double_support_duration)
       .add_property("startend_double_support_duration", &HumanoidParameters::startend_double_support_duration,
                     &HumanoidParameters::startend_double_support_duration)
+      .add_property("kick_duration", &HumanoidParameters::kick_duration, &HumanoidParameters::kick_duration)
       .add_property("maximum_steps", &HumanoidParameters::maximum_steps, &HumanoidParameters::maximum_steps)
       .add_property("zmp_margin", &HumanoidParameters::zmp_margin, &HumanoidParameters::zmp_margin)
       .add_property("walk_foot_height", &HumanoidParameters::walk_foot_height, &HumanoidParameters::walk_foot_height)

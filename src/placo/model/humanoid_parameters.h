@@ -32,6 +32,11 @@ public:
   double startend_double_support_duration = 1.;
 
   /**
+   * @brief Kick duration [ms], must be a multiple of dt
+   */
+  double kick_duration = 1.;
+
+  /**
    * @brief Maximum steps for planning
    */
   int maximum_steps = 100;
