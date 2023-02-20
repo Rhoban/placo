@@ -19,11 +19,6 @@ bool RobotWrapper::Collision::operator==(const Collision& other)
 
 RobotWrapper::RobotWrapper(std::string model_directory) : model_directory(model_directory)
 {
-  // Path to the model on the robot - Model used in priority
-  if (std::filesystem::exists("sigmaban/"))
-  {
-    model_directory = "sigmaban/";
-  }
 }
 
 void RobotWrapper::load()

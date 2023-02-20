@@ -30,6 +30,8 @@ robot = placo.HumanoidRobot("sigmaban/")
 displayed_joints = {"left_hip_roll", "left_hip_pitch",
                     "right_hip_roll", "right_hip_pitch"}
 
+timeline = []
+
 # Walk parameters
 parameters = placo.HumanoidParameters()
 parameters.dt = 0.025
@@ -51,6 +53,28 @@ parameters.zmp_margin = 0.045
 # Creating the kinematics solver
 solver = robot.make_solver()
 task_holder = placo.SolverTaskHolder(robot, solver)
+
+solver.unmask_dof("head_pitch")
+solver.unmask_dof("head_yaw")
+solver.unmask_dof("left_elbow")
+solver.unmask_dof("right_elbow")
+solver.unmask_dof("left_shoulder_pitch")
+solver.unmask_dof("right_shoulder_pitch")
+solver.unmask_dof("left_shoulder_roll")
+solver.unmask_dof("right_shoulder_roll")
+joints = solver.add_joints_task()
+joints.set_joints(
+    {
+        "head_pitch": 0,
+        "head_yaw": 0,
+        "left_elbow": -120*np.pi/180,
+        "right_elbow": -120*np.pi/180,
+        "left_shoulder_pitch": 0,
+        "right_shoulder_pitch": 0,
+        "left_shoulder_roll": 0,
+        "right_shoulder_roll": 0,
+    }
+)
 
 # Creating the FootstepsPlanner
 T_world_left = placo.flatten_on_floor(robot.get_T_world_left())
@@ -90,14 +114,13 @@ if args.pybullet or args.torque:
     if args.torque:
         import matplotlib.pyplot as plt
         torques = {joint: [] for joint in displayed_joints}
-        timeline = []
 
 if args.meshcat:
     viz = robot_viz(robot)
     footsteps_viz(trajectory.supports)
 
 start_t = time.time()
-t = -3.
+t = -5.
 dt = 0.005
 real_time_offset = 0
 steps = 0
@@ -105,6 +128,7 @@ replan = True
 
 while True:
     T = max(0, t)
+    timeline.append(t + real_time_offset)
 
     task_holder.update_tasks(trajectory.get_T_world_left(T), trajectory.get_T_world_right(T),
                              trajectory.get_CoM_world(T), trajectory.get_R_world_trunk(T), False)
@@ -145,14 +169,16 @@ while True:
             T_world_target = placo.flatten_on_floor(robot.get_T_world_left()) if str(
                 previous_support) == "left" else placo.flatten_on_floor(robot.get_T_world_right())
 
-            # T_world_target[1, 3] += -parameters.feet_spacing if str(
-            #     previous_support) == "right" else parameters.feet_spacing
             T_world_target[2, 3] += parameters.walk_foot_height
 
-            trajectory = walk.plan_kick(
+            # trajectory = walk.plan_kick(
+            #     trajectory, T, previous_support, T_world_target)
+
+            trajectory = walk.plan_one_foot_balance(
                 trajectory, T, previous_support, T_world_target)
 
-            draw_footsteps(trajectory.supports, False, False)
+            # task_holder.configure_weight(1., 1., 1., 0.)
+            # solver.add_centroidal_momentum_task(np.array([0., 0., 0.]))
 
         real_time_offset += T
         t = T = 0.
@@ -182,7 +208,6 @@ while True:
         if args.torque and t >= 0:
             for joint in displayed_joints:
                 torques[joint].append(applied[joint][-1])
-            timeline.append(t + real_time_offset)
 
     if args.graph:
         lf = trajectory.get_T_world_left(T)
@@ -217,9 +242,14 @@ while True:
         data_right = np.array(data_right)
         data = np.array(data)
 
+        # plt.plot(timeline, data.T[0][0], label="CoM_x", lw=3)
+        # plt.plot(timeline, data.T[1][0], label="CoM_y", lw=3)
+
         plt.plot(data.T[0][0], data.T[1][0], label="CoM", lw=3)
         plt.plot(data.T[0][1], data.T[1][1], label="ZMP", lw=3)
         plt.plot(data.T[0][2], data.T[1][2], label="DCM", lw=3)
+
+        draw_footsteps(trajectory.supports, False, False)
 
         plt.legend()
         plt.grid()

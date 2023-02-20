@@ -54,4 +54,12 @@ void SolverTaskHolder::update_tasks(Eigen::Affine3d left_frame, Eigen::Affine3d 
     solver.dump_status();
   }
 }
+
+void SolverTaskHolder::configure_weight(double lf, double rf, double com, double trunk)
+{
+  left_foot.configure("left_foot", "soft", lf, lf);
+  right_foot.configure("right_foot", "soft", rf, rf);
+  com_task.configure("com", "soft", com);
+  trunk_orientation_task.configure("trunk", "soft", trunk);
+}
 }  // namespace placo

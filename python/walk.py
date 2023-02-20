@@ -47,20 +47,27 @@ parameters.zmp_margin = 0.045
 solver = robot.make_solver()
 task_holder = placo.SolverTaskHolder(robot, solver)
 
-# TO DO - ADD A WAY TO ADD TASK IN THE TASK_HOLDER
-# joints = solver.add_joints_task()
-# joints.set_joints(
-#     {
-#         "head_pitch": 0,
-#         "head_yaw": 0,
-#         "left_elbow": -2,
-#         "right_elbow": -2,
-#         "left_shoulder_pitch": 0,
-#         "right_shoulder_pitch": 0,
-#         "left_shoulder_roll": 0,
-#         "right_shoulder_roll": 0,
-#     }
-# )
+solver.unmask_dof("head_pitch")
+solver.unmask_dof("head_yaw")
+solver.unmask_dof("left_elbow")
+solver.unmask_dof("right_elbow")
+solver.unmask_dof("left_shoulder_pitch")
+solver.unmask_dof("right_shoulder_pitch")
+solver.unmask_dof("left_shoulder_roll")
+solver.unmask_dof("right_shoulder_roll")
+joints = solver.add_joints_task()
+joints.set_joints(
+    {
+        "head_pitch": 0,
+        "head_yaw": 0,
+        "left_elbow": -120*np.pi/180,
+        "right_elbow": -120*np.pi/180,
+        "left_shoulder_pitch": 0,
+        "right_shoulder_pitch": 0,
+        "left_shoulder_roll": 0,
+        "right_shoulder_roll": 0,
+    }
+)
 
 # Creating the FootstepsPlanner
 T_world_left = placo.flatten_on_floor(robot.get_T_world_left())

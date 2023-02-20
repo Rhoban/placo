@@ -34,6 +34,7 @@ void exposeWalkPatternGenerator()
       .def("plan_one_foot_balance", &WalkPatternGenerator::plan_one_foot_balance);
 
   class_<SolverTaskHolder>("SolverTaskHolder", init<HumanoidRobot&, KinematicsSolver&>())
+      .def("configure_weight", &SolverTaskHolder::configure_weight)
       .def("update_tasks", &SolverTaskHolder::update_tasks);
 
   class_<SwingFoot>("SwingFoot", init<>()).def("make_trajectory", &SwingFoot::make_trajectory);

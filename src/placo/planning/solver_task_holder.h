@@ -15,6 +15,8 @@ public:
   void update_tasks(Eigen::Affine3d left_frame, Eigen::Affine3d right_frame, Eigen::Vector3d com_vector,
                     Eigen::Matrix3d trunk_orientation, bool dump_status = false);
 
+  void configure_weight(double lf = 1.0, double rf = 1.0, double com = 1.0, double trunk = 1.0);
+
 protected:
   // Robot
   HumanoidRobot& robot;
