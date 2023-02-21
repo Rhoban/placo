@@ -176,6 +176,20 @@ public:
   Eigen::MatrixXd centroidal_map();
 
   /**
+   * @brief Computes generalized gravity
+   */
+  Eigen::VectorXd generalized_gravity();
+
+  /**
+   * @brief Computes torques needed by the robot to compensate for the generalized gravity, assuming that the given
+   * frame is the (only) contact supporting the robot
+   *
+   * Dimension of the output is nv
+   */
+  Eigen::VectorXd static_gravity_compensation_torques(FrameIndex frame);
+  Eigen::VectorXd static_gravity_compensation_torques(std::string frame);
+
+  /**
    * @brief Return all the joint names
    */
   std::vector<std::string> joint_names();

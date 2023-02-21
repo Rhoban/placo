@@ -32,6 +32,23 @@ class_<RobotType> exposeRobotType(const char* name)
       .def("frame_names", &RobotType::frame_names)
       .def("self_collisions", &RobotType::self_collisions)
       .def("com_jacobian", &RobotType::com_jacobian)
+      .def("generalized_gravity", &RobotType::generalized_gravity)
+      .def(
+          "static_gravity_compensation_torques",
+          +[](RobotType& robot, const std::string& frame) { return robot.static_gravity_compensation_torques(frame); })
+      .def(
+          "static_gravity_compensation_torques_dict",
+          +[](RobotType& robot, const std::string& frame) {
+            auto torques = robot.static_gravity_compensation_torques(frame);
+            boost::python::dict dict;
+
+            for (auto& dof : robot.joint_names())
+            {
+              dict[dof] = torques[robot.get_joint_v_offset(dof)];
+            }
+
+            return dict;
+          })
       .def(
           "get_T_world_frame",
           +[](RobotType& robot, const std::string& frame) { return robot.get_T_world_frame(frame); })
