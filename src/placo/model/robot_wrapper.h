@@ -14,11 +14,6 @@ public:
   RobotWrapper(std::string model_directory = "robot/");
 
   /**
-   * @brief Starts loading the model and to check for the presence of everything
-   */
-  virtual void load();
-
-  /**
    * @brief The index of a frame (currently directly wrapped to pinocchio's FrameIndex)
    */
   typedef pinocchio::FrameIndex FrameIndex;
@@ -166,8 +161,7 @@ public:
    * @return jacobian (6xn matrix)
    */
   Eigen::MatrixXd frame_jacobian(const std::string& frame, const std::string& reference = "local_world_aligned");
-  Eigen::MatrixXd frame_jacobian(FrameIndex frame,
-                                 pinocchio::ReferenceFrame ref = pinocchio::ReferenceFrame::WORLD);
+  Eigen::MatrixXd frame_jacobian(FrameIndex frame, pinocchio::ReferenceFrame ref = pinocchio::ReferenceFrame::WORLD);
 
   /**
    * @brief Computes the CoM jacobian
@@ -203,5 +197,10 @@ protected:
 
   // Root free-flyer joint
   pinocchio::JointModelFreeFlyer root_joint;
+
+  /**
+   * @brief Starts loading the model and to check for the presence of everything
+   */
+  void load();
 };
 }  // namespace placo
