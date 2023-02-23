@@ -33,5 +33,5 @@ void exposeUtils()
   class_<PolySpline3D>("PolySpline3D")
       .def("get", &PolySpline3D::get)
       .def("getVel", &PolySpline3D::getVel)
-      .def("addPoint", &PolySpline::addPoint);
+      .def("addPoint", &PolySpline3D::addPoint);
 }
