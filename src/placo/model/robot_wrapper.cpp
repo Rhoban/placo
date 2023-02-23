@@ -308,6 +308,34 @@ Eigen::MatrixXd RobotWrapper::centroidal_map()
   return pinocchio::computeCentroidalMap(model, *data, state.q);
 }
 
+Eigen::VectorXd RobotWrapper::generalized_gravity()
+{
+  pinocchio::computeGeneralizedGravity(model, *data, state.q);
+
+  return data->g;
+}
+
+Eigen::VectorXd RobotWrapper::static_gravity_compensation_torques(RobotWrapper::FrameIndex frameIndex)
+{
+  auto g = generalized_gravity();
+  auto J = frame_jacobian(frameIndex);
+
+  // Jacobian for unactuated and actuated degrees of freedom
+  auto Ju = J.block(0, 0, 6, 6);
+
+  // We know that no torque can be provided by floating base. We can then compute f_ext using the unactuated part of
+  // the jacobian matrix
+  auto f_ext = Ju.transpose().inverse() * g.block(0, 0, 6, 1);
+
+  // Compute the torques
+  return g - J.transpose() * f_ext;
+}
+
+Eigen::VectorXd RobotWrapper::static_gravity_compensation_torques(std::string frame)
+{
+  return static_gravity_compensation_torques(get_frame_index(frame));
+}
+
 std::vector<std::string> RobotWrapper::joint_names()
 {
   return model.names;
