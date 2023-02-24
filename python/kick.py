@@ -61,7 +61,7 @@ joints_task.set_joints({
 })
 
 shoulder_pitchs_tasks = joints_task = solver.add_joints_task()
-shoulder_pitchs_tasks.configure("joints", "soft", 1e-4)
+shoulder_pitchs_tasks.configure("joints", "soft", 1e-6)
 
 shoulder_pitchs_tasks.set_joints({
     "left_shoulder_pitch": 0.,
