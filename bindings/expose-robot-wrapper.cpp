@@ -75,7 +75,8 @@ void exposeRobotWrapper()
   class_<RobotWrapper::Collision>("Collision")
       .add_property("bodyA", &RobotWrapper::Collision::bodyA)
       .add_property("bodyB", &RobotWrapper::Collision::bodyB)
-      .add_property("contacts", &RobotWrapper::Collision::contacts);
+      .def(
+          "get_contact", +[](RobotWrapper::Collision& collision, int index) { return collision.contacts[index]; });
 
   exposeRobotType<RobotWrapper>("RobotWrapper");
 
