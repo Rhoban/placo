@@ -71,8 +71,7 @@ void HumanoidRobot::update_support_side(HumanoidRobot::Side new_side)
       // Projecting it on the floor
       T_world_support = flatten_on_floor(T_world_newSupport);
 
-      // GOOD PRACTICE BUT CAUSE A JUMP
-      // ensure_on_floor();
+      ensure_on_floor();
     }
   }
 }
