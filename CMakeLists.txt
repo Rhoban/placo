@@ -51,7 +51,6 @@ target_include_directories(libplaco PUBLIC
   ${CMAKE_CURRENT_BINARY_DIR})
 
 target_link_libraries(libplaco PUBLIC
-    RhIO
     CLI11::CLI11
     Eigen3::Eigen
     Threads::Threads
