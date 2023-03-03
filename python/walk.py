@@ -40,6 +40,7 @@ parameters.walk_trunk_pitch = 0.2
 parameters.walk_foot_tilt = 0.2
 parameters.foot_length = 0.1576
 parameters.foot_width = 0.092
+# parameters.feet_spacing = 0.104  # for better drawing
 parameters.feet_spacing = 0.122
 parameters.zmp_margin = 0.045
 
@@ -77,8 +78,11 @@ T_world_right = placo.flatten_on_floor(robot.get_T_world_right())
 # planner = placo.FootstepsPlannerNaive(parameters)
 # T_world_leftTarget = T_world_left.copy()
 # T_world_rightTarget = T_world_right.copy()
-# T_world_leftTarget[0, 3] += 1.0
-# T_world_rightTarget[0, 3] += 1.0
+# T_world_leftTarget[0, 3] += 0.3
+# T_world_leftTarget[1, 3] += 0.3
+# T_world_leftTarget = T_world_leftTarget @ tf.rotation((0, 0, 1), np.pi/2)
+# T_world_rightTarget = T_world_leftTarget
+# T_world_rightTarget[0, 3] += parameters.feet_spacing
 # planner.configure(T_world_leftTarget, T_world_rightTarget)
 
 ##### Repetitive FootstepsPlanner #####
@@ -133,6 +137,8 @@ if args.graph:
     plt.plot(data.T[0][2], data.T[1][2], label="DCM", lw=3)
     plt.legend()
     plt.grid()
+    # plt.title("ZMP and CoM trajectories planification from footsteps")
+    # plt.xlim((-.15, .7))
     plt.show()
 
 elif args.pybullet or args.meshcat or args.torque:

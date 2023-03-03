@@ -1,5 +1,6 @@
 #include "placo/model/humanoid_robot.h"
 #include "placo/utils.h"
+#include "pinocchio/math/rpy.hpp"
 
 namespace placo
 {
@@ -70,8 +71,7 @@ void HumanoidRobot::update_support_side(HumanoidRobot::Side new_side)
       // Projecting it on the floor
       T_world_support = flatten_on_floor(T_world_newSupport);
 
-      // GOOD PRACTICE BUT CAUSE A JUMP
-      // ensure_on_floor();
+      ensure_on_floor();
     }
   }
 }
@@ -97,5 +97,40 @@ RobotWrapper::FrameIndex HumanoidRobot::flying_frame()
 void HumanoidRobot::update_support_side(const std::string& side)
 {
   update_support_side(string_to_side(side));
+}
+
+void HumanoidRobot::readFromHistories(rhoban_utils::HistoryCollection& histories, double timestamp)
+{
+  // Updating DOFs from replay
+  for (const std::string& name : joint_names())
+  {
+    set_joint(name, histories.number("read:" + name)->interpolate(timestamp));
+  }
+
+  double left_pressure = histories.number("left_pressure_weight")->interpolate(timestamp);
+  double right_pressure = histories.number("right_pressure_weight")->interpolate(timestamp);
+  if (left_pressure > right_pressure)
+  {
+    update_support_side(Left);
+  }
+  else
+  {
+    update_support_side(Right);
+  }
+
+  ensure_on_floor();
+  update_kinematics();
+
+  // // Setting the trunk orientation from the IMU - DOES IT WORK ???
+  // double imuYaw = histories.angle("imu_gyro_yaw")->interpolate(timestamp);
+  // double imuPitch = histories.angle("imu_pitch")->interpolate(timestamp);
+  // double imuRoll = histories.angle("imu_roll")->interpolate(timestamp);
+
+  // Eigen::Affine3d T_world_trunk = get_T_world_trunk();
+  // T_world_trunk.linear() = pinocchio::rpy::rpyToMatrix(Eigen::Vector3d(imuRoll, imuPitch, imuYaw));
+
+  // update_kinematics();
+  // set_T_world_frame(trunk, T_world_trunk);
+  // update_kinematics();
 }
 }  // namespace placo

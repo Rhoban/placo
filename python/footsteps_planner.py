@@ -14,9 +14,9 @@ def plot_footsteps(footsteps: list):
             key = footstep.side
         else:
             if len(footstep.footsteps) == 1:
-                key = footstep.footsteps[0].side
+                key = str(footstep.footsteps[0].side) + " support"
             else:
-                key = "double"
+                key = "double support"
 
         if key not in polygons:
             polygons[key] = []

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "placo/model/robot_wrapper.h"
+#include "rhoban_utils/history/history.h"
 
 namespace placo
 {
@@ -39,6 +40,8 @@ public:
   RobotWrapper::FrameIndex support_frame();
   RobotWrapper::FrameIndex flying_frame();
 
+  void readFromHistories(rhoban_utils::HistoryCollection& histories, double timestamp);
+
   /**
    * @brief The current side (left, right or both) supporting the robot
    */
@@ -47,7 +50,7 @@ public:
   /**
    * @brief The current flying foot or the next flying foot if the support_side is both
    */
-  Side flying_side = placo::HumanoidRobot::Side::Left;
+  Side flying_side = placo::HumanoidRobot::Side::Right;
 
   /**
    * @brief Transformation from support to world
