@@ -32,6 +32,8 @@ void RobotWrapper::load()
   if (rhoban_utils::file_exists(model_directory + "/collisions.json"))
   {
     load_collisions_pairs(model_directory + "/collisions.json");
+  } else {
+    collision_model.addAllCollisionPairs();
   }
 
   // Creating data

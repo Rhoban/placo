@@ -156,12 +156,13 @@ public:
   std::vector<Collision> self_collisions(bool stop_at_first = false);
 
   /**
-   * @brief Computes frame jacobian, default reference is WORLD
+   * @brief Computes frame jacobian, default reference is LOCAL_WORLD_ALIGNED
    * @param frame given frame
    * @return jacobian (6xn matrix)
    */
   Eigen::MatrixXd frame_jacobian(const std::string& frame, const std::string& reference = "local_world_aligned");
-  Eigen::MatrixXd frame_jacobian(FrameIndex frame, pinocchio::ReferenceFrame ref = pinocchio::ReferenceFrame::WORLD);
+  Eigen::MatrixXd frame_jacobian(FrameIndex frame,
+                                 pinocchio::ReferenceFrame ref = pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED);
 
   /**
    * @brief Computes the CoM jacobian
