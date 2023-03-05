@@ -208,6 +208,123 @@ void KinematicsSolver::configure_limits(bool dofs_limit_, bool speeds_limit_, bo
   speed_post_limits = speed_post_limits_;
 }
 
+void KinematicsSolver::enable_self_collision_inequalities(bool enable, double margin, double trigger)
+{
+  avoid_self_collisions = enable;
+  self_collisions_margin = margin;
+  self_collisions_trigger = trigger;
+}
+
+void KinematicsSolver::compute_self_collision_inequalities()
+{
+  if (avoid_self_collisions && robot != nullptr)
+  {
+    pinocchio::GeometryData geom_data(robot->collision_model);
+    for (size_t k = 0; k < robot->collision_model.collisionPairs.size(); ++k)
+    {
+      geom_data.collisionRequests[k].break_distance = self_collisions_trigger;
+    }
+
+    pinocchio::computeCollisions(robot->model, *robot->data, robot->collision_model, geom_data, robot->state.q);
+
+    for (size_t k = 0; k < robot->collision_model.collisionPairs.size(); ++k)
+    {
+      const pinocchio::CollisionPair& cp = robot->collision_model.collisionPairs[k];
+      const hpp::fcl::CollisionResult& cr = geom_data.collisionResults[k];
+
+      if (cr.distance_lower_bound < self_collisions_trigger)
+      {
+        Eigen::Vector3d point_A = cr.nearest_points[0];
+        Eigen::Vector3d point_B = cr.nearest_points[1];
+        Eigen::Vector3d v = point_B - point_A;
+
+        if (v.norm() < self_collisions_trigger)
+        {
+          Eigen::Vector3d n = v.normalized();
+
+          auto jointA = robot->collision_model.geometryObjects[cp.first].parentJoint;
+          Eigen::MatrixXd X_A_world = pinocchio::SE3(Eigen::Matrix3d::Identity(), -point_A).toActionMatrix();
+          Eigen::MatrixXd JA = X_A_world * robot->joint_jacobian(jointA, pinocchio::ReferenceFrame::WORLD);
+
+          auto jointB = robot->collision_model.geometryObjects[cp.second].parentJoint;
+          Eigen::MatrixXd X_B_world = pinocchio::SE3(Eigen::Matrix3d::Identity(), -point_B).toActionMatrix();
+          Eigen::MatrixXd JB = X_B_world * robot->joint_jacobian(jointB, pinocchio::ReferenceFrame::WORLD);
+
+          Eigen::MatrixXd A = n.transpose() * (JB - JA).block(0, 0, 3, N);
+
+          // d + nT Jb qdot - nT Ja qdot > epsilon
+          Inequality inequality;
+          inequality.A = -A;
+          inequality.b = Eigen::VectorXd(1);
+
+          inequality.b[0] = -self_collisions_margin + v.norm();
+
+          inequalities.push_back(inequality);
+        }
+      }
+    }
+  }
+}
+
+void KinematicsSolver::compute_limits_inequalities()
+{
+  int constrained_dofs = N - 6;
+  int n_inequalities = 0;
+  if (dofs_limit)
+  {
+    n_inequalities += constrained_dofs * 2;
+  }
+  if (speeds_limit)
+  {
+    n_inequalities += constrained_dofs * 2;
+  }
+  int current_row = 0;
+
+  if (n_inequalities > 0)
+  {
+    Inequality inequality;
+    inequality.A = Eigen::MatrixXd(n_inequalities, N);
+    inequality.b = Eigen::VectorXd(n_inequalities);
+
+    for (int k = 0; k < N - 6; k++)
+    {
+      Eigen::MatrixXd selector(1, N);
+      selector.setZero();
+      selector(0, k + 6) = 1;
+
+      if (dofs_limit)
+      {
+        // Position limits
+        inequality.A.block(current_row, 0, 1, N) = selector;
+        inequality.A.block(current_row + 1, 0, 1, N) = -selector;
+
+        // delta_q <= q_max - q
+        inequality.b[current_row] = robot->model.upperPositionLimit[k + 7] - robot->state.q[k + 7];
+        // -delta_q <= q - q_min
+        inequality.b[current_row + 1] = robot->state.q[k + 7] - robot->model.lowerPositionLimit[k + 7];
+
+        current_row += 2;
+      }
+
+      if (speeds_limit)
+      {
+        // Speed limits
+        inequality.A.block(current_row, 0, 1, N) = selector;
+        inequality.A.block(current_row + 1, 0, 1, N) = -selector;
+
+        // delta_q <= dt * qdot_max
+        inequality.b[current_row] = dt * robot->model.velocityLimit[k + 6];
+        // -delta_q <= dt * qdot_max
+        inequality.b[current_row + 1] = dt * robot->model.velocityLimit[k + 6];
+
+        current_row += 2;
+      }
+    }
+
+    inequalities.push_back(inequality);
+  }
+}
+
 Eigen::VectorXd KinematicsSolver::solve(bool apply)
 {
   // Adding some random noise
@@ -305,49 +422,27 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
   }
 
   // Handling degree of freedoms limit inequalities
-  int constrained_dofs = N - 6;
-  int n_inequalities = 0;
-  if (dofs_limit)
+  inequalities.clear();
+
+  compute_limits_inequalities();
+  compute_self_collision_inequalities();
+
+  int nb_inequalities = 0;
+  for (auto& inequality : inequalities)
   {
-    n_inequalities += constrained_dofs * 2;
+    nb_inequalities += inequality.A.rows();
   }
-  if (speeds_limit)
-  {
-    n_inequalities += constrained_dofs * 2;
-  }
-  Eigen::MatrixXd CI(n_inequalities, N);
-  Eigen::VectorXd ci0(n_inequalities);
+
+  Eigen::MatrixXd CI(nb_inequalities, N);
+  Eigen::VectorXd ci0(nb_inequalities);
+
   int current_inequality_row = 0;
-
-  for (int k = 0; k < N - 6; k++)
+  for (auto& inequality : inequalities)
   {
-    Eigen::MatrixXd selector(1, N);
-    selector.setZero();
-    selector(0, k + 6) = 1;
-
-    if (dofs_limit)
-    {
-      // Position limits
-      CI.block(current_inequality_row, 0, 1, N) = selector;
-      CI.block(current_inequality_row + 1, 0, 1, N) = -selector;
-
-      ci0[current_inequality_row] = -(robot->model.lowerPositionLimit[k + 7] - robot->state.q[k + 7]);
-      ci0[current_inequality_row + 1] = (robot->model.upperPositionLimit[k + 7] - robot->state.q[k + 7]);
-
-      current_inequality_row += 2;
-    }
-
-    if (speeds_limit)
-    {
-      // Speed limits
-      CI.block(current_inequality_row, 0, 1, N) = selector;
-      CI.block(current_inequality_row + 1, 0, 1, N) = -selector;
-
-      ci0[current_inequality_row] = dt * robot->model.velocityLimit[k + 6];
-      ci0[current_inequality_row + 1] = dt * robot->model.velocityLimit[k + 6];
-
-      current_inequality_row += 2;
-    }
+    int rows = inequality.A.rows();
+    CI.block(current_inequality_row, 0, rows, N) = -inequality.A;
+    ci0.block(current_inequality_row, 0, rows, 1) = inequality.b;
+    current_inequality_row += rows;
   }
 
   Eigen::VectorXi activeSet;

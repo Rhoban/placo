@@ -32,7 +32,9 @@ void RobotWrapper::load()
   if (rhoban_utils::file_exists(model_directory + "/collisions.json"))
   {
     load_collisions_pairs(model_directory + "/collisions.json");
-  } else {
+  }
+  else
+  {
     collision_model.addAllCollisionPairs();
   }
 
@@ -251,7 +253,9 @@ std::vector<RobotWrapper::Collision> RobotWrapper::self_collisions(bool stop_at_
       Collision collision;
 
       collision.bodyA = collision_model.geometryObjects[cp.first].name;
+      collision.parentA = collision_model.geometryObjects[cp.first].parentJoint;
       collision.bodyB = collision_model.geometryObjects[cp.second].name;
+      collision.parentB = collision_model.geometryObjects[cp.second].parentJoint;
 
       for (int k = 0; k < cr.numContacts(); k++)
       {
@@ -269,19 +273,19 @@ std::vector<RobotWrapper::Collision> RobotWrapper::self_collisions(bool stop_at_
   return collisions;
 }
 
-Eigen::MatrixXd RobotWrapper::frame_jacobian(const std::string& frame, const std::string& reference)
+static pinocchio::ReferenceFrame string_to_reference(const std::string& reference)
 {
   if (reference == "local_world_aligned")
   {
-    return frame_jacobian(get_frame_index(frame), pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED);
+    return pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED;
   }
   else if (reference == "local")
   {
-    return frame_jacobian(get_frame_index(frame), pinocchio::ReferenceFrame::LOCAL);
+    return pinocchio::ReferenceFrame::LOCAL;
   }
   else if (reference == "world")
   {
-    return frame_jacobian(get_frame_index(frame), pinocchio::ReferenceFrame::WORLD);
+    return pinocchio::ReferenceFrame::WORLD;
   }
   else
   {
@@ -291,11 +295,31 @@ Eigen::MatrixXd RobotWrapper::frame_jacobian(const std::string& frame, const std
   }
 }
 
+Eigen::MatrixXd RobotWrapper::frame_jacobian(const std::string& frame, const std::string& reference)
+{
+  return frame_jacobian(get_frame_index(frame), string_to_reference(reference));
+}
+
 Eigen::MatrixXd RobotWrapper::frame_jacobian(pinocchio::FrameIndex frame, pinocchio::ReferenceFrame ref)
 {
   Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> jacobian(6, model.nv);
   jacobian.setZero();
   pinocchio::computeFrameJacobian(model, *data, state.q, frame, ref, jacobian);
+
+  return jacobian;
+}
+
+Eigen::MatrixXd RobotWrapper::joint_jacobian(const std::string& joint, const std::string& reference)
+{
+  return joint_jacobian(model.getJointId(joint), string_to_reference(reference));
+}
+
+Eigen::MatrixXd RobotWrapper::joint_jacobian(pinocchio::JointIndex joint, pinocchio::ReferenceFrame ref)
+{
+  Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> jacobian(6, model.nv);
+  jacobian.setZero();
+  pinocchio::computeJointJacobian(model, *data, state.q, joint, jacobian);
+  pinocchio::getJointJacobian(model, *data, joint, ref, jacobian);
 
   return jacobian;
 }
