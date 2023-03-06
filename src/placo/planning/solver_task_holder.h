@@ -8,7 +8,8 @@ namespace placo
 class SolverTaskHolder
 {
 public:
-  SolverTaskHolder(HumanoidRobot& robot, KinematicsSolver& solver);
+  SolverTaskHolder(HumanoidRobot& robot_, KinematicsSolver& solver_);
+  SolverTaskHolder(HumanoidRobot* robot_, KinematicsSolver* solver_);
 
   void init_tasks();
 
@@ -19,10 +20,10 @@ public:
 
 protected:
   // Robot
-  HumanoidRobot& robot;
+  HumanoidRobot* robot;
 
   // Kinematic solver
-  KinematicsSolver& solver;
+  KinematicsSolver* solver;
 
   FrameTask left_foot;
   FrameTask right_foot;

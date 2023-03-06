@@ -4,16 +4,6 @@
 
 namespace placo
 {
-HumanoidRobot::Side HumanoidRobot::string_to_side(const std::string& str)
-{
-  return (str == "right") ? Right : (str == "left") ? Left : Both;
-}
-
-HumanoidRobot::Side HumanoidRobot::other_side(Side side)
-{
-  return (side == Left) ? Right : Left;
-}
-
 HumanoidRobot::HumanoidRobot(std::string model_directory) : RobotWrapper(model_directory)
 {
   initialize();
@@ -32,6 +22,16 @@ void HumanoidRobot::initialize()
   trunk = get_frame_index("trunk");
 
   ensure_on_floor();
+}
+
+HumanoidRobot::Side HumanoidRobot::string_to_side(const std::string& str)
+{
+  return (str == "right") ? Right : (str == "left") ? Left : Both;
+}
+
+HumanoidRobot::Side HumanoidRobot::other_side(Side side)
+{
+  return (side == Left) ? Right : Left;
 }
 
 Eigen::Affine3d HumanoidRobot::get_T_world_left()
@@ -66,7 +66,7 @@ void HumanoidRobot::update_support_side(HumanoidRobot::Side new_side)
       update_kinematics();
 
       // Retrieving the current support configuration
-      auto T_world_newSupport = get_T_world_frame(flying_frame());
+      auto T_world_newSupport = get_T_world_frame(support_frame());
 
       // Projecting it on the floor
       T_world_support = flatten_on_floor(T_world_newSupport);
@@ -99,7 +99,7 @@ void HumanoidRobot::update_support_side(const std::string& side)
   update_support_side(string_to_side(side));
 }
 
-void HumanoidRobot::readFromHistories(rhoban_utils::HistoryCollection& histories, double timestamp)
+void HumanoidRobot::readFromHistories(rhoban_utils::HistoryCollection& histories, double timestamp, bool use_imu)
 {
   // Updating DOFs from replay
   for (const std::string& name : joint_names())
@@ -107,30 +107,37 @@ void HumanoidRobot::readFromHistories(rhoban_utils::HistoryCollection& histories
     set_joint(name, histories.number("read:" + name)->interpolate(timestamp));
   }
 
-  double left_pressure = histories.number("left_pressure_weight")->interpolate(timestamp);
-  double right_pressure = histories.number("right_pressure_weight")->interpolate(timestamp);
-  if (left_pressure > right_pressure)
+  // Set the support foot on the floor
+  if (!use_imu)
   {
-    update_support_side(Left);
+    double left_pressure = histories.number("left_pressure_weight")->interpolate(timestamp);
+    double right_pressure = histories.number("right_pressure_weight")->interpolate(timestamp);
+    if (left_pressure > right_pressure)
+    {
+      update_support_side(Left);
+    }
+    else
+    {
+      update_support_side(Right);
+    }
+
+    ensure_on_floor();
+    update_kinematics();
   }
+
+  // Setting the trunk orientation from the IMU
   else
   {
-    update_support_side(Right);
+    double imuYaw = histories.angle("imu_gyro_yaw")->interpolate(timestamp);
+    double imuPitch = histories.angle("imu_pitch")->interpolate(timestamp);
+    double imuRoll = histories.angle("imu_roll")->interpolate(timestamp);
+
+    Eigen::Affine3d T_world_trunk = get_T_world_trunk();
+    T_world_trunk.linear() = pinocchio::rpy::rpyToMatrix(Eigen::Vector3d(imuRoll, imuPitch, imuYaw));
+
+    update_kinematics();
+    set_T_world_frame(trunk, T_world_trunk);
+    update_kinematics();
   }
-
-  ensure_on_floor();
-  update_kinematics();
-
-  // // Setting the trunk orientation from the IMU - DOES IT WORK ???
-  // double imuYaw = histories.angle("imu_gyro_yaw")->interpolate(timestamp);
-  // double imuPitch = histories.angle("imu_pitch")->interpolate(timestamp);
-  // double imuRoll = histories.angle("imu_roll")->interpolate(timestamp);
-
-  // Eigen::Affine3d T_world_trunk = get_T_world_trunk();
-  // T_world_trunk.linear() = pinocchio::rpy::rpyToMatrix(Eigen::Vector3d(imuRoll, imuPitch, imuYaw));
-
-  // update_kinematics();
-  // set_T_world_frame(trunk, T_world_trunk);
-  // update_kinematics();
 }
 }  // namespace placo
