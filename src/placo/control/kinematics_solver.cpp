@@ -248,7 +248,7 @@ void KinematicsSolver::compute_self_collision_inequalities()
         inequality.A = -A;
         inequality.b = Eigen::VectorXd(1);
 
-        inequality.b[0] = -self_collisions_margin + v.norm();
+        inequality.b[0] = -self_collisions_margin + distance.min_distance;
 
         inequalities.push_back(inequality);
       }
