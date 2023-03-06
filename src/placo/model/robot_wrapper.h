@@ -140,6 +140,8 @@ public:
 
   struct Collision
   {
+    int objA, objB;
+
     // Parent (joints)
     pinocchio::JointIndex parentA;
     pinocchio::JointIndex parentB;
@@ -158,6 +160,22 @@ public:
    * @return a vector of all self collisions
    */
   std::vector<Collision> self_collisions(bool stop_at_first = false);
+
+  struct Distance
+  {
+    int objA, objB;
+
+    pinocchio::JointIndex parentA;
+    pinocchio::JointIndex parentB;
+    Eigen::Vector3d pointA;
+    Eigen::Vector3d pointB;
+    Eigen::Vector3d normal;
+    double min_distance;
+
+    bool operator==(const Distance& other);
+  };
+
+  std::vector<Distance> distances();
 
   /**
    * @brief Computes frame jacobian, default reference is LOCAL_WORLD_ALIGNED
