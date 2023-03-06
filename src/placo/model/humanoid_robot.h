@@ -21,7 +21,7 @@ public:
   static Side string_to_side(const std::string& str);
   static Side other_side(Side side);
 
-  HumanoidRobot(std::string model_directory = "robot/");
+  HumanoidRobot(std::string model_directory = "robot");
 
   void initialize();
 
@@ -40,7 +40,7 @@ public:
   RobotWrapper::FrameIndex support_frame();
   RobotWrapper::FrameIndex flying_frame();
 
-  void readFromHistories(rhoban_utils::HistoryCollection& histories, double timestamp);
+  void readFromHistories(rhoban_utils::HistoryCollection& histories, double timestamp, bool use_imu = false);
 
   /**
    * @brief The current side (left, right or both) supporting the robot
@@ -50,7 +50,7 @@ public:
   /**
    * @brief The current flying foot or the next flying foot if the support_side is both
    */
-  Side flying_side = placo::HumanoidRobot::Side::Right;
+  Side flying_side = placo::HumanoidRobot::Side::Left;
 
   /**
    * @brief Transformation from support to world

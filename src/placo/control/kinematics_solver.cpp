@@ -6,14 +6,14 @@
 
 namespace placo
 {
-KinematicsSolver::KinematicsSolver(RobotWrapper* robot_) : robot(robot_), masked_fbase(false)
-{
-  N = robot->model.nv;
-}
-
 KinematicsSolver::KinematicsSolver(RobotWrapper& robot_) : robot(&robot_), masked_fbase(false)
 {
-  N = robot->model.nv;
+  N = robot_.model.nv;
+}
+
+KinematicsSolver::KinematicsSolver(RobotWrapper* robot_) : robot(robot_), masked_fbase(false)
+{
+  N = robot_->model.nv;
 }
 
 PositionTask& KinematicsSolver::add_position_task(RobotWrapper::FrameIndex frame, Eigen::Vector3d target_world)
