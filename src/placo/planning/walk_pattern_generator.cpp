@@ -196,11 +196,12 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
       // XXX: To investigate
       for (int k = 0; k < ssp_steps; k++)
       {
-        if (k == (ssp_steps / 2))
-        {
-          auto target = support.frame().translation();
-          planner.add_equality_constraint(steps + k, Eigen::Vector2d(target.x(), target.y()), JerkPlanner::ZMP);
-        }
+        planner.add_polygon_constraint(steps + k, support.support_polygon(), JerkPlanner::ZMP, 0.03);
+        // if (k == (ssp_steps / 2))
+        // {
+        //   auto target = support.frame().translation();
+        //   planner.add_equality_constraint(steps + k, Eigen::Vector2d(target.x(), target.y()), JerkPlanner::ZMP);
+        // }
       }
 
       steps += ssp_steps;

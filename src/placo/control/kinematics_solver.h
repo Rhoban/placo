@@ -211,6 +211,14 @@ public:
   void configure_limits(bool dofs_limit, bool speeds_limit, bool speed_post_limits);
 
   /**
+   * @brief Enables or disable the self collision inequalities
+   * @param enable whether to enable the self collision inequalities
+   * @param margin margin that will be used [m]
+   * @param trigger the trigger distance at which the inequalities are enabled [m]
+   */
+  void enable_self_collision_inequalities(bool enable, double margin = 0.005, double trigger = 0.01);
+
+  /**
    * @brief The robot controlled by this solver
    */
   RobotWrapper* robot;
@@ -231,6 +239,15 @@ public:
   double dt = 0.01;
 
 protected:
+  struct Inequality
+  {
+    // Inequality of the form
+    // Ax <= b
+    Eigen::MatrixXd A;
+    Eigen::VectorXd b;
+  };
+  std::vector<Inequality> inequalities;
+
   std::set<int> masked_dof;
   bool masked_fbase;
   std::vector<Task*> tasks;
@@ -239,6 +256,14 @@ protected:
   bool dofs_limit = true;
   bool speeds_limit = false;
   bool speed_post_limits = false;
+
+  // Self collision prevention
+  bool avoid_self_collisions = false;
+  double self_collisions_margin = 0.005;  // [m]
+  double self_collisions_trigger = 0.01;  // [m]
+
+  void compute_limits_inequalities();
+  void compute_self_collision_inequalities();
 
   template <typename T>
   T& add_task(T* task)

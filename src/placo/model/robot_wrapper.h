@@ -140,6 +140,10 @@ public:
 
   struct Collision
   {
+    // Parent (joints)
+    pinocchio::JointIndex parentA;
+    pinocchio::JointIndex parentB;
+    // Bodies
     std::string bodyA;
     std::string bodyB;
     std::vector<Eigen::Vector3d> contacts;
@@ -162,6 +166,15 @@ public:
    */
   Eigen::MatrixXd frame_jacobian(const std::string& frame, const std::string& reference = "local_world_aligned");
   Eigen::MatrixXd frame_jacobian(FrameIndex frame,
+                                 pinocchio::ReferenceFrame ref = pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED);
+
+  /**
+   * @brief Computes joint jacobian, default reference is LOCAL_WORLD_ALIGNED
+   * @param frame given frame
+   * @return jacobian (6xn matrix)
+   */
+  Eigen::MatrixXd joint_jacobian(const std::string& joint, const std::string& reference = "local_world_aligned");
+  Eigen::MatrixXd joint_jacobian(pinocchio::JointIndex joint,
                                  pinocchio::ReferenceFrame ref = pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED);
 
   /**
@@ -206,10 +219,10 @@ public:
   pinocchio::GeometryModel collision_model;
   pinocchio::GeometryModel visual_model;
 
-protected:
   // Model data
   pinocchio::Data* data;
 
+protected:
   // Root free-flyer joint
   pinocchio::JointModelFreeFlyer root_joint;
 
