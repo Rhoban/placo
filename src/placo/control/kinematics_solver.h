@@ -27,8 +27,8 @@ namespace placo
 class KinematicsSolver
 {
 public:
-  KinematicsSolver(RobotWrapper& robot);
-  KinematicsSolver(RobotWrapper* robot);
+  KinematicsSolver(RobotWrapper& robot_);
+  KinematicsSolver(RobotWrapper* robot_);
 
   /**
    * @brief Adds a position task
