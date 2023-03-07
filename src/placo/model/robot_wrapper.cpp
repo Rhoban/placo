@@ -14,7 +14,12 @@ namespace placo
 {
 bool RobotWrapper::Collision::operator==(const Collision& other)
 {
-  return (bodyA == other.bodyA && bodyB == other.bodyB && contacts == other.contacts);
+  return (objA == other.objA && objB == other.objB);
+}
+
+bool RobotWrapper::Distance::operator==(const Distance& other)
+{
+  return (objA == other.objA && objB == other.objB);
 }
 
 RobotWrapper::RobotWrapper(std::string model_directory) : model_directory(model_directory)
@@ -252,6 +257,8 @@ std::vector<RobotWrapper::Collision> RobotWrapper::self_collisions(bool stop_at_
     {
       Collision collision;
 
+      collision.objA = cp.first;
+      collision.objB = cp.second;
       collision.bodyA = collision_model.geometryObjects[cp.first].name;
       collision.parentA = collision_model.geometryObjects[cp.first].parentJoint;
       collision.bodyB = collision_model.geometryObjects[cp.second].name;
@@ -271,6 +278,34 @@ std::vector<RobotWrapper::Collision> RobotWrapper::self_collisions(bool stop_at_
   }
 
   return collisions;
+}
+
+std::vector<RobotWrapper::Distance> RobotWrapper::distances()
+{
+  std::vector<Distance> distances;
+  pinocchio::GeometryData geom_data(collision_model);
+
+  // And test all the collision pairs
+  pinocchio::computeDistances(model, *data, collision_model, geom_data, state.q);
+
+  for (size_t k = 0; k < collision_model.collisionPairs.size(); ++k)
+  {
+    const pinocchio::CollisionPair& cp = collision_model.collisionPairs[k];
+    const hpp::fcl::DistanceResult& dr = geom_data.distanceResults[k];
+
+    Distance distance;
+    distance.objA = cp.first;
+    distance.objB = cp.second;
+    distance.min_distance = dr.min_distance;
+    distance.pointA = dr.nearest_points[0];
+    distance.pointB = dr.nearest_points[1];
+    distance.parentA = collision_model.geometryObjects[cp.first].parentJoint;
+    distance.parentB = collision_model.geometryObjects[cp.second].parentJoint;
+    distance.normal = dr.normal;
+    distances.push_back(distance);
+  }
+
+  return distances;
 }
 
 static pinocchio::ReferenceFrame string_to_reference(const std::string& reference)

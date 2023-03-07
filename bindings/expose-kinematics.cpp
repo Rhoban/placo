@@ -206,6 +206,7 @@ void exposeKinematics()
       .def("dump_status", &KinematicsSolver::dump_status)
 
       .def("configure_limits", &KinematicsSolver::configure_limits)
+      .def("enable_self_collision_inequalities", &KinematicsSolver::enable_self_collision_inequalities)
 
       .def("solve", &KinematicsSolver::solve);
 }

@@ -31,6 +31,7 @@ class_<RobotType> exposeRobotType(const char* name)
       .def("joint_names", &RobotType::joint_names)
       .def("frame_names", &RobotType::frame_names)
       .def("self_collisions", &RobotType::self_collisions)
+      .def("distances", &RobotType::distances)
       .def("com_jacobian", &RobotType::com_jacobian)
       .def("generalized_gravity", &RobotType::generalized_gravity)
       .def(
@@ -59,6 +60,9 @@ class_<RobotType> exposeRobotType(const char* name)
           "frame_jacobian", +[](RobotType& robot, const std::string& frame,
                                 const std::string& reference) { return robot.frame_jacobian(frame, reference); })
       .def(
+          "joint_jacobian", +[](RobotType& robot, const std::string& joint,
+                                const std::string& reference) { return robot.joint_jacobian(joint, reference); })
+      .def(
           "make_solver", +[](RobotType& robot) { return KinematicsSolver(&robot); });
 }
 
@@ -75,8 +79,21 @@ void exposeRobotWrapper()
   class_<RobotWrapper::Collision>("Collision")
       .add_property("bodyA", &RobotWrapper::Collision::bodyA)
       .add_property("bodyB", &RobotWrapper::Collision::bodyB)
+      .add_property("parentA", &RobotWrapper::Collision::parentA)
+      .add_property("parentB", &RobotWrapper::Collision::parentB)
       .def(
           "get_contact", +[](RobotWrapper::Collision& collision, int index) { return collision.contacts[index]; });
+
+  class_<RobotWrapper::Distance>("Distance")
+      .add_property("parentA", &RobotWrapper::Distance::parentA)
+      .add_property("parentB", &RobotWrapper::Distance::parentB)
+      .add_property(
+          "pointA", +[](RobotWrapper::Distance& distance) { return distance.pointA; })
+      .add_property(
+          "pointB", +[](RobotWrapper::Distance& distance) { return distance.pointB; })
+      .add_property(
+          "normal", +[](RobotWrapper::Distance& distance) { return distance.normal; })
+      .add_property("min_distance", &RobotWrapper::Distance::min_distance);
 
   exposeRobotType<RobotWrapper>("RobotWrapper");
 
@@ -92,4 +109,5 @@ void exposeRobotWrapper()
           "get_flying_side", +[](const HumanoidRobot& robot) { return robot.flying_side; });
 
   exposeStdVector<RobotWrapper::Collision>("vector_Collision");
+  exposeStdVector<RobotWrapper::Distance>("vector_Distance");
 }

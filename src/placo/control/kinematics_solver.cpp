@@ -219,48 +219,38 @@ void KinematicsSolver::compute_self_collision_inequalities()
 {
   if (avoid_self_collisions && robot != nullptr)
   {
-    pinocchio::GeometryData geom_data(robot->collision_model);
-    for (size_t k = 0; k < robot->collision_model.collisionPairs.size(); ++k)
+    auto distances = robot->distances();
+
+    for (auto& distance : distances)
     {
-      geom_data.collisionRequests[k].break_distance = self_collisions_trigger;
-    }
-
-    pinocchio::computeCollisions(robot->model, *robot->data, robot->collision_model, geom_data, robot->state.q);
-
-    for (size_t k = 0; k < robot->collision_model.collisionPairs.size(); ++k)
-    {
-      const pinocchio::CollisionPair& cp = robot->collision_model.collisionPairs[k];
-      const hpp::fcl::CollisionResult& cr = geom_data.collisionResults[k];
-
-      if (cr.distance_lower_bound < self_collisions_trigger)
+      if (distance.min_distance < self_collisions_trigger)
       {
-        Eigen::Vector3d point_A = cr.nearest_points[0];
-        Eigen::Vector3d point_B = cr.nearest_points[1];
-        Eigen::Vector3d v = point_B - point_A;
+        Eigen::Vector3d v = distance.pointB - distance.pointA;
+        Eigen::Vector3d n = v.normalized();
 
-        if (v.norm() < self_collisions_trigger)
+        if (distance.min_distance < 0)
         {
-          Eigen::Vector3d n = v.normalized();
-
-          auto jointA = robot->collision_model.geometryObjects[cp.first].parentJoint;
-          Eigen::MatrixXd X_A_world = pinocchio::SE3(Eigen::Matrix3d::Identity(), -point_A).toActionMatrix();
-          Eigen::MatrixXd JA = X_A_world * robot->joint_jacobian(jointA, pinocchio::ReferenceFrame::WORLD);
-
-          auto jointB = robot->collision_model.geometryObjects[cp.second].parentJoint;
-          Eigen::MatrixXd X_B_world = pinocchio::SE3(Eigen::Matrix3d::Identity(), -point_B).toActionMatrix();
-          Eigen::MatrixXd JB = X_B_world * robot->joint_jacobian(jointB, pinocchio::ReferenceFrame::WORLD);
-
-          Eigen::MatrixXd A = n.transpose() * (JB - JA).block(0, 0, 3, N);
-
-          // d + nT Jb qdot - nT Ja qdot > epsilon
-          Inequality inequality;
-          inequality.A = -A;
-          inequality.b = Eigen::VectorXd(1);
-
-          inequality.b[0] = -self_collisions_margin + v.norm();
-
-          inequalities.push_back(inequality);
+          n = -n;
         }
+
+        Eigen::MatrixXd X_A_world = pinocchio::SE3(Eigen::Matrix3d::Identity(), -distance.pointA).toActionMatrix();
+        Eigen::MatrixXd JA = X_A_world * robot->joint_jacobian(distance.parentA, pinocchio::ReferenceFrame::WORLD);
+
+        Eigen::MatrixXd X_B_world = pinocchio::SE3(Eigen::Matrix3d::Identity(), -distance.pointB).toActionMatrix();
+        Eigen::MatrixXd JB = X_B_world * robot->joint_jacobian(distance.parentB, pinocchio::ReferenceFrame::WORLD);
+
+        Inequality inequality;
+
+        // Adding only one relative constraint
+        Eigen::MatrixXd A = n.transpose() * (JB - JA).block(0, 0, 3, N);
+
+        // d + nT Jb qdot - nT Ja qdot > epsilon
+        inequality.A = -A;
+        inequality.b = Eigen::VectorXd(1);
+
+        inequality.b[0] = -self_collisions_margin + distance.min_distance;
+
+        inequalities.push_back(inequality);
       }
     }
   }
