@@ -7,14 +7,19 @@ namespace placo
 HumanoidRobot::HumanoidRobot(std::string model_directory) : RobotWrapper(model_directory)
 {
   initialize();
-  ensure_on_floor();
 }
 
 void HumanoidRobot::initialize()
 {
   this->RobotWrapper::load();
+  init_config();
+}
 
+void HumanoidRobot::init_config()
+{
   support_side = Both;
+  flying_side = Left;
+
   T_world_support.setIdentity();
 
   left_foot = get_frame_index("left_foot");
@@ -122,7 +127,6 @@ void HumanoidRobot::readFromHistories(rhoban_utils::HistoryCollection& histories
     }
 
     ensure_on_floor();
-    update_kinematics();
   }
 
   // Setting the trunk orientation from the IMU

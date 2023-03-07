@@ -24,6 +24,7 @@ public:
   HumanoidRobot(std::string model_directory = "robot");
 
   void initialize();
+  void init_config();
 
   /**
    * @brief Updates which frame should be the current support
@@ -45,12 +46,12 @@ public:
   /**
    * @brief The current side (left, right or both) supporting the robot
    */
-  Side support_side = placo::HumanoidRobot::Side::Both;
+  Side support_side;
 
   /**
    * @brief The current flying foot or the next flying foot if the support_side is both
    */
-  Side flying_side = placo::HumanoidRobot::Side::Left;
+  Side flying_side;
 
   /**
    * @brief Transformation from support to world
