@@ -194,14 +194,9 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
     if (support.footsteps.size() == 1 && support.start_end == false)
     {
       // XXX: To investigate
-      for (int k = 0; k < ssp_steps; k++)
+      for (int k = 1; k < ssp_steps; k++)
       {
-        planner.add_polygon_constraint(steps + k, support.support_polygon(), JerkPlanner::ZMP, 0.03);
-        // if (k == (ssp_steps / 2))
-        // {
-        //   auto target = support.frame().translation();
-        //   planner.add_equality_constraint(steps + k, Eigen::Vector2d(target.x(), target.y()), JerkPlanner::ZMP);
-        // }
+        planner.add_polygon_constraint(steps + k, support.support_polygon(), JerkPlanner::ZMP, parameters.zmp_margin);
       }
 
       steps += ssp_steps;
@@ -355,7 +350,6 @@ WalkPatternGenerator::planSupportsKick(WalkPatternGenerator::Trajectory trajecto
   FootstepsPlanner::Footstep second_footstep(parameters.foot_width, parameters.foot_length);
   second_footstep.side = HumanoidRobot::other_side(kicking_side);
   second_footstep.frame = kicking_side == HumanoidRobot::Side::Left ? T_world_right : T_world_left;
-  second_footstep.support_polygon();
 
   FootstepsPlanner::Footstep third_footstep(parameters.foot_width, parameters.foot_length);
   third_footstep.side = kicking_side;
@@ -374,7 +368,6 @@ WalkPatternGenerator::planSupportsKick(WalkPatternGenerator::Trajectory trajecto
   // Second support
   support.start_end = false;
   support.footsteps = { second_footstep };
-  support.polygon = second_footstep.polygon;
   supports.push_back(support);
 
   // End support
@@ -406,7 +399,7 @@ void WalkPatternGenerator::planCoMKick(Trajectory& trajectory, Eigen::Vector2d i
   // Constraint the ZMP to be in the support polygon during the kick
   for (int i = ssp_steps / 2 + 1; i < total_steps - ssp_steps / 2; i++)
   {
-    planner.add_polygon_constraint(i, trajectory.supports[1].polygon, JerkPlanner::ZMP, 0.02);
+    planner.add_polygon_constraint(i, trajectory.supports[1].support_polygon(), JerkPlanner::ZMP, 0.02);
   }
 
   planner.add_equality_constraint(total_steps - ssp_steps / 2 + 1, Eigen::Vector2d(target.x(), target.y()),
@@ -441,7 +434,7 @@ void WalkPatternGenerator::planCoMOneFoot(Trajectory& trajectory, Eigen::Vector2
   // Constraint the ZMP to be in the support polygon during the kick
   for (int i = ssp_steps / 2 + 1; i < total_steps - 1; i++)
   {
-    planner.add_polygon_constraint(i, trajectory.supports[1].polygon, JerkPlanner::ZMP, 0.02);
+    planner.add_polygon_constraint(i, trajectory.supports[1].support_polygon(), JerkPlanner::ZMP, 0.02);
   }
 
   // CoM constraints

@@ -48,7 +48,7 @@ parameters.walk_foot_tilt = 0.2
 parameters.foot_length = 0.1576
 parameters.foot_width = 0.092
 parameters.feet_spacing = 0.122
-parameters.zmp_margin = 0.045
+parameters.zmp_margin = 0.02
 
 # Creating the kinematics solver
 solver = robot.make_solver()
@@ -104,7 +104,7 @@ if args.graph:
     data_left = []
     data_right = []
     data = []
-    # draw_footsteps(trajectory.supports, show=False)
+    draw_footsteps(trajectory.supports, show=False)
 
 if args.pybullet or args.torque:
     import pybullet as p

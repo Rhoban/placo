@@ -12,6 +12,10 @@
 
 namespace placo
 {
+RobotWrapper::RobotWrapper(std::string model_directory) : model_directory(model_directory)
+{
+}
+
 bool RobotWrapper::Collision::operator==(const Collision& other)
 {
   return (objA == other.objA && objB == other.objB);
@@ -20,10 +24,6 @@ bool RobotWrapper::Collision::operator==(const Collision& other)
 bool RobotWrapper::Distance::operator==(const Distance& other)
 {
   return (objA == other.objA && objB == other.objB);
-}
-
-RobotWrapper::RobotWrapper(std::string model_directory) : model_directory(model_directory)
-{
 }
 
 void RobotWrapper::load()
