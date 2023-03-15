@@ -53,7 +53,7 @@ void SolverTaskHolder::init_tasks()
 
 void SolverTaskHolder::update_walk_tasks(Eigen::Affine3d left_frame, Eigen::Affine3d right_frame,
                                          Eigen::Vector3d com_vector, Eigen::Matrix3d trunk_orientation,
-                                         bool dump_status)
+                                         double dump_status)
 {
   left_foot_task.set_T_world_frame(left_frame);
   right_foot_task.set_T_world_frame(right_frame);
@@ -68,37 +68,22 @@ void SolverTaskHolder::update_walk_tasks(Eigen::Affine3d left_frame, Eigen::Affi
   robot->update_kinematics();
 }
 
-void SolverTaskHolder::update_head_task(double pitch, double yaw, bool dump_status)
+void SolverTaskHolder::update_head_task(double pitch, double yaw)
 {
   head_task->set_joint("head_pitch", pitch);
   head_task->set_joint("head_yaw", yaw);
-
-  solver->solve(true);
-  if (dump_status)
-  {
-    solver->dump_status();
-  }
-  robot->update_kinematics();
 }
 
-void SolverTaskHolder::update_arms_task(std::map<std::string, double> joints, bool dump_status)
+void SolverTaskHolder::update_arms_task(std::map<std::string, double> joints)
 {
   for (auto dof : joints)
   {
     arms_task->set_joint(dof.first, dof.second);
   }
-
-  solver->solve(true);
-  if (dump_status)
-  {
-    solver->dump_status();
-  }
-  robot->update_kinematics();
 }
 
 void SolverTaskHolder::update_arms_task(double l_elbow, double r_elbow, double l_shoulder_pitch,
-                                        double r_shoulder_pitch, double l_shoulder_roll, double r_shoulder_roll,
-                                        bool dump_status)
+                                        double r_shoulder_pitch, double l_shoulder_roll, double r_shoulder_roll)
 {
   arms_task->set_joint("left_elbow", l_elbow);
   arms_task->set_joint("right_elbow", r_elbow);
@@ -106,20 +91,13 @@ void SolverTaskHolder::update_arms_task(double l_elbow, double r_elbow, double l
   arms_task->set_joint("right_shoulder_pitch", r_shoulder_pitch);
   arms_task->set_joint("left_shoulder_roll", l_shoulder_roll);
   arms_task->set_joint("right_shoulder_roll", r_shoulder_roll);
-
-  solver->solve(true);
-  if (dump_status)
-  {
-    solver->dump_status();
-  }
-  robot->update_kinematics();
 }
 
 void SolverTaskHolder::update_arms_task_python_binding(double l_elbow, double r_elbow, double l_shoulder_pitch,
                                                        double r_shoulder_pitch, double l_shoulder_roll,
-                                                       double r_shoulder_roll, bool dump_status)
+                                                       double r_shoulder_roll)
 {
-  update_arms_task(l_elbow, r_elbow, l_shoulder_pitch, r_shoulder_pitch, l_shoulder_roll, r_shoulder_roll, dump_status);
+  update_arms_task(l_elbow, r_elbow, l_shoulder_pitch, r_shoulder_pitch, l_shoulder_roll, r_shoulder_roll);
 }
 
 void SolverTaskHolder::configure_weight(double lf, double rf, double com, double trunk)

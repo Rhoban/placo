@@ -61,10 +61,7 @@ Eigen::Affine3d HumanoidRobot::get_T_world_trunk()
 
 Eigen::Affine3d HumanoidRobot::get_T_world_self()
 {
-  Eigen::Affine3d support_foot = get_T_world_frame(other_side(flying_side));
-  Eigen::Affine3d flying_foot = get_T_world_frame(flying_side);
-
-  return rhoban_utils::averageFrames(support_foot, flying_foot, 0.5);
+  return flatten_on_floor(rhoban_utils::averageFrames(get_T_world_right(), get_T_world_left(), 0.5));
 }
 
 void HumanoidRobot::update_support_side(HumanoidRobot::Side new_side)
@@ -88,8 +85,6 @@ void HumanoidRobot::update_support_side(HumanoidRobot::Side new_side)
 
       // Projecting it on the floor
       T_world_support = flatten_on_floor(T_world_newSupport);
-
-      ensure_on_floor();
     }
   }
 }
@@ -98,7 +93,14 @@ void HumanoidRobot::ensure_on_floor()
 {
   // Updating the floating base so that the foot is where we want
   update_kinematics();
-  set_T_world_frame(support_frame(), T_world_support);
+  if (support_side == Both)
+  {
+    set_T_world_frame(left_foot, flatten_on_floor(get_T_world_left()));
+  }
+  else
+  {
+    set_T_world_frame(support_frame(), T_world_support);
+  }
   update_kinematics();
 }
 
@@ -117,6 +119,7 @@ void HumanoidRobot::update_support_side(const std::string& side)
   update_support_side(string_to_side(side));
 }
 
+// XXX : WIP - not working currently
 Eigen::Vector3d HumanoidRobot::get_com_velocity(Eigen::VectorXd qd_a, Side support, double roll, double pitch,
                                                 double yaw)
 {

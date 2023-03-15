@@ -32,7 +32,8 @@ parameters.dt = 0.025
 parameters.single_support_duration = .35
 parameters.double_support_duration = 0.0
 parameters.startend_double_support_duration = 0.5
-parameters.maximum_steps = 500
+parameters.planned_steps = 500
+parameters.replan_frequency = 500
 parameters.walk_com_height = 0.32
 parameters.walk_foot_height = 0.04
 parameters.pendulum_height = 0.32
@@ -48,8 +49,8 @@ solver = robot.make_solver()
 task_holder = placo.SolverTaskHolder(robot, solver)
 
 elbow = -120*np.pi/180
-task_holder.update_arms_task(elbow, elbow, 0, 0, 0, 0, False)
-task_holder.update_head_task(0., 0., False)
+task_holder.update_arms_task(elbow, elbow, 0., 0., 0., 0.)
+task_holder.update_head_task(0., 0.)
 
 # Creating the FootstepsPlanners
 T_world_left = placo.flatten_on_floor(robot.get_T_world_left())
@@ -161,6 +162,7 @@ elif args.pybullet or args.meshcat or args.torque:
                                       trajectory.get_CoM_world(T), trajectory.get_R_world_trunk(T), False)
 
         robot.update_support_side(str(trajectory.support_side(T)))
+        robot.ensure_on_floor()
 
         if (args.pybullet or args.torque) and t < -2:
             T_left_origin = sim.transformation("origin", "left_foot_frame")

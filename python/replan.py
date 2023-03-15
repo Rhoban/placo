@@ -40,7 +40,8 @@ parameters.single_support_duration = .35
 parameters.double_support_duration = 0.0
 parameters.startend_double_support_duration = 0.5
 parameters.kick_duration = 0.3
-parameters.maximum_steps = 500
+parameters.planned_steps = 500
+parameters.replan_frequency = 500
 parameters.walk_com_height = 0.32
 parameters.walk_foot_height = 0.04
 parameters.pendulum_height = 0.32
@@ -56,8 +57,8 @@ solver = robot.make_solver()
 task_holder = placo.SolverTaskHolder(robot, solver)
 
 elbow = -120*np.pi/180
-task_holder.update_arms_task(elbow, elbow, 0, 0, 0, 0, False)
-task_holder.update_head_task(0., 0., False)
+task_holder.update_arms_task(elbow, elbow, 0., 0., 0., 0.)
+task_holder.update_head_task(0., 0.)
 
 # Creating the FootstepsPlanners
 T_world_left = placo.flatten_on_floor(robot.get_T_world_left())
@@ -126,6 +127,7 @@ while True:
     previous_support = robot.get_support_side()
 
     robot.update_support_side(str(trajectory.support_side(T)))
+    robot.ensure_on_floor()
 
     # Replan
     if replan and previous_support != robot.get_support_side() and str(previous_support) != "both":

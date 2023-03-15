@@ -13,24 +13,25 @@ public:
 
   void init_tasks();
 
+  // Update the walk related tasks and solve the QP problem of the IK
   void update_walk_tasks(Eigen::Affine3d left_frame, Eigen::Affine3d right_frame, Eigen::Vector3d com_vector,
-                         Eigen::Matrix3d trunk_orientation, bool dump_status = false);
+                         Eigen::Matrix3d trunk_orientation, double dump_status = false);
 
-  void update_head_task(double pitch, double yaw, bool dump_status = false);
+  void update_head_task(double pitch, double yaw);
 
-  void update_arms_task(std::map<std::string, double> joints, bool dump_status = false);
+  void update_arms_task(std::map<std::string, double> joints);
   void update_arms_task(double l_elbow, double r_elbow, double l_shoulder_pitch, double r_shoulder_pitch,
-                        double l_shoulder_roll, double r_shoulder_roll, bool dump_status = false);
+                        double l_shoulder_roll, double r_shoulder_roll);
 
   void update_arms_task_python_binding(double l_elbow, double r_elbow, double l_shoulder_pitch, double r_shoulder_pitch,
-                                       double l_shoulder_roll, double r_shoulder_roll, bool dump_status = false);
+                                       double l_shoulder_roll, double r_shoulder_roll);
 
   void configure_weight(double lf = 1.0, double rf = 1.0, double com = 1.0, double trunk = 1.0);
 
-protected:
   // Robot
   HumanoidRobot* robot;
 
+protected:
   // Kinematic solver
   KinematicsSolver* solver;
 

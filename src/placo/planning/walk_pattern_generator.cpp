@@ -171,7 +171,7 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
       }
     }
 
-    if (total_steps >= parameters.maximum_steps)
+    if (total_steps >= parameters.planned_steps)
     {
       break;
     }

@@ -37,9 +37,14 @@ public:
   double kick_duration = 1.;
 
   /**
-   * @brief Maximum steps for planning
+   * @brief Maximum planned steps
    */
-  int maximum_steps = 100;
+  int planned_steps = 100;
+
+  /**
+   * @brief Number of steps between each replan
+   */
+  int replan_frequency = 10;
 
   /**
    * @brief Margin for the ZMP to live in the support polygon [m]
