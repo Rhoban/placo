@@ -76,15 +76,16 @@ void HumanoidRobot::update_support_side(HumanoidRobot::Side new_side)
     // Updating the support frame to this frame
     support_side = new_side;
 
-    if (support_side != Both)
+    update_kinematics();
+
+    // If we have the 2 feet on the ground, we will use the left one to ensure we are on the floor
+    if (support_side == Both)
     {
-      update_kinematics();
-
-      // Retrieving the current support configuration
-      auto T_world_newSupport = get_T_world_frame(support_frame());
-
-      // Projecting it on the floor
-      T_world_support = flatten_on_floor(T_world_newSupport);
+      T_world_support = flatten_on_floor(get_T_world_left());
+    }
+    else
+    {
+      T_world_support = flatten_on_floor(get_T_world_frame(support_frame()));
     }
   }
 }
@@ -95,7 +96,7 @@ void HumanoidRobot::ensure_on_floor()
   update_kinematics();
   if (support_side == Both)
   {
-    set_T_world_frame(left_foot, flatten_on_floor(get_T_world_left()));
+    set_T_world_frame(left_foot, T_world_support);
   }
   else
   {
