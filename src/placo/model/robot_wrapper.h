@@ -39,14 +39,14 @@ public:
   /**
    * @brief Set joint values
    * @param name DOF name
-   * @param value DOF value
+   * @param value DOF value [rad]
    */
   void set_joint(const std::string& name, double value);
 
   /**
-   * @brief Retrieves a joint valud
+   * @brief Retrieves a joint value
    * @param name
-   * @return the joint current (inner state) value
+   * @return the joint current (inner state) value in radians
    */
   double get_joint(const std::string& name);
 
@@ -78,7 +78,7 @@ public:
    */
   virtual std::vector<std::string> expected_frames();
 
-  // Robot state
+  // Robot state [rad]
   struct State
   {
     Eigen::VectorXd q;
@@ -86,7 +86,7 @@ public:
   };
 
   /**
-   * @brief Robot's current state
+   * @brief Robot's current state [rad]
    */
   State state;
 
@@ -225,6 +225,11 @@ public:
    * @brief Return all the joint names
    */
   std::vector<std::string> joint_names();
+
+  /**
+   * @brief Return all the actuated joint names
+   */
+  std::vector<std::string> actuated_joint_names();
 
   /**
    * @brief Return all the frame names

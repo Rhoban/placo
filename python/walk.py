@@ -1,11 +1,11 @@
 import time
 import placo
 import argparse
+import eigenpy
 import tf
 import pinocchio as pin
 import numpy as np
 
-# XXX: Have the three options (plot / meshcat / pybullet) available
 # XXX: Make double support? an option of the walk (maybe false if the length is zero)
 # XXX: Make the constraint "duration" an option of the walk
 
@@ -40,7 +40,6 @@ parameters.walk_trunk_pitch = 0.2
 parameters.walk_foot_tilt = 0.2
 parameters.foot_length = 0.1576
 parameters.foot_width = 0.092
-# parameters.feet_spacing = 0.104  # for better drawing
 parameters.feet_spacing = 0.122
 parameters.zmp_margin = 0.02
 
@@ -48,62 +47,55 @@ parameters.zmp_margin = 0.02
 solver = robot.make_solver()
 task_holder = placo.SolverTaskHolder(robot, solver)
 
-solver.unmask_dof("head_pitch")
-solver.unmask_dof("head_yaw")
-solver.unmask_dof("left_elbow")
-solver.unmask_dof("right_elbow")
-solver.unmask_dof("left_shoulder_pitch")
-solver.unmask_dof("right_shoulder_pitch")
-solver.unmask_dof("left_shoulder_roll")
-solver.unmask_dof("right_shoulder_roll")
-joints = solver.add_joints_task()
-joints.set_joints(
-    {
-        "head_pitch": 0,
-        "head_yaw": 0,
-        "left_elbow": -120*np.pi/180,
-        "right_elbow": -120*np.pi/180,
-        "left_shoulder_pitch": 0,
-        "right_shoulder_pitch": 0,
-        "left_shoulder_roll": 0,
-        "right_shoulder_roll": 0,
-    }
-)
+elbow = -120*np.pi/180
+task_holder.update_arms_task(elbow, elbow, 0, 0, 0, 0, False)
+task_holder.update_head_task(0., 0., False)
 
-# Creating the FootstepsPlanner
+# Creating the FootstepsPlanners
 T_world_left = placo.flatten_on_floor(robot.get_T_world_left())
 T_world_right = placo.flatten_on_floor(robot.get_T_world_right())
 
-####### Naive FootstepsPlanner ########
-# planner = placo.FootstepsPlannerNaive(parameters)
-# T_world_leftTarget = T_world_left.copy()
-# T_world_rightTarget = T_world_right.copy()
+naive_footsteps_planner = placo.FootstepsPlannerNaive(parameters)
+T_world_leftTarget = T_world_left.copy()
+T_world_rightTarget = T_world_right.copy()
+# --------------------------------------
+T_world_leftTarget[0, 3] += .5
+T_world_rightTarget[0, 3] += .5
+# --------------------------------------
+# XXX : Not converging walk with these traget frames
 # T_world_leftTarget[0, 3] += 0.3
 # T_world_leftTarget[1, 3] += 0.3
 # T_world_leftTarget = T_world_leftTarget @ tf.rotation((0, 0, 1), np.pi/2)
 # T_world_rightTarget = T_world_leftTarget
 # T_world_rightTarget[0, 3] += parameters.feet_spacing
-# planner.configure(T_world_leftTarget, T_world_rightTarget)
+# --------------------------------------
+naive_footsteps_planner.configure(T_world_leftTarget, T_world_rightTarget)
 
-##### Repetitive FootstepsPlanner #####
-planner = placo.FootstepsPlannerRepetitive(parameters)
+repetitive_footsteps_planner = placo.FootstepsPlannerRepetitive(parameters)
 d_x = 0.1
 d_y = 0.
 d_theta = 0.
 nb_steps = 5
-planner.configure(d_x, d_y, d_theta, nb_steps)
+repetitive_footsteps_planner.configure(d_x, d_y, d_theta, nb_steps)
 
-# Creating the pattern generator
-walk = placo.WalkPatternGenerator(robot, planner, parameters)
+# Creating the walk pattern generator and planification
+walk = placo.WalkPatternGenerator(robot, parameters)
 
 # start_t = time.time()
 
-# Planification
-trajectory = walk.plan()
+# --------------------------------------
+footsteps = naive_footsteps_planner.plan(placo.HumanoidRobot_Side.left,
+                                         T_world_left, T_world_right)
+# --------------------------------------
+# footsteps = repetitive_footsteps_planner.plan(placo.HumanoidRobot_Side.left,
+#                                               T_world_left, T_world_right)
+# --------------------------------------
+
+trajectory = walk.plan(footsteps, np.array([0., 0.]), np.array([0., 0.]))
 
 # elapsed = time.time() - start_t
-# print(
-#     f"Computation time: {elapsed*1e6}µs, Jerk planner steps: {trajectory.jerk_planner_steps}")
+# print(f"Computation time: {elapsed*1e6}µs,
+# Jerk planner steps: {trajectory.jerk_planner_steps}")
 
 if args.graph:
     import matplotlib.pyplot as plt
@@ -165,10 +157,9 @@ elif args.pybullet or args.meshcat or args.torque:
     while True:
         T = max(0, t)
 
-        task_holder.update_tasks(trajectory.get_T_world_left(T), trajectory.get_T_world_right(T),
-                                 trajectory.get_CoM_world(T), trajectory.get_R_world_trunk(T), False)
+        task_holder.update_walk_tasks(trajectory.get_T_world_left(T), trajectory.get_T_world_right(T),
+                                      trajectory.get_CoM_world(T), trajectory.get_R_world_trunk(T), False)
 
-        robot.update_kinematics()
         robot.update_support_side(str(trajectory.support_side(T)))
 
         if (args.pybullet or args.torque) and t < -2:

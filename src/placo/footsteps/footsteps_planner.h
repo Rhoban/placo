@@ -86,8 +86,8 @@ public:
    * @return vector of supports to use. It starts with initial double supports,
    * and add double support phases between footsteps.
    */
-  std::vector<Support> make_supports(std::vector<Footstep> footsteps, bool start = true, bool middle = false,
-                                     bool end = true);
+  static std::vector<Support> make_supports(std::vector<Footstep> footsteps, bool start = true, bool middle = false,
+                                            bool end = true);
 
   // Humanoid parameters for planning and control
   HumanoidParameters& parameters;

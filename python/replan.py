@@ -21,6 +21,7 @@ args = parser.parse_args()
 nb_plotted_steps = 10
 
 # Kick
+kick = False
 nb_steps_before_kick = 6
 
 # Loading the robot
@@ -54,51 +55,40 @@ parameters.zmp_margin = 0.02
 solver = robot.make_solver()
 task_holder = placo.SolverTaskHolder(robot, solver)
 
-solver.unmask_dof("head_pitch")
-solver.unmask_dof("head_yaw")
-solver.unmask_dof("left_elbow")
-solver.unmask_dof("right_elbow")
-solver.unmask_dof("left_shoulder_pitch")
-solver.unmask_dof("right_shoulder_pitch")
-solver.unmask_dof("left_shoulder_roll")
-solver.unmask_dof("right_shoulder_roll")
-joints = solver.add_joints_task()
-joints.set_joints(
-    {
-        "head_pitch": 0,
-        "head_yaw": 0,
-        "left_elbow": -120*np.pi/180,
-        "right_elbow": -120*np.pi/180,
-        "left_shoulder_pitch": 0,
-        "right_shoulder_pitch": 0,
-        "left_shoulder_roll": 0,
-        "right_shoulder_roll": 0,
-    }
-)
+elbow = -120*np.pi/180
+task_holder.update_arms_task(elbow, elbow, 0, 0, 0, 0, False)
+task_holder.update_head_task(0., 0., False)
 
-# Creating the FootstepsPlanner
+# Creating the FootstepsPlanners
 T_world_left = placo.flatten_on_floor(robot.get_T_world_left())
 T_world_right = placo.flatten_on_floor(robot.get_T_world_right())
 
-####### Naive FootstepsPlanner ########
-# planner = placo.FootstepsPlannerNaive(parameters)
-# T_world_leftTarget = T_world_left.copy()
-# T_world_rightTarget = T_world_right.copy()
-# T_world_leftTarget[0, 3] += 1.0
-# T_world_rightTarget[0, 3] += 1.0
-# planner.configure(T_world_leftTarget, T_world_rightTarget)
+naive_footsteps_planner = placo.FootstepsPlannerNaive(parameters)
+T_world_leftTarget = T_world_left.copy()
+T_world_rightTarget = T_world_right.copy()
+T_world_leftTarget[0, 3] += .5
+T_world_rightTarget[0, 3] += .5
+naive_footsteps_planner.configure(T_world_leftTarget, T_world_rightTarget)
 
-##### Repetitive FootstepsPlanner #####
-planner = placo.FootstepsPlannerRepetitive(parameters)
+repetitive_footsteps_planner = placo.FootstepsPlannerRepetitive(parameters)
 d_x = 0.1
 d_y = 0.
 d_theta = 0.
-nb_planned_steps = 6
-planner.configure(d_x, d_y, d_theta, nb_planned_steps)
+nb_steps = 5
+repetitive_footsteps_planner.configure(d_x, d_y, d_theta, nb_steps)
 
 # Creating the pattern generator
-walk = placo.WalkPatternGenerator(robot, planner, parameters)
-trajectory = walk.plan()
+walk = placo.WalkPatternGenerator(robot, parameters)
+
+# --------------------------------------
+# footsteps = naive_footsteps_planner.plan(placo.HumanoidRobot_Side.left,
+#                                          T_world_left, T_world_right)
+# --------------------------------------
+footsteps = repetitive_footsteps_planner.plan(placo.HumanoidRobot_Side.left,
+                                              T_world_left, T_world_right)
+# --------------------------------------
+
+trajectory = walk.plan(footsteps, np.array([0., 0.]), np.array([0., 0.]))
 
 if args.graph:
     data_left = []
@@ -130,12 +120,11 @@ while True:
     T = max(0, t)
     timeline.append(t + real_time_offset)
 
-    task_holder.update_tasks(trajectory.get_T_world_left(T), trajectory.get_T_world_right(T),
-                             trajectory.get_CoM_world(T), trajectory.get_R_world_trunk(T), False)
+    task_holder.update_walk_tasks(trajectory.get_T_world_left(T), trajectory.get_T_world_right(T),
+                                  trajectory.get_CoM_world(T), trajectory.get_R_world_trunk(T), False)
 
     previous_support = robot.get_support_side()
 
-    robot.update_kinematics()
     robot.update_support_side(str(trajectory.support_side(T)))
 
     # Replan
@@ -143,19 +132,26 @@ while True:
         print("\n----- Replanning -----")
         steps += 1
 
-        if steps < nb_steps_before_kick:
+        if (not kick) or steps < nb_steps_before_kick:
             print("Replanning a new walk trajectory")
             # start_timer = time.time()
 
-            # Naive
+            T_world_left = placo.flatten_on_floor(robot.get_T_world_left())
+            T_world_right = placo.flatten_on_floor(robot.get_T_world_right())
+
+            # --------------------------------------
             # T_world_leftTarget[0, 3] += 0.08
             # T_world_rightTarget[0, 3] += 0.08
-            # planner.configure(T_world_leftTarget, T_world_rightTarget)
+            # naive_footsteps_planner.configure(T_world_leftTarget, T_world_rightTarget)
+            # footsteps = naive_footsteps_planner.plan(placo.HumanoidRobot_Side.left,
+            #                                         T_world_left, T_world_right)
+            # --------------------------------------
+            footsteps = repetitive_footsteps_planner.plan(placo.HumanoidRobot.other_side(previous_support),
+                                                          T_world_left, T_world_right)
+            # --------------------------------------
 
-            # Repetitive
-            planner.configure(d_x, d_y, d_theta, nb_planned_steps)
-
-            trajectory = walk.replan(trajectory, T)
+            trajectory = walk.plan(
+                footsteps, trajectory.com.vel(T), trajectory.com.acc(T))
 
             # elapsed_time = time.time() - start_timer
             # print(f"Replan computation time: {elapsed_time*1e6}µs")

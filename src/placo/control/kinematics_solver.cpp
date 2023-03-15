@@ -470,6 +470,7 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
 
   if (apply)
   {
+    robot->state.qd = qd;
     robot->state.q = pinocchio::integrate(robot->model, robot->state.q, qd);
   }
   else

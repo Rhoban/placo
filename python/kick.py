@@ -75,8 +75,10 @@ foot_spline = placo.PolySpline3D()
 foot_spline.addPoint(0., np.array([0., -0.1, 0.]), np.array([0., 0., 0.]))
 foot_spline.addPoint(0.5, np.array([0., -0.1, 0.]), np.array([0., 0., 0.]))
 foot_spline.addPoint(1., np.array([0., -0.1, 0.05]), np.array([0., 0., 0.]))
-foot_spline.addPoint(1.5, np.array([-0.08, -0.1, 0.05]), np.array([0., 0., 0.]))
-foot_spline.addPoint(1.51, np.array([0.08, -0.1, 0.05]), np.array([0., 0., 0.]))
+foot_spline.addPoint(1.5, np.array(
+    [-0.08, -0.1, 0.05]), np.array([0., 0., 0.]))
+foot_spline.addPoint(1.51, np.array(
+    [0.08, -0.1, 0.05]), np.array([0., 0., 0.]))
 foot_spline.addPoint(2., np.array([0.0, -0.1, 0.05]), np.array([0., 0., 0.]))
 foot_spline.addPoint(2.5, np.array([0.0, -0.1, 0.]), np.array([0., 0., 0.]))
 
@@ -111,7 +113,7 @@ if args.pybullet:
 
 if args.graph:
     times_plot = []
-    joints_plot = {joint: [] for joint in robot.joint_names()}
+    joints_plot = {joint: [] for joint in robot.actuated_joint_names()}
 
 t = 0
 dt = 0.005
@@ -132,7 +134,6 @@ try:
                     rising = True
                     trunk_task.configure("trunk_task", "soft", 1e-4)
                     solver.add_centroidal_momentum_task(np.array([0., 0., 0.]))
-                    
 
             T_world_right[:3, 3] = foot_spline.get(motion_t)
             com[1] = com_spline.get(motion_t)
@@ -158,7 +159,8 @@ try:
                 robot_frame_viz(robot, "trunk")
 
                 # Show the CoM
-                point_viz("com", robot.com_world(), radius=0.025, color=0xAAAAAA)
+                point_viz("com", robot.com_world(),
+                          radius=0.025, color=0xAAAAAA)
 
             # Spin-lock until the next tick
             while time.time() < start_t + t:
@@ -166,23 +168,22 @@ try:
 
         if args.pybullet:
             joints = {joint: robot.get_joint(joint)
-                        for joint in sim.getJoints()}
+                      for joint in sim.getJoints()}
             applied = sim.setJoints(joints)
             sim.tick()
 
         if args.graph:
             times_plot.append(t)
-            for joint in robot.joint_names():
+            for joint in robot.actuated_joint_names():
                 joints_plot[joint].append(robot.get_joint(joint))
 
 except KeyboardInterrupt:
     if args.graph:
         import matplotlib.pyplot as plt
 
-        for joint in robot.joint_names():
+        for joint in robot.actuated_joint_names():
             plt.plot(times_plot, joints_plot[joint], label=joint)
-            
+
         plt.legend()
         plt.grid()
         plt.show()
-

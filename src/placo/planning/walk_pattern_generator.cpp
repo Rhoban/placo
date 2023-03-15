@@ -1,13 +1,11 @@
 #include "placo/planning/walk_pattern_generator.h"
-#include "placo/footsteps/footsteps_planner_naive.h"
-#include "placo/footsteps/footsteps_planner_repetitive.h"
+#include "placo/footsteps/footsteps_planner.h"
 #include "placo/utils.h"
 
 namespace placo
 {
-WalkPatternGenerator::WalkPatternGenerator(HumanoidRobot& robot, FootstepsPlanner& footsteps_planner,
-                                           HumanoidParameters& parameters)
-  : robot(robot), footsteps_planner(footsteps_planner), parameters(parameters)
+WalkPatternGenerator::WalkPatternGenerator(HumanoidRobot& robot, HumanoidParameters& parameters)
+  : robot(robot), parameters(parameters)
 {
 }
 
@@ -291,47 +289,19 @@ void WalkPatternGenerator::planFeetTrajectories(Trajectory& trajectory)
   trajectory.duration = t;
 }
 
-WalkPatternGenerator::Trajectory WalkPatternGenerator::plan()
+WalkPatternGenerator::Trajectory WalkPatternGenerator::plan(std::vector<FootstepsPlanner::Footstep> footsteps,
+                                                            Eigen::Vector2d com_vel, Eigen::Vector2d com_acc)
 {
   WalkPatternGenerator::Trajectory trajectory;
 
   // Planning the supports followed by the walk
   trajectory.com_height = parameters.walk_com_height;
   trajectory.trunk_pitch = parameters.walk_trunk_pitch;
-  auto footsteps = footsteps_planner.plan(robot.flying_side, flatten_on_floor(robot.get_T_world_left()),
-                                          flatten_on_floor(robot.get_T_world_right()));
   bool double_supports = parameters.double_support_duration / parameters.dt >= 1;
-  trajectory.supports = footsteps_planner.make_supports(footsteps, true, double_supports, true);
+  trajectory.supports = FootstepsPlanner::make_supports(footsteps, true, double_supports, true);
 
   // Planning the center of mass trajectory
-  planCoM(trajectory);
-
-  // Planning the footsteps trajectories
-  planFeetTrajectories(trajectory);
-
-  return trajectory;
-}
-
-WalkPatternGenerator::Trajectory WalkPatternGenerator::replan(WalkPatternGenerator::Trajectory& previous_trajectory,
-                                                              double elapsed_time)
-{
-  WalkPatternGenerator::Trajectory trajectory;
-
-  // Update the supports followed by the walk
-  trajectory.com_height = parameters.walk_com_height;
-  trajectory.trunk_pitch = parameters.walk_trunk_pitch;
-
-  auto T_world_left =
-      flatten_on_floor(previous_trajectory.get_last_footstep_frame(HumanoidRobot::Side::Left, elapsed_time));
-  auto T_world_right =
-      flatten_on_floor(previous_trajectory.get_last_footstep_frame(HumanoidRobot::Side::Right, elapsed_time));
-
-  auto footsteps = footsteps_planner.plan(robot.flying_side, T_world_left, T_world_right);
-  bool double_supports = parameters.double_support_duration / parameters.dt >= 1;
-  trajectory.supports = footsteps_planner.make_supports(footsteps, double_supports, double_supports, true);
-
-  // Planning the center of mass trajectory
-  planCoM(trajectory, previous_trajectory.com.vel(elapsed_time), previous_trajectory.com.acc(elapsed_time));
+  planCoM(trajectory, com_vel, com_acc);
 
   // Planning the footsteps trajectories
   planFeetTrajectories(trajectory);

@@ -69,17 +69,15 @@ public:
     int jerk_planner_steps;
   };
 
-  WalkPatternGenerator(HumanoidRobot& robot, FootstepsPlanner& footsteps_planner, HumanoidParameters& parameters);
+  WalkPatternGenerator(HumanoidRobot& robot, HumanoidParameters& parameters);
 
-  /// @brief Plan a walk trajectory based on the footsteps planner and the parameters of the WPG
+  /// @brief Plan a walk trajectory following given footsteps based on the parameters of the WPG
+  /// @param footsteps Foosteps to follow
+  /// @param com_vel Initial CoM velocity
+  /// @param com_acc Initial CoM acceleration
   /// @return Planned trajectory
-  Trajectory plan();
-
-  /// @brief Replan a walk trajectory adapted to the previous one
-  /// @param previous_trajectory Previous trajectory
-  /// @param elapsed_time Elapsed time on the previous trajectory
-  /// @return Planned trajectory
-  Trajectory replan(Trajectory& previous_trajectory, double elapsed_time);
+  Trajectory plan(std::vector<FootstepsPlanner::Footstep> footsteps, Eigen::Vector2d com_vel = Eigen::Vector2d::Zero(),
+                  Eigen::Vector2d com_acc = Eigen::Vector2d::Zero());
 
   /// @brief Plan a trajectory adapted to the previous one ending with one foot in the air at a targeted position
   /// @param previous_trajectory Previous trajectory
@@ -100,9 +98,6 @@ protected:
 
   // The parameters to use for planning. The values are forwarded to the relevant solvers when needed.
   HumanoidParameters& parameters;
-
-  // Planner used to generate the footsteps
-  FootstepsPlanner& footsteps_planner;
 
   void planCoM(Trajectory& trajectory, Eigen::Vector2d initial_vel = Eigen::Vector2d::Zero(),
                Eigen::Vector2d initial_acc = Eigen::Vector2d::Zero());

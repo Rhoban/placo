@@ -27,15 +27,16 @@ void exposeWalkPatternGenerator()
       .def("support_side", &WalkPatternGenerator::Trajectory::support_side)
       .def("get_last_footstep_frame", &WalkPatternGenerator::Trajectory::get_last_footstep_frame);
 
-  class_<WalkPatternGenerator>("WalkPatternGenerator", init<HumanoidRobot&, FootstepsPlanner&, HumanoidParameters&>())
+  class_<WalkPatternGenerator>("WalkPatternGenerator", init<HumanoidRobot&, HumanoidParameters&>())
       .def("plan", &WalkPatternGenerator::plan)
-      .def("replan", &WalkPatternGenerator::replan)
       .def("plan_kick", &WalkPatternGenerator::plan_kick)
       .def("plan_one_foot_balance", &WalkPatternGenerator::plan_one_foot_balance);
 
   class_<SolverTaskHolder>("SolverTaskHolder", init<HumanoidRobot&, KinematicsSolver&>())
       .def("configure_weight", &SolverTaskHolder::configure_weight)
-      .def("update_tasks", &SolverTaskHolder::update_tasks);
+      .def("update_walk_tasks", &SolverTaskHolder::update_walk_tasks)
+      .def("update_arms_task", &SolverTaskHolder::update_arms_task_python_binding)
+      .def("update_head_task", &SolverTaskHolder::update_head_task);
 
   class_<SwingFoot>("SwingFoot", init<>()).def("make_trajectory", &SwingFoot::make_trajectory);
 

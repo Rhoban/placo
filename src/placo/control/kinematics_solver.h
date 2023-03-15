@@ -174,6 +174,7 @@ public:
 
   /**
    * @brief Constructs the QP problem and solves it
+   * @param apply apply the solution to the robot model
    * @return the vector containing delta q, which are target variations for the robot degrees of freedom.
    */
   Eigen::VectorXd solve(bool apply = false);
