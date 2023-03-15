@@ -28,10 +28,10 @@ public:
 
   void configure_weight(double lf = 1.0, double rf = 1.0, double com = 1.0, double trunk = 1.0);
 
+protected:
   // Robot
   HumanoidRobot* robot;
 
-protected:
   // Kinematic solver
   KinematicsSolver* solver;
 
