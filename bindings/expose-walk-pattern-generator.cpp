@@ -19,7 +19,8 @@ void exposeWalkPatternGenerator()
       .add_property("supports", &WalkPatternGenerator::Trajectory::supports)
       .add_property("com", &WalkPatternGenerator::Trajectory::com)
       .add_property("duration", &WalkPatternGenerator::Trajectory::duration)
-      .add_property("jerk_planner_steps", &WalkPatternGenerator::Trajectory::jerk_planner_steps)
+      .add_property("jerk_planner_nb_dt", &WalkPatternGenerator::Trajectory::jerk_planner_nb_dt)
+      .add_property("time_offset", &WalkPatternGenerator::Trajectory::time_offset)
       .def("get_T_world_left", &WalkPatternGenerator::Trajectory::get_T_world_left)
       .def("get_T_world_right", &WalkPatternGenerator::Trajectory::get_T_world_right)
       .def("get_CoM_world", &WalkPatternGenerator::Trajectory::get_CoM_world)
@@ -29,8 +30,7 @@ void exposeWalkPatternGenerator()
 
   class_<WalkPatternGenerator>("WalkPatternGenerator", init<HumanoidRobot&, HumanoidParameters&>())
       .def("plan", &WalkPatternGenerator::plan)
-      .def("plan_kick", &WalkPatternGenerator::plan_kick)
-      .def("plan_one_foot_balance", &WalkPatternGenerator::plan_one_foot_balance);
+      .def("replan", &WalkPatternGenerator::replan);
 
   class_<SolverTaskHolder>("SolverTaskHolder", init<HumanoidRobot&, KinematicsSolver&>())
       .def("configure_weight", &SolverTaskHolder::configure_weight)

@@ -60,7 +60,7 @@ public:
    */
   typedef Eigen::Matrix<double, 6, 1> State;
 
-  JerkPlanner(int nb_steps, Eigen::Vector2d initial_position = Eigen::Vector2d::Zero(),
+  JerkPlanner(int nb_dt, Eigen::Vector2d initial_position = Eigen::Vector2d::Zero(),
               Eigen::Vector2d initial_velocity = Eigen::Vector2d::Zero(),
               Eigen::Vector2d initial_acceleration = Eigen::Vector2d::Zero(), double dt = 0.1, double omega = 0.);
 

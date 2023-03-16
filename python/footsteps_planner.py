@@ -108,7 +108,9 @@ if __name__ == "__main__":
     footsteps = planner.plan(placo.HumanoidRobot_Side.right, placo.frame(
         T_center_left), placo.frame(T_center_right))
 
-    supports = planner.make_supports(footsteps, False, False, True)
+    supports = placo.FootstepsPlanner.make_supports(
+        footsteps, False, False, True)
+
     print(supports[0].footsteps[0].side)
     elapsed = time.time() - start
 

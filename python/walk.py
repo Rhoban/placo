@@ -29,10 +29,10 @@ displayed_joints = {"left_hip_roll", "left_hip_pitch",
 # Walk parameters
 parameters = placo.HumanoidParameters()
 parameters.dt = 0.025
-parameters.single_support_duration = .35
+parameters.single_support_duration = 0.35
 parameters.double_support_duration = 0.0
 parameters.startend_double_support_duration = 0.5
-parameters.planned_steps = 500
+parameters.planned_dt = 500
 parameters.replan_frequency = 500
 parameters.walk_com_height = 0.32
 parameters.walk_foot_height = 0.04
@@ -92,11 +92,15 @@ footsteps = naive_footsteps_planner.plan(placo.HumanoidRobot_Side.left,
 #                                               T_world_left, T_world_right)
 # --------------------------------------
 
-trajectory = walk.plan(footsteps, np.array([0., 0.]), np.array([0., 0.]))
+double_supports = parameters.double_support_duration / parameters.dt >= 1
+supports = placo.FootstepsPlanner.make_supports(
+    footsteps, True, double_supports, True)
+
+trajectory = walk.plan(supports)
 
 # elapsed = time.time() - start_t
 # print(f"Computation time: {elapsed*1e6}µs,
-# Jerk planner steps: {trajectory.jerk_planner_steps}")
+# Jerk planner steps: {trajectory.jerk_planner_dt}")
 
 if args.graph:
     import matplotlib.pyplot as plt

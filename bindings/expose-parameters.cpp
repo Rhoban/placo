@@ -22,7 +22,7 @@ void exposeParameters()
       .add_property("startend_double_support_duration", &HumanoidParameters::startend_double_support_duration,
                     &HumanoidParameters::startend_double_support_duration)
       .add_property("kick_duration", &HumanoidParameters::kick_duration, &HumanoidParameters::kick_duration)
-      .add_property("planned_steps", &HumanoidParameters::planned_steps, &HumanoidParameters::planned_steps)
+      .add_property("planned_dt", &HumanoidParameters::planned_dt, &HumanoidParameters::planned_dt)
       .add_property("replan_frequency", &HumanoidParameters::replan_frequency, &HumanoidParameters::replan_frequency)
       .add_property("zmp_margin", &HumanoidParameters::zmp_margin, &HumanoidParameters::zmp_margin)
       .add_property("walk_foot_height", &HumanoidParameters::walk_foot_height, &HumanoidParameters::walk_foot_height)

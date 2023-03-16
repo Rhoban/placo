@@ -65,32 +65,40 @@ public:
     // Trajectory duration
     double duration = 0.0;
 
-    // Number of steps planned by the jerk planner
-    int jerk_planner_steps;
+    // Time offset
+    double time_offset = 0.0;
+
+    // Number of dt planned by the jerk planner
+    int jerk_planner_nb_dt;
   };
 
   WalkPatternGenerator(HumanoidRobot& robot, HumanoidParameters& parameters);
 
   /// @brief Plan a walk trajectory following given footsteps based on the parameters of the WPG
-  /// @param footsteps Foosteps to follow
-  /// @param com_vel Initial CoM velocity
-  /// @param com_acc Initial CoM acceleration
+  /// @param supports Supports generated from the foosteps to follow
   /// @return Planned trajectory
-  Trajectory plan(std::vector<FootstepsPlanner::Footstep> footsteps, Eigen::Vector2d com_vel = Eigen::Vector2d::Zero(),
-                  Eigen::Vector2d com_acc = Eigen::Vector2d::Zero());
+  Trajectory plan(std::vector<FootstepsPlanner::Support> supports);
 
-  /// @brief Plan a trajectory adapted to the previous one ending with one foot in the air at a targeted position
-  /// @param previous_trajectory Previous trajectory
-  /// @param elapsed_time Elapsed time on the previous trajectory
-  /// @param kicking_side Side of the foot to put in the air.
-  /// Has to be the next flying foot when prepare_kick() is called
-  /// @param T_world_target Targeted frame for the foot in the air
+  /// @brief Plan a new walk trajectory adapted to the previous one following given
+  /// footsteps based on the parameters of the WPG
+  /// @param supports Supports generated from the foosteps to follow. Contain the current support
+  /// @param previous_trajectory Previous walk trajectory
+  /// @param elapsed Elapsed time following the previous trajectory
   /// @return Planned trajectory
-  Trajectory plan_kick(Trajectory& previous_trajectory, double elapsed_time, HumanoidRobot::Side kicking_side,
-                       Eigen::Affine3d T_world_target);
+  Trajectory replan(std::vector<FootstepsPlanner::Support> supports, Trajectory previous_trajectory, double elapsed);
 
-  Trajectory plan_one_foot_balance(Trajectory& previous_trajectory, double elapsed_time,
-                                   HumanoidRobot::Side flying_side, Eigen::Affine3d T_world_target);
+  // /// @brief Plan a trajectory adapted to the previous one ending with one foot in the air at a targeted position
+  // /// @param previous_trajectory Previous trajectory
+  // /// @param elapsed_time Elapsed time on the previous trajectory
+  // /// @param kicking_side Side of the foot to put in the air.
+  // /// Has to be the next flying foot when prepare_kick() is called
+  // /// @param T_world_target Targeted frame for the foot in the air
+  // /// @return Planned trajectory
+  // Trajectory plan_kick(Trajectory& previous_trajectory, double elapsed_time, HumanoidRobot::Side kicking_side,
+  //                      Eigen::Affine3d T_world_target);
+
+  // Trajectory plan_one_foot_balance(Trajectory& previous_trajectory, double elapsed_time,
+  //                                  HumanoidRobot::Side flying_side, Eigen::Affine3d T_world_target);
 
 protected:
   // Robot associated to the WPG
@@ -104,15 +112,16 @@ protected:
 
   void planFeetTrajectories(Trajectory& trajectory);
 
-  std::vector<FootstepsPlanner::Support> planSupportsKick(Trajectory trajectory, HumanoidRobot::Side kicking_side,
-                                                          Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right);
+  // std::vector<FootstepsPlanner::Support> planSupportsKick(Trajectory trajectory, HumanoidRobot::Side kicking_side,
+  //                                                         Eigen::Affine3d T_world_left, Eigen::Affine3d
+  //                                                         T_world_right);
 
-  void planCoMKick(Trajectory& trajectory, Eigen::Vector2d initial_vel, Eigen::Vector2d initial_acc);
+  // void planCoMKick(Trajectory& trajectory, Eigen::Vector2d initial_vel, Eigen::Vector2d initial_acc);
 
-  void planCoMOneFoot(Trajectory& trajectory, Eigen::Vector2d initial_vel, Eigen::Vector2d initial_acc);
+  // void planCoMOneFoot(Trajectory& trajectory, Eigen::Vector2d initial_vel, Eigen::Vector2d initial_acc);
 
-  void planFeetKick(Trajectory& trajectory, HumanoidRobot::Side kicking_side, Eigen::Affine3d T_world_target);
+  // void planFeetKick(Trajectory& trajectory, HumanoidRobot::Side kicking_side, Eigen::Affine3d T_world_target);
 
-  void planFeetOneFoot(Trajectory& trajectory, HumanoidRobot::Side kicking_side, Eigen::Affine3d T_world_target);
+  // void planFeetOneFoot(Trajectory& trajectory, HumanoidRobot::Side kicking_side, Eigen::Affine3d T_world_target);
 };
 }  // namespace placo

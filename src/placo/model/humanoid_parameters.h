@@ -37,12 +37,12 @@ public:
   double kick_duration = 1.;
 
   /**
-   * @brief Maximum planned steps
+   * @brief Maximum planned dt
    */
-  int planned_steps = 100;
+  int planned_dt = 100;
 
   /**
-   * @brief Number of steps between each replan
+   * @brief Number of dt between each replan
    */
   int replan_frequency = 10;
 

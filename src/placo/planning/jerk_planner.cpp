@@ -135,14 +135,14 @@ Eigen::Vector2d JerkPlanner::JerkTrajectory2D::dcm(double t) const
   return pos(t) + (1 / omega) * vel(t);
 }
 
-JerkPlanner::JerkPlanner(int nb_steps, Eigen::Vector2d initial_position, Eigen::Vector2d initial_velocity,
+JerkPlanner::JerkPlanner(int nb_dt, Eigen::Vector2d initial_position, Eigen::Vector2d initial_velocity,
                          Eigen::Vector2d initial_acceleration, double dt, double omega)
   : dt(dt), omega(omega)
 {
   initial_state << initial_position.x(), initial_velocity.x(), initial_acceleration.x(), initial_position.y(),
       initial_velocity.y(), initial_acceleration.y();
 
-  N = nb_steps;
+  N = nb_dt;
 
   A.setZero();
   B.setZero();

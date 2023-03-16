@@ -15,7 +15,7 @@ parameters.dt = 0.025
 parameters.single_support_duration = .35
 parameters.double_support_duration = 0.0
 parameters.startend_double_support_duration = 0.5
-parameters.planned_steps = 500
+parameters.planned_dt = 500
 parameters.replan_frequency = 500
 parameters.walk_com_height = 0.32
 parameters.walk_foot_height = 0.04
@@ -46,8 +46,16 @@ nb_steps = 5
 planner.configure(d_x, d_y, d_theta, nb_steps)
 
 # Creating the walk pattern generator
-walk = placo.WalkPatternGenerator(robot, planner, parameters)
-trajectory = walk.plan()
+walk = placo.WalkPatternGenerator(robot, parameters)
+
+footsteps = planner.plan(placo.HumanoidRobot_Side.left,
+                         T_world_left, T_world_right)
+
+double_supports = parameters.double_support_duration / parameters.dt >= 1
+supports = placo.FootstepsPlanner.make_supports(
+    footsteps, True, double_supports, True)
+
+trajectory = walk.plan(supports)
 
 # Walk of the robot
 ts = np.linspace(0, trajectory.duration, 1000)
