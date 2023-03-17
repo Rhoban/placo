@@ -26,7 +26,8 @@ void exposeWalkPatternGenerator()
       .def("get_CoM_world", &WalkPatternGenerator::Trajectory::get_CoM_world)
       .def("get_R_world_trunk", &WalkPatternGenerator::Trajectory::get_R_world_trunk)
       .def("support_side", &WalkPatternGenerator::Trajectory::support_side)
-      .def("get_last_footstep_frame", &WalkPatternGenerator::Trajectory::get_last_footstep_frame);
+      .def("get_support", &WalkPatternGenerator::Trajectory::get_support)
+      .def("get_next_support", &WalkPatternGenerator::Trajectory::get_next_support);
 
   class_<WalkPatternGenerator>("WalkPatternGenerator", init<HumanoidRobot&, HumanoidParameters&>())
       .def("plan", &WalkPatternGenerator::plan)

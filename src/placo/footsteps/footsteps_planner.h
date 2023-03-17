@@ -53,7 +53,7 @@ public:
      * @param side the side we want the frame (left or right foot)
      * @return a frame
      */
-    Eigen::Affine3d frame(HumanoidRobot::Side side);
+    Eigen::Affine3d footstep_frame(HumanoidRobot::Side side);
 
     bool operator==(const Support& other);
 

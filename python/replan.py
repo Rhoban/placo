@@ -4,8 +4,11 @@ import argparse
 import pinocchio as pin
 import numpy as np
 import matplotlib.pyplot as plt
+import warnings
 from footsteps_planner import draw_footsteps
 from visualization import robot_viz, frame_viz, point_viz, robot_frame_viz, footsteps_viz
+
+warnings.filterwarnings("ignore")
 
 parser = argparse.ArgumentParser(description="Process some integers.")
 parser.add_argument("-g", "--graph", action="store_true", help="Plot")
@@ -26,7 +29,7 @@ parameters.double_support_duration = 0.0
 parameters.startend_double_support_duration = 0.5
 parameters.kick_duration = 0.3
 parameters.planned_dt = 64
-parameters.replan_frequency = 12
+parameters.replan_frequency = 16
 parameters.walk_com_height = 0.32
 parameters.walk_foot_height = 0.04
 parameters.pendulum_height = 0.32
@@ -114,12 +117,36 @@ if args.meshcat:
 start_t = time.time()
 t = -5.
 dt = 0.005
+real_time = t
+adapting_trajectory_time = 1.5
 
 while True:
     T = max(0, t)
 
-    if T > trajectory.duration - trajectory.time_offset:
-        break
+    # if real_time > adapting_trajectory_time:
+    #     adapting_trajectory_time = np.inf
+
+    #     d_x = 0.1
+    #     d_y = 0.
+    #     d_theta = 0.5
+    #     nb_steps = 6
+    #     repetitive_footsteps_planner.configure(d_x, d_y, d_theta, nb_steps)
+
+    #     flying_side = placo.HumanoidRobot.other_side(
+    #         trajectory.support_side(T))
+
+    #     if flying_side == placo.HumanoidRobot_Side.left:
+    #         T_world_right = trajectory.get_support(T).frame()
+    #         T_world_left = trajectory.get_next_support(T).frame()
+    #     else:
+    #         T_world_left = trajectory.get_next_support(T).frame()
+    #         T_world_right = trajectory.get_support(T).frame()
+
+    #     footsteps = repetitive_footsteps_planner.plan(
+    #         flying_side, T_world_left, T_world_right)
+
+    #     supports = placo.FootstepsPlanner.make_supports(
+    #         footsteps, False, double_supports, True)
 
     task_holder.update_walk_tasks(trajectory.get_T_world_left(T), trajectory.get_T_world_right(T),
                                   trajectory.get_CoM_world(T), trajectory.get_R_world_trunk(T), False)
@@ -130,7 +157,7 @@ while True:
     robot.ensure_on_floor()
 
     # Replanning
-    if T > parameters.replan_frequency * parameters.dt and round((trajectory.duration - (T + trajectory.time_offset)) / parameters.dt) > parameters.replan_frequency:
+    if T > parameters.replan_frequency * parameters.dt and round((trajectory.duration - (T + trajectory.time_offset)) / parameters.dt) > 1:
         print("\n----- Replanning -----")
 
         trajectory = walk.replan(supports, trajectory, T)
@@ -181,5 +208,6 @@ while True:
 
     # Spin-lock until the next tick
     t += dt
+    real_time += dt
     while time.time() < start_t + t:
         time.sleep(1e-3)

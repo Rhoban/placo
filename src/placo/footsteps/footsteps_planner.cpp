@@ -89,7 +89,7 @@ Eigen::Affine3d FootstepsPlanner::Support::frame()
   return f;
 }
 
-Eigen::Affine3d FootstepsPlanner::Support::frame(HumanoidRobot::Side side)
+Eigen::Affine3d FootstepsPlanner::Support::footstep_frame(HumanoidRobot::Side side)
 {
   for (auto& footstep : footsteps)
   {

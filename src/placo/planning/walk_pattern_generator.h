@@ -56,11 +56,14 @@ public:
 
     HumanoidRobot::Side support_side(double t);
 
-    /// @brief Return the frame of the last left or right footstep before a certain moment in the trajectory
-    /// @param side Side of the footstep
-    /// @param t Moment in the trajectory
-    /// @return Frame of the footstep
-    Eigen::Affine3d get_last_footstep_frame(HumanoidRobot::Side side, double t);
+    FootstepsPlanner::Support get_support(double t);
+    FootstepsPlanner::Support get_next_support(double t);
+
+    // /// @brief Return the frame of the last left or right footstep before a certain moment in the trajectory
+    // /// @param side Side of the footstep
+    // /// @param t Moment in the trajectory
+    // /// @return Frame of the footstep
+    // Eigen::Affine3d get_last_footstep_frame(HumanoidRobot::Side side, double t);
 
     // Trajectory duration
     double duration = 0.0;

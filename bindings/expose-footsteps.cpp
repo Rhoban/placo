@@ -25,6 +25,7 @@ void exposeFootsteps()
 
   class_<FootstepsPlanner::Support>("Support")
       .def("support_polygon", &FootstepsPlanner::Support::support_polygon)
+      .def("frame", &FootstepsPlanner::Support::frame)
       .add_property("footsteps", &FootstepsPlanner::Support::footsteps);
 
   class_<FootstepsPlanner, boost::noncopyable>("FootstepsPlanner", no_init)
