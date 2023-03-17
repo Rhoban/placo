@@ -159,6 +159,7 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
 
   int total_dt = -std::round(trajectory.time_offset / parameters.dt);
   int nb_elapsed_supports = 0;
+  int current_step_dt = 0;
   int current_step_remaining_dt = 0;
 
   for (auto& support : trajectory.supports)
@@ -179,16 +180,15 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
       }
     }
 
-    std::cout << "t" << total_dt << std::endl;
-    std::cout << "c" << current_step_remaining_dt << std::endl;
-
     if (total_dt <= 0)
     {
       nb_elapsed_supports += 1;
+      current_step_dt = total_dt;
     }
-    else if (current_step_remaining_dt == 0)  // PB current_step_remaining_dt reste à 0 si le mouvement fini pile
+    else if (current_step_remaining_dt == 0)
     {
       current_step_remaining_dt = total_dt;
+      current_step_dt = total_dt - current_step_dt;
     }
     else if (total_dt >= parameters.planned_dt)
     {
@@ -197,79 +197,61 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
   }
   trajectory.jerk_planner_nb_dt = total_dt;
 
+  // std::cout << "nb_elapsed_supports : " << nb_elapsed_supports << std::endl;
+  // std::cout << "current_step_dt : " << current_step_dt << std::endl;
+  // std::cout << "current_step_remaining_dt : " << current_step_remaining_dt << std::endl;
+  // std::cout << "total_dt : " << total_dt << std::endl;
+
   // Creating the planner
   auto com_world = robot.com_world();
   JerkPlanner planner(total_dt, Eigen::Vector2d(com_world.x(), com_world.y()), initial_vel, initial_acc, parameters.dt,
                       parameters.omega());
 
-  std::cout << "nb_elapsed_supports : " << nb_elapsed_supports << std::endl;
-  std::cout << "current_step_remaining_dt : " << current_step_remaining_dt << std::endl;
-  std::cout << "total_dt : " << total_dt << std::endl;
-
-  // Constraint the ZMP to be above the current support for the remaining time of the current step
   auto current_support = trajectory.supports[nb_elapsed_supports];
-  if (nb_elapsed_supports == 0)
-  {
-    for (int k = 0; k < current_step_remaining_dt; k++)
-    {
-      planner.add_polygon_constraint(k, current_support.support_polygon(), JerkPlanner::ZMP, parameters.zmp_margin);
 
-      if (k >= total_dt)
-      {
-        break;
-      }
-    }
-  }
-  else
+  // If it's the beginning of a new step, a dt where the ZMP is constraint in a double support
+  // is added to allow it to reach the other foot in the case where there isn't double support phases
+  if ((current_step_dt == current_step_remaining_dt && nb_elapsed_supports != 0) || current_step_remaining_dt == 1)
   {
-    // Add a step where the ZMP is constraint in a double support to allow it
-    // to reach the other support foot while there is no double support phases
     FootstepsPlanner::Support double_support;
-    double_support.footsteps.push_back(current_support.footsteps[0]);
-
+    double_support.footsteps = current_support.footsteps;
     for (auto footstep : trajectory.supports[nb_elapsed_supports - 1].footsteps)
     {
-      if (footstep == current_support.footsteps[0])
-      {
-        continue;
-      }
       double_support.footsteps.push_back(footstep);
     }
-
     planner.add_polygon_constraint(0, double_support.support_polygon(), JerkPlanner::ZMP, parameters.zmp_margin);
 
     for (int k = 1; k < current_step_remaining_dt; k++)
     {
       planner.add_polygon_constraint(k, current_support.support_polygon(), JerkPlanner::ZMP, parameters.zmp_margin);
-
-      if (k >= total_dt)
-      {
-        break;
-      }
     }
   }
 
-  // Constraint the ZMP for the following steps
+  // Else the ZMP is simply constraint to be above the current support
+  // for the remaining time of the current step
+  else
+  {
+    for (int k = 0; k < current_step_remaining_dt; k++)
+    {
+      planner.add_polygon_constraint(k, current_support.support_polygon(), JerkPlanner::ZMP, parameters.zmp_margin);
+    }
+  }
+
+  // The ZMP is constraint the same way for the following steps
   int dt = current_step_remaining_dt;
   for (int i = nb_elapsed_supports + 1; i < trajectory.supports.size(); i++)
   {
     current_support = trajectory.supports[i];
     if (current_support.footsteps.size() == 1)
     {
-      // Add a step where the ZMP is constraint in a double support to allow it
-      // to reach the other support foot while there is no double support phases
+      // Add a dt where the ZMP is constraint in a double support to allow it to reach
+      // the other support foot in the case where there is no double support phases
       FootstepsPlanner::Support double_support;
-      double_support.footsteps.push_back(current_support.footsteps[0]);
-
+      double_support.footsteps = current_support.footsteps;
       for (auto footstep : trajectory.supports[i - 1].footsteps)
       {
-        if (footstep == current_support.footsteps[0])
-        {
-          continue;
-        }
         double_support.footsteps.push_back(footstep);
       }
-
       planner.add_polygon_constraint(dt, double_support.support_polygon(), JerkPlanner::ZMP, parameters.zmp_margin);
 
       // Constraint the ZMP to be above the support foot
@@ -293,7 +275,6 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
         }
         dt += se_dsp_dt;
       }
-
       else
       {
         // Constraint the ZMP to be above the support feet
@@ -311,11 +292,6 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
       break;
     }
   }
-
-  // if (total_dt == current_step_remaining_dt)
-  // {
-  //   current_support = trajectory.supports[nb_elapsed_supports + 1];
-  // }
 
   // We reach the target with the given position, a null speed and a null acceleration
   planner.add_equality_constraint(

@@ -26,7 +26,7 @@ parameters.double_support_duration = 0.0
 parameters.startend_double_support_duration = 0.5
 parameters.kick_duration = 0.3
 parameters.planned_dt = 64
-parameters.replan_frequency = 16
+parameters.replan_frequency = 12
 parameters.walk_com_height = 0.32
 parameters.walk_foot_height = 0.04
 parameters.pendulum_height = 0.32
@@ -130,8 +130,7 @@ while True:
     robot.ensure_on_floor()
 
     # Replanning
-    # and round(trajectory.duration / parameters.dt) - round(trajectory.time_offset / parameters.dt) > parameters.replan_frequency:
-    if T > parameters.replan_frequency * parameters.dt:
+    if T > parameters.replan_frequency * parameters.dt and round((trajectory.duration - (T + trajectory.time_offset)) / parameters.dt) > parameters.replan_frequency:
         print("\n----- Replanning -----")
 
         trajectory = walk.replan(supports, trajectory, T)
