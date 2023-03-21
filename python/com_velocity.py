@@ -64,7 +64,7 @@ measured_com = []
 
 for t in ts:
     task_holder.update_tasks(trajectory.get_T_world_left(t), trajectory.get_T_world_right(t),
-                             trajectory.get_CoM_world(t), trajectory.get_R_world_trunk(t), False)
+                             trajectory.get_p_world_CoM(t), trajectory.get_R_world_trunk(t), False)
 
     robot.update_kinematics()
     robot.update_support_side(str(trajectory.support_side(t)))

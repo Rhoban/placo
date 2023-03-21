@@ -69,6 +69,44 @@ SwingFoot::Trajectory SwingFoot::make_trajectory(double t_start, double t_end, d
   return trajectory;
 }
 
+SwingFoot::Trajectory SwingFoot::make_trajectory_from_initial_velocity(double t_start, double t_end,
+                                                                       Eigen::Vector3d start, Eigen::Vector3d target,
+                                                                       Eigen::Vector3d start_vel)
+{
+  Trajectory trajectory;
+  trajectory.t_start = t_start;
+  trajectory.t_end = t_end;
+
+  // Constraining the starting and ending position, and the starting
+  // and ending velocities.
+  Eigen::MatrixXd A(4, 4);
+  A.setZero();
+  A << position_coefficients(t_start),  //
+      position_coefficients(t_end),     //
+      velocity_coefficients(t_start),   //
+      velocity_coefficients(t_end);
+  A = A.transpose().inverse();
+
+  Eigen::VectorXd x(4);
+  x << start.x(), target.x(), start_vel.x(), 0.;
+  Eigen::VectorXd abcd_x = A * x;
+
+  Eigen::VectorXd y(4);
+  y << start.y(), target.y(), start_vel.y(), 0.;
+  Eigen::VectorXd abcd_y = A * y;
+
+  Eigen::VectorXd z(4);
+  z << start.z(), target.z(), start_vel.z(), 0.;
+  Eigen::VectorXd abcd_z = A * z;
+
+  trajectory.a = Eigen::Vector3d(abcd_x[0], abcd_y[0], abcd_z[0]);
+  trajectory.b = Eigen::Vector3d(abcd_x[1], abcd_y[1], abcd_z[1]);
+  trajectory.c = Eigen::Vector3d(abcd_x[2], abcd_y[2], abcd_z[2]);
+  trajectory.d = Eigen::Vector3d(abcd_x[3], abcd_y[3], abcd_z[3]);
+
+  return trajectory;
+}
+
 Eigen::Vector3d SwingFoot::Trajectory::pos(double t)
 {
   double t_2 = t * t;

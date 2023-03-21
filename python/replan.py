@@ -29,7 +29,7 @@ parameters.double_support_duration = 0.0
 parameters.startend_double_support_duration = 0.5
 parameters.kick_duration = 0.3
 parameters.planned_dt = 64
-parameters.replan_frequency = 16
+parameters.replan_frequency = 4
 parameters.walk_com_height = 0.32
 parameters.walk_foot_height = 0.04
 parameters.pendulum_height = 0.32
@@ -115,52 +115,65 @@ if args.meshcat:
     footsteps_viz(trajectory.supports)
 
 start_t = time.time()
-t = -5.
+t = -1.5
 dt = 0.005
 real_time = t
-adapting_trajectory_time = 1.5
+adapting_trajectory_time = 1.3
 
 while True:
     T = max(0, t)
 
-    # if real_time > adapting_trajectory_time:
-    #     adapting_trajectory_time = np.inf
+    if real_time > adapting_trajectory_time:
+        if trajectory.are_supports_updatable:
+            print("Supports updated!")
+            print(real_time)
+            adapting_trajectory_time = np.inf
 
-    #     d_x = 0.1
-    #     d_y = 0.
-    #     d_theta = 0.5
-    #     nb_steps = 6
-    #     repetitive_footsteps_planner.configure(d_x, d_y, d_theta, nb_steps)
+            d_x = 0.1
+            d_y = 0.
+            d_theta = 0.5
+            nb_steps = 6
+            repetitive_footsteps_planner.configure(d_x, d_y, d_theta, nb_steps)
 
-    #     flying_side = placo.HumanoidRobot.other_side(
-    #         trajectory.support_side(T))
+            current_support = trajectory.get_support(T)
+            next_support = trajectory.get_next_support(T)
+            prev_support = trajectory.get_prev_support(T)
 
-    #     if flying_side == placo.HumanoidRobot_Side.left:
-    #         T_world_right = trajectory.get_support(T).frame()
-    #         T_world_left = trajectory.get_next_support(T).frame()
-    #     else:
-    #         T_world_left = trajectory.get_next_support(T).frame()
-    #         T_world_right = trajectory.get_support(T).frame()
+            # XXX : cas du double support ? ignoré pour l'instant
+            flying_side = trajectory.support_side(T)
 
-    #     footsteps = repetitive_footsteps_planner.plan(
-    #         flying_side, T_world_left, T_world_right)
+            if flying_side == placo.HumanoidRobot_Side.left:
+                T_world_left = current_support.frame()
+                T_world_right = next_support.frame()
 
-    #     supports = placo.FootstepsPlanner.make_supports(
-    #         footsteps, False, double_supports, True)
+            else:
+                T_world_right = current_support.frame()
+                T_world_left = next_support.frame()
+
+            footsteps = repetitive_footsteps_planner.plan(
+                flying_side, T_world_left, T_world_right)
+
+            supports = placo.FootstepsPlanner.make_supports(
+                footsteps, False, double_supports, True)
+
+            trajectory.set_supports_update_offset(
+                trajectory.get_phase_t_start(T))
+            trajectory.set_initial_T_world_flying_foot(prev_support.frame())
+
+        else:
+            print("Supports update delayed - wrong timing")
+            adapting_trajectory_time += parameters.dt
 
     task_holder.update_walk_tasks(trajectory.get_T_world_left(T), trajectory.get_T_world_right(T),
-                                  trajectory.get_CoM_world(T), trajectory.get_R_world_trunk(T), False)
-
-    previous_support = robot.get_support_side()
+                                  trajectory.get_p_world_CoM(T), trajectory.get_R_world_trunk(T), False)
 
     robot.update_support_side(str(trajectory.support_side(T)))
     robot.ensure_on_floor()
 
     # Replanning
-    if T > parameters.replan_frequency * parameters.dt and round((trajectory.duration - (T + trajectory.time_offset)) / parameters.dt) > 1:
-        print("\n----- Replanning -----")
-
-        trajectory = walk.replan(supports, trajectory, T)
+    if walk.replan(supports, trajectory, T):
+        print("first support side :", supports[0].side())
+        print("Trajectory replanned")
         T = t = 0
 
         if args.graph:
@@ -181,6 +194,7 @@ while True:
 
             plt.legend()
             plt.grid()
+            # plt.show()
             plt.show(block=False)
             plt.pause(1)
             plt.close()

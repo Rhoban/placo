@@ -149,14 +149,14 @@ std::vector<FootstepsPlanner::Support> FootstepsPlanner::make_supports(
   {
     // Creating the first (double-support) initial state
     Support support;
-    support.start_end = true;
+    support.start = true;
     support.footsteps = { footsteps[0], footsteps[1] };
     supports.push_back(support);
   }
   else
   {
     Support support;
-    support.start_end = true;
+    support.start = true;
     support.footsteps = { footsteps[0] };
     supports.push_back(support);
   }
@@ -177,7 +177,7 @@ std::vector<FootstepsPlanner::Support> FootstepsPlanner::make_supports(
 
       if (is_end)
       {
-        double_support.start_end = true;
+        double_support.end = true;
       }
 
       supports.push_back(double_support);
@@ -186,4 +186,12 @@ std::vector<FootstepsPlanner::Support> FootstepsPlanner::make_supports(
 
   return supports;
 }
+
+void FootstepsPlanner::add_first_support(std::vector<Support>& supports, Support support)
+{
+  supports[0].start = false;
+  supports.insert(supports.begin(), support);
+  supports[0].start = true;
+}
+
 }  // namespace placo
