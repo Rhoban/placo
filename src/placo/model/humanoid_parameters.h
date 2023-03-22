@@ -42,7 +42,8 @@ public:
   int planned_dt = 100;
 
   /**
-   * @brief Number of dt between each replan
+   * @brief Number of dt between each replan.
+   * Support phases have to last longer than [replan_frequency * dt] or their duration has to be equal to 0
    */
   int replan_frequency = 10;
 

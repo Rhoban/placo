@@ -26,6 +26,7 @@ void exposeFootsteps()
   class_<FootstepsPlanner::Support>("Support")
       .def("support_polygon", &FootstepsPlanner::Support::support_polygon)
       .def("frame", &FootstepsPlanner::Support::frame)
+      .def("footstep_frame", &FootstepsPlanner::Support::footstep_frame)
       .def("side", &FootstepsPlanner::Support::side)
       .def(
           "set_start", +[](FootstepsPlanner::Support& support, bool b) { support.start = b; })

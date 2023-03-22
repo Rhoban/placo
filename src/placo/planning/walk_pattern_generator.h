@@ -75,9 +75,7 @@ public:
     double time_offset = 0.0;
     double supports_update_offset = 0.0;
 
-    // Not necessarly required to update the supports, but if the supports are updated when it is
-    // false the first dts of the first step of the new supports (up to replan_frequency dts) will
-    // correspond to the previous supports step (which can be neglected if replan_frequency * dt is low)
+    // Can we update the supports ?
     bool are_supports_updatable = false;
 
     // Initial position of the flying foot of the first support phase

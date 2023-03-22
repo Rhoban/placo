@@ -161,6 +161,8 @@ elif args.pybullet or args.meshcat or args.torque:
 
     while True:
         T = max(0, t)
+        if T > trajectory.duration:
+            continue
 
         task_holder.update_walk_tasks(trajectory.get_T_world_left(T), trajectory.get_T_world_right(T),
                                       trajectory.get_p_world_CoM(T), trajectory.get_R_world_trunk(T), False)

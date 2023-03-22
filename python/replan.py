@@ -21,7 +21,7 @@ args = parser.parse_args()
 # Loading the robot
 robot = placo.HumanoidRobot("sigmaban/")
 
-# Walk parameters
+# Walk parameters - if double_support_duration is not set to 0, should be greater than replan_frequency * dt
 parameters = placo.HumanoidParameters()
 parameters.dt = 0.025
 parameters.single_support_duration = .35
@@ -101,6 +101,7 @@ if args.graph:
 
     plt.legend()
     plt.grid()
+    # plt.show()
     plt.show(block=False)
     plt.pause(0.8)
     plt.close()
@@ -115,18 +116,20 @@ if args.meshcat:
     footsteps_viz(trajectory.supports)
 
 start_t = time.time()
-t = -1.5
+t = -3
 dt = 0.005
 real_time = t
 adapting_trajectory_time = 1.3
 
 while True:
     T = max(0, t)
+    if T > trajectory.duration - trajectory.time_offset:
+        continue
 
+    # Changing the trajectory of the robot
     if real_time > adapting_trajectory_time:
         if trajectory.are_supports_updatable:
             print("Supports updated!")
-            print(real_time)
             adapting_trajectory_time = np.inf
 
             d_x = 0.1
@@ -139,26 +142,55 @@ while True:
             next_support = trajectory.get_next_support(T)
             prev_support = trajectory.get_prev_support(T)
 
-            # XXX : cas du double support ? ignoré pour l'instant
-            flying_side = trajectory.support_side(T)
+            flying_side = current_support.side()
+            # print("side :", flying_side)
 
             if flying_side == placo.HumanoidRobot_Side.left:
                 T_world_left = current_support.frame()
-                T_world_right = next_support.frame()
+                T_world_right = next_support.footstep_frame(
+                    placo.HumanoidRobot_Side.right)
 
             else:
                 T_world_right = current_support.frame()
-                T_world_left = next_support.frame()
+                T_world_left = next_support.footstep_frame(
+                    placo.HumanoidRobot_Side.left)
 
             footsteps = repetitive_footsteps_planner.plan(
                 flying_side, T_world_left, T_world_right)
 
-            supports = placo.FootstepsPlanner.make_supports(
-                footsteps, False, double_supports, True)
+            # for footstep in footsteps:
+            #     print("---------------------------")
+            #     print("footstep side :", footstep.side)
+
+            if double_supports:
+                supports = placo.FootstepsPlanner.make_supports(
+                    footsteps, True, True, True)
+
+                placo.FootstepsPlanner.add_first_support(
+                    supports, current_support)
+
+            else:
+                supports = placo.FootstepsPlanner.make_supports(
+                    footsteps, False, False, True)
+
+            # x = []
+            # y = []
+            # for support in supports:
+            #     print("---------------------------")
+            #     print("size :", len(support.footsteps))
+            #     print(support.frame()[0, 3])
+            #     x.append(support.frame()[0, 3])
+            #     print(support.frame()[1, 3])
+            #     y.append(support.frame()[1, 3])
+            # x = np.array(x)
+            # y = np.array(y)
+            # plt.scatter(x, y)
+            # plt.show()
 
             trajectory.set_supports_update_offset(
                 trajectory.get_phase_t_start(T))
-            trajectory.set_initial_T_world_flying_foot(prev_support.frame())
+            trajectory.set_initial_T_world_flying_foot(
+                prev_support.footstep_frame(placo.HumanoidRobot.other_side(flying_side)))
 
         else:
             print("Supports update delayed - wrong timing")
@@ -172,7 +204,6 @@ while True:
 
     # Replanning
     if walk.replan(supports, trajectory, T):
-        print("first support side :", supports[0].side())
         print("Trajectory replanned")
         T = t = 0
 

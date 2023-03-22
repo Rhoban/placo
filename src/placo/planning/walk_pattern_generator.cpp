@@ -376,7 +376,13 @@ void WalkPatternGenerator::planFeetTrajectories(Trajectory& trajectory)
                                      T_world_startTarget.translation(), T_world_flyingTarget.translation());
 
       trajectory.yaw(flying_side).addPoint(t, frame_yaw(T_world_flyingTarget.rotation()), 0);
-      trajectory.trunk_yaw.addPoint(t, frame_yaw(T_world_flyingTarget.rotation()), 0);
+
+      // The trunk orientation follow the steps orientation if there isn't double support phases
+      // If there is double support phases, it follow the double supports orientation
+      if (parameters.double_support_duration < parameters.dt)
+      {
+        trajectory.trunk_yaw.addPoint(t, frame_yaw(T_world_flyingTarget.rotation()), 0);
+      }
 
       // Support foot remaining steady
       _addSupports(trajectory, t, support);
@@ -418,6 +424,7 @@ WalkPatternGenerator::Trajectory WalkPatternGenerator::plan(std::vector<Footstep
   // Planning the footsteps trajectories
   planFeetTrajectories(trajectory);
 
+  trajectory.are_supports_updatable = false;
   return trajectory;
 }
 
@@ -449,6 +456,11 @@ bool WalkPatternGenerator::replan(std::vector<FootstepsPlanner::Support>& suppor
 
   // Planning the center of mass trajectory
   planCoM(new_trajectory, trajectory.com.vel(elapsed), trajectory.com.acc(elapsed));
+
+  if (trajectory.support_side(elapsed) == HumanoidRobot::Both)
+  {
+    new_trajectory.are_supports_updatable = false;
+  }
 
   // Planning the footsteps trajectories
   planFeetTrajectories(new_trajectory);
