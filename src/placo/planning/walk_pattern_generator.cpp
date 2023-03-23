@@ -169,7 +169,7 @@ static void _addSupports(WalkPatternGenerator::Trajectory& trajectory, double t,
   for (auto footstep : support.footsteps)
   {
     auto T_world_foot = footstep.frame;
-    trajectory.yaw(footstep.side).addPoint(t, frame_yaw(T_world_foot.rotation()), 0);
+    trajectory.yaw(footstep.side).addPoint(t, frame_yaw(T_world_foot.rotation()), 0, true);
   }
 }
 
@@ -245,7 +245,8 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
 
   // If it's the beginning of a new step, a dt where the ZMP is constraint in a double support
   // is added to allow it to reach the other foot in the case where there isn't double support phases
-  if (current_support.footsteps.size() == 1 && current_step_dt == current_step_remaining_dt && !current_support.start)
+  if (current_support.footsteps.size() == 1 && !current_support.start &&
+      current_step_remaining_dt >= current_step_dt - 1)
   {
     FootstepsPlanner::Support double_support;
     double_support.footsteps = current_support.footsteps;
@@ -345,7 +346,7 @@ void WalkPatternGenerator::planFeetTrajectories(Trajectory& trajectory)
 
   // Add the initial position to the trajectory
   _addSupports(trajectory, 0., trajectory.supports[0]);
-  trajectory.trunk_yaw.addPoint(0, frame_yaw(trajectory.supports[0].frame().rotation()), 0);
+  trajectory.trunk_yaw.addPoint(0, frame_yaw(trajectory.supports[0].frame().rotation()), 0, true);
 
   for (int step = 0; step < trajectory.supports.size(); step++)
   {
@@ -358,11 +359,11 @@ void WalkPatternGenerator::planFeetTrajectories(Trajectory& trajectory)
     if (support.footsteps.size() == 1)
     {
       // Single support, add the flying trajectory
-      auto flying_side = HumanoidRobot::other_side(support.footsteps[0].side);
+      HumanoidRobot::Side flying_side = HumanoidRobot::other_side(support.footsteps[0].side);
 
       // Computing the intermediary flying foot inflection target
-      auto T_world_flyingTarget = trajectory.supports[step + 1].footstep_frame(flying_side);
-      auto T_world_startTarget = trajectory.initial_T_world_flying_foot;
+      Eigen::Affine3d T_world_flyingTarget = trajectory.supports[step + 1].footstep_frame(flying_side);
+      Eigen::Affine3d T_world_startTarget = trajectory.initial_T_world_flying_foot;
       if (!support.start)
       {
         T_world_startTarget = trajectory.supports[step - 1].footstep_frame(flying_side);
@@ -375,13 +376,13 @@ void WalkPatternGenerator::planFeetTrajectories(Trajectory& trajectory)
           SwingFoot::make_trajectory(t - parameters.single_support_duration, t, parameters.walk_foot_height,
                                      T_world_startTarget.translation(), T_world_flyingTarget.translation());
 
-      trajectory.yaw(flying_side).addPoint(t, frame_yaw(T_world_flyingTarget.rotation()), 0);
+      trajectory.yaw(flying_side).addPoint(t, frame_yaw(T_world_flyingTarget.rotation()), 0, true);
 
       // The trunk orientation follow the steps orientation if there isn't double support phases
       // If there is double support phases, it follow the double supports orientation
       if (parameters.double_support_duration < parameters.dt)
       {
-        trajectory.trunk_yaw.addPoint(t, frame_yaw(T_world_flyingTarget.rotation()), 0);
+        trajectory.trunk_yaw.addPoint(t, frame_yaw(T_world_flyingTarget.rotation()), 0, true);
       }
 
       // Support foot remaining steady
@@ -400,7 +401,7 @@ void WalkPatternGenerator::planFeetTrajectories(Trajectory& trajectory)
         t += parameters.double_support_duration;
       }
       _addSupports(trajectory, t, support);
-      trajectory.trunk_yaw.addPoint(t, frame_yaw(support.frame().rotation()), 0);
+      trajectory.trunk_yaw.addPoint(t, frame_yaw(support.frame().rotation()), 0, true);
     }
 
     part.t_end = t;
@@ -584,7 +585,7 @@ bool WalkPatternGenerator::replan(std::vector<FootstepsPlanner::Support>& suppor
 
 //   // Initial support
 //   _addSupports(trajectory, t, trajectory.supports[0]);
-//   trajectory.trunk_yaw.addPoint(0., frame_yaw(trajectory.supports[0].frame().rotation()), 0);
+//   trajectory.trunk_yaw.addPoint(0., frame_yaw(trajectory.supports[0].frame().rotation()), 0, true);
 
 //   // Trajectory to move the CoM above the foot use as support during the kick
 //   TrajectoryPart part;
@@ -594,7 +595,7 @@ bool WalkPatternGenerator::replan(std::vector<FootstepsPlanner::Support>& suppor
 //   part.t_end = t;
 
 //   _addSupports(trajectory, t, trajectory.supports[0]);
-//   trajectory.trunk_yaw.addPoint(t, frame_yaw(trajectory.supports[0].frame().rotation()), 0);
+//   trajectory.trunk_yaw.addPoint(t, frame_yaw(trajectory.supports[0].frame().rotation()), 0, true);
 //   trajectory.parts.push_back(part);
 
 //   // Trajectory to go to the targeted flying position
@@ -610,9 +611,9 @@ bool WalkPatternGenerator::replan(std::vector<FootstepsPlanner::Support>& suppor
 //   part.swing_trajectory.c = T_world_target.translation() - trajectory.supports[0].footsteps[0].frame.translation();
 //   part.swing_trajectory.d = trajectory.supports[0].footsteps[0].frame.translation();
 
-//   trajectory.yaw(kicking_side).addPoint(t, frame_yaw(T_world_target.rotation()), 0);
+//   trajectory.yaw(kicking_side).addPoint(t, frame_yaw(T_world_target.rotation()), 0, true);
 //   _addSupports(trajectory, t, trajectory.supports[1]);
-//   trajectory.trunk_yaw.addPoint(t, frame_yaw(trajectory.supports[1].frame().rotation()), 0);
+//   trajectory.trunk_yaw.addPoint(t, frame_yaw(trajectory.supports[1].frame().rotation()), 0, true);
 //   trajectory.parts.push_back(part);
 
 //   // Trajectory of the kick
@@ -646,7 +647,7 @@ bool WalkPatternGenerator::replan(std::vector<FootstepsPlanner::Support>& suppor
 //   part.swing_trajectory.d = T_world_kick_end.translation();
 
 //   _addSupports(trajectory, t, trajectory.supports[2]);
-//   trajectory.trunk_yaw.addPoint(t, frame_yaw(trajectory.supports[2].frame().rotation()), 0);
+//   trajectory.trunk_yaw.addPoint(t, frame_yaw(trajectory.supports[2].frame().rotation()), 0, true);
 //   trajectory.parts.push_back(part);
 
 //   trajectory.duration = t;
@@ -659,7 +660,7 @@ bool WalkPatternGenerator::replan(std::vector<FootstepsPlanner::Support>& suppor
 
 //   // Initial support
 //   _addSupports(trajectory, t, trajectory.supports[0]);
-//   trajectory.trunk_yaw.addPoint(0, frame_yaw(trajectory.supports[0].frame().rotation()), 0);
+//   trajectory.trunk_yaw.addPoint(0, frame_yaw(trajectory.supports[0].frame().rotation()), 0, true);
 
 //   // Trajectory to move the CoM above the foot use as support during the kick
 //   TrajectoryPart part;
@@ -669,7 +670,7 @@ bool WalkPatternGenerator::replan(std::vector<FootstepsPlanner::Support>& suppor
 //   part.t_end = t;
 
 //   _addSupports(trajectory, t, trajectory.supports[0]);
-//   trajectory.trunk_yaw.addPoint(t, frame_yaw(trajectory.supports[0].frame().rotation()), 0);
+//   trajectory.trunk_yaw.addPoint(t, frame_yaw(trajectory.supports[0].frame().rotation()), 0, true);
 //   trajectory.parts.push_back(part);
 
 //   // Trajectory to go to the targeted flying position
@@ -685,9 +686,9 @@ bool WalkPatternGenerator::replan(std::vector<FootstepsPlanner::Support>& suppor
 //   part.swing_trajectory.c = T_world_target.translation() - trajectory.supports[0].footsteps[0].frame.translation();
 //   part.swing_trajectory.d = trajectory.supports[0].footsteps[0].frame.translation();
 
-//   trajectory.yaw(kicking_side).addPoint(t, frame_yaw(T_world_target.rotation()), 0);
+//   trajectory.yaw(kicking_side).addPoint(t, frame_yaw(T_world_target.rotation()), 0, true);
 //   _addSupports(trajectory, t, trajectory.supports[1]);
-//   trajectory.trunk_yaw.addPoint(t, frame_yaw(trajectory.supports[1].frame().rotation()), 0);
+//   trajectory.trunk_yaw.addPoint(t, frame_yaw(trajectory.supports[1].frame().rotation()), 0, true);
 //   trajectory.parts.push_back(part);
 
 //   trajectory.duration = t;

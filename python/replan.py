@@ -24,12 +24,12 @@ robot = placo.HumanoidRobot("sigmaban/")
 # Walk parameters - if double_support_duration is not set to 0, should be greater than replan_frequency * dt
 parameters = placo.HumanoidParameters()
 parameters.dt = 0.025
-parameters.single_support_duration = .35
+parameters.single_support_duration = .3
 parameters.double_support_duration = 0.0
-parameters.startend_double_support_duration = 0.5
+parameters.startend_double_support_duration = 0.35
 parameters.kick_duration = 0.3
 parameters.planned_dt = 64
-parameters.replan_frequency = 4
+parameters.replan_frequency = 9
 parameters.walk_com_height = 0.32
 parameters.walk_foot_height = 0.04
 parameters.pendulum_height = 0.32
@@ -120,6 +120,7 @@ t = -3
 dt = 0.005
 real_time = t
 adapting_trajectory_time = 1.3
+coef = 1
 
 while True:
     T = max(0, t)
@@ -130,12 +131,13 @@ while True:
     if real_time > adapting_trajectory_time:
         if trajectory.are_supports_updatable:
             print("Supports updated!")
-            adapting_trajectory_time = np.inf
+            adapting_trajectory_time += 1.5
+            # coef = -coef
 
-            d_x = 0.1
+            d_x = 0.05
             d_y = 0.
-            d_theta = 0.5
-            nb_steps = 6
+            d_theta = coef * 0.3
+            nb_steps = 20
             repetitive_footsteps_planner.configure(d_x, d_y, d_theta, nb_steps)
 
             current_support = trajectory.get_support(T)
@@ -143,7 +145,7 @@ while True:
             prev_support = trajectory.get_prev_support(T)
 
             flying_side = current_support.side()
-            # print("side :", flying_side)
+            print("side :", flying_side)
 
             if flying_side == placo.HumanoidRobot_Side.left:
                 T_world_left = current_support.frame()
@@ -178,6 +180,8 @@ while True:
             # for support in supports:
             #     print("---------------------------")
             #     print("size :", len(support.footsteps))
+            #     print("start :", support.start)
+            #     print("end :", support.end)
             #     print(support.frame()[0, 3])
             #     x.append(support.frame()[0, 3])
             #     print(support.frame()[1, 3])
@@ -191,6 +195,9 @@ while True:
                 trajectory.get_phase_t_start(T))
             trajectory.set_initial_T_world_flying_foot(
                 prev_support.footstep_frame(placo.HumanoidRobot.other_side(flying_side)))
+
+            if args.meshcat:
+                footsteps_viz(trajectory.supports)
 
         else:
             print("Supports update delayed - wrong timing")

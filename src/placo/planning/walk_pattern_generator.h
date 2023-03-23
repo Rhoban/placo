@@ -124,12 +124,6 @@ protected:
 
   void planFeetTrajectories(Trajectory& trajectory);
 
-  // Initialize the trajectory
-  Trajectory initTrajectory(std::vector<FootstepsPlanner::Support>& supports);
-
-  // Initialize a new trajectory according to a previous one
-  Trajectory updateTrajectory(std::vector<FootstepsPlanner::Support>& supports, Trajectory& trajectory, double elapsed);
-
   // std::vector<FootstepsPlanner::Support> planSupportsKick(Trajectory trajectory, HumanoidRobot::Side kicking_side,
   //                                                         Eigen::Affine3d T_world_left, Eigen::Affine3d
   //                                                         T_world_right);
