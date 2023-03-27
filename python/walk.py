@@ -165,7 +165,7 @@ elif args.pybullet or args.meshcat or args.torque:
             continue
 
         task_holder.update_walk_tasks(trajectory.get_T_world_left(T), trajectory.get_T_world_right(T),
-                                      trajectory.get_p_world_CoM(T), trajectory.get_R_world_trunk(T), False)
+                                      trajectory.get_p_world_CoM(T), trajectory.get_R_world_trunk(T), 0, False)
 
         robot.update_support_side(str(trajectory.support_side(T)))
         robot.ensure_on_floor()

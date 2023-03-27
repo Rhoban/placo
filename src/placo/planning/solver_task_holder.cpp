@@ -52,7 +52,7 @@ void SolverTaskHolder::init_tasks()
 }
 
 void SolverTaskHolder::update_walk_tasks(Eigen::Affine3d left_frame, Eigen::Affine3d right_frame,
-                                         Eigen::Vector3d com_vector, Eigen::Matrix3d trunk_orientation,
+                                         Eigen::Vector3d com_vector, Eigen::Matrix3d trunk_orientation, double elapsed,
                                          double dump_status)
 {
   left_foot_task.set_T_world_frame(left_frame);
@@ -60,7 +60,7 @@ void SolverTaskHolder::update_walk_tasks(Eigen::Affine3d left_frame, Eigen::Affi
   com_task.target_world = com_vector;
   trunk_orientation_task.R_world_frame = trunk_orientation;
 
-  solver->solve(true);
+  solver->solve(true, elapsed);
   if (dump_status)
   {
     solver->dump_status();

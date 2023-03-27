@@ -43,11 +43,11 @@ public:
   /// @brief Compute the center of mass velocity from the speed of the motors and the orientation of the trunk
   /// @param qd_a Velocity of the actuated dofs
   /// @param support Support side
-  /// @param roll Trunk roll
-  /// @param pitch Trunk pitch
-  /// @param yaw Trunk yaw
+  /// @param d_roll Trunk roll speed
+  /// @param d_pitch Trunk pitch speed
+  /// @param d_yaw Trunk yaw speed
   /// @return Center of mass velocity
-  Eigen::Vector3d get_com_velocity(Eigen::VectorXd qd_a, Side support, double roll, double pitch, double yaw);
+  Eigen::Vector3d get_com_velocity(Eigen::VectorXd qd_a, Side support, double d_roll, double d_pitch, double d_yaw);
 
   // We suppose we have one support frame and associated transformation
   RobotWrapper::FrameIndex support_frame();

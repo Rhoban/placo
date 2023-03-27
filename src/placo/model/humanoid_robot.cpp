@@ -120,9 +120,8 @@ void HumanoidRobot::update_support_side(const std::string& side)
   update_support_side(string_to_side(side));
 }
 
-// XXX : WIP - not working currently
-Eigen::Vector3d HumanoidRobot::get_com_velocity(Eigen::VectorXd qd_a, Side support, double roll, double pitch,
-                                                double yaw)
+Eigen::Vector3d HumanoidRobot::get_com_velocity(Eigen::VectorXd qd_a, Side support, double d_roll, double d_pitch,
+                                                double d_yaw)
 {
   // CoM Jacobians
   Eigen::Matrix3Xd J_C = com_jacobian();
@@ -130,41 +129,22 @@ Eigen::Vector3d HumanoidRobot::get_com_velocity(Eigen::VectorXd qd_a, Side suppo
   Eigen::Matrix3Xd J_a_C = J_C.rightCols(20);
 
   // Support foot
-  Eigen::Matrix3Xd J_contact = support == placo::HumanoidRobot::Left ? frame_jacobian("left_foot", "local") :
-                                                                       frame_jacobian("right_foot", "local");
+  Eigen::MatrixXd J_contact = support == placo::HumanoidRobot::Left ? frame_jacobian("left_foot", "local") :
+                                                                      frame_jacobian("right_foot", "local");
 
   // IMU body Jacobian
-  Eigen::Matrix3Xd J_IMU = frame_jacobian("trunk", "local");
+  Eigen::MatrixXd J_IMU = frame_jacobian("trunk", "local");
 
   Eigen::MatrixXd J(6, J_contact.cols());
   J << J_contact.topRows(3), J_IMU.bottomRows(3);
   Eigen::MatrixXd J_u = J.leftCols(6);
   Eigen::MatrixXd J_a = J.rightCols(20);
 
-  // Use of pseudo-inverse - needed ?
-  Eigen::MatrixXd J_u_pinv = J_u.completeOrthogonalDecomposition().pseudoInverse();
+  // XXX : is it better to use pseudo_invers or inverse ?
+  Eigen::MatrixXd J_u_pinv = J_u.completeOrthogonalDecomposition().pseudoInverse();  // J_u.inverse();
 
   Eigen::VectorXd M(6);
-  M << 0, 0, 0, roll, pitch, yaw;
-
-  // std::cout << "---------------------" << std::endl;
-  // std::cout << "J_C :" << std::endl;
-  // std::cout << J_C << std::endl;
-  // std::cout << "J_u_C :" << std::endl;
-  // std::cout << J_a_C << std::endl;
-  // std::cout << "J_a_C :" << std::endl;
-  // std::cout << J_u_C << std::endl;
-  // std::cout << "J :" << std::endl;
-  // std::cout << J << std::endl;
-  // std::cout << "J_u :" << std::endl;
-  // std::cout << J_u << std::endl;
-  // std::cout << "J_a :" << std::endl;
-  // std::cout << J_a << std::endl;
-  // std::cout << "J_u_pinv :" << std::endl;
-  // std::cout << J_u_pinv << std::endl;
-  // std::cout << "qd_a :" << std::endl;
-  // std::cout << qd_a << std::endl;
-  // std::cout << "---------------------" << std::endl;
+  M << 0, 0, 0, d_roll, d_pitch, d_yaw;
 
   return J_u_C * J_u_pinv * M + (J_a_C - J_u_C * J_u_pinv * J_a) * qd_a;
 }

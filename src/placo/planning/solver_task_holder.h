@@ -15,7 +15,7 @@ public:
 
   // Update the walk related tasks and solve the QP problem of the IK
   void update_walk_tasks(Eigen::Affine3d left_frame, Eigen::Affine3d right_frame, Eigen::Vector3d com_vector,
-                         Eigen::Matrix3d trunk_orientation, double dump_status = false);
+                         Eigen::Matrix3d trunk_orientation, double elapsed, double dump_status = false);
 
   void update_head_task(double pitch, double yaw);
 
