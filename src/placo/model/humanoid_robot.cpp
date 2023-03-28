@@ -1,6 +1,7 @@
 #include "placo/model/humanoid_robot.h"
 #include "placo/utils.h"
 #include "pinocchio/math/rpy.hpp"
+#include "pinocchio/spatial/explog.hpp"
 
 namespace placo
 {
@@ -90,6 +91,12 @@ void HumanoidRobot::update_support_side(HumanoidRobot::Side new_side)
   }
 }
 
+void HumanoidRobot::update_trunk_angular_velocity(double elapsed)
+{
+  omega_b = pinocchio::log3(R_world_trunk.transpose() * get_T_world_trunk().rotation()) / elapsed;
+  R_world_trunk = get_T_world_trunk().rotation();
+}
+
 void HumanoidRobot::ensure_on_floor()
 {
   // Updating the floating base so that the foot is where we want
@@ -120,8 +127,7 @@ void HumanoidRobot::update_support_side(const std::string& side)
   update_support_side(string_to_side(side));
 }
 
-Eigen::Vector3d HumanoidRobot::get_com_velocity(Eigen::VectorXd qd_a, Side support, double d_roll, double d_pitch,
-                                                double d_yaw)
+Eigen::Vector3d HumanoidRobot::get_com_velocity(Eigen::VectorXd qd_a, Side support, Eigen::Vector3d omega_b)
 {
   // CoM Jacobians
   Eigen::Matrix3Xd J_C = com_jacobian();
@@ -144,9 +150,21 @@ Eigen::Vector3d HumanoidRobot::get_com_velocity(Eigen::VectorXd qd_a, Side suppo
   Eigen::MatrixXd J_u_pinv = J_u.completeOrthogonalDecomposition().pseudoInverse();  // J_u.inverse();
 
   Eigen::VectorXd M(6);
-  M << 0, 0, 0, d_roll, d_pitch, d_yaw;
+  M << 0, 0, 0, omega_b;
 
   return J_u_C * J_u_pinv * M + (J_a_C - J_u_C * J_u_pinv * J_a) * qd_a;
+}
+
+Eigen::Vector2d HumanoidRobot::dcm(Eigen::Vector2d com_velocity, double omega)
+{
+  // DCM = c + (1/omega) c_dot
+  return com_world().head(2) + (1 / omega) * com_velocity;
+}
+
+Eigen::Vector2d HumanoidRobot::zmp(Eigen::Vector2d com_acceleration, double omega)
+{
+  // ZMP = c - (1/omega^2) c_ddot
+  return com_world().head(2) - (1 / pow(omega, 2)) * com_acceleration;
 }
 
 bool HumanoidRobot::camera_look_at(double& pan, double& tilt, const Eigen::Vector3d& P_world_target)

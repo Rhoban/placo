@@ -107,7 +107,12 @@ void exposeRobotWrapper()
       .def("get_T_world_right", &HumanoidRobot::get_T_world_right)
       .def("get_T_world_trunk", &HumanoidRobot::get_T_world_trunk)
       .def("get_com_velocity", &HumanoidRobot::get_com_velocity)
+      .def("dcm", &HumanoidRobot::dcm)
+      .def("zmp", &HumanoidRobot::zmp)
       .def("other_side", &HumanoidRobot::other_side)
+      .def("update_trunk_angular_velocity", &HumanoidRobot::update_trunk_angular_velocity)
+      .def(
+          "get_omega", +[](const HumanoidRobot& robot) { return robot.omega_b; })
       .def(
           "get_support_side", +[](const HumanoidRobot& robot) { return robot.support_side; })
       .def(

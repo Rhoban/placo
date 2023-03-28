@@ -95,6 +95,9 @@ public:
    */
   double foot_length = 0.15;
 
+  /**
+   * Natural frequency of the Linear Inverted Pendulum (LIP) model used in the walk
+   */
   double omega();
 };
 }  // namespace placo

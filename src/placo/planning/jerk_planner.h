@@ -29,7 +29,7 @@ public:
     double duration() const;
   };
 
-  // A 2D trajectory produced by the planner (combines x and y trajectoires)
+  // A 2D trajectory produced by the planner (combines x and y trajectories)
   struct JerkTrajectory2D
   {
     JerkTrajectory2D(double dt, double omega);
