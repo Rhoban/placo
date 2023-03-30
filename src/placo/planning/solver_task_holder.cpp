@@ -60,7 +60,9 @@ void SolverTaskHolder::update_walk_tasks(Eigen::Affine3d left_frame, Eigen::Affi
   com_task.target_world = com_vector;
   trunk_orientation_task.R_world_frame = trunk_orientation;
 
-  solver->solve(true, elapsed);
+  Eigen::VectorXd qd = solver->solve(true);
+  robot->state.qd = qd / elapsed;
+
   if (dump_status)
   {
     solver->dump_status();
