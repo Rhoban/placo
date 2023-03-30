@@ -25,10 +25,20 @@ void exposeFootsteps()
 
   class_<FootstepsPlanner::Support>("Support")
       .def("support_polygon", &FootstepsPlanner::Support::support_polygon)
-      .add_property("footsteps", &FootstepsPlanner::Support::footsteps);
+      .def("frame", &FootstepsPlanner::Support::frame)
+      .def("footstep_frame", &FootstepsPlanner::Support::footstep_frame)
+      .def("side", &FootstepsPlanner::Support::side)
+      .def(
+          "set_start", +[](FootstepsPlanner::Support& support, bool b) { support.start = b; })
+      .def(
+          "set_end", +[](FootstepsPlanner::Support& support, bool b) { support.end = b; })
+      .add_property("footsteps", &FootstepsPlanner::Support::footsteps)
+      .add_property("start", &FootstepsPlanner::Support::start)
+      .add_property("end", &FootstepsPlanner::Support::end);
 
   class_<FootstepsPlanner, boost::noncopyable>("FootstepsPlanner", no_init)
-      .def("make_supports", &FootstepsPlannerNaive::make_supports);
+      .def("make_supports", &FootstepsPlannerNaive::make_supports)
+      .def("add_first_support", &FootstepsPlannerNaive::add_first_support);
 
   class_<FootstepsPlannerNaive, bases<FootstepsPlanner>>("FootstepsPlannerNaive", init<HumanoidParameters&>())
       .def("plan", &FootstepsPlannerNaive::plan)

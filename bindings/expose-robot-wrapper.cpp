@@ -20,6 +20,8 @@ class_<RobotType> exposeRobotType(const char* name)
       .add_property("collision_model", &RobotType::collision_model)
       .add_property("visual_model", &RobotType::visual_model)
       .def("load_collisions_pairs", &RobotType::load_collisions_pairs)
+      .def("get_joint_offset", &RobotType::get_joint_offset)
+      .def("get_joint_v_offset", &RobotType::get_joint_v_offset)
       .def("reset", &RobotType::reset)
       .def("neutral_state", &RobotType::neutral_state)
       .def("set_joint", &RobotType::set_joint)
@@ -29,6 +31,7 @@ class_<RobotType> exposeRobotType(const char* name)
       .def("set_T_world_fbase", &RobotType::set_T_world_fbase)
       .def("com_world", &RobotType::com_world)
       .def("joint_names", &RobotType::joint_names)
+      .def("actuated_joint_names", &RobotType::actuated_joint_names)
       .def("frame_names", &RobotType::frame_names)
       .def("self_collisions", &RobotType::self_collisions)
       .def("distances", &RobotType::distances)
@@ -43,7 +46,7 @@ class_<RobotType> exposeRobotType(const char* name)
             auto torques = robot.static_gravity_compensation_torques(frame);
             boost::python::dict dict;
 
-            for (auto& dof : robot.joint_names())
+            for (auto& dof : robot.actuated_joint_names())
             {
               dict[dof] = torques[robot.get_joint_v_offset(dof)];
             }
@@ -107,6 +110,13 @@ void exposeRobotWrapper()
       .def("get_T_world_left", &HumanoidRobot::get_T_world_left)
       .def("get_T_world_right", &HumanoidRobot::get_T_world_right)
       .def("get_T_world_trunk", &HumanoidRobot::get_T_world_trunk)
+      .def("get_com_velocity", &HumanoidRobot::get_com_velocity)
+      .def("dcm", &HumanoidRobot::dcm)
+      .def("zmp", &HumanoidRobot::zmp)
+      .def("other_side", &HumanoidRobot::other_side)
+      .def("update_trunk_angular_velocity", &HumanoidRobot::update_trunk_angular_velocity)
+      .def(
+          "get_omega", +[](const HumanoidRobot& robot) { return robot.omega_b; })
       .def(
           "get_support_side", +[](const HumanoidRobot& robot) { return robot.support_side; })
       .def(

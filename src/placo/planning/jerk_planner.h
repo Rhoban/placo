@@ -29,7 +29,7 @@ public:
     double duration() const;
   };
 
-  // A 2D trajectory produced by the planner (combines x and y trajectoires)
+  // A 2D trajectory produced by the planner (combines x and y trajectories)
   struct JerkTrajectory2D
   {
     JerkTrajectory2D(double dt, double omega);
@@ -60,7 +60,7 @@ public:
    */
   typedef Eigen::Matrix<double, 6, 1> State;
 
-  JerkPlanner(int nb_steps, Eigen::Vector2d initial_position = Eigen::Vector2d::Zero(),
+  JerkPlanner(int nb_dt, Eigen::Vector2d initial_position = Eigen::Vector2d::Zero(),
               Eigen::Vector2d initial_velocity = Eigen::Vector2d::Zero(),
               Eigen::Vector2d initial_acceleration = Eigen::Vector2d::Zero(), double dt = 0.1, double omega = 0.);
 
@@ -168,8 +168,9 @@ public:
   /**
    * @brief Runs the solver and produces a JerkTrajectory2D solution
    * @return the produced trajectory
+   * @param minimize_zmp_vel use ZMP velocity as objective function in the QP instead of CoM jerk
    */
-  JerkPlanner::JerkTrajectory2D plan();
+  JerkPlanner::JerkTrajectory2D plan(bool minimize_zmp_vel = false);
 
   /**
    * Creates constraint matrices Ax - b = 0 for a given step and point type

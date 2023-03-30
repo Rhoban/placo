@@ -37,14 +37,25 @@ public:
   double kick_duration = 1.;
 
   /**
-   * @brief Maximum steps for planning
+   * @brief Planning horizon for the CoM trajectory
    */
-  int maximum_steps = 100;
+  int planned_dt = 100;
+
+  /**
+   * @brief Number of dt between each replan.
+   * Support phases have to last longer than [replan_frequency * dt] or their duration has to be equal to 0
+   */
+  int replan_frequency = 10;
 
   /**
    * @brief Margin for the ZMP to live in the support polygon [m]
    */
   double zmp_margin = 0.025;
+
+  /**
+   * @brief Use a ZMP velocity minimization for the CoM planning instead of CoM jerk minimization
+   */
+  bool minimize_zmp_vel = false;
 
   /**
    * @brief How height the feet are rising while walking [m]
@@ -89,6 +100,9 @@ public:
    */
   double foot_length = 0.15;
 
+  /**
+   * Natural frequency of the Linear Inverted Pendulum (LIP) model used in the walk
+   */
   double omega();
 };
 }  // namespace placo

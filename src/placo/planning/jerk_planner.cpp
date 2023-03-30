@@ -135,14 +135,14 @@ Eigen::Vector2d JerkPlanner::JerkTrajectory2D::dcm(double t) const
   return pos(t) + (1 / omega) * vel(t);
 }
 
-JerkPlanner::JerkPlanner(int nb_steps, Eigen::Vector2d initial_position, Eigen::Vector2d initial_velocity,
+JerkPlanner::JerkPlanner(int nb_dt, Eigen::Vector2d initial_position, Eigen::Vector2d initial_velocity,
                          Eigen::Vector2d initial_acceleration, double dt, double omega)
   : dt(dt), omega(omega)
 {
   initial_state << initial_position.x(), initial_velocity.x(), initial_acceleration.x(), initial_position.y(),
       initial_velocity.y(), initial_acceleration.y();
 
-  N = nb_steps;
+  N = nb_dt;
 
   A.setZero();
   B.setZero();
@@ -369,15 +369,38 @@ void JerkPlanner::stack_constraints(std::vector<ConstraintMatrices>& constraints
   }
 }
 
-JerkPlanner::JerkTrajectory2D JerkPlanner::plan()
+JerkPlanner::JerkTrajectory2D JerkPlanner::plan(bool minimize_zmp_vel)
 {
-  // Quadratic term (we want to minimize the jerk)
-  Eigen::MatrixXd G;
-  Eigen::VectorXd g0;
-  G = Eigen::MatrixXd(N * 2, N * 2);
-  g0 = Eigen::VectorXd(N * 2);
+  // Quadratic terms for CoM jerk minimization
+  Eigen::MatrixXd G(N * 2, N * 2);
   G.setIdentity();
+  Eigen::VectorXd g0(N * 2);
   g0.setZero();
+
+  // Quadratics terms for ZMP velocity minimization
+  if (minimize_zmp_vel)
+  {
+    Eigen::MatrixXd M(2 * N, 2 * N);
+    M.setZero();
+    Eigen::MatrixXd H(2 * N, 2 * N);
+    H.setZero();
+
+    for (int step = 0; step < N; step++)
+    {
+      Eigen::MatrixXd transition_matrix = get_transition_matrix(step);
+      M.block(2 * step, 0, 1, 2 * step) = transition_matrix.block(1, 0, 1, 2 * step);
+      M.block(2 * step + 1, 0, 1, 2 * step) = transition_matrix.block(4, 0, 1, 2 * step);
+
+      H.block(2 * step, 2 * step, 1, 1) = a_powers[step].block(1, 0, 1, 3) * initial_state.block(0, 0, 3, 1);
+      H.block(2 * step + 1, 2 * step + 1, 1, 1) = a_powers[step].block(1, 0, 1, 3) * initial_state.block(0, 0, 3, 1);
+    }
+
+    Eigen::MatrixXd S(2 * N, 2 * N);
+    S = -(1 / omega) * Eigen::MatrixXd::Identity(2 * N, 2 * N);
+
+    G = (M + S).transpose() * (M + S);
+    g0 = H.transpose() * (M + S);
+  }
 
   // Stacking equality constraints
   Eigen::MatrixXd CE;

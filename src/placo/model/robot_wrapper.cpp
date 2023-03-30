@@ -9,6 +9,7 @@
 #include "rhoban_utils/util.h"
 #include <jsoncpp/json/json.h>
 #include <filesystem>
+#include <algorithm>
 
 namespace placo
 {
@@ -400,6 +401,14 @@ Eigen::VectorXd RobotWrapper::static_gravity_compensation_torques(std::string fr
 std::vector<std::string> RobotWrapper::joint_names()
 {
   return model.names;
+}
+
+std::vector<std::string> RobotWrapper::actuated_joint_names()
+{
+  std::vector<std::string> joints = joint_names();
+  joints.erase(std::remove(joints.begin(), joints.end(), "universe"), joints.end());
+  joints.erase(std::remove(joints.begin(), joints.end(), "root_joint"), joints.end());
+  return joints;
 }
 
 std::vector<std::string> RobotWrapper::frame_names()

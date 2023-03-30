@@ -38,7 +38,8 @@ public:
     std::vector<Footstep> footsteps;
     std::vector<Eigen::Vector2d> polygon;
     bool computed_polygon = false;
-    bool start_end = false;
+    bool start = false;
+    bool end = false;
     std::vector<Eigen::Vector2d> support_polygon();
 
     /**
@@ -53,7 +54,7 @@ public:
      * @param side the side we want the frame (left or right foot)
      * @return a frame
      */
-    Eigen::Affine3d frame(HumanoidRobot::Side side);
+    Eigen::Affine3d footstep_frame(HumanoidRobot::Side side);
 
     bool operator==(const Support& other);
 
@@ -86,8 +87,10 @@ public:
    * @return vector of supports to use. It starts with initial double supports,
    * and add double support phases between footsteps.
    */
-  std::vector<Support> make_supports(std::vector<Footstep> footsteps, bool start = true, bool middle = false,
-                                     bool end = true);
+  static std::vector<Support> make_supports(std::vector<Footstep> footsteps, bool start = true, bool middle = false,
+                                            bool end = true);
+
+  static void add_first_support(std::vector<Support>& supports, Support support);
 
   // Humanoid parameters for planning and control
   HumanoidParameters& parameters;

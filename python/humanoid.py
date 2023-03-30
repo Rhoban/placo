@@ -32,7 +32,8 @@ while True:
 
     print(f"v={v}, over={over}")
     if over:
-        robot.swap_support_side()
+        robot.update_support_side(
+            str(placo.HumanoidRobot.other_side(robot.get_support_side())))
     robot.ensure_on_floor()
 
     # Show some frames

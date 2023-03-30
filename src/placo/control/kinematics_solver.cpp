@@ -315,7 +315,7 @@ void KinematicsSolver::compute_limits_inequalities()
   }
 }
 
-Eigen::VectorXd KinematicsSolver::solve(bool apply)
+Eigen::VectorXd KinematicsSolver::solve(bool apply, double elapsed)
 {
   // Adding some random noise
   auto q_save = robot->state.q;
@@ -470,6 +470,7 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
 
   if (apply)
   {
+    robot->state.qd = qd / elapsed;
     robot->state.q = pinocchio::integrate(robot->model, robot->state.q, qd);
   }
   else
