@@ -77,6 +77,8 @@ void exposeRobotWrapper()
           +[](RobotWrapper::State& state, const Eigen::VectorXd& qd) { state.qd = qd; });
 
   class_<RobotWrapper::Collision>("Collision")
+      .add_property("objA", &RobotWrapper::Collision::objA)
+      .add_property("objB", &RobotWrapper::Collision::objB)
       .add_property("bodyA", &RobotWrapper::Collision::bodyA)
       .add_property("bodyB", &RobotWrapper::Collision::bodyB)
       .add_property("parentA", &RobotWrapper::Collision::parentA)
@@ -85,6 +87,8 @@ void exposeRobotWrapper()
           "get_contact", +[](RobotWrapper::Collision& collision, int index) { return collision.contacts[index]; });
 
   class_<RobotWrapper::Distance>("Distance")
+      .add_property("objA", &RobotWrapper::Distance::objA)
+      .add_property("objB", &RobotWrapper::Distance::objB)
       .add_property("parentA", &RobotWrapper::Distance::parentA)
       .add_property("parentB", &RobotWrapper::Distance::parentB)
       .add_property(
