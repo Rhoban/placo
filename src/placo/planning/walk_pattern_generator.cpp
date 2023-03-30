@@ -337,7 +337,7 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
     planner.add_equality_constraint(dt - 1, Eigen::Vector2d(0., 0.), JerkPlanner::Acceleration);
   }
 
-  trajectory.com = planner.plan();
+  trajectory.com = planner.plan(parameters.minimize_zmp_vel);
 }
 
 void WalkPatternGenerator::planFeetTrajectories(Trajectory& trajectory)

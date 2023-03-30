@@ -6,7 +6,6 @@ import tf
 import pinocchio as pin
 import numpy as np
 
-# XXX: Make double support? an option of the walk (maybe false if the length is zero)
 # XXX: Make the constraint "duration" an option of the walk
 
 parser = argparse.ArgumentParser(description="Process some integers.")
@@ -43,6 +42,7 @@ parameters.foot_length = 0.1576
 parameters.foot_width = 0.092
 parameters.feet_spacing = 0.122
 parameters.zmp_margin = 0.02
+parameters.minimize_zmp_vel = False
 
 # Creating the kinematics solver
 solver = robot.make_solver()
@@ -73,9 +73,9 @@ T_world_rightTarget[0, 3] += .5
 naive_footsteps_planner.configure(T_world_leftTarget, T_world_rightTarget)
 
 repetitive_footsteps_planner = placo.FootstepsPlannerRepetitive(parameters)
-d_x = 0.1
+d_x = 0.08
 d_y = 0.
-d_theta = 0.
+d_theta = 0.4
 nb_steps = 5
 repetitive_footsteps_planner.configure(d_x, d_y, d_theta, nb_steps)
 
@@ -85,11 +85,11 @@ walk = placo.WalkPatternGenerator(robot, parameters)
 # start_t = time.time()
 
 # --------------------------------------
-footsteps = naive_footsteps_planner.plan(placo.HumanoidRobot_Side.left,
-                                         T_world_left, T_world_right)
+# footsteps = naive_footsteps_planner.plan(placo.HumanoidRobot_Side.left,
+#                                          T_world_left, T_world_right)
 # --------------------------------------
-# footsteps = repetitive_footsteps_planner.plan(placo.HumanoidRobot_Side.left,
-#                                               T_world_left, T_world_right)
+footsteps = repetitive_footsteps_planner.plan(placo.HumanoidRobot_Side.left,
+                                              T_world_left, T_world_right)
 # --------------------------------------
 
 double_supports = parameters.double_support_duration / parameters.dt >= 1

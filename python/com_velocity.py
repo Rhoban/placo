@@ -27,6 +27,7 @@ parameters.foot_length = 0.1576
 parameters.foot_width = 0.092
 parameters.feet_spacing = 0.122
 parameters.zmp_margin = 0.02
+parameters.minimize_zmp_vel = False
 
 # Creating the kinematics solver
 solver = robot.make_solver()

@@ -37,7 +37,7 @@ public:
   double kick_duration = 1.;
 
   /**
-   * @brief Maximum planned dt
+   * @brief Planning horizon for the CoM trajectory
    */
   int planned_dt = 100;
 
@@ -51,6 +51,11 @@ public:
    * @brief Margin for the ZMP to live in the support polygon [m]
    */
   double zmp_margin = 0.025;
+
+  /**
+   * @brief Use a ZMP velocity minimization for the CoM planning instead of CoM jerk minimization
+   */
+  bool minimize_zmp_vel = false;
 
   /**
    * @brief How height the feet are rising while walking [m]
