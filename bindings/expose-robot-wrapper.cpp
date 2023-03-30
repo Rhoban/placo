@@ -37,6 +37,9 @@ class_<RobotType> exposeRobotType(const char* name)
       .def("distances", &RobotType::distances)
       .def("com_jacobian", &RobotType::com_jacobian)
       .def("generalized_gravity", &RobotType::generalized_gravity)
+      .def("non_linear_effects", &RobotType::non_linear_effects)
+      .def("mass_matrix", &RobotType::mass_matrix)
+      .def("integrate", &RobotType::integrate)
       .def(
           "static_gravity_compensation_torques",
           +[](RobotType& robot, const std::string& frame) { return robot.static_gravity_compensation_torques(frame); })

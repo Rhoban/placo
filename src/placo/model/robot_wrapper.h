@@ -213,6 +213,21 @@ public:
   Eigen::VectorXd generalized_gravity();
 
   /**
+   * @brief Computes non-linear effects
+   */
+  Eigen::VectorXd non_linear_effects();
+
+  /**
+   * @brief Computes the mass matrix
+   */
+  Eigen::MatrixXd mass_matrix();
+
+  /**
+   * @brief Integrate the velocity for a given dt
+   */
+  void integrate(double dt);
+
+  /**
    * @brief Computes torques needed by the robot to compensate for the generalized gravity, assuming that the given
    * frame is the (only) contact supporting the robot
    *

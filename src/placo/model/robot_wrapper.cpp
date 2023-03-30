@@ -4,6 +4,7 @@
 #include "pinocchio/algorithm/compute-all-terms.hpp"
 #include "pinocchio/algorithm/geometry.hpp"
 #include "pinocchio/algorithm/rnea.hpp"
+#include "pinocchio/algorithm/crba.hpp"
 #include "pinocchio/algorithm/centroidal.hpp"
 #include "placo/utils.h"
 #include "rhoban_utils/util.h"
@@ -375,6 +376,24 @@ Eigen::VectorXd RobotWrapper::generalized_gravity()
   pinocchio::computeGeneralizedGravity(model, *data, state.q);
 
   return data->g;
+}
+
+Eigen::VectorXd RobotWrapper::non_linear_effects()
+{
+  return pinocchio::nonLinearEffects(model, *data, state.q, state.qd);
+}
+
+Eigen::MatrixXd RobotWrapper::mass_matrix()
+{
+  pinocchio::crba(model, *data, state.q);
+  data->M.triangularView<Eigen::StrictlyLower>() = data->M.transpose().triangularView<Eigen::StrictlyLower>();
+
+  return data->M;
+}
+
+void RobotWrapper::integrate(double dt)
+{
+  state.q = pinocchio::integrate(model, state.q, state.qd);
 }
 
 Eigen::VectorXd RobotWrapper::static_gravity_compensation_torques(RobotWrapper::FrameIndex frameIndex)
