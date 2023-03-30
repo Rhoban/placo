@@ -16,7 +16,7 @@ class TestJerkPlanner(unittest.TestCase):
 
         jerk_planner.add_greater_than_constraint(50, np.array([1.0, 1.0]), placo.ConstraintType.position)
 
-        trajectory = jerk_planner.plan()
+        trajectory = jerk_planner.plan(False)
 
         # Checking that we start on proper position/velocity
         self.assertAlmostEqual(
