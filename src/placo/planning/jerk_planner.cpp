@@ -9,6 +9,17 @@ using namespace std;
 
 namespace placo
 {
+void JerkPlanner::EqualityConstraint::configure(JerkPlanner::ConstraintPriority priority_, double weight_)
+{
+  priority = priority_;
+  weight = weight_;
+}
+
+void JerkPlanner::EqualityConstraint::configure(std::string priority_, double weight_)
+{
+  configure(priority_ == "soft" ? Soft : Hard, weight_);
+}
+
 int JerkPlanner::ConstraintMatrices::nb_constraints()
 {
   return A.rows();
@@ -55,7 +66,7 @@ double JerkPlanner::JerkTrajectory::pos(double t) const
   int k = get_offset(t);
   t -= k * dt;
 
-  return t * (t * (t * ((1 / 6.) * jerk[k]) + (1 / 2.) * pos_vel_acc[k][2]) + pos_vel_acc[k][1]) + pos_vel_acc[k][0];
+  return t * (t * (t * ((1 / 6.) * jerks[k]) + (1 / 2.) * pos_vel_acc[k][2]) + pos_vel_acc[k][1]) + pos_vel_acc[k][0];
 }
 
 double JerkPlanner::JerkTrajectory::vel(double t) const
@@ -63,7 +74,7 @@ double JerkPlanner::JerkTrajectory::vel(double t) const
   int k = get_offset(t);
   t -= k * dt;
 
-  return t * (t * ((1 / 2.) * jerk[k]) + pos_vel_acc[k][2]) + pos_vel_acc[k][1];
+  return t * (t * ((1 / 2.) * jerks[k]) + pos_vel_acc[k][2]) + pos_vel_acc[k][1];
 }
 
 double JerkPlanner::JerkTrajectory::acc(double t) const
@@ -71,7 +82,14 @@ double JerkPlanner::JerkTrajectory::acc(double t) const
   int k = get_offset(t);
   t -= k * dt;
 
-  return t * jerk[k] + pos_vel_acc[k][2];
+  return t * jerks[k] + pos_vel_acc[k][2];
+}
+
+double JerkPlanner::JerkTrajectory::jerk(double t) const
+{
+  int k = get_offset(t);
+
+  return jerks[k];
 }
 
 JerkPlanner::JerkTrajectory2D::JerkTrajectory2D(double dt, double omega) : dt(dt), omega(omega)
@@ -123,10 +141,21 @@ Eigen::Vector2d JerkPlanner::JerkTrajectory2D::acc(double t) const
   return Eigen::Vector2d(X.acc(t), Y.acc(t));
 }
 
+Eigen::Vector2d JerkPlanner::JerkTrajectory2D::jerk(double t) const
+{
+  return Eigen::Vector2d(X.jerk(t), Y.jerk(t));
+}
+
 Eigen::Vector2d JerkPlanner::JerkTrajectory2D::zmp(double t) const
 {
   // ZMP = c - (1/omega^2) c_ddot
   return pos(t) - (1 / pow(omega, 2)) * acc(t);
+}
+
+Eigen::Vector2d JerkPlanner::JerkTrajectory2D::dzmp(double t) const
+{
+  // ZMP = c_dot - (1/omega^2) c_dddot
+  return vel(t) - (1 / pow(omega, 2)) * jerk(t);
 }
 
 Eigen::Vector2d JerkPlanner::JerkTrajectory2D::dcm(double t) const
@@ -156,6 +185,16 @@ JerkPlanner::JerkPlanner(int nb_dt, Eigen::Vector2d initial_position, Eigen::Vec
       dt;
 
   compute_transition_matrix();
+}
+
+JerkPlanner::~JerkPlanner()
+{
+  for (auto constraint : equalities)
+  {
+    delete constraint;
+  }
+
+  equalities.clear();
 }
 
 void JerkPlanner::compute_transition_matrix()
@@ -189,11 +228,9 @@ Eigen::MatrixXd JerkPlanner::get_transition_matrix(int step)
   return transition_matrix;
 }
 
-JerkPlanner::ConstraintMatrices JerkPlanner::make_constraint(int step, JerkPlanner::ConstraintType type,
-                                                             Eigen::Vector2d value)
+void JerkPlanner::make_constraint(JerkPlanner::ConstraintMatrices& constraint, int step,
+                                  JerkPlanner::ConstraintType type, Eigen::Vector2d value)
 {
-  ConstraintMatrices constraint;
-
   // Initializing A and b matrices
   constraint.A = Eigen::MatrixXd(2, N * 2);
   constraint.A.setZero();
@@ -202,6 +239,10 @@ JerkPlanner::ConstraintMatrices JerkPlanner::make_constraint(int step, JerkPlann
 
   // Retrieving transition matrix for step
   auto transition_matrix = get_transition_matrix(step);
+  Eigen::MatrixXd command_row_x(1, N * 2);
+  Eigen::MatrixXd command_row_y(1, N * 2);
+  command_row_x.setZero();
+  command_row_y.setZero();
 
   // Rows that should be used/combined in the constraints
   std::vector<std::pair<int, double>> rows;
@@ -224,6 +265,13 @@ JerkPlanner::ConstraintMatrices JerkPlanner::make_constraint(int step, JerkPlann
     rows.push_back(std::pair<int, double>(0, 1.0));
     rows.push_back(std::pair<int, double>(2, -1 / pow(omega, 2)));
   }
+  else if (type == ConstraintType::dZMP)
+  {
+    // dZMP = c_d - (1/omega^2) c_dddot
+    rows.push_back(std::pair<int, double>(0, 1.0));
+    command_row_x(1, step * 2) = -1 / pow(omega, 2);
+    command_row_y(1, step * 2 + 1) = -1 / pow(omega, 2);
+  }
   else if (type == ConstraintType::DCM)
   {
     // DCM = c + (1/omega) c_dot
@@ -240,19 +288,20 @@ JerkPlanner::ConstraintMatrices JerkPlanner::make_constraint(int step, JerkPlann
     int row_offset = row.first;
     double row_multiplier = row.second;
 
-    constraint.A.block(0, 0, 1, N * 2) += row_multiplier * transition_matrix.block(0 + row_offset, 0, 1, N * 2);
-    constraint.A.block(1, 0, 1, N * 2) += row_multiplier * transition_matrix.block(3 + row_offset, 0, 1, N * 2);
+    constraint.A.block(0, 0, 1, N * 2) +=
+        row_multiplier * transition_matrix.block(0 + row_offset, 0, 1, N * 2) + command_row_x;
+    constraint.A.block(1, 0, 1, N * 2) +=
+        row_multiplier * transition_matrix.block(3 + row_offset, 0, 1, N * 2) + command_row_y;
 
     constraint.b.block(0, 0, 1, 1) +=
         row_multiplier * (a_powers[step].block(row_offset, 0, 1, 3) * initial_state.block(0, 0, 3, 1));
     constraint.b.block(1, 0, 1, 1) +=
         row_multiplier * (a_powers[step].block(row_offset, 0, 1, 3) * initial_state.block(3, 0, 3, 1));
   }
-
-  return constraint;
 }
 
-void JerkPlanner::add_equality_constraint(int step, Eigen::Vector2d value, JerkPlanner::ConstraintType type)
+JerkPlanner::EqualityConstraint& JerkPlanner::add_equality_constraint(int step, Eigen::Vector2d value,
+                                                                      JerkPlanner::ConstraintType type)
 {
   // if (type == Position)
   // {
@@ -270,7 +319,10 @@ void JerkPlanner::add_equality_constraint(int step, Eigen::Vector2d value, JerkP
   //             << "y : " << round(100 * value.y()) / 100 << std::endl;
   // }
 
-  _push_equality(make_constraint(step, type, value));
+  EqualityConstraint& constraint = _push_equality();
+  make_constraint(constraint, step, type, value);
+
+  return constraint;
 }
 
 JerkPlanner::Constraint JerkPlanner::add_greater_than_constraint(int step, Eigen::Vector2d value,
@@ -278,7 +330,8 @@ JerkPlanner::Constraint JerkPlanner::add_greater_than_constraint(int step, Eigen
 {
   Constraint range(*this);
   range.first_row = inequalities_count;
-  auto constraint = make_constraint(step, type, value);
+  ConstraintMatrices constraint;
+  make_constraint(constraint, step, type, value);
   _push_inequality(constraint);
 
   range.last_row = inequalities_count;
@@ -290,7 +343,8 @@ JerkPlanner::Constraint JerkPlanner::add_lower_than_constraint(int step, Eigen::
 {
   Constraint range(*this);
   range.first_row = inequalities_count;
-  auto constraint = make_constraint(step, type, value);
+  ConstraintMatrices constraint;
+  make_constraint(constraint, step, type, value);
   constraint.A = -constraint.A;
   constraint.b = -constraint.b;
   _push_inequality(constraint);
@@ -324,7 +378,8 @@ JerkPlanner::Constraint JerkPlanner::add_polygon_constraint(int step, std::vecto
   range.first_row = inequalities_count;
 
   ConstraintMatrices inequality;
-  ConstraintMatrices Ab_matrices = make_constraint(step, type);
+  ConstraintMatrices Ab_matrices;
+  make_constraint(Ab_matrices, step, type);
 
   inequality.A = Eigen::MatrixXd(polygon.size(), N * 2);
   inequality.A.setZero();
@@ -369,43 +424,37 @@ void JerkPlanner::stack_constraints(std::vector<ConstraintMatrices>& constraints
   }
 }
 
-JerkPlanner::JerkTrajectory2D JerkPlanner::plan(bool minimize_zmp_vel)
+JerkPlanner::JerkTrajectory2D JerkPlanner::plan()
 {
   // Quadratic terms for CoM jerk minimization
   Eigen::MatrixXd G(N * 2, N * 2);
   G.setIdentity();
+  G = G * 1e-6;
   Eigen::VectorXd g0(N * 2);
   g0.setZero();
 
-  // Quadratics terms for ZMP velocity minimization
-  if (minimize_zmp_vel)
+  // Taking soft equalities to the objective function
+  std::vector<ConstraintMatrices> hard_equalities;
+  int equalities_count = 0;
+
+  for (auto equality : equalities)
   {
-    Eigen::MatrixXd M(2 * N, 2 * N);
-    M.setZero();
-    Eigen::MatrixXd H(2 * N, 2 * N);
-    H.setZero();
-
-    for (int step = 0; step < N; step++)
+    if (equality->priority == Hard)
     {
-      Eigen::MatrixXd transition_matrix = get_transition_matrix(step);
-      M.block(2 * step, 0, 1, 2 * step) = transition_matrix.block(1, 0, 1, 2 * step);
-      M.block(2 * step + 1, 0, 1, 2 * step) = transition_matrix.block(4, 0, 1, 2 * step);
-
-      H.block(2 * step, 2 * step, 1, 1) = a_powers[step].block(1, 0, 1, 3) * initial_state.block(0, 0, 3, 1);
-      H.block(2 * step + 1, 2 * step + 1, 1, 1) = a_powers[step].block(1, 0, 1, 3) * initial_state.block(0, 0, 3, 1);
+      hard_equalities.push_back(*equality);
+      equalities_count += equality->nb_constraints();
     }
-
-    Eigen::MatrixXd S(2 * N, 2 * N);
-    S = -(1 / omega) * Eigen::MatrixXd::Identity(2 * N, 2 * N);
-
-    G = (M + S).transpose() * (M + S);
-    g0 = H.transpose() * (M + S);
+    else
+    {
+      G += equality->weight * (equality->A.transpose() * equality->A);
+      g0 += equality->weight * (equality->b.transpose() * equality->A);
+    }
   }
 
   // Stacking equality constraints
   Eigen::MatrixXd CE;
   Eigen::VectorXd ce0;
-  stack_constraints(equalities, equalities_count, CE, ce0);
+  stack_constraints(hard_equalities, equalities_count, CE, ce0);
 
   // Stacking inequality constraints
   Eigen::MatrixXd CI;
@@ -433,9 +482,9 @@ JerkPlanner::JerkTrajectory2D JerkPlanner::plan(bool minimize_zmp_vel)
   for (int step = 0; step < N; step++)
   {
     trajectory.X.pos_vel_acc.push_back(Eigen::Vector3d(state[0], state[1], state[2]));
-    trajectory.X.jerk.push_back(jerks[step * 2]);
+    trajectory.X.jerks.push_back(jerks[step * 2]);
     trajectory.Y.pos_vel_acc.push_back(Eigen::Vector3d(state[3], state[4], state[5]));
-    trajectory.Y.jerk.push_back(jerks[step * 2 + 1]);
+    trajectory.Y.jerks.push_back(jerks[step * 2 + 1]);
 
     state.block(0, 0, 3, 1) = A * state.block(0, 0, 3, 1) + B * jerks[step * 2];
     state.block(3, 0, 3, 1) = A * state.block(3, 0, 3, 1) + B * jerks[step * 2 + 1];
@@ -444,10 +493,12 @@ JerkPlanner::JerkTrajectory2D JerkPlanner::plan(bool minimize_zmp_vel)
   return trajectory;
 }
 
-void JerkPlanner::_push_equality(ConstraintMatrices constraint)
+JerkPlanner::EqualityConstraint& JerkPlanner::_push_equality()
 {
+  EqualityConstraint* constraint = new EqualityConstraint();
   equalities.push_back(constraint);
-  equalities_count += constraint.nb_constraints();
+
+  return *constraint;
 }
 
 void JerkPlanner::_push_inequality(ConstraintMatrices constraint)

@@ -31,20 +31,22 @@ void exposeJerkPlanner()
       .def("vel", &JerkPlanner::JerkTrajectory2D::vel)
       .def("acc", &JerkPlanner::JerkTrajectory2D::acc)
       .def("zmp", &JerkPlanner::JerkTrajectory2D::zmp)
-      .def("dcm", &JerkPlanner::JerkTrajectory2D::dcm);
+      .def("dzmp", &JerkPlanner::JerkTrajectory2D::dzmp)
+      .def("dcm", &JerkPlanner::JerkTrajectory2D::dcm)
+      ;
 
   auto toString = +[](const JerkPlanner& planner) {
     std::ostringstream oss;
     oss << "[JerkPlanner]" << std::endl;
     oss << "* steps: " << planner.N << std::endl;
-    oss << "* equalities: " << planner.equalities_count << std::endl;
+    // oss << "* equalities: " << planner.equalities_count << std::endl;
     oss << "* inequalities: " << planner.inequalities_count << std::endl;
 
     return oss.str();
   };
 
   class_<JerkPlanner>("JerkPlanner", init<int, Eigen::Vector2d, Eigen::Vector2d, Eigen::Vector2d, double, double>())
-      .def("add_equality_constraint", &JerkPlanner::add_equality_constraint)
+      .def("add_equality_constraint", &JerkPlanner::add_equality_constraint, return_internal_reference<>())
       .def("add_lower_than_constraint", &JerkPlanner::add_lower_than_constraint)
       .def("add_greater_than_constraint", &JerkPlanner::add_greater_than_constraint)
       .def("add_polygon_constraint", &JerkPlanner::add_polygon_constraint)
