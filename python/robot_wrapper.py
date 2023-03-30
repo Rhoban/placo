@@ -7,7 +7,7 @@ import tf
 from visualization import robot_viz, robot_frame_viz, footsteps_viz, frame_viz
 
 robot = placo.RobotWrapper("6axis/")
-robot.load()
+# robot.load()
 
 solver = robot.make_solver()
 solver.mask_fbase(True)

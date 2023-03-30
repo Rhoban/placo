@@ -65,6 +65,11 @@ public:
   int get_joint_v_offset(const std::string& name);
 
   /**
+   * @brief Check that expected DOFs and frames are present (see expected_dofs() and expected_frames())
+   */
+  void check_expected();
+
+  /**
    * @brief List of expected DOFs to be present, throws an error when loading
    * URDF if some is missing
    * @return the vector of (string) DOF names
@@ -263,10 +268,5 @@ public:
 protected:
   // Root free-flyer joint
   pinocchio::JointModelFreeFlyer root_joint;
-
-  /**
-   * @brief Starts loading the model and to check for the presence of everything
-   */
-  void load();
 };
 }  // namespace placo

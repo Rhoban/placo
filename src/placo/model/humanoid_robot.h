@@ -80,6 +80,9 @@ public:
   /// @param use_imu Use IMU values for the trunk orientation
   void readFromHistories(rhoban_utils::HistoryCollection& histories, double timestamp, bool use_imu = false);
 
+  virtual std::vector<std::string> expected_dofs();
+  virtual std::vector<std::string> expected_frames();
+
   /**
    * @brief The current side (left, right or both) supporting the robot
    */

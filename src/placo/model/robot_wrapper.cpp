@@ -16,20 +16,6 @@ namespace placo
 {
 RobotWrapper::RobotWrapper(std::string model_directory) : model_directory(model_directory)
 {
-}
-
-bool RobotWrapper::Collision::operator==(const Collision& other)
-{
-  return (objA == other.objA && objB == other.objB);
-}
-
-bool RobotWrapper::Distance::operator==(const Distance& other)
-{
-  return (objA == other.objA && objB == other.objB);
-}
-
-void RobotWrapper::load()
-{
   std::string urdf_filename = model_directory + "/robot.urdf";
   pinocchio::urdf::buildModel(urdf_filename, root_joint, model);
   pinocchio::urdf::buildGeom(model, urdf_filename, pinocchio::COLLISION, collision_model, model_directory);
@@ -47,26 +33,6 @@ void RobotWrapper::load()
 
   // Creating data
   data = new pinocchio::Data(model);
-
-  // Ensuring expected DOFs are present
-  auto _expected_dofs = expected_dofs();
-  for (auto& dof : expected_dofs())
-  {
-    get_joint_offset(dof);
-  }
-
-  if (_expected_dofs.size() > 0 && _expected_dofs.size() + 7 != model.nq)
-  {
-    std::ostringstream oss;
-    oss << "Found " << model.nq << " DOFs, expected " << (_expected_dofs.size() + 7) << std::endl;
-    throw std::runtime_error(oss.str());
-  }
-
-  // Ensuring expected frames are present
-  for (auto& frame : expected_frames())
-  {
-    get_frame_index(frame);
-  }
 
   // Assuming that motors with limits both equals to zero are not defined in the
   // URDF, setting them to PI
@@ -86,6 +52,39 @@ void RobotWrapper::load()
   if (self_collisions().size() > 0)
   {
     throw std::runtime_error("Robot is self colliding in neutral position");
+  }
+}
+
+bool RobotWrapper::Collision::operator==(const Collision& other)
+{
+  return (objA == other.objA && objB == other.objB);
+}
+
+bool RobotWrapper::Distance::operator==(const Distance& other)
+{
+  return (objA == other.objA && objB == other.objB);
+}
+
+void RobotWrapper::check_expected()
+{
+  // Ensuring expected DOFs are present
+  auto _expected_dofs = expected_dofs();
+  for (auto& dof : expected_dofs())
+  {
+    get_joint_offset(dof);
+  }
+
+  if (_expected_dofs.size() > 0 && _expected_dofs.size() + 7 != model.nq)
+  {
+    std::ostringstream oss;
+    oss << "Found " << model.nq << " DOFs, expected " << (_expected_dofs.size() + 7) << std::endl;
+    throw std::runtime_error(oss.str());
+  }
+
+  // Ensuring expected frames are present
+  for (auto& frame : expected_frames())
+  {
+    get_frame_index(frame);
   }
 }
 
