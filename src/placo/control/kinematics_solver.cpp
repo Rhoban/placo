@@ -435,8 +435,6 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply, double elapsed)
     current_inequality_row += rows;
   }
 
-  Eigen::VectorXi activeSet;
-  size_t activeSetSize;
   double result =
       eiquadprog::solvers::solve_quadprog(P, q, A.transpose(), -b, CI.transpose(), ci0, qd, activeSet, activeSetSize);
 
@@ -470,7 +468,10 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply, double elapsed)
 
   if (apply)
   {
-    robot->state.qd = qd / elapsed;
+    if (elapsed > 0.)
+    {
+      robot->state.qd = qd / elapsed;
+    }
     robot->state.q = pinocchio::integrate(robot->model, robot->state.q, qd);
   }
   else

@@ -11,12 +11,27 @@
 #include <jsoncpp/json/json.h>
 #include <filesystem>
 #include <algorithm>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 namespace placo
 {
 RobotWrapper::RobotWrapper(std::string model_directory) : model_directory(model_directory)
 {
-  std::string urdf_filename = model_directory + "/robot.urdf";
+  std::string urdf_filename;
+
+  if (fs::is_regular_file(model_directory))
+  {
+    fs::path path = model_directory;
+    urdf_filename = model_directory;
+    model_directory = path.parent_path();
+  }
+  else
+  {
+    urdf_filename = model_directory + "/robot.urdf";
+  }
+
   pinocchio::urdf::buildModel(urdf_filename, root_joint, model);
   pinocchio::urdf::buildGeom(model, urdf_filename, pinocchio::COLLISION, collision_model, model_directory);
   pinocchio::urdf::buildGeom(model, urdf_filename, pinocchio::VISUAL, visual_model, model_directory);

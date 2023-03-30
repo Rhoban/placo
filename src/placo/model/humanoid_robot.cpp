@@ -239,16 +239,4 @@ void HumanoidRobot::readFromHistories(rhoban_utils::HistoryCollection& histories
     update_trunk_orientation(imuRoll, imuPitch, imuYaw);
   }
 }
-
-std::vector<std::string> HumanoidRobot::expected_dofs()
-{
-  return { "left_ankle_roll", "right_ankle_roll", "left_ankle_pitch", "right_ankle_pitch",
-           "left_knee",       "right_knee",       "left_hip_pitch",   "right_hip_pitch",
-           "left_hip_roll",   "right_hip_roll",   "left_hip_yaw",     "right_hip_yaw" };
-}
-
-std::vector<std::string> HumanoidRobot::expected_frames()
-{
-  return { "left_foot", "right_foot", "trunk" };
-}
 }  // namespace placo

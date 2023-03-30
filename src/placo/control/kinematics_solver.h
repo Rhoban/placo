@@ -254,6 +254,9 @@ protected:
   bool masked_fbase;
   std::vector<Task*> tasks;
 
+  Eigen::VectorXi activeSet;
+  size_t activeSetSize;
+
   // Modes to limit the DoFs
   bool dofs_limit = true;
   bool speeds_limit = false;
