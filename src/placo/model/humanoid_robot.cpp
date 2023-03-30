@@ -1,6 +1,7 @@
 #include "placo/model/humanoid_robot.h"
 #include "placo/utils.h"
 #include "pinocchio/math/rpy.hpp"
+#include "pinocchio/spatial/explog.hpp"
 
 namespace placo
 {
@@ -90,6 +91,12 @@ void HumanoidRobot::update_support_side(HumanoidRobot::Side new_side)
   }
 }
 
+void HumanoidRobot::update_trunk_angular_velocity(double elapsed)
+{
+  omega_b = pinocchio::log3(R_world_trunk.transpose() * get_T_world_trunk().rotation()) / elapsed;
+  R_world_trunk = get_T_world_trunk().rotation();
+}
+
 void HumanoidRobot::ensure_on_floor()
 {
   // Updating the floating base so that the foot is where we want
@@ -120,9 +127,7 @@ void HumanoidRobot::update_support_side(const std::string& side)
   update_support_side(string_to_side(side));
 }
 
-// XXX : WIP - not working currently
-Eigen::Vector3d HumanoidRobot::get_com_velocity(Eigen::VectorXd qd_a, Side support, double roll, double pitch,
-                                                double yaw)
+Eigen::Vector3d HumanoidRobot::get_com_velocity(Eigen::VectorXd qd_a, Side support, Eigen::Vector3d omega_b)
 {
   // CoM Jacobians
   Eigen::Matrix3Xd J_C = com_jacobian();
@@ -130,43 +135,36 @@ Eigen::Vector3d HumanoidRobot::get_com_velocity(Eigen::VectorXd qd_a, Side suppo
   Eigen::Matrix3Xd J_a_C = J_C.rightCols(20);
 
   // Support foot
-  Eigen::Matrix3Xd J_contact = support == placo::HumanoidRobot::Left ? frame_jacobian("left_foot", "local") :
-                                                                       frame_jacobian("right_foot", "local");
+  Eigen::MatrixXd J_contact = support == placo::HumanoidRobot::Left ? frame_jacobian("left_foot", "local") :
+                                                                      frame_jacobian("right_foot", "local");
 
   // IMU body Jacobian
-  Eigen::Matrix3Xd J_IMU = frame_jacobian("trunk", "local");
+  Eigen::MatrixXd J_IMU = frame_jacobian("trunk", "local");
 
   Eigen::MatrixXd J(6, J_contact.cols());
   J << J_contact.topRows(3), J_IMU.bottomRows(3);
   Eigen::MatrixXd J_u = J.leftCols(6);
   Eigen::MatrixXd J_a = J.rightCols(20);
 
-  // Use of pseudo-inverse - needed ?
-  Eigen::MatrixXd J_u_pinv = J_u.completeOrthogonalDecomposition().pseudoInverse();
+  // XXX : is it better to use pseudo_invers or inverse ?
+  Eigen::MatrixXd J_u_pinv = J_u.completeOrthogonalDecomposition().pseudoInverse();  // J_u.inverse();
 
   Eigen::VectorXd M(6);
-  M << 0, 0, 0, roll, pitch, yaw;
-
-  // std::cout << "---------------------" << std::endl;
-  // std::cout << "J_C :" << std::endl;
-  // std::cout << J_C << std::endl;
-  // std::cout << "J_u_C :" << std::endl;
-  // std::cout << J_a_C << std::endl;
-  // std::cout << "J_a_C :" << std::endl;
-  // std::cout << J_u_C << std::endl;
-  // std::cout << "J :" << std::endl;
-  // std::cout << J << std::endl;
-  // std::cout << "J_u :" << std::endl;
-  // std::cout << J_u << std::endl;
-  // std::cout << "J_a :" << std::endl;
-  // std::cout << J_a << std::endl;
-  // std::cout << "J_u_pinv :" << std::endl;
-  // std::cout << J_u_pinv << std::endl;
-  // std::cout << "qd_a :" << std::endl;
-  // std::cout << qd_a << std::endl;
-  // std::cout << "---------------------" << std::endl;
+  M << 0, 0, 0, omega_b;
 
   return J_u_C * J_u_pinv * M + (J_a_C - J_u_C * J_u_pinv * J_a) * qd_a;
+}
+
+Eigen::Vector2d HumanoidRobot::dcm(Eigen::Vector2d com_velocity, double omega)
+{
+  // DCM = c + (1/omega) c_dot
+  return com_world().head(2) + (1 / omega) * com_velocity;
+}
+
+Eigen::Vector2d HumanoidRobot::zmp(Eigen::Vector2d com_acceleration, double omega)
+{
+  // ZMP = c - (1/omega^2) c_ddot
+  return com_world().head(2) - (1 / pow(omega, 2)) * com_acceleration;
 }
 
 bool HumanoidRobot::camera_look_at(double& pan, double& tilt, const Eigen::Vector3d& P_world_target)

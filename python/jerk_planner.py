@@ -3,12 +3,13 @@ import time
 import matplotlib.pyplot as plt
 import placo
 from placo import ConstraintType
-import numpy as np
 
 dt = 0.1
+omega = np.sqrt(9.81 / 0.35)
+minimize_zmp = True
 
 jerk_planner = placo.JerkPlanner(100, np.array(
-    [0.1, 0.1]), np.array([0.2, 0]), np.array([0., 0]), dt, 0.)
+    [0.1, 0.1]), np.array([0.2, 0]), np.array([0., 0]), dt, omega)
 jerk_planner.add_equality_constraint(
     100, np.array([1., 1]), ConstraintType.position)
 jerk_planner.add_equality_constraint(
@@ -42,7 +43,7 @@ constraint2 = jerk_planner.add_polygon_constraint(
 print(jerk_planner)
 
 start = time.time()
-trajectory = jerk_planner.plan()
+trajectory = jerk_planner.plan(minimize_zmp)
 elapsed = time.time() - start
 
 print(f"Computation time: {elapsed*1e6}µs")

@@ -2,12 +2,13 @@ import time
 import placo
 import argparse
 import tf
-import pinocchio as pin
 import numpy as np
 import matplotlib.pyplot as plt
-# Loading the robot
 
-robot = placo.HumanoidRobot("sigmaban/")
+from pinocchio.explog import log
+
+# Loading the robot
+robot = placo.HumanoidRobot("sigmaban")
 
 # Walk parameters
 parameters = placo.HumanoidParameters()
@@ -26,6 +27,7 @@ parameters.foot_length = 0.1576
 parameters.foot_width = 0.092
 parameters.feet_spacing = 0.122
 parameters.zmp_margin = 0.02
+parameters.minimize_zmp_vel = False
 
 # Creating the kinematics solver
 solver = robot.make_solver()
@@ -41,8 +43,8 @@ T_world_right = placo.flatten_on_floor(robot.get_T_world_right())
 planner = placo.FootstepsPlannerRepetitive(parameters)
 d_x = 0.1
 d_y = 0.
-d_theta = 0.
-nb_steps = 5
+d_theta = 0.4
+nb_steps = 15
 planner.configure(d_x, d_y, d_theta, nb_steps)
 
 # Creating the walk pattern generator
@@ -59,41 +61,57 @@ trajectory = walk.plan(supports)
 
 # Walk of the robot
 ts = np.linspace(0, trajectory.duration, 1000)
-model_com = []
-measured_com = []
+measured_com_vel = []
+measured_dcm = []
+joints_speed = []
 
 for t in ts:
-    task_holder.update_tasks(trajectory.get_T_world_left(t), trajectory.get_T_world_right(t),
-                             trajectory.get_CoM_world(t), trajectory.get_R_world_trunk(t), False)
+    task_holder.update_walk_tasks(trajectory.get_T_world_left(t), trajectory.get_T_world_right(t),
+                                  trajectory.get_p_world_CoM(t), trajectory.get_R_world_trunk(t), trajectory.duration/1000, False)
 
     robot.update_kinematics()
     robot.update_support_side(str(trajectory.support_side(t)))
+    robot.ensure_on_floor()
 
     qd_a = robot.state.qd[6:]
-    print(qd_a/(trajectory.duration/1000))
+    joints_speed.append(qd_a)
 
-    roll, pitch, yaw = pin.rpy.matrixToRpy(
-        robot.get_T_world_trunk()[:3, :3])
+    if t > 0:
+        robot.update_trunk_angular_velocity(trajectory.duration/1000)
+    omega_b = robot.get_omega()
 
-    print(roll, pitch, yaw)
+    measured_com_vel.append(robot.get_com_velocity(
+        qd_a, robot.get_support_side(), omega_b))
 
-    measured_com.append(robot.get_com_velocity(
-        qd_a, robot.get_support_side(), roll, pitch, yaw))
+    measured_dcm.append(
+        robot.dcm(measured_com_vel[-1][:2], parameters.omega()))
 
 # Plotting
-measured_com_vel = np.array(measured_com)
+measured_com_vel = np.array(measured_com_vel)
 planned_com_vel = np.array([trajectory.com.vel(t) for t in ts])
-
 plt.plot(ts, planned_com_vel.T[0],
          label="Planned CoM v_x", lw=3)
+plt.plot(ts[10:], measured_com_vel.T[0][10:],
+         label="Measured CoM v_x", lw=3)
 plt.plot(ts, planned_com_vel.T[1],
          label="Planned CoM v_y", lw=3)
-
-plt.plot(ts, measured_com_vel.T[0],
-         label="Measured CoM v_x", lw=3)
-plt.plot(ts, measured_com_vel.T[1],
+plt.plot(ts[10:], measured_com_vel.T[1][10:],
          label="Measured CoM v_y", lw=3)
-
 plt.legend()
 plt.grid()
 plt.show()
+
+measured_dcm = np.array(measured_dcm)
+planned_dcm = np.array([trajectory.com.dcm(t) for t in ts])
+plt.plot(planned_dcm.T[0][10:], planned_dcm.T[1][10:],
+         label="Planned DCM trajectory", lw=3)
+plt.plot(measured_dcm.T[0][10:], measured_dcm.T[1][10:],
+         label="Measured DCM trajectory", lw=3)
+plt.legend()
+plt.grid()
+plt.show()
+
+# joints_speed = np.array(joints_speed)
+# for i in range(20):
+#     plt.plot(ts, joints_speed.T[0])
+# plt.show()

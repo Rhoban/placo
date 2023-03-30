@@ -31,6 +31,8 @@ public:
    */
   void update_support_side(Side side);
   void update_support_side(const std::string& side);
+
+  void update_trunk_angular_velocity(double elapsed);
   void ensure_on_floor();
 
   Eigen::Affine3d get_T_world_left();
@@ -43,11 +45,21 @@ public:
   /// @brief Compute the center of mass velocity from the speed of the motors and the orientation of the trunk
   /// @param qd_a Velocity of the actuated dofs
   /// @param support Support side
-  /// @param roll Trunk roll
-  /// @param pitch Trunk pitch
-  /// @param yaw Trunk yaw
+  /// @param omega_b Trunk angular velocity in the body frame
   /// @return Center of mass velocity
-  Eigen::Vector3d get_com_velocity(Eigen::VectorXd qd_a, Side support, double roll, double pitch, double yaw);
+  Eigen::Vector3d get_com_velocity(Eigen::VectorXd qd_a, Side support, Eigen::Vector3d omega_b);
+
+  /// @brief Compute the Divergent Component of Motion (DCM)
+  /// @param com_velocity CoM velocity
+  /// @param omega Natural frequency of the LIP (= sqrt(g/h))
+  /// @return DCM
+  Eigen::Vector2d dcm(Eigen::Vector2d com_velocity, double omega);
+
+  /// @brief Compute the Zero-tilting Moment Point (ZMP)
+  /// @param com_acceleration CoM acceleration
+  /// @param omega Natural frequency of the LIP (= sqrt(g/h))
+  /// @return ZMP
+  Eigen::Vector2d zmp(Eigen::Vector2d com_acceleration, double omega);
 
   // We suppose we have one support frame and associated transformation
   RobotWrapper::FrameIndex support_frame();
@@ -87,6 +99,10 @@ public:
   RobotWrapper::FrameIndex left_foot;
   RobotWrapper::FrameIndex right_foot;
   RobotWrapper::FrameIndex trunk;
+
+  // Angular velocity of the trunk in the body frame
+  Eigen::Vector3d omega_b = Eigen::Vector3d::Zero();
+  Eigen::Matrix3d R_world_trunk = Eigen::Matrix3d::Identity();
 
   // Useful distances based on the URDF
   double dist_z_pan_tilt;    // Distance along z between the pan DoF and the tilt DoF in the head

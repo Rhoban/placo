@@ -108,7 +108,6 @@ pinocchio::FrameIndex RobotWrapper::get_frame_index(const std::string& frame)
 
 void RobotWrapper::set_joint(const std::string& name, double value)
 {
-  state.qd[get_joint_offset(name)] = value - state.q[get_joint_offset(name)];
   state.q[get_joint_offset(name)] = value;
 }
 

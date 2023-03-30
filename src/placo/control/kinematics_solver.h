@@ -175,9 +175,10 @@ public:
   /**
    * @brief Constructs the QP problem and solves it
    * @param apply apply the solution to the robot model
+   * @param elapsed elapsed time in seconds since the last solving
    * @return the vector containing delta q, which are target variations for the robot degrees of freedom.
    */
-  Eigen::VectorXd solve(bool apply = false);
+  Eigen::VectorXd solve(bool apply = false, double elapsed = 0);
 
   /**
    * @brief Masks (disables a DoF) from being used by the QP solver (it can't provide speed)

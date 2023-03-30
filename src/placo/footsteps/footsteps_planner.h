@@ -38,7 +38,8 @@ public:
     std::vector<Footstep> footsteps;
     std::vector<Eigen::Vector2d> polygon;
     bool computed_polygon = false;
-    bool start_end = false;
+    bool start = false;
+    bool end = false;
     std::vector<Eigen::Vector2d> support_polygon();
 
     /**
@@ -88,6 +89,8 @@ public:
    */
   static std::vector<Support> make_supports(std::vector<Footstep> footsteps, bool start = true, bool middle = false,
                                             bool end = true);
+
+  static void add_first_support(std::vector<Support>& supports, Support support);
 
   // Humanoid parameters for planning and control
   HumanoidParameters& parameters;
