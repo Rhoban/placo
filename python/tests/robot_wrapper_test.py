@@ -7,7 +7,7 @@ from tf import translation, rotation
 this_dir = Path(globals().get("__file__", "./_")).absolute().parent
 
 
-class TestSwingFoot(unittest.TestCase):
+class TestWrapper(unittest.TestCase):
     def setUp(self):
         self.robot = placo.RobotWrapper(f"{this_dir}/quadruped/robot.urdf")
 
