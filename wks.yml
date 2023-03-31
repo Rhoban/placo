@@ -1,3 +1,4 @@
 deps:
   - rhoban/utils#fixes 
   - CLIUtils/CLI11@v1.9.1
+  - rhobandeps/cppzmq

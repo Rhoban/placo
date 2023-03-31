@@ -27,8 +27,5 @@ public:
                                     Eigen::Vector3d target);
 
   static Trajectory remake_trajectory(Trajectory& old_trajectory, double t, Eigen::Vector3d target);
-
-  static Trajectory make_trajectory_from_initial_velocity(double t_start, double t_end, Eigen::Vector3d start,
-                                                          Eigen::Vector3d target, Eigen::Vector3d start_vel);
 };
 }  // namespace placo

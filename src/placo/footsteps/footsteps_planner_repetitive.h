@@ -21,12 +21,14 @@ public:
   std::vector<Footstep> plan(HumanoidRobot::Side flying_side, Eigen::Affine3d T_world_left,
                              Eigen::Affine3d T_world_right);
 
-  /// @brief Compute the next footsteps based on coordinates expressed in the support frame
-  /// laterally translated of +/- feet_spacing
-  /// @param x Longitudinal distance
-  /// @param y Lateral distance
-  /// @param theta Angle
-  /// @param steps Number of steps
+  /**
+   * @brief Compute the next footsteps based on coordinates expressed in the support frame
+   * laterally translated of +/- feet_spacing
+   * @param x Longitudinal distance
+   * @param y Lateral distance
+   * @param theta Angle
+   * @param steps Number of steps
+   */
   void configure(double x, double y, double theta, int steps);
 
 protected:
