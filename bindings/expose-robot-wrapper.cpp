@@ -60,6 +60,9 @@ class_<RobotType> exposeRobotType(const char* name)
           "get_T_world_frame",
           +[](RobotType& robot, const std::string& frame) { return robot.get_T_world_frame(frame); })
       .def(
+          "get_T_a_b", +[](RobotType& robot, const std::string& frameA,
+                           const std::string& frameB) { return robot.get_T_a_b(frameA, frameB); })
+      .def(
           "set_T_world_frame", +[](RobotType& robot, const std::string& frame,
                                    Eigen::Affine3d T_world_frame) { robot.set_T_world_frame(frame, T_world_frame); })
       .def(
