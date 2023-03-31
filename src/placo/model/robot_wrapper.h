@@ -11,7 +11,12 @@ namespace placo
 class RobotWrapper
 {
 public:
-  RobotWrapper(std::string model_directory = "robot");
+  enum Flags
+  {
+    COLLISION_AS_VISUAL=1
+  };
+
+  RobotWrapper(std::string model_directory, int flags = 0);
 
   /**
    * @brief The index of a frame (currently directly wrapped to pinocchio's FrameIndex)

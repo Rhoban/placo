@@ -14,7 +14,7 @@ using namespace placo;
 template <typename RobotType>
 class_<RobotType> exposeRobotType(const char* name)
 {
-  return class_<RobotType>(name, init<std::string>())
+  return class_<RobotType>(name, init<std::string, optional<int> >())
       .add_property("state", &RobotType::state)
       .add_property("model", &RobotType::model)
       .add_property("collision_model", &RobotType::collision_model)
@@ -77,6 +77,8 @@ class_<RobotType> exposeRobotType(const char* name)
 
 void exposeRobotWrapper()
 {
+  enum_<RobotWrapper::Flags>("Flags").value("collision_as_visual", RobotWrapper::Flags::COLLISION_AS_VISUAL);
+
   class_<RobotWrapper::State>("RobotWrapper_State")
       .add_property(
           "q", +[](const RobotWrapper::State& state) { return state.q; },

@@ -21,7 +21,7 @@ public:
   static Side string_to_side(const std::string& str);
   static Side other_side(Side side);
 
-  HumanoidRobot(std::string model_directory = "robot");
+  HumanoidRobot(std::string model_directory = "robot", int flags = 0);
 
   void initialize();
   void init_config();
