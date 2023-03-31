@@ -9,7 +9,7 @@ this_dir = Path(globals().get("__file__", "./_")).absolute().parent
 
 class TestWrapper(unittest.TestCase):
     def setUp(self):
-        self.robot = placo.RobotWrapper(f"{this_dir}/quadruped/robot.urdf")
+        self.robot = placo.RobotWrapper(f"{this_dir}/quadruped/robot.urdf", placo.Flags.collision_as_visual)
 
     def test_wrapper(self):
         """
