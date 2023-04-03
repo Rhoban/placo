@@ -1,0 +1,658 @@
+<robot name="onshape">
+<link name="body">
+<!-- Shapes for body -->
+<collision>
+<origin xyz="0 0 0.0011" rpy="0 -0 0" />
+<geometry>
+<box size="0.03 0.03 0.002" />
+</geometry>
+</collision>
+<!-- Shapes for horn -->
+<!-- Shapes for motor -->
+<collision>
+<origin xyz="0.0405 8.66205e-18 0.0143" rpy="0 -0 -1.5708" />
+<geometry>
+<box size="0.02 0.03 0.022" />
+</geometry>
+</collision>
+<!-- Shapes for motor -->
+<collision>
+<origin xyz="-0.0405 -2.24473e-18 0.0143" rpy="1.45547e-17 3.61151e-16 1.5708" />
+<geometry>
+<box size="0.02 0.03 0.022" />
+</geometry>
+</collision>
+<!-- Shapes for horn -->
+<!-- Shapes for horn -->
+<!-- Shapes for motor -->
+<collision>
+<origin xyz="-2.87964e-18 0.0405 0.0143" rpy="0 -0 8.32667e-16" />
+<geometry>
+<box size="0.02 0.03 0.022" />
+</geometry>
+</collision>
+<!-- Shapes for body -->
+<collision>
+<origin xyz="0 3.46945e-18 0.0275" rpy="3.14159 -0 0" />
+<geometry>
+<box size="0.03 0.03 0.002" />
+</geometry>
+</collision>
+<!-- Shapes for motor -->
+<collision>
+<origin xyz="-2.48001e-18 -0.0405 0.0143" rpy="0 -0 -3.14159" />
+<geometry>
+<box size="0.02 0.03 0.022" />
+</geometry>
+</collision>
+<!-- Shapes for horn -->
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package:///body_visual.stl"/>
+</geometry>
+<material name="body_material">
+<color rgba="0.546445 0.490703 0.424602 1.0"/>
+</material>
+</visual>
+<inertial>
+<origin xyz="-3.71187e-18 1.71766e-18 0.0143384" rpy="0 0 0"/>
+<mass value="0.0808736" />
+<inertia ixx="7.37408e-05" ixy="-7.5843e-21"  ixz="-2.10689e-21" iyy="7.37408e-05" iyz="1.69407e-21" izz="0.000135878" />
+</inertial>
+</link>
+
+<link name="trunk">
+<inertial>
+<origin xyz="0 0 0" rpy="0 0 0" />
+<mass value="1e-9" />
+<inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
+</inertial>
+</link>
+<joint name="trunk_frame" type="fixed">
+<origin xyz="-1.46437e-18 8.91964e-20 0.0148" rpy="0 -0 0" />
+<parent link="body" />
+<child link="trunk" />
+<axis xyz="0 0 0"/>
+</joint>
+
+<link name="doubleu">
+<!-- Shapes for u -->
+<collision>
+<origin xyz="-6.10468e-33 -0.0191 -0.01615" rpy="1.5708 -1.84604e-32 4.13365e-30" />
+<geometry>
+<box size="0.02 0.03 0.002" />
+</geometry>
+</collision>
+<!-- Shapes for u -->
+<collision>
+<origin xyz="-4.23155e-18 -0.0215 -0.01615" rpy="-1.5708 -1.5708 0" />
+<geometry>
+<box size="0.02 0.03 0.002" />
+</geometry>
+</collision>
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package:///doubleu_visual.stl"/>
+</geometry>
+<material name="doubleu_material">
+<color rgba="0.972549 0.529412 0.00392157 1.0"/>
+</material>
+</visual>
+<inertial>
+<origin xyz="4.07774e-19 -0.0203 -0.01615" rpy="0 0 0"/>
+<mass value="0.00830698" />
+<inertia ixx="2.78361e-06" ixy="-3.28063e-22"  ixz="-2.64394e-22" iyy="1.9255e-06" iyz="3.25422e-22" izz="2.78361e-06" />
+</inertial>
+</link>
+
+<link name="platesblock">
+<!-- Shapes for horn -->
+<!-- Shapes for horn -->
+<!-- Shapes for motor -->
+<collision>
+<origin xyz="8.8788e-15 -0.055 0.015" rpy="1.30636e-14 5.55112e-17 -3.14159" />
+<geometry>
+<box size="0.02 0.03 0.022" />
+</geometry>
+</collision>
+<!-- Shapes for motor -->
+<collision>
+<origin xyz="1.32529e-15 -0.008 0.015" rpy="5.55112e-17 -5.55112e-17 1.32212e-13" />
+<geometry>
+<box size="0.02 0.03 0.022" />
+</geometry>
+</collision>
+<!-- Shapes for plate -->
+<collision>
+<origin xyz="0.0131 -0.0315 0.015" rpy="1.5708 -1.26802e-14 -1.5708" />
+<geometry>
+<box size="0.073 0.015 0.002" />
+</geometry>
+</collision>
+<!-- Shapes for plate -->
+<collision>
+<origin xyz="-0.0132 -0.0315 0.015" rpy="1.5708 2.39183e-16 -1.5708" />
+<geometry>
+<box size="0.073 0.015 0.002" />
+</geometry>
+</collision>
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package:///platesblock_visual.stl"/>
+</geometry>
+<material name="platesblock_material">
+<color rgba="0.5601 0.491944 0.411121 1.0"/>
+</material>
+</visual>
+<inertial>
+<origin xyz="5.09556e-15 -0.0315 0.0150372" rpy="0 0 0"/>
+<mass value="0.0417755" />
+<inertia ixx="2.98279e-05" ixy="-2.99773e-12"  ixz="-9.40918e-21" iyy="4.6241e-06" iyz="2.32316e-19" izz="2.99828e-05" />
+</inertial>
+</link>
+
+<link name="leg">
+<!-- Shapes for leg -->
+<collision>
+<origin xyz="-1.3769e-31 0.035 -0.001" rpy="1.5708 -2.25116e-32 3.79639e-30" />
+<geometry>
+<box size="0.02 0.002 0.09" />
+</geometry>
+</collision>
+<collision>
+<origin xyz="-1.38411e-31 0.035 0.031" rpy="1.5708 -2.25116e-32 3.79639e-30" />
+<geometry>
+<box size="0.02 0.002 0.09" />
+</geometry>
+</collision>
+<collision>
+<origin xyz="-3.54987e-31 0.09 0.015" rpy="1.5708 -2.25116e-32 3.79639e-30" />
+<geometry>
+<sphere radius="0.015" />
+</geometry>
+</collision>
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package:///leg_visual.stl"/>
+</geometry>
+<material name="leg_material">
+<color rgba="0.972549 0.529412 0.00392157 1.0"/>
+</material>
+</visual>
+<inertial>
+<origin xyz="-1.82069e-17 0.0533786 0.015" rpy="0 0 0"/>
+<mass value="0.0154162" />
+<inertia ixx="2.13816e-05" ixy="6.70364e-35"  ixz="5.76574e-38" iyy="3.58407e-06" iyz="-1.77214e-34" izz="1.88204e-05" />
+</inertial>
+</link>
+
+<joint name="leg1_c" type="revolute">
+<origin xyz="9.9365e-15 -0.063 5.75928e-16" rpy="1.30636e-14 5.55112e-17 3.14159" />
+<parent link="platesblock" />
+<child link="leg" />
+<axis xyz="0 0 1"/>
+<limit effort="1" velocity="20" />
+<joint_properties friction="0.0"/>
+</joint>
+
+<joint name="leg1_b" type="revolute">
+<origin xyz="0.015 -0.0406 -0.01615" rpy="-1.11022e-16 -1.5708 0" />
+<parent link="doubleu" />
+<child link="platesblock" />
+<axis xyz="0 0 1"/>
+<limit effort="1" velocity="20" />
+<joint_properties friction="0.0"/>
+</joint>
+
+<joint name="leg1_a" type="revolute">
+<origin xyz="-0.0485 -8.5303e-18 -0.0007" rpy="-3.14159 3.05183e-16 1.5708" />
+<parent link="body" />
+<child link="doubleu" />
+<axis xyz="0 0 1"/>
+<limit effort="1" velocity="20" />
+<joint_properties friction="0.0"/>
+</joint>
+
+<link name="doubleu_2">
+<!-- Shapes for u -->
+<collision>
+<origin xyz="2.474e-32 -0.0191 -0.015" rpy="1.5708 1.44282e-33 -2.03131e-32" />
+<geometry>
+<box size="0.02 0.03 0.002" />
+</geometry>
+</collision>
+<!-- Shapes for u -->
+<collision>
+<origin xyz="-4.7317e-17 -0.0215 -0.015" rpy="-1.5708 -1.5708 0" />
+<geometry>
+<box size="0.02 0.03 0.002" />
+</geometry>
+</collision>
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package:///doubleu_2_visual.stl"/>
+</geometry>
+<material name="doubleu_2_material">
+<color rgba="0.972549 0.529412 0.00392157 1.0"/>
+</material>
+</visual>
+<inertial>
+<origin xyz="-2.1135e-17 -0.0203 -0.015" rpy="0 0 0"/>
+<mass value="0.00830698" />
+<inertia ixx="2.78361e-06" ixy="-2.17093e-21"  ixz="-2.69222e-22" iyy="1.9255e-06" iyz="5.45198e-21" izz="2.78361e-06" />
+</inertial>
+</link>
+
+<link name="platesblock_2">
+<!-- Shapes for plate -->
+<collision>
+<origin xyz="-0.0315 0.0132 0.015" rpy="1.5708 7.63278e-16 -3.14159" />
+<geometry>
+<box size="0.073 0.015 0.002" />
+</geometry>
+</collision>
+<!-- Shapes for plate -->
+<collision>
+<origin xyz="-0.0315 -0.0131 0.015" rpy="1.5708 -1.34152e-16 -3.14159" />
+<geometry>
+<box size="0.073 0.015 0.002" />
+</geometry>
+</collision>
+<!-- Shapes for horn -->
+<!-- Shapes for horn -->
+<!-- Shapes for motor -->
+<collision>
+<origin xyz="-0.055 -1.12187e-15 0.015" rpy="-4.64766e-15 1.11022e-16 1.5708" />
+<geometry>
+<box size="0.02 0.03 0.022" />
+</geometry>
+</collision>
+<!-- Shapes for motor -->
+<collision>
+<origin xyz="-0.008 3.41241e-16 0.015" rpy="-1.11022e-16 -1.11022e-16 -1.5708" />
+<geometry>
+<box size="0.02 0.03 0.022" />
+</geometry>
+</collision>
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package:///platesblock_2_visual.stl"/>
+</geometry>
+<material name="platesblock_2_material">
+<color rgba="0.5601 0.491944 0.411121 1.0"/>
+</material>
+</visual>
+<inertial>
+<origin xyz="-0.0315 -3.94629e-16 0.0150372" rpy="0 0 0"/>
+<mass value="0.0417755" />
+<inertia ixx="4.6241e-06" ixy="2.99773e-12"  ixz="2.14405e-20" iyy="2.98279e-05" iyz="-2.37484e-21" izz="2.99828e-05" />
+</inertial>
+</link>
+
+<link name="leg_2">
+<!-- Shapes for leg -->
+<collision>
+<origin xyz="-3.80872e-33 0.035 -0.001" rpy="1.5708 -3.9289e-32 4.93038e-32" />
+<geometry>
+<box size="0.02 0.002 0.09" />
+</geometry>
+</collision>
+<collision>
+<origin xyz="-3.09381e-33 0.035 0.031" rpy="1.5708 -3.9289e-32 4.93038e-32" />
+<geometry>
+<box size="0.02 0.002 0.09" />
+</geometry>
+</collision>
+<collision>
+<origin xyz="-8.87469e-33 0.09 0.015" rpy="1.5708 -3.9289e-32 4.93038e-32" />
+<geometry>
+<sphere radius="0.015" />
+</geometry>
+</collision>
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package:///leg_2_visual.stl"/>
+</geometry>
+<material name="leg_2_material">
+<color rgba="0.972549 0.529412 0.00392157 1.0"/>
+</material>
+</visual>
+<inertial>
+<origin xyz="-1.82069e-17 0.0533786 0.015" rpy="0 0 0"/>
+<mass value="0.0154162" />
+<inertia ixx="2.13816e-05" ixy="7.00778e-37"  ixz="1.26052e-36" iyy="3.58407e-06" iyz="1.02481e-36" izz="1.88204e-05" />
+</inertial>
+</link>
+
+<joint name="leg2_c" type="revolute">
+<origin xyz="-0.063 -1.14318e-15 -2.60209e-17" rpy="-4.3701e-15 3.88578e-16 1.5708" />
+<parent link="platesblock_2" />
+<child link="leg_2" />
+<axis xyz="0 0 1"/>
+<limit effort="1" velocity="20" />
+<joint_properties friction="0.0"/>
+</joint>
+
+<joint name="leg2_b" type="revolute">
+<origin xyz="0.015 -0.0406 -0.015" rpy="-1.5708 -5.77316e-15 1.5708" />
+<parent link="doubleu_2" />
+<child link="platesblock_2" />
+<axis xyz="0 0 1"/>
+<limit effort="1" velocity="20" />
+<joint_properties friction="0.0"/>
+</joint>
+
+<joint name="leg2_a" type="revolute">
+<origin xyz="-4.75344e-19 -0.0485 -0.0007" rpy="3.14159 1.8612e-16 -3.14159" />
+<parent link="body" />
+<child link="doubleu_2" />
+<axis xyz="0 0 1"/>
+<limit effort="1" velocity="20" />
+<joint_properties friction="0.0"/>
+</joint>
+
+<link name="doubleu_3">
+<!-- Shapes for u -->
+<collision>
+<origin xyz="-6.18683e-18 0.0215 -0.01615" rpy="1.5708 1.5708 0" />
+<geometry>
+<box size="0.02 0.03 0.002" />
+</geometry>
+</collision>
+<!-- Shapes for u -->
+<collision>
+<origin xyz="5.96576e-34 0.0191 -0.01615" rpy="-1.5708 7.39557e-32 -1.14631e-30" />
+<geometry>
+<box size="0.02 0.03 0.002" />
+</geometry>
+</collision>
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package:///doubleu_3_visual.stl"/>
+</geometry>
+<material name="doubleu_3_material">
+<color rgba="0.972549 0.529412 0.00392157 1.0"/>
+</material>
+</visual>
+<inertial>
+<origin xyz="-5.69864e-19 0.0203 -0.01615" rpy="0 0 0"/>
+<mass value="0.00830698" />
+<inertia ixx="2.78361e-06" ixy="9.24357e-22"  ixz="-5.95365e-22" iyy="1.9255e-06" iyz="-1.62034e-21" izz="2.78361e-06" />
+</inertial>
+</link>
+
+<link name="platesblock_3">
+<!-- Shapes for plate -->
+<collision>
+<origin xyz="-0.0315 0.0132 0.015" rpy="1.5708 -1.79949e-15 -3.14159" />
+<geometry>
+<box size="0.073 0.015 0.002" />
+</geometry>
+</collision>
+<!-- Shapes for motor -->
+<collision>
+<origin xyz="-0.055 -2.43859e-15 0.015" rpy="-1.14289e-14 -3.33067e-16 1.5708" />
+<geometry>
+<box size="0.02 0.03 0.022" />
+</geometry>
+</collision>
+<!-- Shapes for motor -->
+<collision>
+<origin xyz="-0.008 -9.96564e-17 0.015" rpy="6.48131e-29 3.33067e-16 -1.5708" />
+<geometry>
+<box size="0.02 0.03 0.022" />
+</geometry>
+</collision>
+<!-- Shapes for horn -->
+<!-- Shapes for plate -->
+<collision>
+<origin xyz="-0.0315 -0.0131 0.015" rpy="1.5708 1.24904e-15 -3.14159" />
+<geometry>
+<box size="0.073 0.015 0.002" />
+</geometry>
+</collision>
+<!-- Shapes for horn -->
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package:///platesblock_3_visual.stl"/>
+</geometry>
+<material name="platesblock_3_material">
+<color rgba="0.5601 0.491944 0.411121 1.0"/>
+</material>
+</visual>
+<inertial>
+<origin xyz="-0.0315 -1.26279e-15 0.0150372" rpy="0 0 0"/>
+<mass value="0.0417755" />
+<inertia ixx="4.6241e-06" ixy="2.99773e-12"  ixz="3.01755e-20" iyy="2.98279e-05" iyz="-9.76023e-21" izz="2.99828e-05" />
+</inertial>
+</link>
+
+<link name="leg_3">
+<!-- Shapes for leg -->
+<collision>
+<origin xyz="0 0.035 -0.001" rpy="1.5708 -0 0" />
+<geometry>
+<box size="0.02 0.002 0.09" />
+</geometry>
+</collision>
+<collision>
+<origin xyz="0 0.035 0.031" rpy="1.5708 -0 0" />
+<geometry>
+<box size="0.02 0.002 0.09" />
+</geometry>
+</collision>
+<collision>
+<origin xyz="0 0.09 0.015" rpy="1.5708 -0 0" />
+<geometry>
+<sphere radius="0.015" />
+</geometry>
+</collision>
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package:///leg_3_visual.stl"/>
+</geometry>
+<material name="leg_3_material">
+<color rgba="0.972549 0.529412 0.00392157 1.0"/>
+</material>
+</visual>
+<inertial>
+<origin xyz="-1.82069e-17 0.0533786 0.015" rpy="0 0 0"/>
+<mass value="0.0154162" />
+<inertia ixx="2.13816e-05" ixy="0"  ixz="0" iyy="3.58407e-06" iyz="-1.35045e-34" izz="1.88204e-05" />
+</inertial>
+</link>
+
+<link name="tip">
+<inertial>
+<origin xyz="0 0 0" rpy="0 0 0" />
+<mass value="1e-9" />
+<inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0" />
+</inertial>
+</link>
+<joint name="tip_frame" type="fixed">
+<origin xyz="0.0025 0.1005 0.015" rpy="1.5708 1.70021e-29 1.5708" />
+<parent link="leg_3" />
+<child link="tip" />
+<axis xyz="0 0 0"/>
+</joint>
+
+<joint name="leg3_c" type="revolute">
+<origin xyz="-0.063 -2.54137e-15 6.245e-17" rpy="-6.48842e-15 -5.01649e-15 1.5708" />
+<parent link="platesblock_3" />
+<child link="leg_3" />
+<axis xyz="0 0 1"/>
+<limit effort="1" velocity="20" />
+<joint_properties friction="0.0"/>
+</joint>
+
+<joint name="leg3_b" type="revolute">
+<origin xyz="-0.015 0.0406 -0.01615" rpy="-1.5708 -4.08007e-15 -1.5708" />
+<parent link="doubleu_3" />
+<child link="platesblock_3" />
+<axis xyz="0 0 1"/>
+<limit effort="1" velocity="20" />
+<joint_properties friction="0.0"/>
+</joint>
+
+<joint name="leg3_a" type="revolute">
+<origin xyz="0.0485 3.19754e-17 -0.0007" rpy="-3.14159 1.88738e-15 1.5708" />
+<parent link="body" />
+<child link="doubleu_3" />
+<axis xyz="0 0 1"/>
+<limit effort="1" velocity="20" />
+<joint_properties friction="0.0"/>
+</joint>
+
+<link name="doubleu_4">
+<!-- Shapes for u -->
+<collision>
+<origin xyz="1.29333e-35 0.0191 -0.01615" rpy="-1.5708 -2.49606e-45 -1.17576e-32" />
+<geometry>
+<box size="0.02 0.03 0.002" />
+</geometry>
+</collision>
+<!-- Shapes for u -->
+<collision>
+<origin xyz="-9.72883e-17 0.0215 -0.01615" rpy="1.5708 1.5708 0" />
+<geometry>
+<box size="0.02 0.03 0.002" />
+</geometry>
+</collision>
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package:///doubleu_4_visual.stl"/>
+</geometry>
+<material name="doubleu_4_material">
+<color rgba="0.972549 0.529412 0.00392157 1.0"/>
+</material>
+</visual>
+<inertial>
+<origin xyz="-4.61206e-17 0.0203 -0.01615" rpy="0 0 0"/>
+<mass value="0.00830698" />
+<inertia ixx="2.78361e-06" ixy="4.35286e-21"  ixz="1.74197e-22" iyy="1.9255e-06" iyz="-1.82701e-20" izz="2.78361e-06" />
+</inertial>
+</link>
+
+<link name="platesblock_4">
+<!-- Shapes for plate -->
+<collision>
+<origin xyz="-0.0315 0.0132 0.0135" rpy="1.5708 7.59235e-16 -3.14159" />
+<geometry>
+<box size="0.073 0.015 0.002" />
+</geometry>
+</collision>
+<!-- Shapes for plate -->
+<collision>
+<origin xyz="-0.0315 -0.0131 0.0135" rpy="1.5708 2.45263e-15 -3.14159" />
+<geometry>
+<box size="0.073 0.015 0.002" />
+</geometry>
+</collision>
+<!-- Shapes for horn -->
+<!-- Shapes for horn -->
+<!-- Shapes for motor -->
+<collision>
+<origin xyz="-0.008 2.02199e-16 0.0135" rpy="6.39267e-16 6.08214e-15 -1.5708" />
+<geometry>
+<box size="0.02 0.03 0.022" />
+</geometry>
+</collision>
+<!-- Shapes for motor -->
+<collision>
+<origin xyz="-0.055 -1.27724e-15 0.0135" rpy="-3.02239e-15 -5.18777e-15 1.5708" />
+<geometry>
+<box size="0.02 0.03 0.022" />
+</geometry>
+</collision>
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package:///platesblock_4_visual.stl"/>
+</geometry>
+<material name="platesblock_4_material">
+<color rgba="0.5601 0.491944 0.411121 1.0"/>
+</material>
+</visual>
+<inertial>
+<origin xyz="-0.0315 -5.43176e-16 0.0135372" rpy="0 0 0"/>
+<mass value="0.0417755" />
+<inertia ixx="4.6241e-06" ixy="2.99773e-12"  ixz="-6.5698e-20" iyy="2.98279e-05" iyz="5.54567e-21" izz="2.99828e-05" />
+</inertial>
+</link>
+
+<link name="leg_4">
+<!-- Shapes for leg -->
+<collision>
+<origin xyz="1.51264e-31 -0.035 0.031" rpy="-1.5708 -3.57453e-31 4.11687e-30" />
+<geometry>
+<box size="0.02 0.002 0.09" />
+</geometry>
+</collision>
+<collision>
+<origin xyz="1.38642e-31 -0.035 -0.001" rpy="-1.5708 -3.57453e-31 4.11687e-30" />
+<geometry>
+<box size="0.02 0.002 0.09" />
+</geometry>
+</collision>
+<collision>
+<origin xyz="3.72737e-31 -0.09 0.015" rpy="-1.5708 -3.57453e-31 4.11687e-30" />
+<geometry>
+<sphere radius="0.015" />
+</geometry>
+</collision>
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="package:///leg_4_visual.stl"/>
+</geometry>
+<material name="leg_4_material">
+<color rgba="0.972549 0.529412 0.00392157 1.0"/>
+</material>
+</visual>
+<inertial>
+<origin xyz="-1.82069e-17 -0.0533786 0.015" rpy="0 0 0"/>
+<mass value="0.0154162" />
+<inertia ixx="2.13816e-05" ixy="7.31818e-35"  ixz="1.50662e-35" iyy="3.58407e-06" iyz="-7.25752e-36" izz="1.88204e-05" />
+</inertial>
+</link>
+
+<joint name="leg4_c" type="revolute">
+<origin xyz="-0.063 -1.22471e-15 -0.0015" rpy="2.88406e-15 5.735e-15 -1.5708" />
+<parent link="platesblock_4" />
+<child link="leg_4" />
+<axis xyz="0 0 1"/>
+<limit effort="1" velocity="20" />
+<joint_properties friction="0.0"/>
+</joint>
+
+<joint name="leg4_b" type="revolute">
+<origin xyz="-0.015 0.0406 -0.01615" rpy="-1.5708 -9.65894e-15 -1.5708" />
+<parent link="doubleu_4" />
+<child link="platesblock_4" />
+<axis xyz="0 0 1"/>
+<limit effort="1" velocity="20" />
+<joint_properties friction="0.0"/>
+</joint>
+
+<joint name="leg4_a" type="revolute">
+<origin xyz="3.81639e-17 0.0485 -0.0007" rpy="-3.14159 -2.93851e-29 -3.14159" />
+<parent link="body" />
+<child link="doubleu_4" />
+<axis xyz="0 0 1"/>
+<limit effort="1" velocity="20" />
+<joint_properties friction="0.0"/>
+</joint>
+
+
+</robot>

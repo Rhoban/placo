@@ -8,7 +8,6 @@ from visualization import robot_viz, frame_viz, point_viz, robot_frame_viz
 
 # Loading the robot
 robot = placo.HumanoidRobot("sigmaban/")
-robot.load()
 
 # robot.set_joint("left_knee", 0.1)
 # robot.set_joint("right_knee", 0.1)
@@ -59,6 +58,7 @@ dt = 0.005
 start_t = time.time()
 robot.update_kinematics()
 
+elapseds = []
 for step in range(int(1e9)):
     if step % 10 == 0:
         viz.display(robot.state.q)
@@ -82,7 +82,8 @@ for step in range(int(1e9)):
         qd = solver.solve(True)
         elapsed = time.time() - t0
 
-        print(f"Computation time: {elapsed*1e6}µs")
+        elapseds.append(elapsed)
+        print(f"Computation time: {np.mean(elapseds)*1e6}µs")
         robot.update_kinematics()
         solver.dump_status()
 

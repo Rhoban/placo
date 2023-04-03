@@ -14,7 +14,7 @@ using namespace placo;
 template <typename RobotType>
 class_<RobotType> exposeRobotType(const char* name)
 {
-  return class_<RobotType>(name, init<std::string>())
+  return class_<RobotType>(name, init<std::string, optional<int> >())
       .add_property("state", &RobotType::state)
       .add_property("model", &RobotType::model)
       .add_property("collision_model", &RobotType::collision_model)
@@ -60,6 +60,9 @@ class_<RobotType> exposeRobotType(const char* name)
           "get_T_world_frame",
           +[](RobotType& robot, const std::string& frame) { return robot.get_T_world_frame(frame); })
       .def(
+          "get_T_a_b", +[](RobotType& robot, const std::string& frameA,
+                           const std::string& frameB) { return robot.get_T_a_b(frameA, frameB); })
+      .def(
           "set_T_world_frame", +[](RobotType& robot, const std::string& frame,
                                    Eigen::Affine3d T_world_frame) { robot.set_T_world_frame(frame, T_world_frame); })
       .def(
@@ -74,6 +77,8 @@ class_<RobotType> exposeRobotType(const char* name)
 
 void exposeRobotWrapper()
 {
+  enum_<RobotWrapper::Flags>("Flags").value("collision_as_visual", RobotWrapper::Flags::COLLISION_AS_VISUAL);
+
   class_<RobotWrapper::State>("RobotWrapper_State")
       .add_property(
           "q", +[](const RobotWrapper::State& state) { return state.q; },
@@ -83,6 +88,8 @@ void exposeRobotWrapper()
           +[](RobotWrapper::State& state, const Eigen::VectorXd& qd) { state.qd = qd; });
 
   class_<RobotWrapper::Collision>("Collision")
+      .add_property("objA", &RobotWrapper::Collision::objA)
+      .add_property("objB", &RobotWrapper::Collision::objB)
       .add_property("bodyA", &RobotWrapper::Collision::bodyA)
       .add_property("bodyB", &RobotWrapper::Collision::bodyB)
       .add_property("parentA", &RobotWrapper::Collision::parentA)
@@ -91,6 +98,8 @@ void exposeRobotWrapper()
           "get_contact", +[](RobotWrapper::Collision& collision, int index) { return collision.contacts[index]; });
 
   class_<RobotWrapper::Distance>("Distance")
+      .add_property("objA", &RobotWrapper::Distance::objA)
+      .add_property("objB", &RobotWrapper::Distance::objB)
       .add_property("parentA", &RobotWrapper::Distance::parentA)
       .add_property("parentB", &RobotWrapper::Distance::parentB)
       .add_property(

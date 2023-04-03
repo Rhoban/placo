@@ -73,7 +73,7 @@ T_world_rightTarget[0, 3] += .5
 naive_footsteps_planner.configure(T_world_leftTarget, T_world_rightTarget)
 
 repetitive_footsteps_planner = placo.FootstepsPlannerRepetitive(parameters)
-d_x = 0.08
+d_x = 0.07
 d_y = 0.
 d_theta = 0.4
 nb_steps = 5
@@ -129,9 +129,18 @@ if args.graph:
     # plt.show()
 
     draw_footsteps(trajectory.supports, show=False)
-    plt.plot(data.T[0][0], data.T[1][0], label="CoM", lw=3)
-    plt.plot(data.T[0][1], data.T[1][1], label="ZMP", lw=3)
-    plt.plot(data.T[0][2], data.T[1][2], label="DCM", lw=3)
+
+    for t in np.linspace(0, trajectory.duration, 100):
+        x_values = np.array(
+            [trajectory.com.pos(t)[0], trajectory.com.dcm(t)[0]])
+        y_values = np.array(
+            [trajectory.com.pos(t)[1], trajectory.com.dcm(t)[1]])
+        plt.plot(x_values, y_values, c="grey")
+
+    plt.plot(data.T[0][0], data.T[1][0], label="CoM", c="red", lw=3)
+    # plt.plot(data.T[0][1], data.T[1][1], label="ZMP", lw=3)
+    plt.plot(data.T[0][2], data.T[1][2], label="DCM", c="green", lw=3)
+
     plt.legend()
     plt.grid()
     # plt.title("ZMP and CoM trajectories planification from footsteps")

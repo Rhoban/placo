@@ -85,32 +85,23 @@ public:
 
   WalkPatternGenerator(HumanoidRobot& robot, HumanoidParameters& parameters);
 
-  /// @brief Plan a walk trajectory following given footsteps based on the parameters of the WPG
-  /// @param supports Supports generated from the foosteps to follow
-  /// @return Planned trajectory
+  /**
+   * @brief Plan a walk trajectory following given footsteps based on the parameters of the WPG
+   * @param supports Supports generated from the foosteps to follow
+   * @return Planned trajectory
+   */
   Trajectory plan(std::vector<FootstepsPlanner::Support>& supports);
 
-  /// @brief Update the walk trajectory to follow given footsteps based on the parameters of the WPG.
-  /// It ensure a continuous CoM trajectory and replan only if replan_frequency dt have passed
-  /// @param supports Supports generated from the current foosteps or the new
-  /// ones to follow. Contain the current support
-  /// @param trajectory Current walk trajectory
-  /// @param elapsed Elapsed time following the trajectory
-  /// @return True if the trajectory have been replanned, false it hasn't
+  /**
+   * @brief Update the walk trajectory to follow given footsteps based on the parameters of the WPG.
+   * It ensure a continuous CoM trajectory and replan only if replan_frequency dt have passed
+   * @param supports Supports generated from the current foosteps or the new
+   * ones to follow. Contain the current support
+   * @param trajectory Current walk trajectory
+   * @param elapsed Elapsed time following the trajectory
+   * @return True if the trajectory have been replanned, false it hasn't
+   */
   bool replan(std::vector<FootstepsPlanner::Support>& supports, Trajectory& trajectory, double elapsed);
-
-  // /// @brief Plan a trajectory adapted to the previous one ending with one foot in the air at a targeted position
-  // /// @param previous_trajectory Previous trajectory
-  // /// @param elapsed_time Elapsed time on the previous trajectory
-  // /// @param kicking_side Side of the foot to put in the air.
-  // /// Has to be the next flying foot when prepare_kick() is called
-  // /// @param T_world_target Targeted frame for the foot in the air
-  // /// @return Planned trajectory
-  // Trajectory plan_kick(Trajectory& previous_trajectory, double elapsed_time, HumanoidRobot::Side kicking_side,
-  //                      Eigen::Affine3d T_world_target);
-
-  // Trajectory plan_one_foot_balance(Trajectory& previous_trajectory, double elapsed_time,
-  //                                  HumanoidRobot::Side flying_side, Eigen::Affine3d T_world_target);
 
 protected:
   // Robot associated to the WPG
@@ -123,17 +114,5 @@ protected:
                Eigen::Vector2d initial_acc = Eigen::Vector2d::Zero());
 
   void planFeetTrajectories(Trajectory& trajectory);
-
-  // std::vector<FootstepsPlanner::Support> planSupportsKick(Trajectory trajectory, HumanoidRobot::Side kicking_side,
-  //                                                         Eigen::Affine3d T_world_left, Eigen::Affine3d
-  //                                                         T_world_right);
-
-  // void planCoMKick(Trajectory& trajectory, Eigen::Vector2d initial_vel, Eigen::Vector2d initial_acc);
-
-  // void planCoMOneFoot(Trajectory& trajectory, Eigen::Vector2d initial_vel, Eigen::Vector2d initial_acc);
-
-  // void planFeetKick(Trajectory& trajectory, HumanoidRobot::Side kicking_side, Eigen::Affine3d T_world_target);
-
-  // void planFeetOneFoot(Trajectory& trajectory, HumanoidRobot::Side kicking_side, Eigen::Affine3d T_world_target);
 };
 }  // namespace placo

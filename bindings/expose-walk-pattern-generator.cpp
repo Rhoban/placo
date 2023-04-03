@@ -51,7 +51,9 @@ void exposeWalkPatternGenerator()
       .def("update_arms_task", &SolverTaskHolder::update_arms_task_python_binding)
       .def("update_head_task", &SolverTaskHolder::update_head_task);
 
-  class_<SwingFoot>("SwingFoot", init<>()).def("make_trajectory", &SwingFoot::make_trajectory);
+  class_<SwingFoot>("SwingFoot", init<>())
+      .def("make_trajectory", &SwingFoot::make_trajectory)
+      .def("remake_trajectory", &SwingFoot::remake_trajectory);
 
   class_<SwingFoot::Trajectory>("SwingFootTrajectory", init<>())
       .def("pos", &SwingFoot::Trajectory::pos)

@@ -5,7 +5,7 @@
 
 namespace placo
 {
-HumanoidRobot::HumanoidRobot(std::string model_directory) : RobotWrapper(model_directory)
+HumanoidRobot::HumanoidRobot(std::string model_directory, int flags) : RobotWrapper(model_directory, flags)
 {
   initialize();
 
@@ -17,7 +17,7 @@ HumanoidRobot::HumanoidRobot(std::string model_directory) : RobotWrapper(model_d
 
 void HumanoidRobot::initialize()
 {
-  this->RobotWrapper::load();
+  check_expected();
   init_config();
 }
 

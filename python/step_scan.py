@@ -71,7 +71,12 @@ for step in range(int(1e9)):
         scan_target += 1
         cols = robot.self_collisions(False)
         if len(cols):
-            print(cols[0].get_contact(0))
+            print(cols[0].bodyB)
+            print(cols[0].parentB)
+            print(robot.joint_names()[cols[0].parentB])
+            robot.update_kinematics()
+            print(robot.joint_jacobian("right_knee", "world"))
+            exit()
             point_viz("col", cols[0].get_contact(0), 0.025, 0xff0000)
         else:
             point_viz("col", [1e8]*3)
