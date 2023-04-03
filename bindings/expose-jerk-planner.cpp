@@ -20,7 +20,8 @@ void exposeJerkPlanner()
       .value("velocity", JerkPlanner::ConstraintType::Velocity)
       .value("acceleration", JerkPlanner::ConstraintType::Acceleration)
       .value("zmp", JerkPlanner::ConstraintType::ZMP)
-      .value("dcm", JerkPlanner::ConstraintType::DCM);
+      .value("dcm", JerkPlanner::ConstraintType::DCM)
+      .value("dzmp", JerkPlanner::ConstraintType::dZMP);
 
   class_<JerkPlanner::Constraint>("Constraint", init<JerkPlanner&>())
       .def("is_active", &JerkPlanner::Constraint::is_active);
@@ -36,6 +37,7 @@ void exposeJerkPlanner()
       .def("acc", &JerkPlanner::JerkTrajectory2D::acc)
       .def("zmp", &JerkPlanner::JerkTrajectory2D::zmp)
       .def("dzmp", &JerkPlanner::JerkTrajectory2D::dzmp)
+      .def("jerk", &JerkPlanner::JerkTrajectory2D::jerk)
       .def("dcm", &JerkPlanner::JerkTrajectory2D::dcm);
 
   auto toString = +[](const JerkPlanner& planner) {

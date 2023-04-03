@@ -154,7 +154,7 @@ Eigen::Vector2d JerkPlanner::JerkTrajectory2D::zmp(double t) const
 
 Eigen::Vector2d JerkPlanner::JerkTrajectory2D::dzmp(double t) const
 {
-  // ZMP = c_dot - (1/omega^2) c_dddot
+  // dZMP = c_dot - (1/omega^2) c_dddot
   return vel(t) - (1 / pow(omega, 2)) * jerk(t);
 }
 
@@ -267,10 +267,10 @@ void JerkPlanner::make_constraint(JerkPlanner::ConstraintMatrices& constraint, i
   }
   else if (type == ConstraintType::dZMP)
   {
-    // dZMP = c_d - (1/omega^2) c_dddot
-    rows.push_back(std::pair<int, double>(0, 1.0));
-    command_row_x(1, step * 2) = -1 / pow(omega, 2);
-    command_row_y(1, step * 2 + 1) = -1 / pow(omega, 2);
+    // dZMP = c_dot - (1/omega^2) c_dddot
+    rows.push_back(std::pair<int, double>(1, 1.0));
+    command_row_x(0, step * 2) = -1 / pow(omega, 2);
+    command_row_y(0, step * 2 + 1) = -1 / pow(omega, 2);
   }
   else if (type == ConstraintType::DCM)
   {
@@ -447,7 +447,7 @@ JerkPlanner::JerkTrajectory2D JerkPlanner::plan()
     else
     {
       G += equality->weight * (equality->A.transpose() * equality->A);
-      g0 += equality->weight * (equality->b.transpose() * equality->A);
+      g0 += equality->weight * (-equality->A.transpose() * equality->b);
     }
   }
 
