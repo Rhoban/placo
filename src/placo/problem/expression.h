@@ -38,5 +38,8 @@ public:
   // Sum of all stacked expressions
   Expression sum();
   Expression mean();
+
+  // Stacking expressions
+  Expression operator<<(const Expression &other);
 };
 }  // namespace placo

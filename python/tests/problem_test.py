@@ -27,6 +27,22 @@ class TestProblem(unittest.TestCase):
         # Checking multiplication
         self.assertTrue(np.linalg.norm((e.multiply(np.eye(16) * 2)).A - 2 * np.eye(16)) < 1e-6)
 
+    def test_stacking(self):
+        problem = placo.Problem()
+
+        x = problem.add_variable("x", 8)
+        e = x.expr(0, 1) << x.expr(2, 1) << x.expr(4, 1) << x.expr(6, 1)
+
+        A = np.zeros((4, 8))
+        A[0, 0] = 1
+        A[1, 2] = 1
+        A[2, 4] = 1
+        A[3, 6] = 1
+        self.assertTrue(np.linalg.norm(A - e.A) < 1e-6, msg="Expected matrix obtained by stacking")
+
+        b = np.zeros(4)
+        self.assertTrue(np.linalg.norm(b - e.b) < 1e-6, msg="Expected vector obtained by stacking")
+
     def test_simple_solve(self):
         problem = placo.Problem()
 

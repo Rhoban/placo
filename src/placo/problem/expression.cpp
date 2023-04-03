@@ -129,4 +129,22 @@ Expression Expression::mean()
   return e;
 }
 
+Expression Expression::operator<<(const Expression& other)
+{
+  Expression e;
+
+  e.A = Eigen::MatrixXd(rows() + other.rows(), std::max(cols(), other.cols()));
+  e.A.setZero();
+  e.b = Eigen::VectorXd(rows() + other.rows());
+  e.b.setZero();
+
+  e.A.block(0, 0, rows(), cols()) = A;
+  e.A.block(rows(), 0, other.rows(), other.cols()) = other.A;
+
+  e.b.block(0, 0, rows(), 1) = b;
+  e.b.block(rows(), 0, other.rows(), 1) = other.b;
+
+  return e;
+}
+
 };  // namespace placo
