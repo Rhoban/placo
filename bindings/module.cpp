@@ -12,10 +12,11 @@ BOOST_PYTHON_MODULE(placo)
 {
   using namespace boost::python;
 
-  exposeAffine3d();
+  exposeEigen();
   exposeUtils();
   exposeFootsteps();
   exposeJerkPlanner();
+  exposeProblem();
   exposeRobotWrapper();
   exposeParameters();
   exposeKinematics();

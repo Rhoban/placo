@@ -1,9 +1,10 @@
 #pragma once
 
 void exposeUtils();
-void exposeAffine3d();
+void exposeEigen();
 void exposeFootsteps();
 void exposeJerkPlanner();
+void exposeProblem();
 void exposeRobotWrapper();
 void exposeParameters();
 void exposeKinematics();

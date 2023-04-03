@@ -329,7 +329,8 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
         (q_random.block(7, 0, robot->model.nq - 7, 1) - robot->state.q.block(7, 0, robot->model.nq - 7, 1)) * noise;
   }
 
-  Eigen::VectorXd qd;
+  Eigen::VectorXd qd(N);
+  qd.setZero();
 
   // Updating all the task matrices
   for (auto task : tasks)

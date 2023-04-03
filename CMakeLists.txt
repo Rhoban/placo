@@ -43,6 +43,9 @@ add_library(libplaco
     src/placo/control/joint_task.cpp
     src/placo/control/joints_task.cpp
     src/placo/control/regularization_task.cpp
+    src/placo/problem/problem.cpp
+    src/placo/problem/variable.cpp
+    src/placo/problem/expression.cpp
     src/placo/utils.cpp
 )
 
@@ -79,6 +82,7 @@ add_library(placo MODULE
     bindings/expose-parameters.cpp
     bindings/expose-kinematics.cpp
     bindings/expose-walk-pattern-generator.cpp
+    bindings/expose-problem.cpp
     bindings/module.cpp
 )
 target_link_libraries(placo ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} libplaco)

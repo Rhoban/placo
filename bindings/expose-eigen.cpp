@@ -25,7 +25,7 @@ struct Affine3d_to_np
   }
 };
 
-void exposeAffine3d()
+void exposeEigen()
 {
   // Vectors of points
   exposeStdVector<Eigen::Vector2d>("vector_Vector2d");
