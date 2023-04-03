@@ -20,6 +20,7 @@ public:
   // Summing expressions
   Expression operator+(const Expression& other);
   Expression operator-(const Expression& other);
+  Expression operator-();
 
   // Multiplying by a scalar
   Expression operator*(double f) const;

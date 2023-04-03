@@ -52,7 +52,7 @@ Problem::Constraint& Problem::add_equality(Expression expression, Eigen::VectorX
   return add_equality_zero(expression - target);
 }
 
-Problem::Constraint& Problem::add_inequality_zero(Expression expression)
+Problem::Constraint& Problem::add_greater_than_zero(Expression expression)
 {
   Constraint& constraint = add_equality_zero(expression);
   constraint.inequality = true;
@@ -60,9 +60,29 @@ Problem::Constraint& Problem::add_inequality_zero(Expression expression)
   return constraint;
 }
 
-Problem::Constraint& Problem::add_inequality(Expression expression, Eigen::VectorXd target)
+Problem::Constraint& Problem::add_greater_than(Expression expression, Eigen::VectorXd target)
 {
-  return add_inequality_zero(expression - target);
+  return add_greater_than_zero(expression - target);
+}
+
+Problem::Constraint& Problem::add_lower_than_zero(Expression expression)
+{
+  Constraint& constraint = add_equality_zero(-expression);
+  constraint.inequality = true;
+
+  return constraint;
+}
+
+Problem::Constraint& Problem::add_lower_than(Expression expression, Eigen::VectorXd target)
+{
+  return add_greater_than_zero(-expression + target);
+}
+
+void Problem::add_limit(Expression expression, Eigen::VectorXd target)
+{
+  // -target <= expression <= target
+  add_greater_than(expression, -target);
+  add_lower_than(expression, target);
 }
 
 void Problem::solve()
@@ -109,8 +129,8 @@ void Problem::solve()
   b.setZero();
 
   // Inequality constraints
-  Eigen::MatrixXd G(n_equalities, n_variables);
-  Eigen::VectorXd h(n_equalities);
+  Eigen::MatrixXd G(n_inequalities, n_variables);
+  Eigen::VectorXd h(n_inequalities);
   G.setZero();
   h.setZero();
 

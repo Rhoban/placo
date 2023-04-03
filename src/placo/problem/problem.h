@@ -51,7 +51,14 @@ public:
    * @param expression
    * @return The constraint
    */
-  Constraint& add_inequality_zero(Expression expression);
+  Constraint& add_greater_than_zero(Expression expression);
+
+  /**
+   * @brief Adds an inequality constraint (Ax + b <= 0)
+   * @param expression
+   * @return The constraint
+   */
+  Constraint& add_lower_than_zero(Expression expression);
 
   /**
    * @brief Adds an inequality constraint (Ax + b >= t)
@@ -59,7 +66,23 @@ public:
    * @param target 
    * @return The constraint
    */
-  Constraint& add_inequality(Expression expression, Eigen::VectorXd target);
+  Constraint& add_greater_than(Expression expression, Eigen::VectorXd target);
+
+  /**
+   * @brief Adds an inequality constraint (Ax + b <= t)
+   * @param expression 
+   * @param target 
+   * @return The constraint
+   */
+  Constraint& add_lower_than(Expression expression, Eigen::VectorXd target);
+
+  /**
+   * @brief Adds a limit, "absolute" inequality constraint (abs(Ax + b) <= t)
+   * @param expression 
+   * @param target 
+   * @return The constraint
+   */
+  void add_limit(Expression expression, Eigen::VectorXd target);
 
   void solve();
 

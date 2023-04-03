@@ -51,6 +51,11 @@ Expression Expression::operator-(const Expression& other)
   return (*this) + (other * (-1.));
 }
 
+Expression Expression::operator-()
+{
+  return (*this) * (-1.);
+}
+
 Expression operator*(double f, Expression& e)
 {
   return e * f;
