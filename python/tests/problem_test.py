@@ -27,13 +27,20 @@ class TestProblem(unittest.TestCase):
         # Checking multiplication
         self.assertTrue(np.linalg.norm((e.multiply(np.eye(16) * 2)).A - 2 * np.eye(16)) < 1e-6)
 
-    def test_solve(self):
+    def test_simple_solve(self):
         problem = placo.Problem()
 
+        # A problem where the sum of all the 16 variables should be equal to 1
         x = problem.add_variable("x", 16)
         problem.add_equality(x.expr().sum(), np.array([1.0]))
         problem.solve()
-        self.assertTrue((x.value == 1 / 16.0).all(), msg="16 values which sum equals 1 should be minimized to 1/16")
+        self.assertTrue((abs(x.value - 1 / 16.0) < 1e-6).all(), msg="16 values which sum equals 1 should be minimized to 1/16")
+
+        # We add an inequality so that the 8th value should be greater than 2
+        problem.add_inequality(x.expr(0, 1), np.array([2.0]))
+        problem.solve()
+        self.assertGreaterEqual(x.value[0], 2.0, msg=f"The 8th value should be >= 2")
+        self.assertTrue((abs(x.value[1:] + 1 / 15.0) < 1e-6).all(), msg=f"The remaining values should be -1/15.")
 
 
 if __name__ == "__main__":
