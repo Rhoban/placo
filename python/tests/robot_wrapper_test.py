@@ -44,6 +44,41 @@ class TestWrapper(unittest.TestCase):
             np.linalg.norm(T_body_tip - self.robot.get_T_a_b("body", "tip")), 0.0, msg="Body frame should be identity"
         )
 
+    def test_change_dof(self):
+        """
+        Moving one DoF and checking that the tip leg indeed moves
+        """        
+        self.assertAlmostEqual(self.robot.get_joint("leg3_a"), 0.0, msg="leg3_a should initially be 0")
+
+        T_world_tip1 = self.robot.get_T_world_frame("tip")[:3, 3]
+        self.robot.set_joint("leg3_a", 1.0)
+        self.robot.update_kinematics()
+        T_world_tip2 = self.robot.get_T_world_frame("tip")[:3, 3]
+
+        self.assertAlmostEqual(self.robot.get_joint("leg3_a"), 1.0, msg="leg3_a should be 1")
+
+        self.assertTrue(
+            np.linalg.norm(T_world_tip1 - T_world_tip2) > 0.05, msg="Moving leg3a via set_joint should move the leg tip"
+        )
+
+    def test_change_state(self):
+        """
+        We also move one DoF but by accessing state().q
+        """        
+        T_world_tip1 = self.robot.get_T_world_frame("tip")[:3, 3]
+
+        offset = self.robot.get_joint_offset("leg3_a")
+        q = self.robot.state.q
+        q[offset] = 1
+        self.robot.state.q = q
+        self.robot.update_kinematics()
+
+        T_world_tip2 = self.robot.get_T_world_frame("tip")[:3, 3]
+
+        self.assertTrue(
+            np.linalg.norm(T_world_tip1 - T_world_tip2) > 0.05, msg="Moving leg3a via state().q should move the leg tip"
+        )
+
     def test_set_fbase(self):
         """
         We set the floating base to one target frame and check that the frame is indeed where we wanted it to be

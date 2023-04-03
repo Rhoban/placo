@@ -1,0 +1,41 @@
+{
+    "documentId": "3521969cb1600c3f56241254",
+    // "versionId": "1e7349012ec84359e42eb207", // V3
+    "assemblyName": "robot",
+    "outputFormat": "urdf",
+    "drawFrames": false,
+    "drawCollisions": true,
+    "mergeSTLs": "visual",
+    "simplifySTLs": "visual",
+    "maxSTLSize": 3,
+    "useScads": true,
+    //"configuration": "List_R9v1l2VETyjrl0=straight",
+
+    "jointMaxEffort": 10,
+    "jointMaxVelocity": 6,
+
+    "whitelist": [
+        "foot_plate",
+        "cleat",
+        "mx-64at_ar",
+        "mx106",
+        "tibia_plate",
+        "u_side_femur",
+        "u_side_femur_mir",
+        "hand",
+        "head_plate",
+        "u_side_neck",
+        "u_base_64",
+        "u_base_106",
+        "x_plate",
+        "u_side_small",
+        "u_base_motors_blocs",
+        "inner",
+        "tibia_right",
+        "tibia_left",
+        "tibia_horn_side",
+        "thigh_free_right",
+        "thigh_horn",
+        "thigh_free_left"
+    ]
+}
