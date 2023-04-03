@@ -52,7 +52,7 @@ class TestProblem(unittest.TestCase):
         problem.solve()
         self.assertTrue((abs(x.value - 1 / 16.0) < 1e-6).all(), msg="16 values which sum equals 1 should be minimized to 1/16")
 
-        # We add an inequality so that the 8th value should be greater than 2
+        # We add an inequality so that the 0th value should be greater than 2
         problem.add_inequality(x.expr(0, 1), np.array([2.0]))
         problem.solve()
         self.assertGreaterEqual(x.value[0], 2.0, msg=f"The 8th value should be >= 2")
