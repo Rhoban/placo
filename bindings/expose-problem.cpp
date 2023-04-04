@@ -8,6 +8,7 @@
 #include "placo/problem/problem.h"
 #include "placo/problem/variable.h"
 #include "placo/problem/expression.h"
+#include "placo/problem/constraint.h"
 #include <Eigen/Dense>
 #include <boost/python.hpp>
 
@@ -18,12 +19,12 @@ BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(expr_overloads, expr, 0, 2);
 
 void exposeProblem()
 {
-  class_<Problem::Constraint>("ProblemConstraint")
-      .add_property("expression", &Problem::Constraint::expression)
-      .add_property("inequality", &Problem::Constraint::inequality)
-      .add_property("hard", &Problem::Constraint::hard)
-      .add_property("weight", &Problem::Constraint::weight)
-      .def("configure", &Problem::Constraint::configure);
+  class_<ProblemConstraint>("ProblemConstraint")
+      .add_property("expression", &ProblemConstraint::expression)
+      .add_property("inequality", &ProblemConstraint::inequality)
+      .add_property("hard", &ProblemConstraint::hard)
+      .add_property("weight", &ProblemConstraint::weight)
+      .def<void (ProblemConstraint::*)(std::string, double)>("configure", &ProblemConstraint::configure);
 
   class_<Problem>("Problem")
       .def("add_variable", &Problem::add_variable, return_internal_reference<>())
@@ -33,6 +34,7 @@ void exposeProblem()
       .def("add_greater_than", &Problem::add_greater_than, return_internal_reference<>())
       .def("add_lower_than_zero", &Problem::add_lower_than_zero, return_internal_reference<>())
       .def("add_lower_than", &Problem::add_lower_than, return_internal_reference<>())
+      .def("add_constraint", &Problem::add_constraint, return_internal_reference<>())
       .def("add_limit", &Problem::add_limit)
       .def("solve", &Problem::solve);
 
@@ -48,20 +50,41 @@ void exposeProblem()
           "A", +[](Expression& e) { return e.A; })
       .add_property(
           "b", +[](Expression& e) { return e.b; })
+      .def("__len__", &Expression::rows)
+      .def("is_scalar", &Expression::is_scalar)
       .def("rows", &Expression::rows)
       .def("cols", &Expression::cols)
+      .def("piecewise_add", &Expression::piecewise_add)
+      // Arithmetics
       .def(-self)
       .def(self << self)
       .def(self + self)
       .def(self - self)
       .def(self * float())
       .def(float() * self)
-      .def(self + other<Eigen::MatrixXd>())
-      .def(other<Eigen::MatrixXd>() + self)
-      .def(self - other<Eigen::MatrixXd>())
-      .def(other<Eigen::MatrixXd>() - self)
+      .def(self + other<Eigen::VectorXd>())
+      .def(other<Eigen::VectorXd>() + self)
+      .def(self - other<Eigen::VectorXd>())
+      .def(other<Eigen::VectorXd>() - self)
       .def(other<Eigen::MatrixXd>() * self)
       .def("multiply", &Expression::multiply)
+      // Compare to build constraints
+      .def(self >= self)
+      .def(self <= self)
+      .def(self == self)
+      .def(self == other<Eigen::VectorXd>())
+      .def(other<Eigen::VectorXd>() == self)
+      .def(self == float())
+      .def(float() == self)
+      .def(self <= float())
+      .def(float() <= self)
+      .def(self >= float())
+      .def(float() >= self)
+      .def(self <= other<Eigen::VectorXd>())
+      .def(other<Eigen::VectorXd>() <= self)
+      .def(self >= other<Eigen::VectorXd>())
+      .def(other<Eigen::VectorXd>() >= self)
+      // Aggregation
       .def("sum", &Expression::sum)
       .def("mean", &Expression::mean);
 }

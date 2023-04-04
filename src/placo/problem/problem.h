@@ -4,6 +4,7 @@
 #include <vector>
 #include "placo/problem/expression.h"
 #include "placo/problem/variable.h"
+#include "placo/problem/constraint.h"
 
 namespace placo
 {
@@ -36,7 +37,7 @@ public:
    * @param expression
    * @return The constraint
    */
-  Constraint& add_equality_zero(Expression expression);
+  ProblemConstraint& add_equality_zero(Expression expression);
 
   /**
    * @brief Adds an equality constraint (Ax + b = t)
@@ -44,21 +45,21 @@ public:
    * @param target 
    * @return The constraint
    */
-  Constraint& add_equality(Expression expression, Eigen::VectorXd target);
+  ProblemConstraint& add_equality(Expression expression, Eigen::VectorXd target);
 
   /**
    * @brief Adds an inequality constraint (Ax + b >= 0)
    * @param expression
    * @return The constraint
    */
-  Constraint& add_greater_than_zero(Expression expression);
+  ProblemConstraint& add_greater_than_zero(Expression expression);
 
   /**
    * @brief Adds an inequality constraint (Ax + b <= 0)
    * @param expression
    * @return The constraint
    */
-  Constraint& add_lower_than_zero(Expression expression);
+  ProblemConstraint& add_lower_than_zero(Expression expression);
 
   /**
    * @brief Adds an inequality constraint (Ax + b >= t)
@@ -66,7 +67,7 @@ public:
    * @param target 
    * @return The constraint
    */
-  Constraint& add_greater_than(Expression expression, Eigen::VectorXd target);
+  ProblemConstraint& add_greater_than(Expression expression, Eigen::VectorXd target);
 
   /**
    * @brief Adds an inequality constraint (Ax + b <= t)
@@ -74,7 +75,7 @@ public:
    * @param target 
    * @return The constraint
    */
-  Constraint& add_lower_than(Expression expression, Eigen::VectorXd target);
+  ProblemConstraint& add_lower_than(Expression expression, Eigen::VectorXd target);
 
   /**
    * @brief Adds a limit, "absolute" inequality constraint (abs(Ax + b) <= t)
@@ -84,11 +85,18 @@ public:
    */
   void add_limit(Expression expression, Eigen::VectorXd target);
 
+  /**
+   * @brief Adds a given constraint to the problem
+   * @param constraint 
+   * @return The constraint
+   */
+  ProblemConstraint &add_constraint(ProblemConstraint &constraint);
+
   void solve();
 
   std::vector<Variable*> variables;
   int n_variables = 0;
 
-  std::vector<Constraint*> constraints;
+  std::vector<ProblemConstraint*> constraints;
 };
 }  // namespace placo

@@ -60,6 +60,22 @@ class TestProblem(unittest.TestCase):
         self.assertGreaterEqual(x.value[0], 2.0, msg=f"The 8th value should be >= 2")
         self.assertTrue((abs(x.value[1:] + 1 / 15.0) < 1e-6).all(), msg=f"The remaining values should be -1/15.")
 
+    def test_expression_constraint(self):
+        problem = placo.Problem()
+        p1 = problem.add_variable("p1", 2)
+        p2 = problem.add_variable("p2", 2)
+
+        # We want P1 to be at 17 / 22
+        problem.add_constraint(p1.expr() == np.array([17., 22.]))
+
+        # We want to keep P1 and P2 with a difference not greater than 3, 3
+        problem.add_limit(p1.expr() - p2.expr(), np.array([3., 3.]))
+        
+        problem.solve()
+        
+        self.assertTrue(np.linalg.norm(p1.value - np.array([17, 22])) < 1e-6, msg="P1 should be in 17, 22")
+        self.assertTrue(np.linalg.norm(p2.value - np.array([14, 19])) < 1e-6, msg="P2 should be in 14, 19")
+
 
 if __name__ == "__main__":
     unittest.main()

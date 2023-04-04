@@ -10,7 +10,7 @@ Expression Variable::expr(int start, int rows)
   }
   if (rows == -1)
   {
-    rows = size() - start;
+    rows = k_start + size() - start;
   }
 
   Expression e;
