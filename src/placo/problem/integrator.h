@@ -2,6 +2,7 @@
 
 #include <map>
 #include "placo/problem/variable.h"
+#include "placo/problem/expression.h"
 
 namespace placo
 {
@@ -23,6 +24,14 @@ public:
    * @return the matrix M
    */
   static Eigen::MatrixXd continuous_system_matrix(int order);
+
+  /**
+   * @brief Builds an expression for the given step and differentiation
+   * @param step the step
+   * @param diff differentiation
+   * @return an expression
+   */
+  Expression expr(int step, int diff);
 
   // Decision variable
   Variable& variable;

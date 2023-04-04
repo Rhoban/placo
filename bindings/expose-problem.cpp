@@ -37,7 +37,8 @@ void exposeProblem()
       .add_property(
           "B", +[](const Integrator& i) { return i.B; })
       .add_property(
-          "final_transition_matrix", +[](const Integrator& i) { return i.final_transition_matrix; });
+          "final_transition_matrix", +[](const Integrator& i) { return i.final_transition_matrix; })
+      .def("expr", &Integrator::expr);
 
   class_<Problem>("Problem")
       .def("add_variable", &Problem::add_variable, return_internal_reference<>())
