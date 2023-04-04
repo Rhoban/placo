@@ -70,11 +70,14 @@ class TestProblem(unittest.TestCase):
 
         # We want to keep P1 and P2 with a difference not greater than 3, 3
         problem.add_limit(p1.expr() - p2.expr(), np.array([3., 3.]))
+
+        # We impose p2 to be at least 18
+        problem.add_constraint(p2.expr(0, 1) >= 18)
         
         problem.solve()
         
         self.assertTrue(np.linalg.norm(p1.value - np.array([17, 22])) < 1e-6, msg="P1 should be in 17, 22")
-        self.assertTrue(np.linalg.norm(p2.value - np.array([14, 19])) < 1e-6, msg="P2 should be in 14, 19")
+        self.assertTrue(np.linalg.norm(p2.value - np.array([18, 19])) < 1e-6, msg="P2 should be in 18, 19")
 
 
 if __name__ == "__main__":

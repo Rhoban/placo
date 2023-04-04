@@ -6,11 +6,11 @@ Expression Variable::expr(int start, int rows)
 {
   if (start == -1)
   {
-    start = k_start;
+    start = 0;
   }
   if (rows == -1)
   {
-    rows = k_start + size() - start;
+    rows = size() - start;
   }
 
   Expression e;
@@ -21,7 +21,7 @@ Expression Variable::expr(int start, int rows)
 
   for (int k = 0; k < rows; k++)
   {
-    e.A(k, start + k) = 1;
+    e.A(k, k_start + start + k) = 1;
   }
 
   return e;
