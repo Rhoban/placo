@@ -28,6 +28,23 @@ class TestProblem(unittest.TestCase):
         # Checking multiplication
         self.assertTrue(np.linalg.norm((e.multiply(np.eye(16) * 2)).A - 2 * np.eye(16)) < 1e-6)
 
+    def test_expressions(self):
+        """
+        Testing basic expression shapes
+        """        
+        problem = placo.Problem()
+        x = problem.add_variable("x", 2)
+        y = problem.add_variable("y", 2)
+
+        self.assertEqual(x.expr().A.shape[0], 2)
+        self.assertEqual(x.expr(0).A.shape[0], 2)
+        self.assertEqual(x.expr(0, 2).A.shape[0], 2)
+        self.assertEqual(x.expr(0, 1).A.shape, (2,))
+        self.assertEqual(y.expr().A.shape[0], 2)
+        self.assertEqual(y.expr(0).A.shape[0], 2)
+        self.assertEqual(y.expr(0, 2).A.shape[0], 2)
+        self.assertEqual(y.expr(0, 1).A.shape, (4,))
+
     def test_stacking(self):
         problem = placo.Problem()
 
@@ -66,16 +83,16 @@ class TestProblem(unittest.TestCase):
         p2 = problem.add_variable("p2", 2)
 
         # We want P1 to be at 17 / 22
-        problem.add_constraint(p1.expr() == np.array([17., 22.]))
+        problem.add_constraint(p1.expr() == np.array([17.0, 22.0]))
 
         # We want to keep P1 and P2 with a difference not greater than 3, 3
-        problem.add_limit(p1.expr() - p2.expr(), np.array([3., 3.]))
+        problem.add_limit(p1.expr() - p2.expr(), np.array([3.0, 3.0]))
 
         # We impose p2 to be at least 18
         problem.add_constraint(p2.expr(0, 1) >= 18)
-        
+
         problem.solve()
-        
+
         self.assertTrue(np.linalg.norm(p1.value - np.array([17, 22])) < 1e-6, msg="P1 should be in 17, 22")
         self.assertTrue(np.linalg.norm(p2.value - np.array([18, 19])) < 1e-6, msg="P2 should be in 18, 19")
 
