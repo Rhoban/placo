@@ -9,9 +9,10 @@ class Expression
 {
 public:
   Expression();
-  Expression(const double& value);
-  Expression(const Eigen::VectorXd& v);
   Expression(const Expression& other);
+
+  static Expression from_vector(const Eigen::VectorXd& v);
+  static Expression from_double(const double& value);
 
   // An expression is Ax + b, where x is the decision variable
   Eigen::MatrixXd A = Eigen::MatrixXd(0, 0);

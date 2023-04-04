@@ -46,6 +46,7 @@ add_library(libplaco
     src/placo/problem/problem.cpp
     src/placo/problem/variable.cpp
     src/placo/problem/expression.cpp
+    src/placo/problem/integrator.cpp
     src/placo/problem/constraint.cpp
     src/placo/utils.cpp
 )
