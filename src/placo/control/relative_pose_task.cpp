@@ -20,8 +20,8 @@ void RelativePoseTask::update()
   //          | This part is the world error that "correct" the transformatio
   Eigen::VectorXd error = pinocchio::log6((T_a_b * T_a_b_current.inverse()).matrix()).toVector();
 
-  auto J_a = solver->robot->frame_jacobian(frame_a, pinocchio::WORLD);
-  auto J_b = solver->robot->frame_jacobian(frame_b, pinocchio::WORLD);
+  Eigen::MatrixXd J_a = solver->robot->frame_jacobian(frame_a, pinocchio::WORLD);
+  Eigen::MatrixXd J_b = solver->robot->frame_jacobian(frame_b, pinocchio::WORLD);
   A = pinocchio::SE3(T_world_a.inverse().matrix()).toActionMatrix() * (J_b - J_a);
   b = error;
 }
