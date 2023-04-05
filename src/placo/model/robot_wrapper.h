@@ -13,7 +13,8 @@ class RobotWrapper
 public:
   enum Flags
   {
-    COLLISION_AS_VISUAL=1
+    COLLISION_AS_VISUAL = 1,
+    IGNORE_COLLISIONS = 2
   };
 
   RobotWrapper(std::string model_directory, int flags = 0);

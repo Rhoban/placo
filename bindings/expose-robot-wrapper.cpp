@@ -77,7 +77,9 @@ class_<RobotType> exposeRobotType(const char* name)
 
 void exposeRobotWrapper()
 {
-  enum_<RobotWrapper::Flags>("Flags").value("collision_as_visual", RobotWrapper::Flags::COLLISION_AS_VISUAL);
+  enum_<RobotWrapper::Flags>("Flags")
+      .value("collision_as_visual", RobotWrapper::Flags::COLLISION_AS_VISUAL)
+      .value("ignore_collisions", RobotWrapper::Flags::IGNORE_COLLISIONS);
 
   class_<RobotWrapper::State>("RobotWrapper_State")
       .add_property(

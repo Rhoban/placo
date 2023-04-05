@@ -44,13 +44,16 @@ RobotWrapper::RobotWrapper(std::string model_directory, int flags) : model_direc
   }
 
   // Load collisions pairs
-  if (rhoban_utils::file_exists(model_directory + "/collisions.json"))
+  if (!(flags & IGNORE_COLLISIONS))
   {
-    load_collisions_pairs(model_directory + "/collisions.json");
-  }
-  else
-  {
-    collision_model.addAllCollisionPairs();
+    if (rhoban_utils::file_exists(model_directory + "/collisions.json"))
+    {
+      load_collisions_pairs(model_directory + "/collisions.json");
+    }
+    else
+    {
+      collision_model.addAllCollisionPairs();
+    }
   }
 
   // Creating data
@@ -420,10 +423,10 @@ void RobotWrapper::integrate(double dt)
 Eigen::VectorXd RobotWrapper::static_gravity_compensation_torques(RobotWrapper::FrameIndex frameIndex)
 {
   auto g = generalized_gravity();
-  auto J = frame_jacobian(frameIndex);
+  Eigen::MatrixXd J = frame_jacobian(frameIndex);
 
   // Jacobian for unactuated and actuated degrees of freedom
-  auto Ju = J.block(0, 0, 6, 6);
+  Eigen::MatrixXd Ju = J.block(0, 0, 6, 6);
 
   // We know that no torque can be provided by floating base. We can then compute f_ext using the unactuated part of
   // the jacobian matrix
