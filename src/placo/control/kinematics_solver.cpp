@@ -357,15 +357,6 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
       // q (linear) is - A^T b
       // We removed the "2" because the solver already solves for 1/2 x^T P x + q^T x
 
-      if (task->name == "effector_position" || task->name == "effector_orientation")
-      {
-        Eigen::MatrixXd J = task->A;
-        Eigen::JacobiSVD<Eigen::MatrixXd> svd;
-        svd.compute(J, Eigen::ComputeFullU | Eigen::ComputeFullV);
-        std::cout << "~~ " << task->name << std::endl;
-        std::cout << "Sing:" << svd.singularValues() << std::endl;
-      }
-
       P += task->weight * (task->A.transpose() * task->A);
       q += task->weight * (-task->A.transpose() * task->b);
     }
