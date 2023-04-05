@@ -18,13 +18,14 @@ public:
   struct JerkTrajectory
   {
     std::vector<Eigen::Vector3d> pos_vel_acc;
-    std::vector<double> jerk;
+    std::vector<double> jerks;
     double dt;
 
     int get_offset(double t) const;
     double pos(double t) const;
     double vel(double t) const;
     double acc(double t) const;
+    double jerk(double t) const;
 
     double duration() const;
   };
@@ -47,7 +48,9 @@ public:
     Eigen::Vector2d pos(double t) const;
     Eigen::Vector2d vel(double t) const;
     Eigen::Vector2d acc(double t) const;
+    Eigen::Vector2d jerk(double t) const;
     Eigen::Vector2d zmp(double t) const;
+    Eigen::Vector2d dzmp(double t) const;
     Eigen::Vector2d dcm(double t) const;
 
   protected:
@@ -63,6 +66,8 @@ public:
   JerkPlanner(int nb_dt, Eigen::Vector2d initial_position = Eigen::Vector2d::Zero(),
               Eigen::Vector2d initial_velocity = Eigen::Vector2d::Zero(),
               Eigen::Vector2d initial_acceleration = Eigen::Vector2d::Zero(), double dt = 0.1, double omega = 0.);
+
+  virtual ~JerkPlanner();
 
   /**
    * @brief sqrt(g/h): constant for pendulum-based points (ZMP and DCM)
@@ -96,6 +101,21 @@ public:
     int nb_constraints();
   };
 
+  enum ConstraintPriority
+  {
+    Soft = 0,
+    Hard = 1
+  };
+
+  struct EqualityConstraint : public ConstraintMatrices
+  {
+    void configure(ConstraintPriority priority, double weight);
+    void configure(std::string priority, double weight);
+
+    ConstraintPriority priority = Hard;
+    double weight = 1.0;
+  };
+
   struct Constraint
   {
     Constraint(JerkPlanner& planner);
@@ -114,7 +134,8 @@ public:
     Velocity = 2,
     Acceleration = 3,
     ZMP = 4,
-    DCM = 5
+    dZMP = 5,
+    DCM = 6
   };
 
   State initial_state;
@@ -125,7 +146,8 @@ public:
    * @param value the value for equality
    * @param type the type of value (see ConstraintType) to constrain
    */
-  void add_equality_constraint(int step, Eigen::Vector2d value, ConstraintType type = ConstraintType::Position);
+  EqualityConstraint& add_equality_constraint(int step, Eigen::Vector2d value,
+                                              ConstraintType type = ConstraintType::Position);
 
   /**
    * @brief Adds an inequality constraint (Ax >= b)
@@ -168,9 +190,8 @@ public:
   /**
    * @brief Runs the solver and produces a JerkTrajectory2D solution
    * @return the produced trajectory
-   * @param minimize_zmp_vel use ZMP velocity as objective function in the QP instead of CoM jerk
    */
-  JerkPlanner::JerkTrajectory2D plan(bool minimize_zmp_vel = false);
+  JerkPlanner::JerkTrajectory2D plan();
 
   /**
    * Creates constraint matrices Ax - b = 0 for a given step and point type
@@ -183,26 +204,25 @@ public:
    * @param value value for equality
    * @return a Constraint, that contains the value for the A and b matrices
    */
-  ConstraintMatrices make_constraint(int step, JerkPlanner::ConstraintType type,
-                                     Eigen::Vector2d value = Eigen::Vector2d::Zero());
+  void make_constraint(ConstraintMatrices& constraint, int step, JerkPlanner::ConstraintType type,
+                       Eigen::Vector2d value = Eigen::Vector2d::Zero());
 
   Eigen::VectorXi active_set;
   size_t set_size;
-  int equalities_count = 0;
   int inequalities_count = 0;
 
   std::vector<Eigen::Vector2d> zmp_constraints;
   std::vector<double> zmp_constraints_time;
 
 protected:
-  std::vector<ConstraintMatrices> equalities;
+  std::vector<EqualityConstraint*> equalities;
   std::vector<ConstraintMatrices> inequalities;
 
   int nb_constraints(std::vector<ConstraintMatrices>& constraints);
   void stack_constraints(std::vector<ConstraintMatrices>& constraints, int constraints_count, Eigen::MatrixXd& As,
                          Eigen::VectorXd& bs);
 
-  void _push_equality(ConstraintMatrices constraint);
+  EqualityConstraint& _push_equality();
   void _push_inequality(ConstraintMatrices constraint);
 
   // State matrix at the last step

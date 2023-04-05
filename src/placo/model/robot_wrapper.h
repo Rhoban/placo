@@ -89,7 +89,7 @@ public:
    */
   virtual std::vector<std::string> expected_frames();
 
-  // Robot state [rad] and [rad/s]
+  // Robot state
   struct State
   {
     Eigen::VectorXd q;
@@ -97,7 +97,7 @@ public:
   };
 
   /**
-   * @brief Robot's current state [rad]
+   * @brief Robot's current state
    */
   State state;
 
