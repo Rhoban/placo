@@ -102,19 +102,21 @@ class TestProblem(unittest.TestCase):
         self.assertNumpyEqual(integrator.B, expected_B, msg="Checking system matrix B or order 3")
 
     def test_integrator(self):
+        # Creating a problem
         problem = placo.Problem()
         x = problem.add_variable("x", 10)
-        integrator = placo.Integrator(x, np.array([0.0, 0.0, 0.0]), 5, 0.1)
+        integrator = placo.Integrator(x, np.array([0.0, 0.0, 0.0]), 3, 0.1)
 
+        # Adding constraint at arrival
         problem.add_constraint(integrator.expr(10, 0) == 1)
         problem.add_constraint(integrator.expr(10, 1) == 0)
         problem.add_constraint(integrator.expr(10, 2) == 0)
         problem.solve()
 
+        # Plotting
         ts = np.linspace(0., 1., 100)
-        vs = [integrator.value(t, 0) for t in ts]
         import matplotlib.pyplot as plt
-        plt.plot(ts, vs)
+        plt.plot(ts, [integrator.value(t, 0) for t in ts])
         plt.grid()
         plt.show()
 
