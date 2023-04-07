@@ -171,6 +171,7 @@ void Problem::solve()
 
   for (auto variable : variables)
   {
+    variable->version += 1;
     variable->value = Eigen::VectorXd(variable->size());
     variable->value = x.block(variable->k_start, 0, variable->size(), 1);
   }

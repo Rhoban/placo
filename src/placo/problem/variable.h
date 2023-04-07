@@ -10,7 +10,7 @@ class Variable
 public:
   std::string name;
 
-  Expression expr(int start=-1, int rows=-1);
+  Expression expr(int start = -1, int rows = -1);
 
   // Variable offsets in the problem
   int k_start;
@@ -20,5 +20,8 @@ public:
 
   // Value (after the problem solved the optimisation problem)
   Eigen::VectorXd value;
+
+  // Variable version (incremented on each solver update)
+  int version = 0;
 };
 };  // namespace placo

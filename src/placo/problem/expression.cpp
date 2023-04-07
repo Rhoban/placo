@@ -10,17 +10,22 @@ Expression::Expression()
 {
 }
 
-Expression::Expression(const double& value)
+Expression Expression::from_vector(const Eigen::VectorXd& v)
 {
-  A = Eigen::MatrixXd(1, 0);
-  b = Eigen::VectorXd(1);
-  b(0, 0) = value;
+  Expression e;
+  e.A = Eigen::MatrixXd(v.rows(), 0);
+  e.b = v;
+  return e;
 }
 
-Expression::Expression(const Eigen::VectorXd& v)
+Expression Expression::from_double(const double& value)
 {
-  A = Eigen::MatrixXd(v.rows(), 0);
-  b = v;
+  Expression e;
+  e.A = Eigen::MatrixXd(1, 0);
+  e.b = Eigen::VectorXd(1);
+  e.b(0, 0) = value;
+
+  return e;
 }
 
 Expression::Expression(const Expression& other)
@@ -144,8 +149,12 @@ Expression operator-(const Eigen::VectorXd v, const Expression& e)
 Expression operator*(const Eigen::MatrixXd M, const Expression& e_)
 {
   Expression e(e_);
-  e.A = M * e.A;
-  e.b = M * e.b;
+  e.A = M.operator*(e.A);
+  e.b = M.operator*(e.b);
+
+  Eigen::MatrixXd A(3, 3);
+  Eigen::VectorXd u(3);
+  auto x = A * u;
 
   return e;
 }
@@ -221,42 +230,42 @@ ProblemConstraint Expression::operator<=(const Expression& other) const
 
 ProblemConstraint Expression::operator>=(double f) const
 {
-  return (*this) >= Expression(f);
+  return (*this) >= Expression::from_double(f);
 }
 
 ProblemConstraint operator>=(double f, const Expression& e)
 {
-  return Expression(f) >= e;
+  return Expression::from_double(f) >= e;
 }
 
 ProblemConstraint Expression::operator<=(double f) const
 {
-  return (*this) <= Expression(f);
+  return (*this) <= Expression::from_double(f);
 }
 
 ProblemConstraint operator<=(double f, const Expression& e)
 {
-  return Expression(f) <= e;
+  return Expression::from_double(f) <= e;
 }
 
 ProblemConstraint Expression::operator>=(Eigen::VectorXd v) const
 {
-  return (*this) >= Expression(v);
+  return (*this) >= Expression::from_vector(v);
 }
 
 ProblemConstraint operator>=(Eigen::VectorXd v, const Expression& e)
 {
-  return Expression(v) >= e;
+  return Expression::from_vector(v) >= e;
 }
 
 ProblemConstraint Expression::operator<=(Eigen::VectorXd v) const
 {
-  return (*this) <= Expression(v);
+  return (*this) <= Expression::from_vector(v);
 }
 
 ProblemConstraint operator<=(Eigen::VectorXd v, const Expression& e)
 {
-  return Expression(v) <= e;
+  return Expression::from_vector(v) <= e;
 }
 
 ProblemConstraint Expression::operator==(const Expression& other) const
@@ -269,7 +278,7 @@ ProblemConstraint Expression::operator==(const Expression& other) const
 
 ProblemConstraint Expression::operator==(Eigen::VectorXd v) const
 {
-  return (*this) == Expression(v);
+  return (*this) == Expression::from_vector(v);
 }
 
 ProblemConstraint operator==(Eigen::VectorXd v, const Expression& e)
@@ -279,7 +288,7 @@ ProblemConstraint operator==(Eigen::VectorXd v, const Expression& e)
 
 ProblemConstraint Expression::operator==(double f) const
 {
-  return (*this) == Expression(f);
+  return (*this) == Expression::from_double(f);
 }
 
 ProblemConstraint operator==(double f, const Expression& e)

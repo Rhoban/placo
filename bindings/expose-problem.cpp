@@ -9,6 +9,7 @@
 #include "placo/problem/variable.h"
 #include "placo/problem/expression.h"
 #include "placo/problem/constraint.h"
+#include "placo/problem/integrator.h"
 #include <Eigen/Dense>
 #include <boost/python.hpp>
 
@@ -25,6 +26,20 @@ void exposeProblem()
       .add_property("hard", &ProblemConstraint::hard)
       .add_property("weight", &ProblemConstraint::weight)
       .def<void (ProblemConstraint::*)(std::string, double)>("configure", &ProblemConstraint::configure);
+
+  class_<Integrator>("Integrator", init<Variable&, Eigen::VectorXd, int, double>())
+      .def("continuous_system_matrix", &Integrator::continuous_system_matrix)
+      .staticmethod("continuous_system_matrix")
+      .add_property(
+          "M", +[](const Integrator& i) { return i.M; })
+      .add_property(
+          "A", +[](const Integrator& i) { return i.A; })
+      .add_property(
+          "B", +[](const Integrator& i) { return i.B; })
+      .add_property(
+          "final_transition_matrix", +[](const Integrator& i) { return i.final_transition_matrix; })
+      .def("expr", &Integrator::expr)
+      .def("value", &Integrator::value);
 
   class_<Problem>("Problem")
       .def("add_variable", &Problem::add_variable, return_internal_reference<>())
@@ -55,6 +70,10 @@ void exposeProblem()
       .def("rows", &Expression::rows)
       .def("cols", &Expression::cols)
       .def("piecewise_add", &Expression::piecewise_add)
+      .def("from_vector", &Expression::from_vector)
+      .staticmethod("from_vector")
+      .def("from_double", &Expression::from_double)
+      .staticmethod("from_double")
       // Arithmetics
       .def(-self)
       .def(self << self)
