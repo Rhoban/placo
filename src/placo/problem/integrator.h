@@ -26,12 +26,31 @@ public:
   static Eigen::MatrixXd continuous_system_matrix(int order);
 
   /**
+   * @brief Computes the A and B matrices in the discrete recurrent equation:
+   *
+   *         X_{k+1} = A X_k + B u_k
+   *
+   * @param order the system order
+   * @param dt the delta time for integration
+   * @return a pair of matrix A and vector B
+   */
+  std::pair<Eigen::MatrixXd, Eigen::VectorXd> AB_matrices(int order, double dt);
+
+  /**
    * @brief Builds an expression for the given step and differentiation
    * @param step the step
    * @param diff differentiation
    * @return an expression
    */
   Expression expr(int step, int diff);
+
+  /**
+   * @brief Computes
+   * @param t
+   * @param diff
+   * @return
+   */
+  double value(double t, int diff);
 
   // Decision variable
   Variable& variable;
@@ -53,10 +72,19 @@ public:
   Eigen::MatrixXd final_transition_matrix;
   std::map<int, Eigen::MatrixXd> a_powers;
 
+  // Caching the keyframes for integration
+  std::map<int, Eigen::VectorXd> keyframes;
+
   // Integrator order
   int order;
 
   // Time step
   double dt;
+
+protected:
+  // Keeping track of the variable version
+  int version = 0;
+
+  void update_keyframes();
 };
 }  // namespace placo

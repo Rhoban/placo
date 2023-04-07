@@ -103,16 +103,19 @@ class TestProblem(unittest.TestCase):
 
     def test_integrator(self):
         problem = placo.Problem()
-        x = problem.add_variable("x", 32)
-        integrator = placo.Integrator(x, np.array([0.0, 0.0, 0.0]), 3, 0.1)
+        x = problem.add_variable("x", 10)
+        integrator = placo.Integrator(x, np.array([0.0, 0.0, 0.0]), 5, 0.1)
 
-        problem.add_constraint(integrator.expr(32, 0) == 1)
-        problem.add_constraint(integrator.expr(32, 1) == 0)
-        problem.add_constraint(integrator.expr(32, 2) == 0)
+        problem.add_constraint(integrator.expr(10, 0) == 1)
+        problem.add_constraint(integrator.expr(10, 1) == 0)
+        problem.add_constraint(integrator.expr(10, 2) == 0)
         problem.solve()
 
+        ts = np.linspace(0., 1., 100)
+        vs = [integrator.value(t, 0) for t in ts]
         import matplotlib.pyplot as plt
-        plt.plot(x.value)
+        plt.plot(ts, vs)
+        plt.grid()
         plt.show()
 
 
