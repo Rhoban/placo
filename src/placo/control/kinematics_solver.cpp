@@ -488,6 +488,13 @@ void KinematicsSolver::clear_tasks()
   tasks.clear();
 }
 
+void KinematicsSolver::remove_task(Task* task)
+{
+  tasks.erase(task);
+
+  delete task;
+}
+
 void KinematicsSolver::dump_status()
 {
   std::cout << "* Kinematics Tasks:" << std::endl;
