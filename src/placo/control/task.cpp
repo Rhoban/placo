@@ -52,6 +52,13 @@ void Task::configure(std::string name_, std::string priority_, double weight_)
   weight = weight_;
 }
 
+void Task::configure(std::string name_, Priority priority_, double weight_)
+{
+  name = name_;
+  priority = priority_;
+  weight = weight_;
+}
+
 double Task::error()
 {
   return b.norm();
