@@ -1,6 +1,6 @@
 {
     "documentId": "3521969cb1600c3f56241254",
-    "versionId": "1e7349012ec84359e42eb207", // V3
+    // "versionId": "1e7349012ec84359e42eb207", // V3
     "assemblyName": "robot",
     "outputFormat": "urdf",
     "drawFrames": false,
@@ -9,7 +9,7 @@
     "simplifySTLs": "visual",
     "maxSTLSize": 3,
     "useScads": true,
-    "ignoreLimits": true,
+    "ignoreLimits": false,
     //"configuration": "List_R9v1l2VETyjrl0=straight",
 
     "jointMaxEffort": 10,
