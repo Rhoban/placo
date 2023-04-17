@@ -80,6 +80,12 @@ set(CMAKE_SHARED_MODULE_PREFIX "")
 find_package(PythonLibs REQUIRED)
 find_package(Boost COMPONENTS python REQUIRED)
 
+ADD_CUSTOM_TARGET(native_python_files ALL
+                  COMMAND ${CMAKE_COMMAND} -E create_symlink 
+                  ${CMAKE_CURRENT_SOURCE_DIR}/python/placo_utils
+                  ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/placo_utils
+                  )
+
 add_library(placo MODULE 
     bindings/expose-eigen.cpp
     bindings/expose-utils.cpp
