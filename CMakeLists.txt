@@ -1,6 +1,7 @@
 project(placo)
 cmake_minimum_required(VERSION 3.10)
 
+find_package(Protobuf REQUIRED)
 find_package(Threads)
 find_package(pinocchio REQUIRED)
 find_package(eiquadprog REQUIRED)
@@ -12,6 +13,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 find_package (Eigen3 3 REQUIRED NO_MODULE)
+
+PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS
+    proto/placo.proto
+)
 
 add_library(libplaco
     src/placo/footsteps/footsteps_planner.cpp
@@ -43,11 +48,15 @@ add_library(libplaco
     src/placo/control/joint_task.cpp
     src/placo/control/joints_task.cpp
     src/placo/control/regularization_task.cpp
+    src/placo/serialization/serialization.cpp
     src/placo/utils.cpp
+    ${PROTO_SRCS}
+    ${PROTO_HDRS}  
 )
 
 target_include_directories(libplaco PUBLIC 
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src> 
+  ${PROTOBUF_INCLUDE_DIRS}
   ${CMAKE_CURRENT_BINARY_DIR})
 
 target_link_libraries(libplaco PUBLIC
@@ -60,6 +69,7 @@ target_link_libraries(libplaco PUBLIC
     libzmq
     cppzmq
     eiquadprog::eiquadprog
+    ${PROTOBUF_LIBRARIES}
   ${PROTOBUF_LIBRARIES}
 )
 target_compile_definitions(libplaco PUBLIC -DMOTORS_CONFIGURATION_${MOTORS_CONFIGURATION}
