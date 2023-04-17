@@ -1,2 +1,1 @@
-# We simply rely on MeshCat TF
-from meshcat.transformations import *
+import meshcat.transformations as tf
