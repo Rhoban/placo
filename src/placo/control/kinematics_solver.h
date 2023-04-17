@@ -225,6 +225,11 @@ public:
   void enable_self_collision_inequalities(bool enable, double margin = 0.005, double trigger = 0.01);
 
   /**
+   * @brief Number of tasks
+   */
+  int tasks_count();
+
+  /**
    * @brief The robot controlled by this solver
    */
   RobotWrapper* robot;

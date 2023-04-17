@@ -215,6 +215,11 @@ void KinematicsSolver::enable_self_collision_inequalities(bool enable, double ma
   self_collisions_trigger = trigger;
 }
 
+int KinematicsSolver::tasks_count()
+{
+  return tasks.size();
+}
+
 void KinematicsSolver::compute_self_collision_inequalities()
 {
   if (avoid_self_collisions && robot != nullptr)

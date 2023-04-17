@@ -28,6 +28,7 @@ public:
   void set_name(std::string name);
 
   void configure(std::string name, std::string priority = "soft", double weight = 1.0);
+  void configure(std::string name, Priority priority = Soft, double weight = 1.0);
 
   // Task priority (hard: equality constraint, soft: objective function)
   Priority priority;
