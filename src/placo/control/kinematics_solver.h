@@ -202,6 +202,11 @@ public:
   void clear_tasks();
 
   /**
+   * @brief Removes a task from the solver
+   */
+  void remove_task(Task* task);
+
+  /**
    * @brief Shows the tasks status
    */
   void dump_status();
@@ -251,7 +256,7 @@ protected:
 
   std::set<int> masked_dof;
   bool masked_fbase;
-  std::vector<Task*> tasks;
+  std::set<Task*> tasks;
 
   Eigen::VectorXi activeSet;
   size_t activeSetSize;
@@ -276,7 +281,7 @@ protected:
     std::ostringstream oss;
     oss << "Task_" << tasks.size();
     task->name = oss.str();
-    tasks.push_back(task);
+    tasks.insert(task);
 
     return *task;
   }
