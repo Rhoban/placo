@@ -15,8 +15,7 @@ void exposeFootsteps()
 {
   enum_<HumanoidRobot::Side>("HumanoidRobot_Side")
       .value("left", HumanoidRobot::Side::Left)
-      .value("right", HumanoidRobot::Side::Right)
-      .value("both", HumanoidRobot::Side::Both);
+      .value("right", HumanoidRobot::Side::Right);
 
   class_<FootstepsPlanner::Footstep>("Footstep", init<double, double>())
       .add_property("side", &FootstepsPlanner::Footstep::side)

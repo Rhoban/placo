@@ -14,8 +14,7 @@ public:
   enum Side
   {
     Left = 0,
-    Right = 1,
-    Both = 2
+    Right = 1
   };
 
   static Side string_to_side(const std::string& str);
@@ -94,11 +93,6 @@ public:
    * @brief The current side (left, right or both) supporting the robot
    */
   Side support_side;
-
-  /**
-   * @brief The current flying foot or the next flying foot if the support_side is both
-   */
-  Side flying_side;
 
   /**
    * @brief Transformation from support to world

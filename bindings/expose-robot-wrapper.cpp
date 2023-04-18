@@ -128,9 +128,7 @@ void exposeRobotWrapper()
       .def(
           "get_omega", +[](const HumanoidRobot& robot) { return robot.omega_b; })
       .def(
-          "get_support_side", +[](const HumanoidRobot& robot) { return robot.support_side; })
-      .def(
-          "get_flying_side", +[](const HumanoidRobot& robot) { return robot.flying_side; });
+          "get_support_side", +[](const HumanoidRobot& robot) { return robot.support_side; });
 
   exposeStdVector<RobotWrapper::Collision>("vector_Collision");
   exposeStdVector<RobotWrapper::Distance>("vector_Distance");

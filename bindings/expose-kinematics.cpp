@@ -43,6 +43,12 @@ void exposeKinematics()
           .add_property("noise", &KinematicsSolver::noise, &KinematicsSolver::noise)
           .add_property("dt", &KinematicsSolver::dt, &KinematicsSolver::dt)
           .add_property("N", &KinematicsSolver::N)
+          .add_property(
+              "robot",
+              +[](const KinematicsSolver& solver) {
+                RobotWrapper& wrapper = *solver.robot;
+                return wrapper;
+              })
 
           // Position and CoM task
           .def<PositionTask& (KinematicsSolver::*)(std::string, Eigen::Vector3d)>(

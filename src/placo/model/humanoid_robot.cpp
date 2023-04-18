@@ -23,8 +23,7 @@ void HumanoidRobot::initialize()
 
 void HumanoidRobot::init_config()
 {
-  support_side = Both;
-  flying_side = Left;
+  support_side = Left;
 
   T_world_support.setIdentity();
 
@@ -37,7 +36,7 @@ void HumanoidRobot::init_config()
 
 HumanoidRobot::Side HumanoidRobot::string_to_side(const std::string& str)
 {
-  return (str == "right") ? Right : (str == "left") ? Left : Both;
+  return (str == "right") ? Right : Left;
 }
 
 HumanoidRobot::Side HumanoidRobot::other_side(Side side)
@@ -69,25 +68,13 @@ void HumanoidRobot::update_support_side(HumanoidRobot::Side new_side)
 {
   if (new_side != support_side)
   {
-    if (support_side != Both)
-    {
-      flying_side = other_side(flying_side);
-    }
-
     // Updating the support frame to this frame
     support_side = new_side;
 
     update_kinematics();
 
     // If we have the 2 feet on the ground, we will use the left one to ensure we are on the floor
-    if (support_side == Both)
-    {
-      T_world_support = flatten_on_floor(get_T_world_left());
-    }
-    else
-    {
-      T_world_support = flatten_on_floor(get_T_world_frame(support_frame()));
-    }
+    T_world_support = flatten_on_floor(get_T_world_frame(support_frame()));
   }
 }
 
@@ -101,25 +88,18 @@ void HumanoidRobot::ensure_on_floor()
 {
   // Updating the floating base so that the foot is where we want
   update_kinematics();
-  if (support_side == Both)
-  {
-    set_T_world_frame(left_foot, T_world_support);
-  }
-  else
-  {
-    set_T_world_frame(support_frame(), T_world_support);
-  }
+  set_T_world_frame(support_frame(), T_world_support);
   update_kinematics();
 }
 
 RobotWrapper::FrameIndex HumanoidRobot::support_frame()
 {
-  return flying_side == Left ? right_foot : left_foot;
+  return support_side == Left ? left_foot : right_foot;
 }
 
 RobotWrapper::FrameIndex HumanoidRobot::flying_frame()
 {
-  return flying_side == Left ? left_foot : right_foot;
+  return support_side == Left ? right_foot : left_foot;
 }
 
 void HumanoidRobot::update_support_side(const std::string& side)

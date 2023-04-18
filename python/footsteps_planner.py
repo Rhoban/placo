@@ -82,7 +82,7 @@ if __name__ == "__main__":
     # Creating initial and target
     feet_spacing = args.feet_spacing
 
-    T_center_left = tf.translation([0.1, feet_spacing / 2, 0.0])
+    T_center_left = tf.translation([0.0, feet_spacing / 2, 0.0])
     T_center_right = tf.translation([0.0, -feet_spacing / 2, 0.0])
 
     T_world_center = tf.frame([0, 0, 1], args.theta, [args.x, args.y, 0])
@@ -111,9 +111,13 @@ if __name__ == "__main__":
     supports = placo.FootstepsPlanner.make_supports(
         footsteps, False, False, True)
 
+    print(len(footsteps))
+    print(len(supports))
+
     print(supports[0].footsteps[0].side)
     elapsed = time.time() - start
 
     print(f"{len(supports)} steps, computation time: {elapsed*1e6}µs.")
 
-    draw_footsteps(supports[:2], args.animate)
+    draw_footsteps(supports, args.animate)
+    # draw_footsteps(footsteps, args.animate)

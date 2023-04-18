@@ -59,9 +59,14 @@ public:
     bool operator==(const Support& other);
 
     /**
-     * @brief The support side (or Both if it's a double support)
+     * @brief The support side (you should call is_both() to be sure it's not a double support before)
      */
     HumanoidRobot::Side side();
+
+    /**
+     * @brief Checks whether this support is a double support
+     */
+    bool is_both();
   };
 
   /**

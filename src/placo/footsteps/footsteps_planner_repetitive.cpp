@@ -62,11 +62,9 @@ std::vector<FootstepsPlanner::Footstep> FootstepsPlannerRepetitive::plan(Humanoi
 
 void FootstepsPlannerRepetitive::configure(double x, double y, double theta, int steps)
 {
-  // XXX: Les x, y et d_theta peuvent aussi être négatifs...
-  d_x = (x > max_d_x) ? max_d_x : x;
-  d_y = (y > max_d_y) ? max_d_y : y;
-  d_theta = (theta > max_d_theta) ? max_d_theta : theta;
-
+  d_x = x;
+  d_y = y;
+  d_theta = theta;
   nb_steps = steps;
 }
 }  // namespace placo

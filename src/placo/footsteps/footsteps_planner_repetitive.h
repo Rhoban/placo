@@ -39,14 +39,5 @@ protected:
 
   // Number of steps to plan
   int nb_steps;
-
-  // Maximum absolute value of d_x in meters
-  double max_d_x = 0.2;
-
-  // Maximum absolute value of d_y in meters
-  double max_d_y = 0.1;
-
-  // Maximum absolute value of d_theta in radians
-  double max_d_theta = 0.785;
 };
 }  // namespace placo
