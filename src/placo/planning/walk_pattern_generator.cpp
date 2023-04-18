@@ -298,7 +298,15 @@ void WalkPatternGenerator::planFeetTrajectories(Trajectory& trajectory, Trajecto
 
   // Add the initial position to the trajectory
   _addSupports(trajectory, t, trajectory.supports[0]);
-  trajectory.trunk_yaw.addPoint(t, frame_yaw(trajectory.supports[0].frame().rotation()), 0, true);
+
+  if (old_trajectory == nullptr)
+  {
+    trajectory.trunk_yaw.addPoint(t, frame_yaw(trajectory.supports[0].frame().rotation()), 0, true);
+  }
+  else
+  {
+    trajectory.trunk_yaw.addPoint(t, old_trajectory->trunk_yaw.get(t), 0, true);
+  }
 
   if (!trajectory.supports[0].is_both())
   {
@@ -346,12 +354,12 @@ void WalkPatternGenerator::planFeetTrajectories(Trajectory& trajectory, Trajecto
 
       trajectory.yaw(flying_side).addPoint(t, frame_yaw(T_world_flyingTarget.rotation()), 0, true);
 
-      // // The trunk orientation follow the steps orientation if there isn't double support phases
-      // // If there is double support phases, it follow the double supports orientation
-      // if (parameters.double_support_duration < parameters.dt)
-      // {
-      //   trajectory.trunk_yaw.addPoint(t, frame_yaw(T_world_flyingTarget.rotation()), 0, true);
-      // }
+      // The trunk orientation follow the steps orientation if there isn't double support phases
+      // If there is double support phases, it follow the double supports orientation
+      if (parameters.double_support_duration < parameters.dt)
+      {
+        trajectory.trunk_yaw.addPoint(t, frame_yaw(T_world_flyingTarget.rotation()), 0, true);
+      }
 
       // Support foot remaining steady
       _addSupports(trajectory, t, support);
