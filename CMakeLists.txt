@@ -43,10 +43,13 @@ add_library(libplaco
     src/placo/control/joints_task.cpp
     src/placo/control/regularization_task.cpp
     src/placo/utils.cpp
+    ${PROTO_SRCS}
+    ${PROTO_HDRS}  
 )
 
 target_include_directories(libplaco PUBLIC 
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src> 
+  ${PROTOBUF_INCLUDE_DIRS}
   ${CMAKE_CURRENT_BINARY_DIR})
 
 target_link_libraries(libplaco PUBLIC
@@ -59,6 +62,7 @@ target_link_libraries(libplaco PUBLIC
     libzmq
     cppzmq
     eiquadprog::eiquadprog
+    ${PROTOBUF_LIBRARIES}
   ${PROTOBUF_LIBRARIES}
 )
 target_compile_definitions(libplaco PUBLIC -DMOTORS_CONFIGURATION_${MOTORS_CONFIGURATION}
@@ -68,6 +72,12 @@ set(CMAKE_SHARED_MODULE_PREFIX "")
 
 find_package(PythonLibs REQUIRED)
 find_package(Boost COMPONENTS python REQUIRED)
+
+ADD_CUSTOM_TARGET(native_python_files ALL
+                  COMMAND ${CMAKE_COMMAND} -E create_symlink 
+                  ${CMAKE_CURRENT_SOURCE_DIR}/python/placo_utils
+                  ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/placo_utils
+                  )
 
 add_library(placo MODULE 
     bindings/expose-eigen.cpp

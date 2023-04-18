@@ -2,7 +2,6 @@ import time
 import placo
 import argparse
 import eigenpy
-import tf
 import pinocchio as pin
 import numpy as np
 
@@ -66,7 +65,7 @@ T_world_rightTarget[0, 3] += .5
 # XXX : Not converging walk with these traget frames
 # T_world_leftTarget[0, 3] += 0.3
 # T_world_leftTarget[1, 3] += 0.3
-# T_world_leftTarget = T_world_leftTarget @ tf.rotation((0, 0, 1), np.pi/2)
+# T_world_leftTarget = T_world_leftTarget @ tf.rotation_matrix(np.pi/2, (0, 0, 1))
 # T_world_rightTarget = T_world_leftTarget
 # T_world_rightTarget[0, 3] += parameters.feet_spacing
 # --------------------------------------

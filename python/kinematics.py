@@ -3,8 +3,8 @@ import meshcat
 import placo
 import pinocchio as pin
 import numpy as np
-import tf
-from visualization import robot_viz, frame_viz, point_viz, robot_frame_viz
+from placo_utils.visualization import robot_viz, frame_viz, point_viz, robot_frame_viz
+from placo_utils.tf import tf
 
 # Loading the robot
 robot = placo.HumanoidRobot("sigmaban/")
@@ -74,7 +74,7 @@ for step in range(int(1e9)):
         camera_pos = robot.get_T_world_frame("camera")[:3, 3]
         look_at_ball.targetAxis_world = ball - camera_pos
 
-        # trunk_task.orientation().R_world_frame = tf.rotation([0, 0, 1], np.sin(t * 1.2))[:3, :3]
+        # trunk_task.orientation().R_world_frame = tf.rotation_matrix(np.sin(t * 1.2), [0, 0, 1])[:3, :3]
         # target = trunk_task.target_world
         # target[2] = init_trunk_z + np.sin(t)*.15
         # trunk_task.target_world = target
