@@ -24,7 +24,7 @@ robot = placo.HumanoidRobot("sigmaban/")
 # Walk parameters - if double_support_duration is not set to 0, should be greater than replan_frequency * dt
 parameters = placo.HumanoidParameters()
 parameters.dt = 0.025
-parameters.single_support_duration = .3
+parameters.single_support_duration = .5
 parameters.double_support_duration = 0.0
 parameters.startend_double_support_duration = 0.35
 parameters.kick_duration = 0.3
@@ -74,10 +74,10 @@ T_world_rightTarget[0, 3] += .5
 naive_footsteps_planner.configure(T_world_leftTarget, T_world_rightTarget)
 
 repetitive_footsteps_planner = placo.FootstepsPlannerRepetitive(parameters)
-d_x = 0.1
-d_y = 0.05
-d_theta = 0.
-nb_steps = 6
+d_x = 0.075
+d_y = 0.0
+d_theta = 0.2
+nb_steps = 10
 repetitive_footsteps_planner.configure(d_x, d_y, d_theta, nb_steps)
 
 # Creating the pattern generator
@@ -224,7 +224,9 @@ while True:
       robot.update_support_side(str(trajectory.support_side(T)))
       robot.ensure_on_floor()
 
-    if T - last_replan > 1.:
+    d_theta = np.sin(T) * 0.3
+    repetitive_footsteps_planner.configure(d_x, d_y, d_theta, nb_steps)
+    if T - last_replan > 0.5:
         last_replan = T
         supports = walk.replan_supports(repetitive_footsteps_planner, trajectory, T)
         footsteps_viz(supports)

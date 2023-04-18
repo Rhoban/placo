@@ -167,7 +167,8 @@ double WalkPatternGenerator::Trajectory::get_part_t_start(double t)
 }
 
 void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initial_pos, Eigen::Vector2d initial_vel,
-                                   Eigen::Vector2d initial_acc, Trajectory* old_trajectory, int kept_dt)
+                                   Eigen::Vector2d initial_acc, Trajectory* old_trajectory, int kept_dt,
+                                   double t_replan_old_com)
 {
   // Computing how many steps are required
   int ssp_dt = std::round(parameters.single_support_duration / parameters.dt);
@@ -204,14 +205,14 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
   JerkPlanner planner(trajectory.jerk_planner_nb_dt, initial_pos, initial_vel, initial_acc, parameters.dt,
                       parameters.omega());
 
-  // if (old_trajectory != nullptr)
-  // {
-  //   for (int k = 0; k < kept_dt; k++)
-  //   {
-  //     planner.add_equality_constraint(k, old_trajectory->com.jerk(trajectory.t_start + k * parameters.dt),
-  //                                     JerkPlanner::Jerk);
-  //   }
-  // }
+  if (old_trajectory != nullptr)
+  {
+    for (int k = 0; k < kept_dt; k++)
+    {
+      planner.add_equality_constraint(k, old_trajectory->com.jerk(t_replan_old_com + k * parameters.dt + 1e-5),
+                                      JerkPlanner::Jerk);
+    }
+  }
 
   int dt = 0;
   FootstepsPlanner::Support current_support;
@@ -411,9 +412,10 @@ WalkPatternGenerator::Trajectory WalkPatternGenerator::replan(std::vector<Footst
 
   // Planning the center of mass trajectory
   int kept_dt = std::round((t_replan - new_trajectory.t_start) / parameters.dt);
-  double offset = new_trajectory.t_start - trajectory.t_start;
-  planCoM(new_trajectory, trajectory.com.pos(offset), trajectory.com.vel(offset), trajectory.com.acc(offset),
-          &trajectory, kept_dt);
+  double t_replan_old_com = new_trajectory.t_start - trajectory.t_start;
+
+  planCoM(new_trajectory, trajectory.com.pos(t_replan_old_com), trajectory.com.vel(t_replan_old_com),
+          trajectory.com.acc(t_replan_old_com), &trajectory, kept_dt, t_replan_old_com);
 
   // Planning the footsteps trajectories
   planFeetTrajectories(new_trajectory, &trajectory, t_replan);

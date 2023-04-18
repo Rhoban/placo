@@ -110,7 +110,7 @@ protected:
   void planCoM(Trajectory& trajectory, Eigen::Vector2d initial_pos = Eigen::Vector2d::Zero(),
                Eigen::Vector2d initial_vel = Eigen::Vector2d::Zero(),
                Eigen::Vector2d initial_acc = Eigen::Vector2d::Zero(), Trajectory* old_trajectory = nullptr,
-               int kept_dt = 0);
+               int kept_dt = 0, double t_replan_old_com = 0.);
 
   void planFeetTrajectories(Trajectory& trajectory, Trajectory* old_trajectory = nullptr, double t_replan = 0.);
 };
