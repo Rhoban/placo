@@ -103,7 +103,7 @@ if __name__ == "__main__":
 
     # Repetitive planner
     planner = placo.FootstepsPlannerRepetitive(parameters)
-    planner.configure(0.0, 0.0, 20*np.pi/180, 3)
+    planner.configure(0.0, 0.0, 0.0, 0)
 
     footsteps = planner.plan(placo.HumanoidRobot_Side.right, placo.frame(
         T_center_left), placo.frame(T_center_right))
@@ -116,4 +116,4 @@ if __name__ == "__main__":
 
     print(f"{len(supports)} steps, computation time: {elapsed*1e6}µs.")
 
-    draw_footsteps(supports, args.animate)
+    draw_footsteps(supports[:2], args.animate)

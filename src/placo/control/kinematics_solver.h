@@ -207,6 +207,11 @@ public:
   void remove_task(Task* task);
 
   /**
+   * @brief Removes a frame task from the solver
+   */
+  void remove_task(FrameTask& task);
+
+  /**
    * @brief Shows the tasks status
    */
   void dump_status();

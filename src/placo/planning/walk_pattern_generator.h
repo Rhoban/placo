@@ -4,7 +4,6 @@
 #include "placo/footsteps/footsteps_planner.h"
 #include "placo/model/humanoid_robot.h"
 #include "placo/model/humanoid_parameters.h"
-#include "placo/planning/solver_task_holder.h"
 #include "placo/planning/jerk_planner.h"
 #include "rhoban_utils/spline/poly_spline.h"
 #include "rhoban_utils/spline/poly_spline_3d.h"

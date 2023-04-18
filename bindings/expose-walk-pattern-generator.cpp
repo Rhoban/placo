@@ -5,7 +5,6 @@
 #include "placo/planning/walk_pattern_generator.h"
 #include "placo/control/kinematics_solver.h"
 #include "placo/footsteps/footsteps_planner.h"
-#include "placo/planning/solver_task_holder.h"
 #include "placo/planning/swing_foot_quintic.h"
 #include <Eigen/Dense>
 #include <boost/python.hpp>
@@ -44,12 +43,6 @@ void exposeWalkPatternGenerator()
   class_<WalkPatternGenerator>("WalkPatternGenerator", init<HumanoidRobot&, HumanoidParameters&>())
       .def("plan", &WalkPatternGenerator::plan)
       .def("replan", &WalkPatternGenerator::replan);
-
-  class_<SolverTaskHolder>("SolverTaskHolder", init<HumanoidRobot&, KinematicsSolver&>())
-      .def("configure_weight", &SolverTaskHolder::configure_weight)
-      .def("update_walk_tasks", &SolverTaskHolder::update_walk_tasks)
-      .def("update_arms_task", &SolverTaskHolder::update_arms_task_python_binding)
-      .def("update_head_task", &SolverTaskHolder::update_head_task);
 
   class_<SwingFoot>("SwingFoot", init<>())
       .def("make_trajectory", &SwingFoot::make_trajectory)

@@ -500,6 +500,15 @@ void KinematicsSolver::remove_task(Task* task)
   delete task;
 }
 
+void KinematicsSolver::remove_task(FrameTask& task)
+{
+  tasks.erase(task.position);
+  tasks.erase(task.orientation);
+
+  delete task.position;
+  delete task.orientation;
+}
+
 void KinematicsSolver::dump_status()
 {
   std::cout << "* Kinematics Tasks:" << std::endl;
