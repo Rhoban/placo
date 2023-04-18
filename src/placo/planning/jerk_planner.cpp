@@ -278,6 +278,12 @@ void JerkPlanner::make_constraint(JerkPlanner::ConstraintMatrices& constraint, i
     rows.push_back(std::pair<int, double>(0, 1.0));
     rows.push_back(std::pair<int, double>(1, 1 / omega));
   }
+  else if (type == ConstraintType::Jerk)
+  {
+    rows.push_back(std::pair<int, double>(0., 0.));
+    command_row_x(0, step * 2) = 1.;
+    command_row_y(0, step * 2 + 1) = 1.;
+  }
 
   // The value we want to be equal to
   constraint.b.block(0, 0, 1, 1) = -value.block(0, 0, 1, 1);

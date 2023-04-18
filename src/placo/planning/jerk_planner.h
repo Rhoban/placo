@@ -135,7 +135,8 @@ public:
     Acceleration = 3,
     ZMP = 4,
     dZMP = 5,
-    DCM = 6
+    DCM = 6,
+    Jerk = 7
   };
 
   State initial_state;
