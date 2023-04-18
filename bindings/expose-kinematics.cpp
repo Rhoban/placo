@@ -110,6 +110,9 @@ void exposeKinematics()
           .def("configure_limits", &KinematicsSolver::configure_limits)
           .def("enable_self_collision_inequalities", &KinematicsSolver::enable_self_collision_inequalities)
 
+          .def(
+              "remove_task", +[](KinematicsSolver& solver, FrameTask& task) { solver.remove_task(task); })
+
           .def("solve", &KinematicsSolver::solve);
 
   solver_class_ptr = &solver_class;
