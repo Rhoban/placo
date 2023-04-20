@@ -166,33 +166,35 @@ double WalkPatternGenerator::Trajectory::get_part_t_start(double t)
   return part.t_start;
 }
 
+int WalkPatternGenerator::support_dt(FootstepsPlanner::Support& support)
+{
+  if (support.footsteps.size() == 1)
+  {
+    return std::round(parameters.single_support_duration / parameters.dt);
+  }
+
+  if (support.start || support.end)
+  {
+    return std::round(parameters.startend_double_support_duration / parameters.dt);
+  }
+  else
+  {
+    return std::round(parameters.double_support_duration / parameters.dt);
+    ;
+  }
+}
+
 void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initial_pos, Eigen::Vector2d initial_vel,
                                    Eigen::Vector2d initial_acc, Trajectory* old_trajectory, int kept_dt,
                                    double t_replan_old_com)
 {
   // Computing how many steps are required
-  int ssp_dt = std::round(parameters.single_support_duration / parameters.dt);
-  int dsp_dt = std::round(parameters.double_support_duration / parameters.dt);
-  int se_dsp_dt = std::round(parameters.startend_double_support_duration / parameters.dt);
   int total_dt = 0;
 
   for (int i = 0; i < trajectory.supports.size(); i++)
   {
-    if (trajectory.supports[i].footsteps.size() == 1)
-    {
-      total_dt += ssp_dt;
-    }
-    else
-    {
-      if (trajectory.supports[i].start || trajectory.supports[i].end)
-      {
-        total_dt += se_dsp_dt;
-      }
-      else
-      {
-        total_dt += dsp_dt;
-      }
-    }
+    total_dt += support_dt(trajectory.supports[i]);
+
     if (total_dt >= parameters.planned_dt)
     {
       break;
@@ -214,46 +216,27 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
     }
   }
 
+  // Adding ZMP constraint and reference trajectory
   int dt = 0;
   FootstepsPlanner::Support current_support;
   for (int i = 0; i < trajectory.supports.size(); i++)
   {
     current_support = trajectory.supports[i];
+    int nb_dt = support_dt(current_support);
 
-    if (current_support.footsteps.size() == 1)
+    for (int k = dt; k < dt + nb_dt; k++)
     {
-      // Add a dt where the ZMP is constraint in a double support to allow it to reach
-      // the other support foot in the case where there is no double support phases
-      // FootstepsPlanner::Support double_support;
-      // double_support.footsteps = current_support.footsteps;
-      // for (auto footstep : trajectory.supports[i - 1].footsteps)
-      // {
-      //   double_support.footsteps.push_back(footstep);
-      // }
-      // planner.add_polygon_constraint(dt, double_support.support_polygon(), JerkPlanner::ZMP, parameters.zmp_margin);
+      if (k > kept_dt)
+        planner.add_polygon_constraint(k, current_support.support_polygon(), JerkPlanner::ZMP, parameters.zmp_margin);
 
-      // Constraint the ZMP to be above the support foot
-      for (int k = 0; k < ssp_dt; k++)
-      {
-        // if (dt + k > kept_dt)
-        planner.add_polygon_constraint(dt + k, current_support.support_polygon(), JerkPlanner::ZMP,
-                                       parameters.zmp_margin);
-      }
-      dt += ssp_dt;
+      planner
+          .add_equality_constraint(
+              k, Eigen::Vector2d(current_support.frame().translation().x(), current_support.frame().translation().y()),
+              JerkPlanner::ZMP)
+          .configure(JerkPlanner::Soft, 10.);
     }
 
-    else
-    {
-      // Constraint the ZMP to be above the support feet
-      int nb_dt = (current_support.start || current_support.end) ? se_dsp_dt : dsp_dt;
-      for (int k = 0; k < nb_dt; k++)
-      {
-        // if (dt + k > kept_dt)
-        planner.add_polygon_constraint(dt + k, current_support.support_polygon(), JerkPlanner::ZMP,
-                                       parameters.zmp_margin);
-      }
-      dt += nb_dt;
-    }
+    dt += nb_dt;
 
     if (dt >= trajectory.jerk_planner_nb_dt)
     {
@@ -271,6 +254,7 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
     planner.add_equality_constraint(dt - 1, Eigen::Vector2d(0., 0.), JerkPlanner::Acceleration);
   }
 
+  // XXX: This could be removed if the ZMP reference trajectory is used
   if (parameters.minimize_zmp_vel)
   {
     for (int step = 0; step < planner.N; step++)
@@ -299,14 +283,7 @@ void WalkPatternGenerator::planFeetTrajectories(Trajectory& trajectory, Trajecto
   // Add the initial position to the trajectory
   _addSupports(trajectory, t, trajectory.supports[0]);
 
-  if (old_trajectory == nullptr)
-  {
-    trajectory.trunk_yaw.addPoint(t, frame_yaw(trajectory.supports[0].frame().rotation()), 0, true);
-  }
-  else
-  {
-    trajectory.trunk_yaw.addPoint(t, old_trajectory->trunk_yaw.get(t), 0, true);
-  }
+  trajectory.trunk_yaw.addPoint(t, frame_yaw(trajectory.supports[0].frame().rotation()), 0, true);
 
   if (!trajectory.supports[0].is_both())
   {
