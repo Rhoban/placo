@@ -31,6 +31,23 @@ class TestProblem(unittest.TestCase):
         # Checking multiplication
         self.assertNumpyEqual(e.multiply(np.eye(16) * 2).A, 2 * np.eye(16))
 
+    def test_expressions(self):
+        """
+        Testing basic expression shapes
+        """        
+        problem = placo.Problem()
+        x = problem.add_variable("x", 2)
+        y = problem.add_variable("y", 2)
+
+        self.assertEqual(x.expr().A.shape[0], 2)
+        self.assertEqual(x.expr(0).A.shape[0], 2)
+        self.assertEqual(x.expr(0, 2).A.shape[0], 2)
+        self.assertEqual(x.expr(0, 1).A.shape, (2,))
+        self.assertEqual(y.expr().A.shape[0], 2)
+        self.assertEqual(y.expr(0).A.shape[0], 2)
+        self.assertEqual(y.expr(0, 2).A.shape[0], 2)
+        self.assertEqual(y.expr(0, 1).A.shape, (4,))
+
     def test_stacking(self):
         problem = placo.Problem()
 
