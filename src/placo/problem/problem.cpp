@@ -119,8 +119,8 @@ void Problem::solve()
       else
       {
         // Adding the soft constraint to the objective function
-        P += constraint->weight * (constraint->expression.A.transpose() * constraint->expression.A);
-        q += constraint->weight * (constraint->expression.A.transpose() * constraint->expression.b);
+        P.noalias() += constraint->weight * (constraint->expression.A.transpose() * constraint->expression.A);
+        q.noalias() += constraint->weight * (constraint->expression.A.transpose() * constraint->expression.b);
       }
     }
   }
