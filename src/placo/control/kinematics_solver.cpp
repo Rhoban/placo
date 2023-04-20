@@ -493,6 +493,11 @@ void KinematicsSolver::clear_tasks()
   tasks.clear();
 }
 
+std::set<Task*> KinematicsSolver::get_tasks()
+{
+  return tasks;
+}
+
 void KinematicsSolver::remove_task(Task* task)
 {
   tasks.erase(task);
