@@ -23,12 +23,12 @@ robot = placo.HumanoidRobot("sigmaban/")
 
 # Walk parameters - if double_support_duration is not set to 0, should be greater than replan_frequency * dt
 parameters = placo.HumanoidParameters()
-parameters.dt = 0.025
-parameters.single_support_duration = .5
-parameters.double_support_duration = 0.0
-parameters.startend_double_support_duration = 0.35
+parameters.single_support_duration = 0.35
+parameters.single_support_timesteps = 12
+parameters.double_support_ratio = 0.0
+parameters.startend_double_support_ratio = 1.5
+parameters.planned_timesteps = 500
 parameters.kick_duration = 0.3
-parameters.planned_dt = 64
 parameters.replan_frequency = 9
 parameters.walk_com_height = 0.32
 parameters.walk_foot_height = 0.04
@@ -39,7 +39,6 @@ parameters.foot_length = 0.1576
 parameters.foot_width = 0.092
 parameters.feet_spacing = 0.122
 parameters.zmp_margin = 0.02
-parameters.minimize_zmp_vel = False
 
 # Creating the kinematics solver
 solver = robot.make_solver()
@@ -74,9 +73,9 @@ T_world_rightTarget[0, 3] += .5
 naive_footsteps_planner.configure(T_world_leftTarget, T_world_rightTarget)
 
 repetitive_footsteps_planner = placo.FootstepsPlannerRepetitive(parameters)
-d_x = 0.075
+d_x = 0.2
 d_y = 0.0
-d_theta = 0.2
+d_theta = 0.
 nb_steps = 10
 repetitive_footsteps_planner.configure(d_x, d_y, d_theta, nb_steps)
 
@@ -91,15 +90,14 @@ footsteps = repetitive_footsteps_planner.plan(placo.HumanoidRobot_Side.left,
                                               T_world_left, T_world_right)
 # --------------------------------------
 
-double_supports = parameters.double_support_duration / parameters.dt >= 1
 supports = placo.FootstepsPlanner.make_supports(
-    footsteps, True, double_supports, True)
+    footsteps, True, parameters.has_double_support(), True)
 
 trajectory = walk.plan(supports, 0.)
 
 if args.graph:
     data = []
-    tl = np.linspace(0, parameters.planned_dt * parameters.dt)
+    tl = np.linspace(0, parameters.planned_dt * parameters.dt())
 
     for ti in tl:
         data.append(
@@ -224,9 +222,7 @@ while True:
       robot.update_support_side(str(trajectory.support_side(T)))
       robot.ensure_on_floor()
 
-    d_theta = np.sin(T) * 0.3
-    repetitive_footsteps_planner.configure(d_x, d_y, d_theta, nb_steps)
-    if T - last_replan > 0.5:
+    if T - last_replan > 0.5 and walk.can_replan_supports(trajectory, T):
         last_replan = T
         supports = walk.replan_supports(repetitive_footsteps_planner, trajectory, T)
         footsteps_viz(supports)
@@ -295,3 +291,4 @@ while True:
     t += dt
     while time.time() < start_t + t:
         time.sleep(1e-3)
+    # time.sleep(1e-2)

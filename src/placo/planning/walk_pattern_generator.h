@@ -74,7 +74,7 @@ public:
     double t_end = 0.0;
 
     // Number of dt planned by the jerk planner
-    int jerk_planner_nb_dt = 0;
+    int jerk_planner_timesteps = 0;
   };
 
   WalkPatternGenerator(HumanoidRobot& robot, HumanoidParameters& parameters);
@@ -97,6 +97,14 @@ public:
    */
   Trajectory replan(std::vector<FootstepsPlanner::Support>& supports, Trajectory& trajectory, double t_replan);
 
+  /**
+   * @brief Checks if a trajectory can be replanned for supports
+   */
+  bool can_replan_supports(Trajectory& trajectory, double t_replan);
+
+  /**
+   * @brief Replan the supports for a given trajectory given a footsteps planner
+   */
   std::vector<FootstepsPlanner::Support> replan_supports(FootstepsPlanner& planner, Trajectory& trajectory,
                                                          double t_replan);
 
@@ -110,7 +118,7 @@ protected:
   void planCoM(Trajectory& trajectory, Eigen::Vector2d initial_pos = Eigen::Vector2d::Zero(),
                Eigen::Vector2d initial_vel = Eigen::Vector2d::Zero(),
                Eigen::Vector2d initial_acc = Eigen::Vector2d::Zero(), Trajectory* old_trajectory = nullptr,
-               int kept_dt = 0, double t_replan_old_com = 0.);
+               int kept_timesteps = 0, double t_replan_old_com = 0.);
 
   void planFeetTrajectories(Trajectory& trajectory, Trajectory* old_trajectory = nullptr, double t_replan = 0.);
 

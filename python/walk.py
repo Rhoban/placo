@@ -4,6 +4,7 @@ import argparse
 import eigenpy
 import pinocchio as pin
 import numpy as np
+from placo_utils.tf import tf
 
 # XXX: Make the constraint "duration" an option of the walk
 
@@ -26,11 +27,11 @@ displayed_joints = {"left_hip_roll", "left_hip_pitch",
 
 # Walk parameters
 parameters = placo.HumanoidParameters()
-parameters.dt = 0.025
 parameters.single_support_duration = 0.35
-parameters.double_support_duration = 0.0
-parameters.startend_double_support_duration = 0.5
-parameters.planned_dt = 500
+parameters.single_support_timesteps = 12
+parameters.double_support_ratio = 0.0
+parameters.startend_double_support_ratio = 1.5
+parameters.planned_timesteps = 64
 parameters.replan_frequency = 500
 parameters.walk_com_height = 0.32
 parameters.walk_foot_height = 0.04
@@ -41,7 +42,6 @@ parameters.foot_length = 0.1576
 parameters.foot_width = 0.092
 parameters.feet_spacing = 0.122
 parameters.zmp_margin = 0.02
-parameters.minimize_zmp_vel = True
 
 # Creating the kinematics solver
 solver = robot.make_solver()
@@ -76,14 +76,14 @@ naive_footsteps_planner = placo.FootstepsPlannerNaive(parameters)
 T_world_leftTarget = T_world_left.copy()
 T_world_rightTarget = T_world_right.copy()
 # --------------------------------------
-T_world_leftTarget[0, 3] += .5
-T_world_rightTarget[0, 3] += .5
+# T_world_leftTarget[0, 3] += .5
+# T_world_rightTarget[0, 3] += .5
 # --------------------------------------
 # XXX : Not converging walk with these traget frames
 # T_world_leftTarget[0, 3] += 0.3
 # T_world_leftTarget[1, 3] += 0.3
 # T_world_leftTarget = T_world_leftTarget @ tf.rotation_matrix(np.pi/2, (0, 0, 1))
-# T_world_rightTarget = T_world_leftTarget
+# T_world_rightTarget = T_world_leftTarget.copy()
 # T_world_rightTarget[0, 3] += parameters.feet_spacing
 # --------------------------------------
 naive_footsteps_planner.configure(T_world_leftTarget, T_world_rightTarget)
@@ -91,7 +91,7 @@ naive_footsteps_planner.configure(T_world_leftTarget, T_world_rightTarget)
 repetitive_footsteps_planner = placo.FootstepsPlannerRepetitive(parameters)
 d_x = 0.1
 d_y = 0.
-d_theta = 0.
+d_theta = 0.3
 nb_steps = 10
 repetitive_footsteps_planner.configure(d_x, d_y, d_theta, nb_steps)
 
@@ -108,15 +108,15 @@ footsteps = repetitive_footsteps_planner.plan(placo.HumanoidRobot_Side.left,
                                               T_world_left, T_world_right)
 # --------------------------------------
 
-double_supports = parameters.double_support_duration / parameters.dt >= 1
 supports = placo.FootstepsPlanner.make_supports(
-    footsteps, True, double_supports, True)
+    footsteps, True, parameters.has_double_support(), True)
 
+start_t = time.time()
 trajectory = walk.plan(supports, 0.)
-
-# elapsed = time.time() - start_t
-# print(f"Computation time: {elapsed*1e6}µs,
-# Jerk planner steps: {trajectory.jerk_planner_dt}")
+elapsed = time.time() - start_t
+print(f"Computation time: {elapsed*1e6}µs")
+      
+# # Jerk planner steps: {trajectory.jerk_planner_dt}")
 
 if args.graph:
     import matplotlib.pyplot as plt
@@ -181,7 +181,7 @@ elif args.pybullet or args.meshcat or args.torque:
         footsteps_viz(trajectory.supports)
 
     start_t = time.time()
-    t = -3 if args.pybullet or args.meshcat or args.torque else 0.
+    t = -0. if args.pybullet or args.meshcat or args.torque else 0.
     dt = 0.005
     last_display = 0
 
@@ -241,6 +241,7 @@ elif args.pybullet or args.meshcat or args.torque:
         t += dt
         while time.time() < start_t + t:
             time.sleep(1e-3)
+        # time.sleep(1e-2)
 
         # If displaying torques info, stop the simulation after 5s
         if args.torque and t > 5:

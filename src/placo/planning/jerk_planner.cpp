@@ -65,6 +65,7 @@ double JerkPlanner::JerkTrajectory::pos(double t) const
 {
   int k = get_offset(t);
   t -= k * dt;
+  t = std::min(dt, t);
 
   return t * (t * (t * ((1 / 6.) * jerks[k]) + (1 / 2.) * pos_vel_acc[k][2]) + pos_vel_acc[k][1]) + pos_vel_acc[k][0];
 }
@@ -73,6 +74,7 @@ double JerkPlanner::JerkTrajectory::vel(double t) const
 {
   int k = get_offset(t);
   t -= k * dt;
+  t = std::min(dt, t);
 
   return t * (t * ((1 / 2.) * jerks[k]) + pos_vel_acc[k][2]) + pos_vel_acc[k][1];
 }
@@ -81,6 +83,7 @@ double JerkPlanner::JerkTrajectory::acc(double t) const
 {
   int k = get_offset(t);
   t -= k * dt;
+  t = std::min(dt, t);
 
   return t * jerks[k] + pos_vel_acc[k][2];
 }
