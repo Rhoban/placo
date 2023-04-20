@@ -18,6 +18,7 @@ public:
   };
 
   Task();
+  virtual ~Task();
 
   KinematicsSolver* solver;
   std::string name;

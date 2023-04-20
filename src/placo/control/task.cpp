@@ -25,6 +25,10 @@ Task::Task()
   weight = 1.0;
 }
 
+Task::~Task()
+{
+}
+
 void Task::set_priority_value(Priority priority_)
 {
   priority = priority_;

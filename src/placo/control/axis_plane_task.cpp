@@ -17,7 +17,6 @@ void AxisPlaneTask::update()
   Eigen::Vector3d axis_world = (T_world_frame.rotation() * axis_frame).normalized();
   Eigen::Vector3d normal_world_normalized = normal_world.normalized();
   Eigen::Vector3d rotate_axis = axis_world.cross(normal_world_normalized).normalized();
-  Eigen::Vector3d axis_target = normal_world_normalized.cross(rotate_axis).normalized();
   double error = safe_acos(axis_world.dot(normal_world_normalized)) - (M_PI / 2);
 
   Eigen::MatrixXd J = solver->robot->frame_jacobian(frame_index, pinocchio::WORLD);
