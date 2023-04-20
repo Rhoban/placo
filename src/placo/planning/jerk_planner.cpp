@@ -459,8 +459,8 @@ JerkPlanner::JerkTrajectory2D JerkPlanner::plan()
     }
     else
     {
-      G += equality->weight * (equality->A.transpose() * equality->A);
-      g0 += equality->weight * (equality->A.transpose() * equality->b);
+      G.noalias() += equality->weight * equality->A.transpose() * equality->A;
+      g0.noalias() += equality->weight * equality->A.transpose() * equality->b;
     }
   }
 
