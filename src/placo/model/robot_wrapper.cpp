@@ -316,7 +316,7 @@ std::vector<RobotWrapper::Collision> RobotWrapper::self_collisions(bool stop_at_
       collision.bodyB = collision_model.geometryObjects[cp.second].name;
       collision.parentB = collision_model.geometryObjects[cp.second].parentJoint;
 
-      for (int k = 0; k < cr.numContacts(); k++)
+      for (size_t k = 0; k < cr.numContacts(); k++)
       {
         collision.contacts.push_back(Eigen::Vector3d(cr.getContact(k).pos));
       }

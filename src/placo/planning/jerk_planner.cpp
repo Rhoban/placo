@@ -95,7 +95,7 @@ double JerkPlanner::JerkTrajectory::jerk(double t) const
   return jerks[k];
 }
 
-JerkPlanner::JerkTrajectory2D::JerkTrajectory2D(double dt, double omega) : dt(dt), omega(omega)
+JerkPlanner::JerkTrajectory2D::JerkTrajectory2D(double dt, double omega) : omega(omega), dt(dt)
 {
   X.dt = dt;
   Y.dt = dt;
@@ -399,7 +399,7 @@ JerkPlanner::Constraint JerkPlanner::add_polygon_constraint(int step, std::vecto
   inequality.b = Eigen::MatrixXd(polygon.size(), 1);
   inequality.b.setZero();
 
-  for (int i = 0; i < polygon.size(); i++)
+  for (size_t i = 0; i < polygon.size(); i++)
   {
     int j = (i + 1) % polygon.size();
 
