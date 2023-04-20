@@ -362,8 +362,8 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
       // q (linear) is - A^T b
       // We removed the "2" because the solver already solves for 1/2 x^T P x + q^T x
 
-      P += task->weight * (task->A.transpose() * task->A);
-      q += task->weight * (-task->A.transpose() * task->b);
+      P.noalias() += task->weight * (task->A.transpose() * task->A);
+      q.noalias() += task->weight * (-task->A.transpose() * task->b);
     }
     else
     {
