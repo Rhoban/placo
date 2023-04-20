@@ -152,10 +152,6 @@ Expression operator*(const Eigen::MatrixXd M, const Expression& e_)
   e.A = M.operator*(e.A);
   e.b = M.operator*(e.b);
 
-  Eigen::MatrixXd A(3, 3);
-  Eigen::VectorXd u(3);
-  auto x = A * u;
-
   return e;
 }
 
