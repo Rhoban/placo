@@ -16,7 +16,8 @@ namespace fs = std::filesystem;
 
 namespace placo
 {
-RobotWrapper::RobotWrapper(std::string model_directory, int flags) : model_directory(model_directory)
+RobotWrapper::RobotWrapper(std::string model_directory, int flags, std::string urdf_content)
+  : model_directory(model_directory)
 {
   std::string urdf_filename;
 
@@ -31,16 +32,41 @@ RobotWrapper::RobotWrapper(std::string model_directory, int flags) : model_direc
     urdf_filename = model_directory + "/robot.urdf";
   }
 
-  pinocchio::urdf::buildModel(urdf_filename, root_joint, model);
-  pinocchio::urdf::buildGeom(model, urdf_filename, pinocchio::COLLISION, collision_model, model_directory);
-
-  if (flags & COLLISION_AS_VISUAL)
+  if (urdf_content != "")
   {
-    pinocchio::urdf::buildGeom(model, urdf_filename, pinocchio::COLLISION, visual_model, model_directory);
+    pinocchio::urdf::buildModelFromXML(urdf_content, root_joint, model);
+    std::istringstream stream(urdf_content);
+    pinocchio::urdf::buildGeom(model, stream, pinocchio::COLLISION, collision_model, model_directory);
   }
   else
   {
-    pinocchio::urdf::buildGeom(model, urdf_filename, pinocchio::VISUAL, visual_model, model_directory);
+    pinocchio::urdf::buildModel(urdf_filename, root_joint, model);
+    pinocchio::urdf::buildGeom(model, urdf_filename, pinocchio::COLLISION, collision_model, model_directory);
+  }
+
+  if (flags & COLLISION_AS_VISUAL)
+  {
+    if (urdf_content != "")
+    {
+      std::istringstream stream(urdf_content);
+      pinocchio::urdf::buildGeom(model, stream, pinocchio::COLLISION, visual_model, model_directory);
+    }
+    else
+    {
+      pinocchio::urdf::buildGeom(model, urdf_filename, pinocchio::COLLISION, visual_model, model_directory);
+    }
+  }
+  else
+  {
+    if (urdf_content != "")
+    {
+      std::istringstream stream(urdf_content);
+      pinocchio::urdf::buildGeom(model, stream, pinocchio::VISUAL, visual_model, model_directory);
+    }
+    else
+    {
+      pinocchio::urdf::buildGeom(model, urdf_filename, pinocchio::VISUAL, visual_model, model_directory);
+    }
   }
 
   // Load collisions pairs

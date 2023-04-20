@@ -5,7 +5,8 @@
 
 namespace placo
 {
-HumanoidRobot::HumanoidRobot(std::string model_directory, int flags) : RobotWrapper(model_directory, flags)
+HumanoidRobot::HumanoidRobot(std::string model_directory, int flags, std::string urdf_content)
+  : RobotWrapper(model_directory, flags, urdf_content)
 {
   initialize();
 

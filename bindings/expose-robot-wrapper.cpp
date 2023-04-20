@@ -14,7 +14,7 @@ using namespace placo;
 template <typename RobotType>
 class_<RobotType> exposeRobotType(const char* name)
 {
-  return class_<RobotType>(name, init<std::string, optional<int> >())
+  return class_<RobotType>(name, init<std::string, optional<int, std::string> >())
       .add_property("state", &RobotType::state)
       .add_property("model", &RobotType::model)
       .add_property("collision_model", &RobotType::collision_model)
