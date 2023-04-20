@@ -18,8 +18,12 @@ void exposeFootsteps()
       .value("right", HumanoidRobot::Side::Right);
 
   class_<FootstepsPlanner::Footstep>("Footstep", init<double, double>())
-      .add_property("side", &FootstepsPlanner::Footstep::side)
-      .add_property("frame", &FootstepsPlanner::Footstep::frame)
+      .add_property("side", &FootstepsPlanner::Footstep::side, &FootstepsPlanner::Footstep::side)
+      .add_property(
+          "frame", +[](const FootstepsPlanner::Footstep& footstep) { return footstep.frame; },
+          &FootstepsPlanner::Footstep::frame)
+      .add_property("foot_length", &FootstepsPlanner::Footstep::foot_length, &FootstepsPlanner::Footstep::foot_length)
+      .add_property("foot_width", &FootstepsPlanner::Footstep::foot_width, &FootstepsPlanner::Footstep::foot_width)
       .def("support_polygon", &FootstepsPlanner::Footstep::support_polygon);
 
   class_<FootstepsPlanner::Support>("Support")
