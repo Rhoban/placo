@@ -45,6 +45,7 @@ public:
 
     double duration() const;
 
+    double t_start = 0.;
     Eigen::Vector2d pos(double t) const;
     Eigen::Vector2d vel(double t) const;
     Eigen::Vector2d acc(double t) const;

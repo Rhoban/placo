@@ -22,6 +22,11 @@ static Eigen::Affine3d _buildFrame(Eigen::Vector3d position, double orientation)
 static WalkPatternGenerator::TrajectoryPart& _findPart(std::vector<WalkPatternGenerator::TrajectoryPart>& parts,
                                                        double t)
 {
+  if (parts.size() == 0)
+  {
+    throw std::runtime_error("Can't find a part in a trajectory that has 0 parts");
+  }
+
   int low = 0;
   int high = parts.size() - 1;
 
@@ -107,7 +112,7 @@ Eigen::Vector3d WalkPatternGenerator::Trajectory::get_v_world_right(double t)
 
 Eigen::Vector3d WalkPatternGenerator::Trajectory::get_p_world_CoM(double t)
 {
-  auto pos = com.pos(t - t_start);
+  auto pos = com.pos(t);
 
   return Eigen::Vector3d(pos.x(), pos.y(), com_height);
 }
@@ -185,8 +190,7 @@ int WalkPatternGenerator::support_dt(FootstepsPlanner::Support& support)
 }
 
 void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initial_pos, Eigen::Vector2d initial_vel,
-                                   Eigen::Vector2d initial_acc, Trajectory* old_trajectory, int kept_timesteps,
-                                   double t_replan_old_com)
+                                   Eigen::Vector2d initial_acc, Trajectory* old_trajectory, double t_replan)
 {
   // Computing how many steps are required
   int timesteps = 0;
@@ -203,6 +207,9 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
 
   trajectory.jerk_planner_timesteps = timesteps;
 
+  // How many timesteps should be kept from the former trajectory
+  int kept_timesteps = std::round((t_replan - trajectory.t_start) / parameters.dt());
+
   // Creating the planner
   JerkPlanner planner(timesteps, initial_pos, initial_vel, initial_acc, parameters.dt(), parameters.omega());
 
@@ -210,8 +217,9 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
   {
     for (int timestep = 0; timestep < kept_timesteps; timestep++)
     {
-      planner.add_equality_constraint(
-          timestep, old_trajectory->com.jerk(t_replan_old_com + timestep * parameters.dt() + 1e-5), JerkPlanner::Jerk);
+      planner.add_equality_constraint(timestep,
+                                      old_trajectory->com.jerk(trajectory.t_start + timestep * parameters.dt() + 1e-6),
+                                      JerkPlanner::Jerk);
     }
   }
 
@@ -257,6 +265,7 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
   }
 
   trajectory.com = planner.plan();
+  trajectory.com.t_start = trajectory.t_start;
 }
 
 static void _addSupports(WalkPatternGenerator::Trajectory& trajectory, double t, FootstepsPlanner::Support& support)
@@ -359,6 +368,11 @@ void WalkPatternGenerator::planFeetTrajectories(Trajectory& trajectory, Trajecto
 WalkPatternGenerator::Trajectory WalkPatternGenerator::plan(std::vector<FootstepsPlanner::Support>& supports,
                                                             double t_start)
 {
+  if (supports.size() == 0)
+  {
+    throw std::runtime_error("Trying to plan() with 0 supports");
+  }
+
   // Initialization of the trajectory
   Trajectory trajectory;
   trajectory.t_start = t_start;
@@ -377,27 +391,29 @@ WalkPatternGenerator::Trajectory WalkPatternGenerator::plan(std::vector<Footstep
 }
 
 WalkPatternGenerator::Trajectory WalkPatternGenerator::replan(std::vector<FootstepsPlanner::Support>& supports,
-                                                              WalkPatternGenerator::Trajectory& trajectory,
+                                                              WalkPatternGenerator::Trajectory& old_trajectory,
                                                               double t_replan)
 {
+  if (supports.size() == 0)
+  {
+    throw std::runtime_error("Trying to replan() with 0 supports");
+  }
+
   // Initialization of the new trajectory
-  Trajectory new_trajectory;
-  new_trajectory.com_height = parameters.walk_com_height;
-  new_trajectory.trunk_pitch = parameters.walk_trunk_pitch;
-  new_trajectory.supports = supports;
-  new_trajectory.t_start = trajectory.get_part_t_start(t_replan);
+  Trajectory trajectory;
+  trajectory.com_height = parameters.walk_com_height;
+  trajectory.trunk_pitch = parameters.walk_trunk_pitch;
+  trajectory.supports = supports;
+  trajectory.t_start = old_trajectory.get_part_t_start(t_replan);
 
   // Planning the center of mass trajectory
-  int kept_dt = std::round((t_replan - new_trajectory.t_start) / parameters.dt());
-  double t_replan_old_com = new_trajectory.t_start - trajectory.t_start;
-
-  planCoM(new_trajectory, trajectory.com.pos(t_replan_old_com), trajectory.com.vel(t_replan_old_com),
-          trajectory.com.acc(t_replan_old_com), &trajectory, kept_dt, t_replan_old_com);
+  planCoM(trajectory, old_trajectory.com.pos(trajectory.t_start), old_trajectory.com.vel(trajectory.t_start),
+          old_trajectory.com.acc(trajectory.t_start), &old_trajectory, t_replan);
 
   // Planning the footsteps trajectories
-  planFeetTrajectories(new_trajectory, &trajectory, t_replan);
+  planFeetTrajectories(trajectory, &old_trajectory, t_replan);
 
-  return new_trajectory;
+  return trajectory;
 }
 
 bool WalkPatternGenerator::can_replan_supports(Trajectory& trajectory, double t_replan)

@@ -91,11 +91,11 @@ public:
    * It ensure a continuous CoM trajectory and replan only if replan_frequency dt have passed
    * @param supports Supports generated from the current foosteps or the new
    * ones to follow. Contain the current support
-   * @param trajectory Current walk trajectory
+   * @param old_trajectory Current walk trajectory
    * @param t_replan The time (in the original trajectory) where the replan happens
    * @return True if the trajectory have been replanned, false it hasn't
    */
-  Trajectory replan(std::vector<FootstepsPlanner::Support>& supports, Trajectory& trajectory, double t_replan);
+  Trajectory replan(std::vector<FootstepsPlanner::Support>& supports, Trajectory& old_trajectory, double t_replan);
 
   /**
    * @brief Checks if a trajectory can be replanned for supports
@@ -118,7 +118,7 @@ protected:
   void planCoM(Trajectory& trajectory, Eigen::Vector2d initial_pos = Eigen::Vector2d::Zero(),
                Eigen::Vector2d initial_vel = Eigen::Vector2d::Zero(),
                Eigen::Vector2d initial_acc = Eigen::Vector2d::Zero(), Trajectory* old_trajectory = nullptr,
-               int kept_timesteps = 0, double t_replan_old_com = 0.);
+               double t_replan = 0.);
 
   void planFeetTrajectories(Trajectory& trajectory, Trajectory* old_trajectory = nullptr, double t_replan = 0.);
 

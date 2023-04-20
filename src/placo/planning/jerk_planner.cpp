@@ -131,21 +131,25 @@ double JerkPlanner::JerkTrajectory2D::duration() const
 
 Eigen::Vector2d JerkPlanner::JerkTrajectory2D::pos(double t) const
 {
+  t -= t_start;
   return Eigen::Vector2d(X.pos(t), Y.pos(t));
 }
 
 Eigen::Vector2d JerkPlanner::JerkTrajectory2D::vel(double t) const
 {
+  t -= t_start;
   return Eigen::Vector2d(X.vel(t), Y.vel(t));
 }
 
 Eigen::Vector2d JerkPlanner::JerkTrajectory2D::acc(double t) const
 {
+  t -= t_start;
   return Eigen::Vector2d(X.acc(t), Y.acc(t));
 }
 
 Eigen::Vector2d JerkPlanner::JerkTrajectory2D::jerk(double t) const
 {
+  t -= t_start;
   return Eigen::Vector2d(X.jerk(t), Y.jerk(t));
 }
 
