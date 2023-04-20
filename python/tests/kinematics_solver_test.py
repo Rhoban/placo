@@ -11,7 +11,7 @@ class TestKinematicsSolver(unittest.TestCase):
         self.robot = placo.RobotWrapper(f"{this_dir}/quadruped/robot.urdf", placo.Flags.collision_as_visual)
         self.solver = self.robot.make_solver()
 
-    def test_remove_task(self):
+    def test_add_remove_task(self):
         self.assertEqual(self.solver.tasks_count(), 0, msg="There should be initially no task")
 
         regularization = self.solver.add_regularization_task(1e-6)
