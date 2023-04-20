@@ -130,14 +130,17 @@ bool FootstepsPlanner::Support::operator==(const Support& other)
 
 HumanoidRobot::Side FootstepsPlanner::Support::side()
 {
-  if (footsteps.size() == 2)
+  if (footsteps.size() > 1)
   {
-    return HumanoidRobot::Side::Both;
+    throw std::runtime_error("Asking side() for a double support (call is_both() before)");
   }
-  else
-  {
-    return footsteps[0].side;
-  }
+
+  return footsteps[0].side;
+}
+
+bool FootstepsPlanner::Support::is_both()
+{
+  return footsteps.size() == 2;
 }
 
 std::vector<FootstepsPlanner::Support> FootstepsPlanner::make_supports(
@@ -145,43 +148,50 @@ std::vector<FootstepsPlanner::Support> FootstepsPlanner::make_supports(
 {
   std::vector<Support> supports;
 
-  if (start)
+  if (footsteps.size() > 2)
+  {
+    if (start)
+    {
+      // Creating the first (double-support) initial state
+      Support support;
+      support.start = true;
+      support.footsteps = { footsteps[0], footsteps[1] };
+      supports.push_back(support);
+    }
+    else
+    {
+      Support support;
+      support.start = true;
+      support.footsteps = { footsteps[0] };
+      supports.push_back(support);
+    }
+
+    // Adding single/double support phases
+    for (int step = 1; step < footsteps.size() - 1; step++)
+    {
+      Support single_support;
+      single_support.footsteps = { footsteps[step] };
+      supports.push_back(single_support);
+
+      bool is_end = (step == footsteps.size() - 2);
+
+      if ((!is_end && middle))
+      {
+        Support double_support;
+        double_support.footsteps = { footsteps[step], footsteps[step + 1] };
+
+        supports.push_back(double_support);
+      }
+    }
+  }
+
+  if (end)
   {
     // Creating the first (double-support) initial state
     Support support;
-    support.start = true;
-    support.footsteps = { footsteps[0], footsteps[1] };
+    support.end = true;
+    support.footsteps = { footsteps[footsteps.size() - 2], footsteps[footsteps.size() - 1] };
     supports.push_back(support);
-  }
-  else
-  {
-    Support support;
-    support.start = true;
-    support.footsteps = { footsteps[0] };
-    supports.push_back(support);
-  }
-
-  // Adding single/double support phases
-  for (int step = 1; step < footsteps.size() - 1; step++)
-  {
-    Support single_support;
-    single_support.footsteps = { footsteps[step] };
-    supports.push_back(single_support);
-
-    bool is_end = (step == footsteps.size() - 2);
-
-    if ((!is_end && middle) || (is_end && end))
-    {
-      Support double_support;
-      double_support.footsteps = { footsteps[step], footsteps[step + 1] };
-
-      if (is_end)
-      {
-        double_support.end = true;
-      }
-
-      supports.push_back(double_support);
-    }
   }
 
   return supports;
@@ -194,4 +204,34 @@ void FootstepsPlanner::add_first_support(std::vector<Support>& supports, Support
   supports[0].start = true;
 }
 
+FootstepsPlanner::Footstep FootstepsPlanner::create_footstep(HumanoidRobot::Side side, Eigen::Affine3d T_world_foot)
+{
+  FootstepsPlanner::Footstep footstep(parameters.foot_width, parameters.foot_length);
+
+  footstep.side = side;
+  footstep.frame = T_world_foot;
+
+  return footstep;
+}
+
+std::vector<FootstepsPlanner::Footstep> FootstepsPlanner::plan(HumanoidRobot::Side flying_side,
+                                                               Eigen::Affine3d T_world_left,
+                                                               Eigen::Affine3d T_world_right)
+{
+  std::vector<Footstep> footsteps;
+
+  // Including initial footsteps
+  auto current_side = flying_side;
+  auto T_world_current_frame = (current_side == HumanoidRobot::Side::Left) ? T_world_left : T_world_right;
+  footsteps.push_back(create_footstep(current_side, T_world_current_frame));
+
+  current_side = HumanoidRobot::other_side(current_side);
+  T_world_current_frame = (current_side == HumanoidRobot::Side::Left) ? T_world_left : T_world_right;
+  footsteps.push_back(create_footstep(current_side, T_world_current_frame));
+
+  // Calling specific implementation
+  plan_impl(footsteps, flying_side, T_world_left, T_world_right);
+
+  return footsteps;
+}
 }  // namespace placo

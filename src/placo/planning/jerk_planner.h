@@ -45,6 +45,7 @@ public:
 
     double duration() const;
 
+    double t_start = 0.;
     Eigen::Vector2d pos(double t) const;
     Eigen::Vector2d vel(double t) const;
     Eigen::Vector2d acc(double t) const;
@@ -135,7 +136,8 @@ public:
     Acceleration = 3,
     ZMP = 4,
     dZMP = 5,
-    DCM = 6
+    DCM = 6,
+    Jerk = 7
   };
 
   State initial_state;

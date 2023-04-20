@@ -215,6 +215,11 @@ void KinematicsSolver::enable_self_collision_inequalities(bool enable, double ma
   self_collisions_trigger = trigger;
 }
 
+int KinematicsSolver::tasks_count()
+{
+  return tasks.size();
+}
+
 void KinematicsSolver::compute_self_collision_inequalities()
 {
   if (avoid_self_collisions && robot != nullptr)
@@ -358,8 +363,8 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
       // q (linear) is - A^T b
       // We removed the "2" because the solver already solves for 1/2 x^T P x + q^T x
 
-      P += task->weight * (task->A.transpose() * task->A);
-      q += task->weight * (-task->A.transpose() * task->b);
+      P.noalias() += task->weight * (task->A.transpose() * task->A);
+      q.noalias() += task->weight * (-task->A.transpose() * task->b);
     }
     else
     {
@@ -489,11 +494,25 @@ void KinematicsSolver::clear_tasks()
   tasks.clear();
 }
 
+std::set<Task*> KinematicsSolver::get_tasks()
+{
+  return tasks;
+}
+
 void KinematicsSolver::remove_task(Task* task)
 {
   tasks.erase(task);
 
   delete task;
+}
+
+void KinematicsSolver::remove_task(FrameTask& task)
+{
+  tasks.erase(task.position);
+  tasks.erase(task.orientation);
+
+  delete task.position;
+  delete task.orientation;
 }
 
 void KinematicsSolver::dump_status()

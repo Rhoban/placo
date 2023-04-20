@@ -4,11 +4,12 @@
     "assemblyName": "robot",
     "outputFormat": "urdf",
     "drawFrames": false,
-    "drawCollisions": true,
+    // "drawCollisions": true,
     "mergeSTLs": "visual",
     "simplifySTLs": "visual",
     "maxSTLSize": 3,
     "useScads": true,
+    "ignoreLimits": false,
     //"configuration": "List_R9v1l2VETyjrl0=straight",
 
     "jointMaxEffort": 10,

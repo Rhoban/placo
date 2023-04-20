@@ -15,13 +15,17 @@ void RelativePositionTask::update()
   auto T_world_b = solver->robot->get_T_world_frame(frame_b);
   auto T_a_b = T_world_a.inverse() * T_world_b;
 
-  Eigen::Vector3d error = target - T_a_b.translation();
+  // Express the target in the world
+  Eigen::Vector3d error_world = T_world_a.linear() * (target - T_a_b.translation());
 
-  auto J_a = solver->robot->frame_jacobian(frame_a, pinocchio::WORLD);
-  auto J_b = solver->robot->frame_jacobian(frame_b, pinocchio::WORLD);
+  // Compute the jacobian locally aligned with the world
+  Eigen::MatrixXd J_a =
+      solver->robot->frame_jacobian(frame_a, pinocchio::LOCAL_WORLD_ALIGNED).block(0, 0, 3, solver->N);
+  Eigen::MatrixXd J_b =
+      solver->robot->frame_jacobian(frame_b, pinocchio::LOCAL_WORLD_ALIGNED).block(0, 0, 3, solver->N);
 
-  A = (pinocchio::SE3(T_world_a.inverse().matrix()).toActionMatrix() * (J_b - J_a)).block(0, 0, 3, solver->N);
-  b = error;
+  A = J_b - J_a;
+  b = error_world;
 }
 
 std::string RelativePositionTask::type_name()

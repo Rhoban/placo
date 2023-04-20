@@ -1,6 +1,5 @@
 import time
 import placo
-from visualization import robot_viz, frame_viz, point_viz, robot_frame_viz, footsteps_viz
 import pinocchio as pin
 import numpy as np
 

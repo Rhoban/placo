@@ -202,9 +202,19 @@ public:
   void clear_tasks();
 
   /**
+   * @brief Retrieve a copy of the set of tasks
+   */
+  std::set<Task*> get_tasks();
+
+  /**
    * @brief Removes a task from the solver
    */
   void remove_task(Task* task);
+
+  /**
+   * @brief Removes a frame task from the solver
+   */
+  void remove_task(FrameTask& task);
 
   /**
    * @brief Shows the tasks status
@@ -223,6 +233,11 @@ public:
    * @param trigger the trigger distance at which the inequalities are enabled [m]
    */
   void enable_self_collision_inequalities(bool enable, double margin = 0.005, double trigger = 0.01);
+
+  /**
+   * @brief Number of tasks
+   */
+  int tasks_count();
 
   /**
    * @brief The robot controlled by this solver
@@ -274,12 +289,16 @@ protected:
   void compute_limits_inequalities();
   void compute_self_collision_inequalities();
 
+  // Task id (this is only useful when task names are not specified, each task will have an unique ID)
+  int task_id = 0;
+
   template <typename T>
   T& add_task(T* task)
   {
+    task_id += 1;
     task->solver = this;
     std::ostringstream oss;
-    oss << "Task_" << tasks.size();
+    oss << "Task_" << task_id;
     task->name = oss.str();
     tasks.insert(task);
 

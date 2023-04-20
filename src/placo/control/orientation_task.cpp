@@ -20,7 +20,7 @@ void OrientationTask::update()
   //            matrix to the desired one
   Eigen::Vector3d error = pinocchio::log3(M);
 
-  auto J = solver->robot->frame_jacobian(frame_index, pinocchio::WORLD);
+  Eigen::MatrixXd J = solver->robot->frame_jacobian(frame_index, pinocchio::WORLD);
   Eigen::Matrix3d Jlog;
   pinocchio::Jlog3(M, Jlog);
 

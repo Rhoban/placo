@@ -19,8 +19,8 @@ void DistanceTask::update()
   double error = distance - ab_world.norm();
   Eigen::Vector3d direction = ab_world.normalized();
 
-  auto J_a = solver->robot->frame_jacobian(frame_a, pinocchio::LOCAL_WORLD_ALIGNED);
-  auto J_b = solver->robot->frame_jacobian(frame_b, pinocchio::LOCAL_WORLD_ALIGNED);
+  Eigen::MatrixXd J_a = solver->robot->frame_jacobian(frame_a, pinocchio::LOCAL_WORLD_ALIGNED);
+  Eigen::MatrixXd J_b = solver->robot->frame_jacobian(frame_b, pinocchio::LOCAL_WORLD_ALIGNED);
   A = direction.transpose() * (J_b - J_a).block(0, 0, 3, solver->N);
   b(0, 0) = error;
 }

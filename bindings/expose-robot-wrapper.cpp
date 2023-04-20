@@ -14,7 +14,7 @@ using namespace placo;
 template <typename RobotType>
 class_<RobotType> exposeRobotType(const char* name)
 {
-  return class_<RobotType>(name, init<std::string, optional<int> >())
+  return class_<RobotType>(name, init<std::string, optional<int, std::string> >())
       .add_property("state", &RobotType::state)
       .add_property("model", &RobotType::model)
       .add_property("collision_model", &RobotType::collision_model)
@@ -77,7 +77,9 @@ class_<RobotType> exposeRobotType(const char* name)
 
 void exposeRobotWrapper()
 {
-  enum_<RobotWrapper::Flags>("Flags").value("collision_as_visual", RobotWrapper::Flags::COLLISION_AS_VISUAL);
+  enum_<RobotWrapper::Flags>("Flags")
+      .value("collision_as_visual", RobotWrapper::Flags::COLLISION_AS_VISUAL)
+      .value("ignore_collisions", RobotWrapper::Flags::IGNORE_COLLISIONS);
 
   class_<RobotWrapper::State>("RobotWrapper_State")
       .add_property(
@@ -126,9 +128,7 @@ void exposeRobotWrapper()
       .def(
           "get_omega", +[](const HumanoidRobot& robot) { return robot.omega_b; })
       .def(
-          "get_support_side", +[](const HumanoidRobot& robot) { return robot.support_side; })
-      .def(
-          "get_flying_side", +[](const HumanoidRobot& robot) { return robot.flying_side; });
+          "get_support_side", +[](const HumanoidRobot& robot) { return robot.support_side; });
 
   exposeStdVector<RobotWrapper::Collision>("vector_Collision");
   exposeStdVector<RobotWrapper::Distance>("vector_Distance");

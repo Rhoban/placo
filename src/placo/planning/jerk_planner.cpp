@@ -65,6 +65,7 @@ double JerkPlanner::JerkTrajectory::pos(double t) const
 {
   int k = get_offset(t);
   t -= k * dt;
+  t = std::min(dt, t);
 
   return t * (t * (t * ((1 / 6.) * jerks[k]) + (1 / 2.) * pos_vel_acc[k][2]) + pos_vel_acc[k][1]) + pos_vel_acc[k][0];
 }
@@ -73,6 +74,7 @@ double JerkPlanner::JerkTrajectory::vel(double t) const
 {
   int k = get_offset(t);
   t -= k * dt;
+  t = std::min(dt, t);
 
   return t * (t * ((1 / 2.) * jerks[k]) + pos_vel_acc[k][2]) + pos_vel_acc[k][1];
 }
@@ -81,6 +83,7 @@ double JerkPlanner::JerkTrajectory::acc(double t) const
 {
   int k = get_offset(t);
   t -= k * dt;
+  t = std::min(dt, t);
 
   return t * jerks[k] + pos_vel_acc[k][2];
 }
@@ -128,21 +131,25 @@ double JerkPlanner::JerkTrajectory2D::duration() const
 
 Eigen::Vector2d JerkPlanner::JerkTrajectory2D::pos(double t) const
 {
+  t -= t_start;
   return Eigen::Vector2d(X.pos(t), Y.pos(t));
 }
 
 Eigen::Vector2d JerkPlanner::JerkTrajectory2D::vel(double t) const
 {
+  t -= t_start;
   return Eigen::Vector2d(X.vel(t), Y.vel(t));
 }
 
 Eigen::Vector2d JerkPlanner::JerkTrajectory2D::acc(double t) const
 {
+  t -= t_start;
   return Eigen::Vector2d(X.acc(t), Y.acc(t));
 }
 
 Eigen::Vector2d JerkPlanner::JerkTrajectory2D::jerk(double t) const
 {
+  t -= t_start;
   return Eigen::Vector2d(X.jerk(t), Y.jerk(t));
 }
 
@@ -277,6 +284,12 @@ void JerkPlanner::make_constraint(JerkPlanner::ConstraintMatrices& constraint, i
     // DCM = c + (1/omega) c_dot
     rows.push_back(std::pair<int, double>(0, 1.0));
     rows.push_back(std::pair<int, double>(1, 1 / omega));
+  }
+  else if (type == ConstraintType::Jerk)
+  {
+    rows.push_back(std::pair<int, double>(0., 0.));
+    command_row_x(0, step * 2) = 1.;
+    command_row_y(0, step * 2 + 1) = 1.;
   }
 
   // The value we want to be equal to
@@ -446,8 +459,8 @@ JerkPlanner::JerkTrajectory2D JerkPlanner::plan()
     }
     else
     {
-      G += equality->weight * (equality->A.transpose() * equality->A);
-      g0 += equality->weight * (-equality->A.transpose() * equality->b);
+      G.noalias() += equality->weight * equality->A.transpose() * equality->A;
+      g0.noalias() += equality->weight * equality->A.transpose() * equality->b;
     }
   }
 

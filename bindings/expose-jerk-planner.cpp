@@ -21,7 +21,8 @@ void exposeJerkPlanner()
       .value("acceleration", JerkPlanner::ConstraintType::Acceleration)
       .value("zmp", JerkPlanner::ConstraintType::ZMP)
       .value("dcm", JerkPlanner::ConstraintType::DCM)
-      .value("dzmp", JerkPlanner::ConstraintType::dZMP);
+      .value("dzmp", JerkPlanner::ConstraintType::dZMP)
+      .value("jerk", JerkPlanner::ConstraintType::Jerk);
 
   class_<JerkPlanner::Constraint>("Constraint", init<JerkPlanner&>())
       .def("is_active", &JerkPlanner::Constraint::is_active);

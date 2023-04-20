@@ -14,7 +14,7 @@ public:
   /**
    * @brief dt for planning [s]
    */
-  double dt = 0.1;
+  double dt();
 
   /**
    * @brief SSP duration [ms], must be a multiple of dt
@@ -22,14 +22,44 @@ public:
   double single_support_duration = 1.;
 
   /**
-   * @brief DSP duration [ms], must be a multiple of dt
+   * @brief Number of timesteps for one single support
    */
-  double double_support_duration = 1.;
+  int single_support_timesteps = 10;
 
   /**
-   * @brief DSP duration [ms], must be a multiple of dt
+   * @brief Duration ratio betweep single support and double support
    */
-  double startend_double_support_duration = 1.;
+  double double_support_ratio = 1.;
+
+  /**
+   * @brief Duration ratio betweep single support and double support
+   */
+  double startend_double_support_ratio = 1.;
+
+  /**
+   * @brief Duratuon [s] of a double support
+   */
+  double double_support_duration();
+
+  /**
+   * @brief Duration [s] of a start/end double support
+   */
+  double startend_double_support_duration();
+
+  /**
+   * @brief Duration [timesteps] of a double support
+   */
+  int double_support_timesteps();
+
+  /**
+   * @brief Duration [timesteps] of a start/end double support
+   */
+  int startend_double_support_timesteps();
+
+  /**
+   * @brief Checks if the walk resulting from those parameters will have double supports
+   */
+  bool has_double_support();
 
   /**
    * @brief Kick duration [ms], must be a multiple of dt
@@ -39,23 +69,18 @@ public:
   /**
    * @brief Planning horizon for the CoM trajectory
    */
-  int planned_dt = 100;
+  int planned_timesteps = 100;
 
   /**
-   * @brief Number of dt between each replan.
+   * @brief Number of timesteps between each replan.
    * Support phases have to last longer than [replan_frequency * dt] or their duration has to be equal to 0
    */
-  int replan_frequency = 10;
+  int replan_timesteps = 10;
 
   /**
    * @brief Margin for the ZMP to live in the support polygon [m]
    */
   double zmp_margin = 0.025;
-
-  /**
-   * @brief Use a ZMP velocity minimization for the CoM planning instead of CoM jerk minimization
-   */
-  bool minimize_zmp_vel = false;
 
   /**
    * @brief How height the feet are rising while walking [m]

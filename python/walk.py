@@ -2,9 +2,9 @@ import time
 import placo
 import argparse
 import eigenpy
-import tf
 import pinocchio as pin
 import numpy as np
+from placo_utils.tf import tf
 
 # XXX: Make the constraint "duration" an option of the walk
 
@@ -27,11 +27,11 @@ displayed_joints = {"left_hip_roll", "left_hip_pitch",
 
 # Walk parameters
 parameters = placo.HumanoidParameters()
-parameters.dt = 0.025
 parameters.single_support_duration = 0.35
-parameters.double_support_duration = 0.0
-parameters.startend_double_support_duration = 0.5
-parameters.planned_dt = 500
+parameters.single_support_timesteps = 12
+parameters.double_support_ratio = 0.0
+parameters.startend_double_support_ratio = 1.5
+parameters.planned_timesteps = 64
 parameters.replan_frequency = 500
 parameters.walk_com_height = 0.32
 parameters.walk_foot_height = 0.04
@@ -42,41 +42,57 @@ parameters.foot_length = 0.1576
 parameters.foot_width = 0.092
 parameters.feet_spacing = 0.122
 parameters.zmp_margin = 0.02
-parameters.minimize_zmp_vel = False
 
 # Creating the kinematics solver
 solver = robot.make_solver()
-task_holder = placo.SolverTaskHolder(robot, solver)
 
-elbow = -120*np.pi/180
-task_holder.update_arms_task(elbow, elbow, 0., 0., 0., 0.)
-task_holder.update_head_task(0., 0.)
-
-# Creating the FootstepsPlanners
 T_world_left = placo.flatten_on_floor(robot.get_T_world_left())
 T_world_right = placo.flatten_on_floor(robot.get_T_world_right())
 
+tasks = placo.WalkTasks()
+tasks.initialize_tasks(solver)
+
+elbow = -120*np.pi/180
+joints_task = solver.add_joints_task()
+joints_task.set_joints({
+    "left_shoulder_roll": 0.,
+    "left_shoulder_pitch": 0.,
+    "left_elbow": -1.0,
+    "right_shoulder_roll": 0.,
+    "right_shoulder_pitch": 0.,
+    "right_elbow": -1.0,
+    "head_pitch": 0.,
+    "head_yaw": 0.
+})
+joints_task.configure("joints", "soft", 1.)
+
+solver.add_regularization_task(1e-6)
+
+robot.update_kinematics()
+solver.solve(True)
+
+# Creating the FootstepsPlanners
 naive_footsteps_planner = placo.FootstepsPlannerNaive(parameters)
 T_world_leftTarget = T_world_left.copy()
 T_world_rightTarget = T_world_right.copy()
 # --------------------------------------
-T_world_leftTarget[0, 3] += .5
-T_world_rightTarget[0, 3] += .5
+# T_world_leftTarget[0, 3] += .5
+# T_world_rightTarget[0, 3] += .5
 # --------------------------------------
 # XXX : Not converging walk with these traget frames
 # T_world_leftTarget[0, 3] += 0.3
 # T_world_leftTarget[1, 3] += 0.3
-# T_world_leftTarget = T_world_leftTarget @ tf.rotation((0, 0, 1), np.pi/2)
-# T_world_rightTarget = T_world_leftTarget
+# T_world_leftTarget = T_world_leftTarget @ tf.rotation_matrix(np.pi/2, (0, 0, 1))
+# T_world_rightTarget = T_world_leftTarget.copy()
 # T_world_rightTarget[0, 3] += parameters.feet_spacing
 # --------------------------------------
 naive_footsteps_planner.configure(T_world_leftTarget, T_world_rightTarget)
 
 repetitive_footsteps_planner = placo.FootstepsPlannerRepetitive(parameters)
-d_x = 0.07
+d_x = 0.1
 d_y = 0.
-d_theta = 0.4
-nb_steps = 5
+d_theta = 0.3
+nb_steps = 10
 repetitive_footsteps_planner.configure(d_x, d_y, d_theta, nb_steps)
 
 # Creating the walk pattern generator and planification
@@ -92,21 +108,21 @@ footsteps = repetitive_footsteps_planner.plan(placo.HumanoidRobot_Side.left,
                                               T_world_left, T_world_right)
 # --------------------------------------
 
-double_supports = parameters.double_support_duration / parameters.dt >= 1
 supports = placo.FootstepsPlanner.make_supports(
-    footsteps, True, double_supports, True)
+    footsteps, True, parameters.has_double_support(), True)
 
-trajectory = walk.plan(supports)
-
-# elapsed = time.time() - start_t
-# print(f"Computation time: {elapsed*1e6}µs,
-# Jerk planner steps: {trajectory.jerk_planner_dt}")
+start_t = time.time()
+trajectory = walk.plan(supports, 0.)
+elapsed = time.time() - start_t
+print(f"Computation time: {elapsed*1e6}µs")
+      
+# # Jerk planner steps: {trajectory.jerk_planner_dt}")
 
 if args.graph:
     import matplotlib.pyplot as plt
     from footsteps_planner import draw_footsteps
 
-    ts = np.linspace(0, trajectory.duration, 1000)
+    ts = np.linspace(0, trajectory.t_end, 1000)
     data_left = []
     data_right = []
 
@@ -117,8 +133,7 @@ if args.graph:
         T = trajectory.get_T_world_right(t)
         data_right.append(T[:3, 3])
 
-    data = np.array([[trajectory.com.pos(t), trajectory.com.zmp(
-        t), trajectory.com.dcm(t)] for t in ts])
+    data = np.array([[trajectory.com.pos(t), trajectory.com.zmp(t), trajectory.com.dcm(t), trajectory.com.jerk(t)] for t in ts])
 
     data_left = np.array(data_left)
     data_right = np.array(data_right)
@@ -130,7 +145,7 @@ if args.graph:
 
     draw_footsteps(trajectory.supports, show=False)
 
-    for t in np.linspace(0, trajectory.duration, 100):
+    for t in np.linspace(0, trajectory.t_end, 100):
         x_values = np.array(
             [trajectory.com.pos(t)[0], trajectory.com.dcm(t)[0]])
         y_values = np.array(
@@ -138,8 +153,9 @@ if args.graph:
         plt.plot(x_values, y_values, c="grey")
 
     plt.plot(data.T[0][0], data.T[1][0], label="CoM", c="red", lw=3)
-    # plt.plot(data.T[0][1], data.T[1][1], label="ZMP", lw=3)
+    plt.plot(data.T[0][1], data.T[1][1], label="ZMP", lw=3)
     plt.plot(data.T[0][2], data.T[1][2], label="DCM", c="green", lw=3)
+    # plt.plot(data.T[0][3], data.T[1][3], label="Jerk", c="orange")
 
     plt.legend()
     plt.grid()
@@ -148,7 +164,7 @@ if args.graph:
     plt.show()
 
 elif args.pybullet or args.meshcat or args.torque:
-    from visualization import robot_viz, frame_viz, point_viz, robot_frame_viz, footsteps_viz
+    from placo_utils.visualization import robot_viz, frame_viz, point_viz, robot_frame_viz, footsteps_viz
 
     if args.pybullet or args.torque:
         import pybullet as p
@@ -165,19 +181,31 @@ elif args.pybullet or args.meshcat or args.torque:
         footsteps_viz(trajectory.supports)
 
     start_t = time.time()
-    t = -3 if args.pybullet or args.meshcat or args.torque else 0.
+    t = -0. if args.pybullet or args.meshcat or args.torque else 0.
     dt = 0.005
+    last_display = 0
 
     while True:
         T = max(0, t)
-        if T > trajectory.duration:
+        if T > trajectory.t_end:
             continue
+        
+        tasks.update_tasks(trajectory, T)
+        robot.update_kinematics()
+        solver.solve(True)
 
-        task_holder.update_walk_tasks(trajectory.get_T_world_left(T), trajectory.get_T_world_right(T),
-                                      trajectory.get_p_world_CoM(T), trajectory.get_R_world_trunk(T), 0, False)
+        frame_viz("left_foot_target", trajectory.get_T_world_left(T))
+        frame_viz("right_foot_target", trajectory.get_T_world_right(T))
 
-        robot.update_support_side(str(trajectory.support_side(T)))
-        robot.ensure_on_floor()
+        T_world_trunk = np.eye(4)
+        T_world_trunk[:3, :3] = trajectory.get_R_world_trunk(T)
+        T_world_trunk[:3, 3] = trajectory.get_p_world_CoM(T)
+        frame_viz("trunk_target", T_world_trunk)
+
+
+        if not trajectory.is_both_support(T):
+          robot.update_support_side(str(trajectory.support_side(T)))
+          robot.ensure_on_floor()
 
         if (args.pybullet or args.torque) and t < -2:
             T_left_origin = sim.transformation("origin", "left_foot_frame")
@@ -187,10 +215,12 @@ elif args.pybullet or args.meshcat or args.torque:
             sim.setRobotPose(*sim.matrixToPose(T_world_origin))
 
         if args.meshcat:
-            viz.display(robot.state.q)
+            if time.time() - last_display > 0.04:
+                last_display = time.time()
+                viz.display(robot.state.q)
 
-            robot_frame_viz(robot, "left_foot")
-            robot_frame_viz(robot, "right_foot")
+            # robot_frame_viz(robot, "left_foot")
+            # robot_frame_viz(robot, "right_foot")
             com = robot.com_world()
             com[2] = 0
             point_viz("com", com)
@@ -211,6 +241,7 @@ elif args.pybullet or args.meshcat or args.torque:
         t += dt
         while time.time() < start_t + t:
             time.sleep(1e-3)
+        # time.sleep(1e-2)
 
         # If displaying torques info, stop the simulation after 5s
         if args.torque and t > 5:

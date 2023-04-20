@@ -13,10 +13,11 @@ class RobotWrapper
 public:
   enum Flags
   {
-    COLLISION_AS_VISUAL=1
+    COLLISION_AS_VISUAL = 1,
+    IGNORE_COLLISIONS = 2
   };
 
-  RobotWrapper(std::string model_directory, int flags = 0);
+  RobotWrapper(std::string model_directory, int flags = 0, std::string urdf_content = "");
 
   /**
    * @brief The index of a frame (currently directly wrapped to pinocchio's FrameIndex)

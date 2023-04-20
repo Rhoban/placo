@@ -23,36 +23,19 @@ FootstepsPlannerNaive::FootstepsPlannerNaive(HumanoidParameters& parameters) : F
 {
 }
 
-std::vector<FootstepsPlanner::Footstep> FootstepsPlannerNaive::plan(HumanoidRobot::Side flying_side,
-                                                                    Eigen::Affine3d T_world_left,
-                                                                    Eigen::Affine3d T_world_right)
+void FootstepsPlannerNaive::plan_impl(std::vector<FootstepsPlanner::Footstep>& footsteps,
+                                      HumanoidRobot::Side flying_side, Eigen::Affine3d T_world_left,
+                                      Eigen::Affine3d T_world_right)
 {
-  // std::cout << "PLAN" << std::endl;
-  // std::cout << "Left : " << T_world_targetLeft.translation() << std::endl;
-  // std::cout << "Right : " << T_world_targetRight.translation() << std::endl;
-
-  std::vector<FootstepsPlanner::Footstep> footsteps;
-
   Eigen::Affine3d T_world_target = rhoban_utils::averageFrames(T_world_targetLeft, T_world_targetRight, 0.5);
 
   auto T_world_currentLeft = T_world_left;
   auto T_world_currentRight = T_world_right;
-  auto current_support_side = flying_side;
+  auto current_support_side = HumanoidRobot::other_side(flying_side);
 
   bool left_arrived = false;
   bool right_arrived = false;
   int steps = 0;
-
-  // Including initial footsteps, which are current frames
-  FootstepsPlanner::Footstep footstep(parameters.foot_width, parameters.foot_length);
-  footstep.side = current_support_side;
-  footstep.frame = current_support_side == HumanoidRobot::Side::Left ? T_world_left : T_world_right;
-  footsteps.push_back(footstep);
-
-  current_support_side = HumanoidRobot::other_side(current_support_side);
-  footstep.side = current_support_side;
-  footstep.frame = current_support_side == HumanoidRobot::Side::Left ? T_world_left : T_world_right;
-  footsteps.push_back(footstep);
 
   while ((!left_arrived || !right_arrived) && steps < max_steps)
   {
@@ -146,9 +129,7 @@ std::vector<FootstepsPlanner::Footstep> FootstepsPlannerNaive::plan(HumanoidRobo
     new_step.linear() = Eigen::AngleAxisd(error_yaw, Eigen::Vector3d::UnitZ()).toRotationMatrix();
 
     // Going to next step
-    FootstepsPlanner::Footstep footstep(parameters.foot_width, parameters.foot_length);
-    footstep.side = HumanoidRobot::other_side(current_support_side);
-    footstep.frame = T_world_support * new_step;
+    Footstep footstep = create_footstep(HumanoidRobot::other_side(current_support_side), T_world_support * new_step);
     footsteps.push_back(footstep);
 
     if (current_support_side == HumanoidRobot::Side::Left)
@@ -164,8 +145,6 @@ std::vector<FootstepsPlanner::Footstep> FootstepsPlannerNaive::plan(HumanoidRobo
       current_support_side = HumanoidRobot::Side::Left;
     }
   }
-
-  return footsteps;
 }
 
 void FootstepsPlannerNaive::configure(Eigen::Affine3d T_world_left_target, Eigen::Affine3d T_world_right_target)

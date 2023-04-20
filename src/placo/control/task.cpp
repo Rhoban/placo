@@ -25,6 +25,10 @@ Task::Task()
   weight = 1.0;
 }
 
+Task::~Task()
+{
+}
+
 void Task::set_priority_value(Priority priority_)
 {
   priority = priority_;
@@ -49,6 +53,13 @@ void Task::configure(std::string name_, std::string priority_, double weight_)
 {
   name = name_;
   priority = priority_from_string(priority_);
+  weight = weight_;
+}
+
+void Task::configure(std::string name_, Priority priority_, double weight_)
+{
+  name = name_;
+  priority = priority_;
   weight = weight_;
 }
 

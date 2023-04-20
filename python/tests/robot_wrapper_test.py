@@ -44,10 +44,24 @@ class TestWrapper(unittest.TestCase):
             np.linalg.norm(T_body_tip - self.robot.get_T_a_b("body", "tip")), 0.0, msg="Body frame should be identity"
         )
 
+    def test_wrapper_content(self):
+        """
+        Testing loading a robot from an URDF stream instead of URDF file
+        """
+        urdf = """
+        <robot name="test">
+            <link name="base">
+            </link>
+        </robot>
+        """
+        robot = placo.RobotWrapper(f"", placo.Flags.collision_as_visual, urdf)
+
+        self.assertEqual(7, len(robot.state.q))
+
     def test_change_dof(self):
         """
         Moving one DoF and checking that the tip leg indeed moves
-        """        
+        """
         self.assertAlmostEqual(self.robot.get_joint("leg3_a"), 0.0, msg="leg3_a should initially be 0")
 
         T_world_tip1 = self.robot.get_T_world_frame("tip")[:3, 3]
@@ -64,7 +78,7 @@ class TestWrapper(unittest.TestCase):
     def test_change_state(self):
         """
         We also move one DoF but by accessing state().q
-        """        
+        """
         T_world_tip1 = self.robot.get_T_world_frame("tip")[:3, 3]
 
         offset = self.robot.get_joint_offset("leg3_a")

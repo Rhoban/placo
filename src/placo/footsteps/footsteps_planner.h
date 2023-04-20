@@ -59,9 +59,14 @@ public:
     bool operator==(const Support& other);
 
     /**
-     * @brief The support side (or Both if it's a double support)
+     * @brief The support side (you should call is_both() to be sure it's not a double support before)
      */
     HumanoidRobot::Side side();
+
+    /**
+     * @brief Checks whether this support is a double support
+     */
+    bool is_both();
   };
 
   /**
@@ -76,8 +81,8 @@ public:
    * @param T_world_left frame of the initial left foot
    * @param T_world_right frame of the initial right foot
    */
-  virtual std::vector<Footstep> plan(HumanoidRobot::Side flying_side, Eigen::Affine3d T_world_left,
-                                     Eigen::Affine3d T_world_right) = 0;
+  std::vector<Footstep> plan(HumanoidRobot::Side flying_side, Eigen::Affine3d T_world_left,
+                             Eigen::Affine3d T_world_right);
 
   /**
    * @brief Generate the supports from the footsteps
@@ -94,5 +99,11 @@ public:
 
   // Humanoid parameters for planning and control
   HumanoidParameters& parameters;
+
+protected:
+  Footstep create_footstep(HumanoidRobot::Side side, Eigen::Affine3d T_world_foot);
+
+  virtual void plan_impl(std::vector<Footstep>&, HumanoidRobot::Side flying_side, Eigen::Affine3d T_world_left,
+                         Eigen::Affine3d T_world_right) = 0;
 };
 }  // namespace placo

@@ -10,6 +10,8 @@
 using namespace boost::python;
 using namespace placo;
 
+class_<KinematicsSolver>* solver_class_ptr = nullptr;
+
 template <typename T>
 void registerTaskMethods(class_<T>& class__)
 {
@@ -25,11 +27,102 @@ void registerTaskMethods(class_<T>& class__)
       .def("set_priority", &T::set_priority)
       .def("set_weight", &T::set_weight)
       .def("set_name", &T::set_name)
-      .def("configure", &T::configure);
+      .def(
+          "configure", +[](T& task, std::string name, std::string priority, double weight) {
+            task.configure(name, priority, weight);
+          });
+
+  solver_class_ptr->def(
+      "remove_task", +[](KinematicsSolver& solver, T& task) { solver.remove_task(&task); });
 }
 
 void exposeKinematics()
 {
+  class_<KinematicsSolver> solver_class =
+      class_<KinematicsSolver>("KinematicsSolver", init<RobotWrapper&>())
+          .add_property("noise", &KinematicsSolver::noise, &KinematicsSolver::noise)
+          .add_property("dt", &KinematicsSolver::dt, &KinematicsSolver::dt)
+          .add_property("N", &KinematicsSolver::N)
+          .add_property(
+              "robot",
+              +[](const KinematicsSolver& solver) {
+                RobotWrapper& wrapper = *solver.robot;
+                return wrapper;
+              })
+
+          // Position and CoM task
+          .def<PositionTask& (KinematicsSolver::*)(std::string, Eigen::Vector3d)>(
+              "add_position_task", &KinematicsSolver::add_position_task, return_internal_reference<>())
+          .def<RelativePositionTask& (KinematicsSolver::*)(std::string, std::string, Eigen::Vector3d)>(
+              "add_relative_position_task", &KinematicsSolver::add_relative_position_task,
+              return_internal_reference<>())
+          .def<CoMTask& (KinematicsSolver::*)(Eigen::Vector3d)>("add_com_task", &KinematicsSolver::add_com_task,
+                                                                return_internal_reference<>())
+
+          // Orientation task
+          .def<OrientationTask& (KinematicsSolver::*)(std::string, Eigen::Matrix3d)>(
+              "add_orientation_task", &KinematicsSolver::add_orientation_task, return_internal_reference<>())
+          .def<RelativeOrientationTask& (KinematicsSolver::*)(std::string, std::string, Eigen::Matrix3d)>(
+              "add_relative_orientation_task", &KinematicsSolver::add_relative_orientation_task,
+              return_internal_reference<>())
+
+          // Axis tasks
+          .def<AxisAlignTask& (KinematicsSolver::*)(std::string, Eigen::Vector3d, Eigen::Vector3d)>(
+              "add_axisalign_task", &KinematicsSolver::add_axisalign_task, return_internal_reference<>())
+          .def<AxisPlaneTask& (KinematicsSolver::*)(std::string, Eigen::Vector3d, Eigen::Vector3d)>(
+              "add_axisplane_task", &KinematicsSolver::add_axisplane_task, return_internal_reference<>())
+
+          // Frame task
+          .def<FrameTask (KinematicsSolver::*)(std::string, Eigen::Affine3d)>("add_frame_task",
+                                                                              &KinematicsSolver::add_frame_task)
+          .def<RelativeFrameTask (KinematicsSolver::*)(std::string, std::string, Eigen::Affine3d)>(
+              "add_relative_frame_task", &KinematicsSolver::add_relative_frame_task)
+
+          // Pose task
+          .def<PoseTask& (KinematicsSolver::*)(std::string, Eigen::Affine3d)>(
+              "add_pose_task", &KinematicsSolver::add_pose_task, return_internal_reference<>())
+          .def<RelativePoseTask& (KinematicsSolver::*)(std::string, std::string, Eigen::Affine3d)>(
+              "add_relative_pose_task", &KinematicsSolver::add_relative_pose_task, return_internal_reference<>())
+
+          // Joint task
+          .def<JointTask& (KinematicsSolver::*)(std::string, double)>(
+              "add_joint_task", &KinematicsSolver::add_joint_task, return_internal_reference<>())
+          .def<JointsTask& (KinematicsSolver::*)(void)>("add_joints_task", &KinematicsSolver::add_joints_task,
+                                                        return_internal_reference<>())
+
+          // Distance task
+          .def<DistanceTask& (KinematicsSolver::*)(std::string, std::string, double)>(
+              "add_distance_task", &KinematicsSolver::add_distance_task, return_internal_reference<>())
+
+          // Centroidal Momentum Task
+          .def<CentroidalMomentumTask& (KinematicsSolver::*)(Eigen::Vector3d)>(
+              "add_centroidal_momentum_task", &KinematicsSolver::add_centroidal_momentum_task,
+              return_internal_reference<>())
+
+          // Regularization task
+          .def("add_regularization_task", &KinematicsSolver::add_regularization_task, return_internal_reference<>())
+
+          // Masking/unmasking DoFs
+          .def("mask_dof", &KinematicsSolver::mask_dof)
+          .def("unmask_dof", &KinematicsSolver::unmask_dof)
+          .def("mask_fbase", &KinematicsSolver::mask_fbase)
+
+          // Clearing the tasks
+          .def("clear_tasks", &KinematicsSolver::clear_tasks)
+          .def("dump_status", &KinematicsSolver::dump_status)
+
+          .def("tasks_count", &KinematicsSolver::tasks_count)
+
+          .def("configure_limits", &KinematicsSolver::configure_limits)
+          .def("enable_self_collision_inequalities", &KinematicsSolver::enable_self_collision_inequalities)
+
+          .def(
+              "remove_task", +[](KinematicsSolver& solver, FrameTask& task) { solver.remove_task(task); })
+
+          .def("solve", &KinematicsSolver::solve);
+
+  solver_class_ptr = &solver_class;
+
   registerTaskMethods(class_<PositionTask>("PositionTask", init<RobotWrapper::FrameIndex, Eigen::Vector3d>())
                           .add_property("frame_index", &PositionTask::frame_index)
                           .add_property(
@@ -139,74 +232,4 @@ void exposeKinematics()
 
   auto regularizationTask = class_<RegularizationTask>("RegularizationTask");
   registerTaskMethods(regularizationTask);
-
-  class_<KinematicsSolver>("KinematicsSolver", init<RobotWrapper&>())
-      .add_property("noise", &KinematicsSolver::noise, &KinematicsSolver::noise)
-      .add_property("dt", &KinematicsSolver::dt, &KinematicsSolver::dt)
-      .add_property("N", &KinematicsSolver::N)
-
-      // Position and CoM task
-      .def<PositionTask& (KinematicsSolver::*)(std::string, Eigen::Vector3d)>(
-          "add_position_task", &KinematicsSolver::add_position_task, return_internal_reference<>())
-      .def<RelativePositionTask& (KinematicsSolver::*)(std::string, std::string, Eigen::Vector3d)>(
-          "add_relative_position_task", &KinematicsSolver::add_relative_position_task, return_internal_reference<>())
-      .def<CoMTask& (KinematicsSolver::*)(Eigen::Vector3d)>("add_com_task", &KinematicsSolver::add_com_task,
-                                                            return_internal_reference<>())
-
-      // Orientation task
-      .def<OrientationTask& (KinematicsSolver::*)(std::string, Eigen::Matrix3d)>(
-          "add_orientation_task", &KinematicsSolver::add_orientation_task, return_internal_reference<>())
-      .def<RelativeOrientationTask& (KinematicsSolver::*)(std::string, std::string, Eigen::Matrix3d)>(
-          "add_relative_orientation_task", &KinematicsSolver::add_relative_orientation_task,
-          return_internal_reference<>())
-
-      // Axis tasks
-      .def<AxisAlignTask& (KinematicsSolver::*)(std::string, Eigen::Vector3d, Eigen::Vector3d)>(
-          "add_axisalign_task", &KinematicsSolver::add_axisalign_task, return_internal_reference<>())
-      .def<AxisPlaneTask& (KinematicsSolver::*)(std::string, Eigen::Vector3d, Eigen::Vector3d)>(
-          "add_axisplane_task", &KinematicsSolver::add_axisplane_task, return_internal_reference<>())
-
-      // Frame task
-      .def<FrameTask (KinematicsSolver::*)(std::string, Eigen::Affine3d)>("add_frame_task",
-                                                                          &KinematicsSolver::add_frame_task)
-      .def<RelativeFrameTask (KinematicsSolver::*)(std::string, std::string, Eigen::Affine3d)>(
-          "add_relative_frame_task", &KinematicsSolver::add_relative_frame_task)
-
-      // Pose task
-      .def<PoseTask& (KinematicsSolver::*)(std::string, Eigen::Affine3d)>(
-          "add_pose_task", &KinematicsSolver::add_pose_task, return_internal_reference<>())
-      .def<RelativePoseTask& (KinematicsSolver::*)(std::string, std::string, Eigen::Affine3d)>(
-          "add_relative_pose_task", &KinematicsSolver::add_relative_pose_task, return_internal_reference<>())
-
-      // Joint task
-      .def<JointTask& (KinematicsSolver::*)(std::string, double)>("add_joint_task", &KinematicsSolver::add_joint_task,
-                                                                  return_internal_reference<>())
-      .def<JointsTask& (KinematicsSolver::*)(void)>("add_joints_task", &KinematicsSolver::add_joints_task,
-                                                    return_internal_reference<>())
-
-      // Distance task
-      .def<DistanceTask& (KinematicsSolver::*)(std::string, std::string, double)>(
-          "add_distance_task", &KinematicsSolver::add_distance_task, return_internal_reference<>())
-
-      // Centroidal Momentum Task
-      .def<CentroidalMomentumTask& (KinematicsSolver::*)(Eigen::Vector3d)>(
-          "add_centroidal_momentum_task", &KinematicsSolver::add_centroidal_momentum_task,
-          return_internal_reference<>())
-
-      // Regularization task
-      .def("add_regularization_task", &KinematicsSolver::add_regularization_task, return_internal_reference<>())
-
-      // Masking/unmasking DoFs
-      .def("mask_dof", &KinematicsSolver::mask_dof)
-      .def("unmask_dof", &KinematicsSolver::unmask_dof)
-      .def("mask_fbase", &KinematicsSolver::mask_fbase)
-
-      // Clearing the tasks
-      .def("clear_tasks", &KinematicsSolver::clear_tasks)
-      .def("dump_status", &KinematicsSolver::dump_status)
-
-      .def("configure_limits", &KinematicsSolver::configure_limits)
-      .def("enable_self_collision_inequalities", &KinematicsSolver::enable_self_collision_inequalities)
-
-      .def("solve", &KinematicsSolver::solve);
 }
