@@ -13,15 +13,6 @@ public:
   FootstepsPlannerNaive(HumanoidParameters& parameters);
 
   /**
-   * @brief Generate the footsteps
-   * @param flying_side first step side
-   * @param T_world_left frame of the initial left foot
-   * @param T_world_right frame of the initial right foot
-   */
-  std::vector<Footstep> plan(HumanoidRobot::Side flying_side, Eigen::Affine3d T_world_left,
-                             Eigen::Affine3d T_world_right);
-
-  /**
    * @brief Configure the naive footsteps planner
    * @param T_world_left_target Targetted frame for the left foot
    * @param T_world_right_target Targetted frame for the right foot
@@ -43,5 +34,14 @@ protected:
 
   // Distance where the robot walks forward instead of aligning with target
   double place_threshold = 0.5;
+
+  /**
+   * @brief Generate the footsteps
+   * @param flying_side first step side
+   * @param T_world_left frame of the initial left foot
+   * @param T_world_right frame of the initial right foot
+   */
+  void plan_impl(std::vector<Footstep>& foosteps, HumanoidRobot::Side flying_side, Eigen::Affine3d T_world_left,
+                 Eigen::Affine3d T_world_right);
 };
 }  // namespace placo

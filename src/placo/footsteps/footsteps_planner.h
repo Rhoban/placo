@@ -81,8 +81,8 @@ public:
    * @param T_world_left frame of the initial left foot
    * @param T_world_right frame of the initial right foot
    */
-  virtual std::vector<Footstep> plan(HumanoidRobot::Side flying_side, Eigen::Affine3d T_world_left,
-                                     Eigen::Affine3d T_world_right) = 0;
+  std::vector<Footstep> plan(HumanoidRobot::Side flying_side, Eigen::Affine3d T_world_left,
+                             Eigen::Affine3d T_world_right);
 
   /**
    * @brief Generate the supports from the footsteps
@@ -99,5 +99,11 @@ public:
 
   // Humanoid parameters for planning and control
   HumanoidParameters& parameters;
+
+protected:
+  Footstep create_footstep(HumanoidRobot::Side side, Eigen::Affine3d T_world_foot);
+
+  virtual void plan_impl(std::vector<Footstep>&, HumanoidRobot::Side flying_side, Eigen::Affine3d T_world_left,
+                         Eigen::Affine3d T_world_right) = 0;
 };
 }  // namespace placo

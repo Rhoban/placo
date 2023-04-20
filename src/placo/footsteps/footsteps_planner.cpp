@@ -204,4 +204,34 @@ void FootstepsPlanner::add_first_support(std::vector<Support>& supports, Support
   supports[0].start = true;
 }
 
+FootstepsPlanner::Footstep FootstepsPlanner::create_footstep(HumanoidRobot::Side side, Eigen::Affine3d T_world_foot)
+{
+  FootstepsPlanner::Footstep footstep(parameters.foot_width, parameters.foot_length);
+
+  footstep.side = side;
+  footstep.frame = T_world_foot;
+
+  return footstep;
+}
+
+std::vector<FootstepsPlanner::Footstep> FootstepsPlanner::plan(HumanoidRobot::Side flying_side,
+                                                               Eigen::Affine3d T_world_left,
+                                                               Eigen::Affine3d T_world_right)
+{
+  std::vector<Footstep> footsteps;
+
+  // Including initial footsteps
+  auto current_side = flying_side;
+  auto T_world_current_frame = (current_side == HumanoidRobot::Side::Left) ? T_world_left : T_world_right;
+  footsteps.push_back(create_footstep(current_side, T_world_current_frame));
+
+  current_side = HumanoidRobot::other_side(current_side);
+  T_world_current_frame = (current_side == HumanoidRobot::Side::Left) ? T_world_left : T_world_right;
+  footsteps.push_back(create_footstep(current_side, T_world_current_frame));
+
+  // Calling specific implementation
+  plan_impl(footsteps, flying_side, T_world_left, T_world_right);
+
+  return footsteps;
+}
 }  // namespace placo

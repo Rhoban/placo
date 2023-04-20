@@ -13,15 +13,6 @@ public:
   FootstepsPlannerRepetitive(HumanoidParameters& parameters);
 
   /**
-   * @brief Generate the footsteps
-   * @param flying_side first step side
-   * @param T_world_left frame of the initial left foot
-   * @param T_world_right frame of the initial right foot
-   */
-  std::vector<Footstep> plan(HumanoidRobot::Side flying_side, Eigen::Affine3d T_world_left,
-                             Eigen::Affine3d T_world_right);
-
-  /**
    * @brief Compute the next footsteps based on coordinates expressed in the support frame
    * laterally translated of +/- feet_spacing
    * @param x Longitudinal distance
@@ -39,5 +30,14 @@ protected:
 
   // Number of steps to plan
   int nb_steps;
+
+  /**
+   * @brief Generate the footsteps
+   * @param flying_side first step side
+   * @param T_world_left frame of the initial left foot
+   * @param T_world_right frame of the initial right foot
+   */
+  void plan_impl(std::vector<Footstep>& footsteps, HumanoidRobot::Side flying_side, Eigen::Affine3d T_world_left,
+                 Eigen::Affine3d T_world_right);
 };
 }  // namespace placo

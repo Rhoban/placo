@@ -7,25 +7,13 @@ FootstepsPlannerRepetitive::FootstepsPlannerRepetitive(HumanoidParameters& param
 {
 }
 
-std::vector<FootstepsPlanner::Footstep> FootstepsPlannerRepetitive::plan(HumanoidRobot::Side flying_side,
-                                                                         Eigen::Affine3d T_world_left,
-                                                                         Eigen::Affine3d T_world_right)
+void FootstepsPlannerRepetitive::plan_impl(std::vector<FootstepsPlanner::Footstep>& footsteps,
+                                           HumanoidRobot::Side flying_side, Eigen::Affine3d T_world_left,
+                                           Eigen::Affine3d T_world_right)
 {
-  std::vector<FootstepsPlanner::Footstep> footsteps;
-
   // Including initial footsteps
-  auto current_side = flying_side;
+  HumanoidRobot::Side current_side = HumanoidRobot::other_side(flying_side);
   auto T_world_current_frame = (current_side == HumanoidRobot::Side::Left) ? T_world_left : T_world_right;
-  FootstepsPlanner::Footstep footstep(parameters.foot_width, parameters.foot_length);
-  footstep.side = current_side;
-  footstep.frame = T_world_current_frame;
-  footsteps.push_back(footstep);
-
-  current_side = HumanoidRobot::other_side(current_side);
-  T_world_current_frame = (current_side == HumanoidRobot::Side::Left) ? T_world_left : T_world_right;
-  footstep.side = current_side;
-  footstep.frame = T_world_current_frame;
-  footsteps.push_back(footstep);
 
   if (nb_steps > 0)
   {
@@ -42,22 +30,16 @@ std::vector<FootstepsPlanner::Footstep> FootstepsPlannerRepetitive::plan(Humanoi
       current_side = HumanoidRobot::other_side(current_side);
 
       // Adding the footstep
-      footstep.side = current_side;
-      footstep.frame = T_world_current_frame;
-      footsteps.push_back(footstep);
+      footsteps.push_back(create_footstep(current_side, T_world_current_frame));
 
       steps += 1;
     }
 
     // Adding last footstep to go double support
-    footstep.side = HumanoidRobot::other_side(current_side);
     T_world_current_frame.translate(Eigen::Vector3d(
         0, (current_side == HumanoidRobot::Side::Left) ? -parameters.feet_spacing : parameters.feet_spacing, 0));
-    footstep.frame = T_world_current_frame;
-    footsteps.push_back(footstep);
+    footsteps.push_back(create_footstep(HumanoidRobot::other_side(current_side), T_world_current_frame));
   }
-
-  return footsteps;
 }
 
 void FootstepsPlannerRepetitive::configure(double x, double y, double theta, int steps)
