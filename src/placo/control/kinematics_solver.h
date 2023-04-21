@@ -258,6 +258,7 @@ public:
    * @brief Size of the problem (number of variables)
    */
   int N;
+  int slacks = 0;
 
   /**
    * @brief Some configuration noise added before solving
@@ -297,7 +298,10 @@ protected:
   double self_collisions_trigger = 0.01;  // [m]
 
   void compute_limits_inequalities();
-  void compute_self_collision_inequalities();
+
+  std::vector<RobotWrapper::Distance> distances;
+  void precompute_self_collision_slacks();
+  void compute_self_collision_inequalities(Eigen::MatrixXd& P, Eigen::VectorXd& q);
 
   // Task id (this is only useful when task names are not specified, each task will have an unique ID)
   int task_id = 0;

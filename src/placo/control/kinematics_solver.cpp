@@ -228,12 +228,29 @@ int KinematicsSolver::tasks_count()
   return tasks.size();
 }
 
-void KinematicsSolver::compute_self_collision_inequalities()
+void KinematicsSolver::precompute_self_collision_slacks()
 {
+  distances = robot->distances();
+  slacks = 0;
+
   if (avoid_self_collisions && robot != nullptr)
   {
-    auto distances = robot->distances();
+    for (auto& distance : distances)
+    {
+      if (distance.min_distance < self_collisions_trigger)
+      {
+        slacks += 1;
+      }
+    }
+  }
+}
 
+void KinematicsSolver::compute_self_collision_inequalities(Eigen::MatrixXd& P, Eigen::VectorXd& q)
+{
+  int slack = 0;
+
+  if (avoid_self_collisions && robot != nullptr)
+  {
     for (auto& distance : distances)
     {
       if (distance.min_distance < self_collisions_trigger)
@@ -255,15 +272,30 @@ void KinematicsSolver::compute_self_collision_inequalities()
         Inequality inequality;
 
         // Adding only one relative constraint
-        Eigen::MatrixXd A = n.transpose() * (JB - JA).block(0, 0, 3, N);
+        Eigen::MatrixXd A(1, N + slacks);
+        A.setZero();
+        A.block(0, 0, 1, N) = n.transpose() * (JB - JA).block(0, 0, 3, N);
+        A(0, N + slack) = -1;
 
-        // d + nT Jb qdot - nT Ja qdot > epsilon
-        inequality.A = -A;
+        // We try to enforce:
+        // d + nT Jb qdot - nT Ja qdot - s = epsilon
+        // with s a slack variable greater than 0
+        Eigen::VectorXd b(1);
+        b[0] = distance.min_distance - self_collisions_margin;
+        P.noalias() += A.transpose() * A;
+        q.noalias() += A.transpose() * b;
+
+        // s > 0
+        inequality.A = Eigen::MatrixXd(1, N + slacks);
+        inequality.A.setZero();
+        inequality.A(0, N + slack) = -1;
         inequality.b = Eigen::VectorXd(1);
-
-        inequality.b[0] = -self_collisions_margin + distance.min_distance;
-
+        inequality.b[0] = 0;
         inequalities.push_back(inequality);
+        slack += 1;
+
+        // d + nT Jb qdot - nT Ja qdot -margin + s = 0
+        // s >= 0
       }
     }
   }
@@ -286,7 +318,7 @@ void KinematicsSolver::compute_limits_inequalities()
   if (n_inequalities > 0)
   {
     Inequality inequality;
-    inequality.A = Eigen::MatrixXd(n_inequalities, N);
+    inequality.A = Eigen::MatrixXd(n_inequalities, N + slacks);
     inequality.b = Eigen::VectorXd(n_inequalities);
     inequality.A.setZero();
 
@@ -337,20 +369,27 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
         (q_random.block(7, 0, robot->model.nq - 7, 1) - robot->state.q.block(7, 0, robot->model.nq - 7, 1)) * noise;
   }
 
-  Eigen::VectorXd qd;
-
   // Updating all the task matrices
   for (auto task : tasks)
   {
     task->update();
   }
 
+  // Computing the number of required slack variables for "Soft" inequalities
+  precompute_self_collision_slacks();
+
   // Building objective function
-  Eigen::MatrixXd P(N, N);
-  Eigen::VectorXd q(N);
+  Eigen::MatrixXd P(N + slacks, N + slacks);
+  Eigen::VectorXd q(N + slacks);
 
   P.setZero();
   q.setZero();
+
+  if (slacks > 0)
+  {
+    P.block(N, N, slacks, slacks).setIdentity();
+    P.block(N, N, slacks, slacks) *= 1e-6;
+  }
 
   int n_equalities = 0;
 
@@ -383,7 +422,7 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
   }
 
   // Constraint matrices
-  Eigen::MatrixXd A(n_equalities, N);
+  Eigen::MatrixXd A(n_equalities, N + slacks);
   Eigen::VectorXd b(n_equalities);
   A.setZero();
   b.setZero();
@@ -423,7 +462,7 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
   inequalities.clear();
 
   compute_limits_inequalities();
-  compute_self_collision_inequalities();
+  compute_self_collision_inequalities(P, q);
 
   int nb_inequalities = 0;
   for (auto& inequality : inequalities)
@@ -431,20 +470,25 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
     nb_inequalities += inequality.A.rows();
   }
 
-  Eigen::MatrixXd CI(nb_inequalities, N);
+  Eigen::MatrixXd CI(nb_inequalities, N + slacks);
   Eigen::VectorXd ci0(nb_inequalities);
 
   int current_inequality_row = 0;
   for (auto& inequality : inequalities)
   {
     int rows = inequality.A.rows();
-    CI.block(current_inequality_row, 0, rows, N) = -inequality.A;
+    CI.block(current_inequality_row, 0, rows, N + slacks) = -inequality.A;
     ci0.block(current_inequality_row, 0, rows, 1) = inequality.b;
     current_inequality_row += rows;
   }
 
-  double result =
-      eiquadprog::solvers::solve_quadprog(P, q, A.transpose(), -b, CI.transpose(), ci0, qd, activeSet, activeSetSize);
+  Eigen::VectorXd solution;
+
+  double result = eiquadprog::solvers::solve_quadprog(P, q, A.transpose(), -b, CI.transpose(), ci0, solution, activeSet,
+                                                      activeSetSize);
+
+  // Retrieving qd (ignoring slack variables)
+  Eigen::VectorXd qd = solution.block(0, 0, N, 1);
 
   if (result == std::numeric_limits<double>::infinity())
   {
