@@ -288,18 +288,15 @@ void KinematicsSolver::compute_limits_inequalities()
     Inequality inequality;
     inequality.A = Eigen::MatrixXd(n_inequalities, N);
     inequality.b = Eigen::VectorXd(n_inequalities);
+    inequality.A.setZero();
 
     for (int k = 0; k < N - 6; k++)
     {
-      Eigen::MatrixXd selector(1, N);
-      selector.setZero();
-      selector(0, k + 6) = 1;
-
       if (joint_limits)
       {
         // Position limits
-        inequality.A.block(current_row, 0, 1, N) = selector;
-        inequality.A.block(current_row + 1, 0, 1, N) = -selector;
+        inequality.A(current_row, 6 + k) = 1;
+        inequality.A(current_row + 1, 6 + k) = -1;
 
         // delta_q <= q_max - q
         inequality.b[current_row] = robot->model.upperPositionLimit[k + 7] - robot->state.q[k + 7];
@@ -312,8 +309,8 @@ void KinematicsSolver::compute_limits_inequalities()
       if (velocity_limits)
       {
         // Speed limits
-        inequality.A.block(current_row, 0, 1, N) = selector;
-        inequality.A.block(current_row + 1, 0, 1, N) = -selector;
+        inequality.A(current_row, 6 + k) = 1;
+        inequality.A(current_row + 1, 6 + k) = -1;
 
         // delta_q <= dt * qdot_max
         inequality.b[current_row] = dt * robot->model.velocityLimit[k + 6];
