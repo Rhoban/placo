@@ -13,7 +13,10 @@ class RobotWrapper
 public:
   enum Flags
   {
+    // The collisions from the URDF will be loaded as visual. In the case we don't want to use the visual
+    // Meshes, this will speed up loading time
     COLLISION_AS_VISUAL = 1,
+    // The self-collisions will be all ignored (all pairs are removed)
     IGNORE_COLLISIONS = 2
   };
 
