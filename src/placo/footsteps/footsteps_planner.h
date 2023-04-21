@@ -97,6 +97,18 @@ public:
 
   static void add_first_support(std::vector<Support>& supports, Support support);
 
+  /**
+   * @brief Return the opposite footstep in a neutral position (i.e. at a
+   * distance parameters.feet_spacing from the given footstep)
+   */
+  Footstep neutral_opposite_footstep(Footstep footstep);
+
+  /**
+   * @brief Return the frame between the feet in the neutral position
+   * @param footstep The footstep of one of the feet
+   */
+  Eigen::Affine3d neutral_frame(Footstep footstep);
+
   // Humanoid parameters for planning and control
   HumanoidParameters& parameters;
 
