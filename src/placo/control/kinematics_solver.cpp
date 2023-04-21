@@ -294,13 +294,12 @@ void KinematicsSolver::compute_limits_inequalities()
     {
       if (joint_limits)
       {
-        // Position limits
-        inequality.A(current_row, 6 + k) = 1;
-        inequality.A(current_row + 1, 6 + k) = -1;
-
         // delta_q <= q_max - q
+        inequality.A(current_row, 6 + k) = 1;
         inequality.b[current_row] = robot->model.upperPositionLimit[k + 7] - robot->state.q[k + 7];
+
         // -delta_q <= q - q_min
+        inequality.A(current_row + 1, 6 + k) = -1;
         inequality.b[current_row + 1] = robot->state.q[k + 7] - robot->model.lowerPositionLimit[k + 7];
 
         current_row += 2;
@@ -308,13 +307,12 @@ void KinematicsSolver::compute_limits_inequalities()
 
       if (velocity_limits)
       {
-        // Speed limits
-        inequality.A(current_row, 6 + k) = 1;
-        inequality.A(current_row + 1, 6 + k) = -1;
-
         // delta_q <= dt * qdot_max
+        inequality.A(current_row, 6 + k) = 1;
         inequality.b[current_row] = dt * robot->model.velocityLimit[k + 6];
+
         // -delta_q <= dt * qdot_max
+        inequality.A(current_row + 1, 6 + k) = -1;
         inequality.b[current_row + 1] = dt * robot->model.velocityLimit[k + 6];
 
         current_row += 2;
