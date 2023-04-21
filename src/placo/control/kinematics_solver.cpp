@@ -216,7 +216,7 @@ void KinematicsSolver::enable_velocity_post_limits(bool enable)
   velocity_post_limits = enable;
 }
 
-void KinematicsSolver::enable_self_collision_inequalities(bool enable, double margin, double trigger)
+void KinematicsSolver::enable_self_collision_avoidance(bool enable, double margin, double trigger)
 {
   avoid_self_collisions = enable;
   self_collisions_margin = margin;

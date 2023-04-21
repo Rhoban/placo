@@ -242,7 +242,7 @@ public:
    * @param margin margin that will be used [m]
    * @param trigger the trigger distance at which the inequalities are enabled [m]
    */
-  void enable_self_collision_inequalities(bool enable, double margin = 0.005, double trigger = 0.01);
+  void enable_self_collision_avoidance(bool enable, double margin = 0.005, double trigger = 0.01);
 
   /**
    * @brief Number of tasks
