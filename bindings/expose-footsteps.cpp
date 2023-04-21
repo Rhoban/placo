@@ -40,8 +40,10 @@ void exposeFootsteps()
       .add_property("end", &FootstepsPlanner::Support::end);
 
   class_<FootstepsPlanner, boost::noncopyable>("FootstepsPlanner", no_init)
-      .def("make_supports", &FootstepsPlannerNaive::make_supports)
-      .def("add_first_support", &FootstepsPlannerNaive::add_first_support);
+      .def("make_supports", &FootstepsPlanner::make_supports)
+      .def("add_first_support", &FootstepsPlanner::add_first_support)
+      .def("neutral_opposite_footstep", &FootstepsPlanner::neutral_opposite_footstep)
+      .def("neutral_frame", &FootstepsPlanner::neutral_frame);
 
   class_<FootstepsPlannerNaive, bases<FootstepsPlanner>>("FootstepsPlannerNaive", init<HumanoidParameters&>())
       .def("plan", &FootstepsPlannerNaive::plan)
