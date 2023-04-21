@@ -126,6 +126,16 @@ public:
   double foot_length = 0.15;
 
   /**
+   * @brief Target offset for the ZMP x reference trajectory in the foot frame [m]
+   */
+  double foot_zmp_target_x = 0.0;
+
+  /**
+   * @brief Target offset for the ZMP x reference trajectory in the foot frame, positive is "outward" [m]
+   */
+  double foot_zmp_target_y = 0.0;
+
+  /**
    * Natural frequency of the Linear Inverted Pendulum (LIP) model used in the walk
    */
   double omega();
