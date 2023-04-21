@@ -201,11 +201,19 @@ void KinematicsSolver::mask_fbase(bool masked)
   masked_fbase = masked;
 }
 
-void KinematicsSolver::configure_limits(bool dofs_limit_, bool speeds_limit_, bool speed_post_limits_)
+void KinematicsSolver::enable_joint_limits(bool enable)
 {
-  dofs_limit = dofs_limit_;
-  speeds_limit = speeds_limit_;
-  speed_post_limits = speed_post_limits_;
+  joint_limits = enable;
+}
+
+void KinematicsSolver::enable_velocity_limits(bool enable)
+{
+  velocity_limits = enable;
+}
+
+void KinematicsSolver::enable_velocity_post_limits(bool enable)
+{
+  velocity_post_limits = enable;
 }
 
 void KinematicsSolver::enable_self_collision_inequalities(bool enable, double margin, double trigger)
@@ -265,11 +273,11 @@ void KinematicsSolver::compute_limits_inequalities()
 {
   int constrained_dofs = N - 6;
   int n_inequalities = 0;
-  if (dofs_limit)
+  if (joint_limits)
   {
     n_inequalities += constrained_dofs * 2;
   }
-  if (speeds_limit)
+  if (velocity_limits)
   {
     n_inequalities += constrained_dofs * 2;
   }
@@ -287,7 +295,7 @@ void KinematicsSolver::compute_limits_inequalities()
       selector.setZero();
       selector(0, k + 6) = 1;
 
-      if (dofs_limit)
+      if (joint_limits)
       {
         // Position limits
         inequality.A.block(current_row, 0, 1, N) = selector;
@@ -301,7 +309,7 @@ void KinematicsSolver::compute_limits_inequalities()
         current_row += 2;
       }
 
-      if (speeds_limit)
+      if (velocity_limits)
       {
         // Speed limits
         inequality.A.block(current_row, 0, 1, N) = selector;
@@ -453,7 +461,7 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
     throw std::runtime_error("KinematicsSolver: NaN encountered in result");
   }
 
-  if (speed_post_limits)
+  if (velocity_post_limits)
   {
     double ratio = 1.0;
 

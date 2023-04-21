@@ -222,9 +222,19 @@ public:
   void dump_status();
 
   /**
-   * @brief Configure limits that are enabled
+   * @brief Enables/disables joint limits inequalities
    */
-  void configure_limits(bool dofs_limit, bool speeds_limit, bool speed_post_limits);
+  void enable_joint_limits(bool enable);
+
+  /**
+   * @brief Enables/disables joint velocity inequalities
+   */
+  void enable_velocity_limits(bool enable);
+
+  /**
+   * @brief Enables/disables joint velocity post limits
+   */
+  void enable_velocity_post_limits(bool enable);
 
   /**
    * @brief Enables or disable the self collision inequalities
@@ -277,9 +287,9 @@ protected:
   size_t activeSetSize;
 
   // Modes to limit the DoFs
-  bool dofs_limit = true;
-  bool speeds_limit = false;
-  bool speed_post_limits = false;
+  bool joint_limits = true;
+  bool velocity_limits = false;
+  bool velocity_post_limits = false;
 
   // Self collision prevention
   bool avoid_self_collisions = false;

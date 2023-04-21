@@ -103,11 +103,12 @@ RobotWrapper::RobotWrapper(std::string model_directory, int flags, std::string u
   auto collisions = self_collisions();
   if (collisions.size() > 0)
   {
-    std::ostringstream oss;
-    oss << "Robot is self colliding in neutral position (" << collisions[0].bodyA << " colliding with "
-        << collisions[1].bodyA << ")";
+    std::cerr << "WARNING: Robot has the following self collisions in neutral position:" << std::endl;
 
-    std::cerr << "WARNING:" << oss.str() << std::endl;
+    for (auto& collision : collisions)
+    {
+      std::cerr << "  -" << collisions[0].bodyA << " collides with " << collisions[0].bodyB << std::endl;
+    }
   }
 }
 
@@ -186,6 +187,19 @@ int RobotWrapper::get_joint_offset(const std::string& name)
 int RobotWrapper::get_joint_v_offset(const std::string& name)
 {
   return 6 + model.getJointId(name) - 2;
+}
+
+void RobotWrapper::set_velocity_limit(const std::string& name, double limit)
+{
+  model.velocityLimit[get_joint_v_offset(name)] = limit;
+}
+
+void RobotWrapper::set_velocity_limits(double limit)
+{
+  for (auto& name : actuated_joint_names())
+  {
+    set_velocity_limit(name, limit);
+  }
 }
 
 Eigen::Affine3d RobotWrapper::get_T_world_fbase()
