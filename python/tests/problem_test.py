@@ -159,6 +159,29 @@ class TestProblem(unittest.TestCase):
         self.assertNumpyEqual(x.value, 6.0, msg="Hard constraint should be enforced")
         self.assertNumpyEqual(problem.slacks, 1.0, msg="Soft constraint should be slacking")
 
+    def test_polygon_constraint(self):
+        problem = placo.Problem()
+
+        # This is a unit square (drawn clockwise)
+        polygon = np.array([[1.0, 1.0], [1.0, 2.0], [2.0, 2.0], [2.0, 1.0]])
+
+        xy = problem.add_variable(2)
+        placo.PolygonConstraint.add_polygon_constraint(problem, xy.expr(), polygon, 0.0)
+        problem.solve()
+        self.assertNumpyEqual(
+            xy.value,
+            np.array([1.0, 1.0]),
+            msg="The [0., 0.] value should be projected in the polygon bottom-left corner at [1., 1.]",
+        )
+
+        problem.add_constraint(xy.expr() == np.array([3.0, 3.0])).configure("soft", 1.0)
+        problem.solve()
+        self.assertNumpyEqual(
+            xy.value,
+            np.array([2.0, 2.0]),
+            msg="The [3., 3.] value should be projected in the polygon top-right corner at [2., 2.]",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

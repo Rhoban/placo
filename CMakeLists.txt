@@ -14,17 +14,21 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 find_package (Eigen3 3 REQUIRED NO_MODULE)
 
 add_library(libplaco
-    src/placo/footsteps/footsteps_planner.cpp
-    src/placo/footsteps/footsteps_planner_naive.cpp
-    src/placo/footsteps/footsteps_planner_repetitive.cpp
-    src/placo/planning/jerk_planner.cpp
-    src/placo/planning/walk_pattern_generator.cpp
-    src/placo/planning/swing_foot.cpp
-    src/placo/planning/swing_foot_quintic.cpp
-    src/placo/planning/walk_tasks.cpp
+    # Wrappers and basic utils
     src/placo/model/robot_wrapper.cpp
     src/placo/model/humanoid_robot.cpp
-    src/placo/model/humanoid_parameters.cpp
+    src/placo/utils.cpp
+
+    # Problem formulation
+    src/placo/problem/problem.cpp
+    src/placo/problem/variable.cpp
+    src/placo/problem/expression.cpp
+    src/placo/problem/integrator.cpp
+    src/placo/problem/constraint.cpp
+    src/placo/problem/constraints.cpp
+    src/placo/problem/polygon_constraint.cpp
+
+    # Kinematics QP solver
     src/placo/control/kinematics_solver.cpp
     src/placo/control/task.cpp
     src/placo/control/position_task.cpp
@@ -43,12 +47,18 @@ add_library(libplaco
     src/placo/control/joint_task.cpp
     src/placo/control/joints_task.cpp
     src/placo/control/regularization_task.cpp
-    src/placo/problem/problem.cpp
-    src/placo/problem/variable.cpp
-    src/placo/problem/expression.cpp
-    src/placo/problem/integrator.cpp
-    src/placo/problem/constraint.cpp
-    src/placo/utils.cpp
+
+    # Walking
+    src/placo/footsteps/footsteps_planner.cpp
+    src/placo/footsteps/footsteps_planner_naive.cpp
+    src/placo/footsteps/footsteps_planner_repetitive.cpp
+    src/placo/planning/jerk_planner.cpp
+    src/placo/planning/walk_pattern_generator.cpp
+    src/placo/planning/swing_foot.cpp
+    src/placo/planning/swing_foot_quintic.cpp
+    src/placo/planning/walk_tasks.cpp
+    src/placo/model/humanoid_parameters.cpp
+
     ${PROTO_SRCS}
     ${PROTO_HDRS}  
 )

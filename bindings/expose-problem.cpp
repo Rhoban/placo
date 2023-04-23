@@ -9,6 +9,7 @@
 #include "placo/problem/variable.h"
 #include "placo/problem/expression.h"
 #include "placo/problem/constraint.h"
+#include "placo/problem/polygon_constraint.h"
 #include "placo/problem/integrator.h"
 #include <Eigen/Dense>
 #include <boost/python.hpp>
@@ -26,6 +27,13 @@ void exposeProblem()
       .add_property("hard", &ProblemConstraint::hard)
       .add_property("weight", &ProblemConstraint::weight)
       .def<void (ProblemConstraint::*)(std::string, double)>("configure", &ProblemConstraint::configure);
+
+  class_<ProblemConstraints>("ProblemConstraints")
+      .def<void (ProblemConstraints::*)(std::string, double)>("configure", &ProblemConstraints::configure);
+
+  class_<PolygonConstraint>("PolygonConstraint")
+      .def("add_polygon_constraint", &PolygonConstraint::add_polygon_constraint)
+      .staticmethod("add_polygon_constraint");
 
   class_<Integrator>("Integrator", init<Variable&, Eigen::VectorXd, int, double>())
       .def("continuous_system_matrix", &Integrator::continuous_system_matrix)

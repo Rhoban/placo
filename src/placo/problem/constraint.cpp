@@ -8,4 +8,9 @@ void ProblemConstraint::configure(std::string type, double weight_)
   weight = weight_;
 }
 
+void ProblemConstraint::configure(bool hard_, double weight_)
+{
+  hard = hard_;
+  weight = weight_;
+}
 }  // namespace placo
