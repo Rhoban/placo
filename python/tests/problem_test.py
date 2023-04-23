@@ -122,15 +122,29 @@ class TestProblem(unittest.TestCase):
         # Creating a problem
         problem = placo.Problem()
         x = problem.add_variable(10)
-        integrator = placo.Integrator(x, np.array([0.0, 0.0, 0.0]), 3, 0.1)
+        integrator = placo.Integrator(x, np.array([1.0, 2.0, 3.0]), 3, 0.1)
 
         # Adding constraint at arrival
-        problem.add_constraint(integrator.expr(10, 0) == 1)
-        problem.add_constraint(integrator.expr(10, 1) == 0)
-        problem.add_constraint(integrator.expr(10, 2) == 0)
+        problem.add_constraint(integrator.expr(10, 0) == 4.0)
+        problem.add_constraint(integrator.expr(10, 1) == 5.0)
+        problem.add_constraint(integrator.expr(10, 2) == 6.0)
+
+        problem.add_constraint(integrator.expr(5, 0) <= -5.0)
+
         problem.solve()
 
-        # XXX: Do some tests
+        # Testing initial values
+        self.assertNumpyEqual(integrator.value(0, 0), 1)
+        self.assertNumpyEqual(integrator.value(0, 1), 2)
+        self.assertNumpyEqual(integrator.value(0, 2), 3)
+
+        # Testing final values
+        self.assertNumpyEqual(integrator.value(1.0, 0), 4)
+        self.assertNumpyEqual(integrator.value(1.0, 1), 5)
+        self.assertNumpyEqual(integrator.value(1.0, 2), 6)
+
+        # Testing that inequality is still enforced
+        self.assertTrue(integrator.value(0.5, 0) < -5.0)
 
     def test_soft_inequality(self):
         problem = placo.Problem()
