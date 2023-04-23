@@ -19,10 +19,9 @@ Problem::~Problem()
   }
 }
 
-Variable& Problem::add_variable(std::string name, int size)
+Variable& Problem::add_variable(int size)
 {
   Variable* variable = new Variable;
-  variable->name = name;
   variable->k_start = n_variables;
   variable->k_end = n_variables + size;
   n_variables += size;

@@ -30,7 +30,7 @@ public:
     void configure(bool hard, double weight);
   };
 
-  Variable& add_variable(std::string name, int size = 1);
+  Variable& add_variable(int size = 1);
 
   /**
    * @brief Adds an equality constraint (Ax + b = 0)

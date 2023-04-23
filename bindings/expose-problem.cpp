@@ -58,7 +58,7 @@ void exposeProblem()
   class_<Variable>("Variable")
       .add_property("k_start", &Variable::k_start)
       .add_property("k_end", &Variable::k_end)
-      .add_property("name", &Variable::name)
+      .add_property("name", &Variable::name, &Variable::name)
       .add_property("value", &Variable::value)
       .def("expr", &Variable::expr, expr_overloads());
 
