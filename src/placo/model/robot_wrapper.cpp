@@ -237,6 +237,7 @@ Eigen::Vector3d RobotWrapper::com_world()
 void RobotWrapper::update_kinematics()
 {
   pinocchio::framesForwardKinematics(model, *data, state.q);
+  pinocchio::computeJointJacobians(model, *data, state.q);
 }
 
 RobotWrapper::State RobotWrapper::neutral_state()
@@ -461,7 +462,6 @@ Eigen::MatrixXd RobotWrapper::joint_jacobian(pinocchio::JointIndex joint, pinocc
 {
   Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> jacobian(6, model.nv);
   jacobian.setZero();
-  pinocchio::computeJointJacobian(model, *data, state.q, joint, jacobian);
   pinocchio::getJointJacobian(model, *data, joint, ref, jacobian);
 
   return jacobian;

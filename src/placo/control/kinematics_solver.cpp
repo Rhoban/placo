@@ -260,6 +260,7 @@ void KinematicsSolver::compute_self_collision_inequalities(Eigen::MatrixXd& P, E
 
         if (distance.min_distance < 0)
         {
+          // If the distance is negative, the points "cross" and this vector should point the other way around
           n = -n;
         }
 
