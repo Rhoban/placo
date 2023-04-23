@@ -10,8 +10,6 @@ typedef boost::tuple<double, double> b_point;
 typedef boost::geometry::model::polygon<b_point> b_polygon;
 
 /**
- * TODO: We always take at least two steps here even if the target is initially
- * where we are
  * TODO: The accessibility could be refined instead of relying on one hypercube
  * TODO: How can we make sure that legs doesn't collide aech other ?
  * TODO: Feet dimensions should come from the model
@@ -146,6 +144,95 @@ void FootstepsPlannerNaive::plan_impl(std::vector<FootstepsPlanner::Footstep>& f
     }
   }
 }
+
+// XXX : Need to debug factorization (wrong error_yaw, to investigate)
+
+// void FootstepsPlannerNaive::plan_impl(std::vector<FootstepsPlanner::Footstep>& footsteps,
+//                                       HumanoidRobot::Side flying_side, Eigen::Affine3d T_world_left,
+//                                       Eigen::Affine3d T_world_right)
+// {
+//   Eigen::Affine3d T_world_target = rhoban_utils::averageFrames(T_world_targetLeft, T_world_targetRight, 0.5);
+
+//   Footstep footstep = footsteps[1];
+
+//   bool left_arrived = false;
+//   bool right_arrived = false;
+//   int steps = 0;
+
+//   while ((!left_arrived || !right_arrived) && steps < max_steps)
+//   {
+//     steps += 1;
+//     bool arrived = true;
+
+//     footstep = neutral_opposite_footstep(footstep);
+
+//     Eigen::Vector3d error = footstep.side == HumanoidRobot::Left ?
+//                                 T_world_targetLeft.translation() - footstep.frame.translation() :
+//                                 T_world_targetRight.translation() - footstep.frame.translation();
+
+//     double rescale = 1.;
+
+//     if (error.x() < -accessibility_length)
+//     {
+//       rescale = std::min(rescale, -accessibility_length / error.x());
+//       arrived = false;
+//     }
+//     if (error.x() > accessibility_length)
+//     {
+//       rescale = std::min(rescale, accessibility_length / error.x());
+//       arrived = false;
+//     }
+//     if (error.y() < -accessibility_width)
+//     {
+//       rescale = std::min(rescale, -accessibility_width / error.y());
+//       arrived = false;
+//     }
+//     if (error.y() > accessibility_width)
+//     {
+//       rescale = std::min(rescale, accessibility_width / error.y());
+//       arrived = false;
+//     }
+
+//     double dist = error.norm();
+//     error = error * rescale;
+
+//     // Updating the yaw
+//     double error_yaw;
+
+//     if (dist > place_threshold)
+//     {
+//       Eigen::Vector3d target_direction = T_world_target.translation() - neutral_frame(footstep).translation();
+//       error_yaw = atan2(target_direction.y(), target_direction.x());
+//     }
+//     else
+//     {
+//       error_yaw = placo::frame_yaw(T_world_target.rotation());
+//     }
+
+//     if (error_yaw < -accessibility_yaw)
+//     {
+//       arrived = false;
+//       error_yaw = -accessibility_yaw;
+//     }
+//     if (error_yaw > accessibility_yaw)
+//     {
+//       arrived = false;
+//       error_yaw = accessibility_yaw;
+//     }
+
+//     footstep.frame.translation() += error;
+//     footstep.frame.linear() = Eigen::AngleAxisd(error_yaw, Eigen::Vector3d::UnitZ()).toRotationMatrix();
+//     footsteps.push_back(footstep);
+
+//     if (footstep.side == HumanoidRobot::Side::Left)
+//     {
+//       right_arrived = arrived;
+//     }
+//     else
+//     {
+//       left_arrived = arrived;
+//     }
+//   }
 
 void FootstepsPlannerNaive::configure(Eigen::Affine3d T_world_left_target, Eigen::Affine3d T_world_right_target)
 {

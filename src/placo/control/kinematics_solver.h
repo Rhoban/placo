@@ -222,9 +222,19 @@ public:
   void dump_status();
 
   /**
-   * @brief Configure limits that are enabled
+   * @brief Enables/disables joint limits inequalities
    */
-  void configure_limits(bool dofs_limit, bool speeds_limit, bool speed_post_limits);
+  void enable_joint_limits(bool enable);
+
+  /**
+   * @brief Enables/disables joint velocity inequalities
+   */
+  void enable_velocity_limits(bool enable);
+
+  /**
+   * @brief Enables/disables joint velocity post limits
+   */
+  void enable_velocity_post_limits(bool enable);
 
   /**
    * @brief Enables or disable the self collision inequalities
@@ -232,7 +242,7 @@ public:
    * @param margin margin that will be used [m]
    * @param trigger the trigger distance at which the inequalities are enabled [m]
    */
-  void enable_self_collision_inequalities(bool enable, double margin = 0.005, double trigger = 0.01);
+  void enable_self_collision_avoidance(bool enable, double margin = 0.005, double trigger = 0.01);
 
   /**
    * @brief Number of tasks
@@ -248,6 +258,7 @@ public:
    * @brief Size of the problem (number of variables)
    */
   int N;
+  int slacks = 0;
 
   /**
    * @brief Some configuration noise added before solving
@@ -257,7 +268,7 @@ public:
   /**
    * @brief solver dt (for speeds limiting)
    */
-  double dt = 0.01;
+  double dt = 0.;
 
 protected:
   struct Inequality
@@ -277,9 +288,9 @@ protected:
   size_t activeSetSize;
 
   // Modes to limit the DoFs
-  bool dofs_limit = true;
-  bool speeds_limit = false;
-  bool speed_post_limits = false;
+  bool joint_limits = true;
+  bool velocity_limits = false;
+  bool velocity_post_limits = false;
 
   // Self collision prevention
   bool avoid_self_collisions = false;
@@ -287,7 +298,10 @@ protected:
   double self_collisions_trigger = 0.01;  // [m]
 
   void compute_limits_inequalities();
-  void compute_self_collision_inequalities();
+
+  std::vector<RobotWrapper::Distance> distances;
+  void precompute_self_collision_slacks();
+  void compute_self_collision_inequalities(Eigen::MatrixXd& P, Eigen::VectorXd& q);
 
   // Task id (this is only useful when task names are not specified, each task will have an unique ID)
   int task_id = 0;

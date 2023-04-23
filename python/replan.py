@@ -27,9 +27,9 @@ parameters.single_support_duration = 0.35
 parameters.single_support_timesteps = 12
 parameters.double_support_ratio = 0.0
 parameters.startend_double_support_ratio = 1.5
-parameters.planned_timesteps = 500
+parameters.planned_timesteps = 64
 parameters.kick_duration = 0.3
-parameters.replan_frequency = 9
+parameters.replan_timesteps = 6
 parameters.walk_com_height = 0.32
 parameters.walk_foot_height = 0.04
 parameters.pendulum_height = 0.32
@@ -39,6 +39,32 @@ parameters.foot_length = 0.1576
 parameters.foot_width = 0.092
 parameters.feet_spacing = 0.122
 parameters.zmp_margin = 0.02
+
+
+def plot_CoM(trajectory, t_replan=0.0, plot_time=0.8):
+    data = []
+    tl = np.linspace(0, parameters.planned_timesteps * parameters.dt())
+
+    for ti in tl:
+        data.append(
+            [trajectory.com.pos(ti + t_replan), trajectory.com.zmp(ti + t_replan), trajectory.com.dcm(ti + t_replan)])
+
+    data = np.array(data)
+
+    plt.plot(data.T[0][0], data.T[1][0], label="CoM", lw=3)
+    plt.plot(data.T[0][1], data.T[1][1], label="ZMP", lw=3)
+    plt.plot(data.T[0][2], data.T[1][2], label="DCM", lw=3)
+
+    draw_footsteps(trajectory.supports, show=False)
+
+    plt.legend()
+    plt.grid()
+    plt.xlim([-.2, 1.5])
+    plt.ylim([-.2, .13])
+    plt.show(block=False)
+    plt.pause(plot_time)
+    plt.close()
+
 
 # Creating the kinematics solver
 solver = robot.make_solver()
@@ -73,7 +99,7 @@ T_world_rightTarget[0, 3] += .5
 naive_footsteps_planner.configure(T_world_leftTarget, T_world_rightTarget)
 
 repetitive_footsteps_planner = placo.FootstepsPlannerRepetitive(parameters)
-d_x = 0.2
+d_x = 0.1
 d_y = 0.0
 d_theta = 0.
 nb_steps = 10
@@ -96,27 +122,7 @@ supports = placo.FootstepsPlanner.make_supports(
 trajectory = walk.plan(supports, 0.)
 
 if args.graph:
-    data = []
-    tl = np.linspace(0, parameters.planned_dt * parameters.dt())
-
-    for ti in tl:
-        data.append(
-            [trajectory.com.pos(ti), trajectory.com.zmp(ti), trajectory.com.dcm(ti)])
-
-    data = np.array(data)
-
-    plt.plot(data.T[0][0], data.T[1][0], label="CoM", lw=3)
-    plt.plot(data.T[0][1], data.T[1][1], label="ZMP", lw=3)
-    plt.plot(data.T[0][2], data.T[1][2], label="DCM", lw=3)
-
-    draw_footsteps(trajectory.supports, show=False)
-
-    plt.legend()
-    plt.grid()
-    # plt.show()
-    plt.show(block=False)
-    plt.pause(0.8)
-    plt.close()
+    plot_CoM(trajectory)
 
 if args.pybullet:
     import pybullet as p
@@ -138,123 +144,27 @@ last_display = 0
 while True:
     T = min(trajectory.t_end, max(0, t))
 
-    # # Changing the trajectory of the robot
-    # if t > adapting_trajectory_time:
-    #     if trajectory.are_supports_updatable:
-    #         print("Supports updated!")
-    #         adapting_trajectory_time += 1.5
-    #         # coef = -coef
-
-    #         d_x = 0.05
-    #         d_y = 0.
-    #         d_theta = coef * 0.3
-    #         nb_steps = 20
-    #         repetitive_footsteps_planner.configure(d_x, d_y, d_theta, nb_steps)
-
-    #         current_support = trajectory.get_support(T)
-    #         next_support = trajectory.get_next_support(T)
-    #         prev_support = trajectory.get_prev_support(T)
-
-    #         flying_side = current_support.side()
-    #         print("side :", flying_side)
-
-    #         if flying_side == placo.HumanoidRobot_Side.left:
-    #             T_world_left = current_support.frame()
-    #             T_world_right = next_support.footstep_frame(
-    #                 placo.HumanoidRobot_Side.right)
-
-    #         else:
-    #             T_world_right = current_support.frame()
-    #             T_world_left = next_support.footstep_frame(
-    #                 placo.HumanoidRobot_Side.left)
-
-    #         footsteps = repetitive_footsteps_planner.plan(
-    #             flying_side, T_world_left, T_world_right)
-
-    #         # for footstep in footsteps:
-    #         #     print("---------------------------")
-    #         #     print("footstep side :", footstep.side)
-
-    #         if double_supports:
-    #             supports = placo.FootstepsPlanner.make_supports(
-    #                 footsteps, True, True, True)
-
-    #             placo.FootstepsPlanner.add_first_support(
-    #                 supports, current_support)
-
-    #         else:
-    #             supports = placo.FootstepsPlanner.make_supports(
-    #                 footsteps, False, False, True)
-
-    #         # x = []
-    #         # y = []
-    #         # for support in supports:
-    #         #     print("---------------------------")
-    #         #     print("size :", len(support.footsteps))
-    #         #     print("start :", support.start)
-    #         #     print("end :", support.end)
-    #         #     print(support.frame()[0, 3])
-    #         #     x.append(support.frame()[0, 3])
-    #         #     print(support.frame()[1, 3])
-    #         #     y.append(support.frame()[1, 3])
-    #         # x = np.array(x)
-    #         # y = np.array(y)
-    #         # plt.scatter(x, y)
-    #         # plt.show()
-
-    #         trajectory.set_supports_update_offset(
-    #             trajectory.get_phase_t_start(T))
-    #         trajectory.set_initial_T_world_flying_foot(
-    #             prev_support.footstep_frame(placo.HumanoidRobot.other_side(flying_side)))
-
-    #         if args.meshcat:
-    #             footsteps_viz(trajectory.supports)
-
-    #     else:
-    #         print("Supports update delayed - wrong timing")
-    #         adapting_trajectory_time += parameters.dt
-
     robot.update_kinematics()
     tasks.update_tasks(trajectory, T)
     solver.solve(True)
 
     if not trajectory.is_both_support(T):
-      robot.update_support_side(str(trajectory.support_side(T)))
-      robot.ensure_on_floor()
-
-    if T - last_replan > 0.5 and walk.can_replan_supports(trajectory, T):
-        last_replan = T
-        supports = walk.replan_supports(repetitive_footsteps_planner, trajectory, T)
-        footsteps_viz(supports)
-        trajectory = walk.replan(supports, trajectory, T)
+        robot.update_support_side(str(trajectory.support_side(T)))
+        robot.ensure_on_floor()
 
     # Replanning
-    # if walk.replan(supports, trajectory, T):
-    #     print("Trajectory replanned")
-    #     T = t = 0
+    if T - last_replan > parameters.replan_timesteps * parameters.dt() and walk.can_replan_supports(trajectory, T):
+        last_replan = T
+        supports = walk.replan_supports(
+            repetitive_footsteps_planner, trajectory, T)
 
-    #     if args.graph:
-    #         data = []
-    #         tl = np.linspace(0, parameters.planned_dt * parameters.dt)
+        if args.meshcat:
+            footsteps_viz(supports)
 
-    #         for ti in tl:
-    #             data.append(
-    #                 [trajectory.com.pos(ti), trajectory.com.zmp(ti), trajectory.com.dcm(ti)])
+        trajectory = walk.replan(supports, trajectory, T)
 
-    #         data = np.array(data)
-
-    #         plt.plot(data.T[0][0], data.T[1][0], label="CoM", lw=3)
-    #         plt.plot(data.T[0][1], data.T[1][1], label="ZMP", lw=3)
-    #         plt.plot(data.T[0][2], data.T[1][2], label="DCM", lw=3)
-
-    #         draw_footsteps(trajectory.supports, show=False)
-
-    #         plt.legend()
-    #         plt.grid()
-    #         # plt.show()
-    #         plt.show(block=False)
-    #         plt.pause(1)
-    #         plt.close()
+        if args.graph:
+            plot_CoM(trajectory, T)
 
     if args.pybullet and t < -2:
         T_left_origin = sim.transformation("origin", "left_foot_frame")
@@ -265,21 +175,21 @@ while True:
 
     if args.meshcat:
         if time.time() - last_display > 0.03:
-          last_display = time.time()
-          viz.display(robot.state.q)
-          # robot_frame_viz(robot, "left_foot")
-          # robot_frame_viz(robot, "right_foot")
-          com = robot.com_world()
-          com[2] = 0
-          point_viz("com", com)
+            last_display = time.time()
+            viz.display(robot.state.q)
+            # robot_frame_viz(robot, "left_foot")
+            # robot_frame_viz(robot, "right_foot")
+            com = robot.com_world()
+            com[2] = 0
+            point_viz("com", com)
 
-          frame_viz("left_foot_target", trajectory.get_T_world_left(T))
-          frame_viz("right_foot_target", trajectory.get_T_world_right(T))
+            frame_viz("left_foot_target", trajectory.get_T_world_left(T))
+            frame_viz("right_foot_target", trajectory.get_T_world_right(T))
 
-          T_world_trunk = np.eye(4)
-          T_world_trunk[:3, :3] = trajectory.get_R_world_trunk(T)
-          T_world_trunk[:3, 3] = trajectory.get_p_world_CoM(T)
-          frame_viz("trunk_target", T_world_trunk)
+            T_world_trunk = np.eye(4)
+            T_world_trunk[:3, :3] = trajectory.get_R_world_trunk(T)
+            T_world_trunk[:3, 3] = trajectory.get_p_world_CoM(T)
+            frame_viz("trunk_target", T_world_trunk)
 
     if args.pybullet:
         joints = {joint: robot.get_joint(joint)

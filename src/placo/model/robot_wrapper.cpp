@@ -100,9 +100,15 @@ RobotWrapper::RobotWrapper(std::string model_directory, int flags, std::string u
   pinocchio::computeAllTerms(model, *data, state.q, state.qd);
   update_kinematics();
 
-  if (self_collisions().size() > 0)
+  auto collisions = self_collisions();
+  if (collisions.size() > 0)
   {
-    throw std::runtime_error("Robot is self colliding in neutral position");
+    std::cerr << "WARNING: Robot has the following self collisions in neutral position:" << std::endl;
+
+    for (auto& collision : collisions)
+    {
+      std::cerr << "  -" << collisions[0].bodyA << " collides with " << collisions[0].bodyB << std::endl;
+    }
   }
 }
 
@@ -183,6 +189,19 @@ int RobotWrapper::get_joint_v_offset(const std::string& name)
   return 6 + model.getJointId(name) - 2;
 }
 
+void RobotWrapper::set_velocity_limit(const std::string& name, double limit)
+{
+  model.velocityLimit[get_joint_v_offset(name)] = limit;
+}
+
+void RobotWrapper::set_velocity_limits(double limit)
+{
+  for (auto& name : actuated_joint_names())
+  {
+    set_velocity_limit(name, limit);
+  }
+}
+
 Eigen::Affine3d RobotWrapper::get_T_world_fbase()
 {
   Eigen::Affine3d transformation = Eigen::Affine3d::Identity();
@@ -235,6 +254,14 @@ void RobotWrapper::load_collisions_pairs(const std::string& filename)
   // Reading collision pairs
   Json::Value collisions;
 
+  // Building a look-up to find geometry objects by name
+  std::map<std::string, std::vector<size_t>> name_to_objects;
+  for (size_t k = 0; k < collision_model.geometryObjects.size(); k++)
+  {
+    std::string name = model.frames[collision_model.geometryObjects[k].parentFrame].name;
+    name_to_objects[name].push_back(k);
+  }
+
   collision_model.removeAllCollisionPairs();
 
   std::ifstream f(filename);
@@ -249,10 +276,39 @@ void RobotWrapper::load_collisions_pairs(const std::string& filename)
     Json::Value& entry = collisions[k];
     if (entry.size() == 2)
     {
-      int pair1 = entry[0].asInt();
-      int pair2 = entry[1].asInt();
+      if (entry[0].isInt() && entry[1].isInt())
+      {
+        // Entries can be raw pair offset e.g [34, 22]
+        size_t k1 = entry[0].asInt();
+        size_t k2 = entry[1].asInt();
 
-      collision_model.addCollisionPair(pinocchio::CollisionPair(pair1, pair2));
+        collision_model.addCollisionPair(pinocchio::CollisionPair(k1, k2));
+      }
+      else if (entry[0].isString() && entry[1].isString())
+      {
+        // Entries can be link string names e.g ["trunk", "arm"]
+        std::string obj1 = entry[0].asString();
+        std::string obj2 = entry[1].asString();
+
+        if (!name_to_objects.count(obj1) || !name_to_objects.count(obj2))
+        {
+          std::ostringstream oss;
+          oss << "Collision pair [" << obj1 << ", " << obj2 << "] can't be loaded (check that bodies exists)";
+          throw std::runtime_error(oss.str());
+        }
+
+        for (size_t k1 : name_to_objects[obj1])
+        {
+          for (size_t k2 : name_to_objects[obj2])
+          {
+            collision_model.addCollisionPair(pinocchio::CollisionPair(k1, k2));
+          }
+        }
+      }
+      else
+      {
+        throw std::runtime_error("Collision pairs should be array of int or strings");
+      }
     }
   }
 }
@@ -316,7 +372,7 @@ std::vector<RobotWrapper::Collision> RobotWrapper::self_collisions(bool stop_at_
       collision.bodyB = collision_model.geometryObjects[cp.second].name;
       collision.parentB = collision_model.geometryObjects[cp.second].parentJoint;
 
-      for (int k = 0; k < cr.numContacts(); k++)
+      for (size_t k = 0; k < cr.numContacts(); k++)
       {
         collision.contacts.push_back(Eigen::Vector3d(cr.getContact(k).pos));
       }

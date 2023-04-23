@@ -13,7 +13,10 @@ class RobotWrapper
 public:
   enum Flags
   {
+    // The collisions from the URDF will be loaded as visual. In the case we don't want to use the visual
+    // Meshes, this will speed up loading time
     COLLISION_AS_VISUAL = 1,
+    // The self-collisions will be all ignored (all pairs are removed)
     IGNORE_COLLISIONS = 2
   };
 
@@ -69,6 +72,16 @@ public:
    * @return offset in state.qd
    */
   int get_joint_v_offset(const std::string& name);
+
+  /**
+   * @brief Set the velocity limit for a DoF (overrides the one from URDF)
+   */
+  void set_velocity_limit(const std::string& name, double limit);
+
+  /**
+   * @brief Sets the velocity limit for all DoFs (overrides the ones from URDF)
+   */
+  void set_velocity_limits(double limit);
 
   /**
    * @brief Check that expected DOFs and frames are present (see expected_dofs() and expected_frames())
@@ -224,7 +237,7 @@ public:
   Eigen::VectorXd generalized_gravity();
 
   /**
-   * @brief Computes non-linear effects
+   * @brief Computes non-linear effects (Corriolis, centrifual and gravitationnal effects)
    */
   Eigen::VectorXd non_linear_effects();
 

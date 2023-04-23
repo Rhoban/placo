@@ -62,7 +62,7 @@ if __name__ == "__main__":
     parser.add_argument("-a", "--animate", action="store_true",
                         help="Animate the plotting")
     parser.add_argument("-x", type=float, default=1.0, help="Target x")
-    parser.add_argument("-y", type=float, default=0, help="Target y")
+    parser.add_argument("-y", type=float, default=0.5, help="Target y")
     parser.add_argument("-t", "--theta", type=float,
                         default=0, help="Target yaw (theta)")
     parser.add_argument("-f", "--feet_spacing", type=float,
@@ -97,13 +97,13 @@ if __name__ == "__main__":
     start = time.time()
 
     # Naive planner
-    # planner = placo.FootstepsPlannerNaive(parameters)
-    # planner.configure(placo.frame(T_world_targetLeft),
-    #                   placo.frame(T_world_targetRight))
+    planner = placo.FootstepsPlannerNaive(parameters)
+    planner.configure(placo.frame(T_world_targetLeft),
+                      placo.frame(T_world_targetRight))
 
     # Repetitive planner
-    planner = placo.FootstepsPlannerRepetitive(parameters)
-    planner.configure(0.0, 0.0, 0.0, 0)
+    # planner = placo.FootstepsPlannerRepetitive(parameters)
+    # planner.configure(0.1, 0.0, 0.3, 16)
 
     footsteps = planner.plan(placo.HumanoidRobot_Side.right, placo.frame(
         T_center_left), placo.frame(T_center_right))

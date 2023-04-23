@@ -195,7 +195,7 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
   // Computing how many steps are required
   int timesteps = 0;
 
-  for (int i = 0; i < trajectory.supports.size(); i++)
+  for (size_t i = 0; i < trajectory.supports.size(); i++)
   {
     timesteps += support_dt(trajectory.supports[i]);
 
@@ -226,7 +226,7 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
   // Adding ZMP constraint and reference trajectory
   int constrained_timesteps = 0;
   FootstepsPlanner::Support current_support;
-  for (int i = 0; i < trajectory.supports.size(); i++)
+  for (size_t i = 0; i < trajectory.supports.size(); i++)
   {
     current_support = trajectory.supports[i];
     int step_timesteps = support_dt(current_support);
@@ -237,11 +237,22 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
         planner.add_polygon_constraint(timestep, current_support.support_polygon(), JerkPlanner::ZMP,
                                        parameters.zmp_margin);
 
-      planner
-          .add_equality_constraint(
-              timestep,
-              Eigen::Vector2d(current_support.frame().translation().x(), current_support.frame().translation().y()),
-              JerkPlanner::ZMP)
+      double y_offset = 0.;
+
+      if (!current_support.is_both())
+      {
+        if (current_support.side() == HumanoidRobot::Left)
+        {
+          y_offset = parameters.foot_zmp_target_y;
+        }
+        else
+        {
+          y_offset = -parameters.foot_zmp_target_y;
+        }
+      }
+      Eigen::Vector3d zmp_target = current_support.frame() * Eigen::Vector3d(parameters.foot_zmp_target_x, y_offset, 0);
+
+      planner.add_equality_constraint(timestep, Eigen::Vector2d(zmp_target.x(), zmp_target.y()), JerkPlanner::ZMP)
           .configure(JerkPlanner::Soft, 10.);
     }
 
@@ -298,7 +309,7 @@ void WalkPatternGenerator::planFeetTrajectories(Trajectory& trajectory, Trajecto
     trajectory.yaw(side).addPoint(t, old_trajectory->yaw(side).get(t), 0, true);
   }
 
-  for (int step = 0; step < trajectory.supports.size(); step++)
+  for (size_t step = 0; step < trajectory.supports.size(); step++)
   {
     auto& support = trajectory.supports[step];
 

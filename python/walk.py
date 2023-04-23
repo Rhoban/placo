@@ -31,8 +31,8 @@ parameters.single_support_duration = 0.35
 parameters.single_support_timesteps = 12
 parameters.double_support_ratio = 0.0
 parameters.startend_double_support_ratio = 1.5
-parameters.planned_timesteps = 64
-parameters.replan_frequency = 500
+parameters.planned_timesteps = 500
+parameters.replan_timesteps = 10
 parameters.walk_com_height = 0.32
 parameters.walk_foot_height = 0.04
 parameters.pendulum_height = 0.32
@@ -45,6 +45,10 @@ parameters.zmp_margin = 0.02
 
 # Creating the kinematics solver
 solver = robot.make_solver()
+
+robot.set_velocity_limits(5.)
+solver.enable_velocity_limits(True)
+solver.dt = 0.005
 
 T_world_left = placo.flatten_on_floor(robot.get_T_world_left())
 T_world_right = placo.flatten_on_floor(robot.get_T_world_right())
@@ -75,23 +79,14 @@ solver.solve(True)
 naive_footsteps_planner = placo.FootstepsPlannerNaive(parameters)
 T_world_leftTarget = T_world_left.copy()
 T_world_rightTarget = T_world_right.copy()
-# --------------------------------------
-# T_world_leftTarget[0, 3] += .5
-# T_world_rightTarget[0, 3] += .5
-# --------------------------------------
-# XXX : Not converging walk with these traget frames
-# T_world_leftTarget[0, 3] += 0.3
-# T_world_leftTarget[1, 3] += 0.3
-# T_world_leftTarget = T_world_leftTarget @ tf.rotation_matrix(np.pi/2, (0, 0, 1))
-# T_world_rightTarget = T_world_leftTarget.copy()
-# T_world_rightTarget[0, 3] += parameters.feet_spacing
-# --------------------------------------
+T_world_leftTarget[0, 3] += .5
+T_world_rightTarget[0, 3] += .5
 naive_footsteps_planner.configure(T_world_leftTarget, T_world_rightTarget)
 
 repetitive_footsteps_planner = placo.FootstepsPlannerRepetitive(parameters)
-d_x = 0.1
+d_x = 0.15
 d_y = 0.
-d_theta = 0.3
+d_theta = 0.
 nb_steps = 10
 repetitive_footsteps_planner.configure(d_x, d_y, d_theta, nb_steps)
 
@@ -115,7 +110,7 @@ start_t = time.time()
 trajectory = walk.plan(supports, 0.)
 elapsed = time.time() - start_t
 print(f"Computation time: {elapsed*1e6}µs")
-      
+
 # # Jerk planner steps: {trajectory.jerk_planner_dt}")
 
 if args.graph:
@@ -133,7 +128,8 @@ if args.graph:
         T = trajectory.get_T_world_right(t)
         data_right.append(T[:3, 3])
 
-    data = np.array([[trajectory.com.pos(t), trajectory.com.zmp(t), trajectory.com.dcm(t), trajectory.com.jerk(t)] for t in ts])
+    data = np.array([[trajectory.com.pos(t), trajectory.com.zmp(
+        t), trajectory.com.dcm(t), trajectory.com.jerk(t)] for t in ts])
 
     data_left = np.array(data_left)
     data_right = np.array(data_right)
@@ -159,8 +155,6 @@ if args.graph:
 
     plt.legend()
     plt.grid()
-    # plt.title("ZMP and CoM trajectories planification from footsteps")
-    # plt.xlim((-.15, .7))
     plt.show()
 
 elif args.pybullet or args.meshcat or args.torque:
@@ -181,7 +175,7 @@ elif args.pybullet or args.meshcat or args.torque:
         footsteps_viz(trajectory.supports)
 
     start_t = time.time()
-    t = -0. if args.pybullet or args.meshcat or args.torque else 0.
+    t = -3. if args.pybullet or args.meshcat or args.torque else 0.
     dt = 0.005
     last_display = 0
 
@@ -189,7 +183,7 @@ elif args.pybullet or args.meshcat or args.torque:
         T = max(0, t)
         if T > trajectory.t_end:
             continue
-        
+
         tasks.update_tasks(trajectory, T)
         robot.update_kinematics()
         solver.solve(True)
@@ -202,10 +196,9 @@ elif args.pybullet or args.meshcat or args.torque:
         T_world_trunk[:3, 3] = trajectory.get_p_world_CoM(T)
         frame_viz("trunk_target", T_world_trunk)
 
-
         if not trajectory.is_both_support(T):
-          robot.update_support_side(str(trajectory.support_side(T)))
-          robot.ensure_on_floor()
+            robot.update_support_side(str(trajectory.support_side(T)))
+            robot.ensure_on_floor()
 
         if (args.pybullet or args.torque) and t < -2:
             T_left_origin = sim.transformation("origin", "left_foot_frame")
