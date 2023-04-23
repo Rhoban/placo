@@ -223,6 +223,12 @@ void KinematicsSolver::enable_self_collision_avoidance(bool enable, double margi
   self_collisions_trigger = trigger;
 }
 
+void KinematicsSolver::configure_self_collision_avoidance(bool soft, double weight)
+{
+  self_collisions_soft = soft;
+  self_collisions_weight = weight;
+}
+
 int KinematicsSolver::tasks_count()
 {
   return tasks.size();
@@ -233,7 +239,7 @@ void KinematicsSolver::precompute_self_collision_slacks()
   distances = robot->distances();
   slacks = 0;
 
-  if (avoid_self_collisions && robot != nullptr)
+  if (avoid_self_collisions && robot != nullptr && self_collisions_soft)
   {
     for (auto& distance : distances)
     {
@@ -271,32 +277,39 @@ void KinematicsSolver::compute_self_collision_inequalities(Eigen::MatrixXd& P, E
         Eigen::MatrixXd JB = X_B_world * robot->joint_jacobian(distance.parentB, pinocchio::ReferenceFrame::WORLD);
 
         Inequality inequality;
-
-        // Adding only one relative constraint
-        Eigen::MatrixXd A(1, N + slacks);
-        A.setZero();
-        A.block(0, 0, 1, N) = n.transpose() * (JB - JA).block(0, 0, 3, N);
-        A(0, N + slack) = -1;
-
-        // We try to enforce:
-        // d + nT Jb qdot - nT Ja qdot - s = epsilon
-        // with s a slack variable greater than 0
-        Eigen::VectorXd b(1);
-        b[0] = distance.min_distance - self_collisions_margin;
-        P.noalias() += A.transpose() * A;
-        q.noalias() += A.transpose() * b;
-
-        // s > 0
         inequality.A = Eigen::MatrixXd(1, N + slacks);
         inequality.A.setZero();
-        inequality.A(0, N + slack) = -1;
         inequality.b = Eigen::VectorXd(1);
-        inequality.b[0] = 0;
-        inequalities.push_back(inequality);
-        slack += 1;
+        inequality.b.setZero();
 
-        // d + nT Jb qdot - nT Ja qdot -margin + s = 0
-        // s >= 0
+        if (self_collisions_soft)
+        {
+          // Adding only one relative constraint
+          Eigen::MatrixXd A(1, N + slacks);
+          A.setZero();
+          A.block(0, 0, 1, N) = n.transpose() * (JB - JA).block(0, 0, 3, N);
+          A(0, N + slack) = -1;
+
+          // We try to enforce:
+          // d + nT Jb qdot - nT Ja qdot - s = epsilon
+          // with s a slack variable greater than 0
+          Eigen::VectorXd b(1);
+          b[0] = distance.min_distance - self_collisions_margin;
+          P.noalias() += self_collisions_weight * A.transpose() * A;
+          q.noalias() += self_collisions_weight * A.transpose() * b;
+
+          // s > 0
+          inequality.A(0, N + slack) = -1;
+
+          slack += 1;
+        }
+        else
+        {
+          // Enforcing the collision as an hard inequality
+          inequality.A.block(0, 0, 1, N) = -n.transpose() * (JB - JA).block(0, 0, 3, N);
+          inequality.b[0] = distance.min_distance - self_collisions_margin;
+        }
+        inequalities.push_back(inequality);
       }
     }
   }

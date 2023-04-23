@@ -245,6 +245,11 @@ public:
   void enable_self_collision_avoidance(bool enable, double margin = 0.005, double trigger = 0.01);
 
   /**
+   * @brief Changes the self collision configuration
+   */
+  void configure_self_collision_avoidance(bool soft, double weight);
+
+  /**
    * @brief Number of tasks
    */
   int tasks_count();
@@ -296,6 +301,10 @@ protected:
   bool avoid_self_collisions = false;
   double self_collisions_margin = 0.005;  // [m]
   double self_collisions_trigger = 0.01;  // [m]
+
+  // Self collisions configuration
+  bool self_collisions_soft = false;
+  double self_collisions_weight = 1.;
 
   void compute_limits_inequalities();
 
