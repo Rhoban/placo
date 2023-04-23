@@ -69,13 +69,13 @@ class TestProblem(unittest.TestCase):
 
         # A problem where the sum of all the 16 variables should be equal to 1
         x = problem.add_variable(16)
-        problem.add_equality(x.expr().sum(), np.array([1.0]))
+        problem.add_constraint(x.expr().sum() == np.array([1.0]))
         problem.solve()
         self.assertNumpyEqual(x.value, 1 / 16.0, msg="16 values which sum equals 1 should be minimized to 1/16")
 
         # We add an inequality so that the 0th value should be greater than 2
-        problem.add_greater_than(x.expr(0, 1), np.array([2.0]))
-        problem.add_lower_than(x.expr(0, 1), np.array([10.0]))
+        problem.add_constraint(x.expr(0, 1) >= np.array([2.0]))
+        problem.add_constraint(x.expr(0, 1) <= np.array([10.0]))
         problem.solve()
         self.assertGreaterEqual(x.value[0], 2.0, msg=f"The 8th value should be >= 2")
         self.assertNumpyEqual(x.value[1:], -1 / 15.0, msg=f"The remaining values should be -1/15.")

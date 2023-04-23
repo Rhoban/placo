@@ -30,55 +30,14 @@ Variable& Problem::add_variable(int size)
   return *variable;
 }
 
-ProblemConstraint& Problem::add_equality_zero(Expression expression)
-{
-  ProblemConstraint* constraint = new ProblemConstraint;
-
-  constraint->expression = expression;
-  constraints.push_back(constraint);
-
-  return *constraint;
-}
-
-ProblemConstraint& Problem::add_equality(Expression expression, Eigen::VectorXd target)
-{
-  return add_equality_zero(expression - target);
-}
-
-ProblemConstraint& Problem::add_greater_than_zero(Expression expression)
-{
-  ProblemConstraint& constraint = add_equality_zero(expression);
-  constraint.inequality = true;
-
-  return constraint;
-}
-
-ProblemConstraint& Problem::add_greater_than(Expression expression, Eigen::VectorXd target)
-{
-  return add_greater_than_zero(expression - target);
-}
-
-ProblemConstraint& Problem::add_lower_than_zero(Expression expression)
-{
-  ProblemConstraint& constraint = add_equality_zero(-expression);
-  constraint.inequality = true;
-
-  return constraint;
-}
-
-ProblemConstraint& Problem::add_lower_than(Expression expression, Eigen::VectorXd target)
-{
-  return add_greater_than_zero(-expression + target);
-}
-
 void Problem::add_limit(Expression expression, Eigen::VectorXd target)
 {
   // -target <= expression <= target
-  add_greater_than(expression, -target);
-  add_lower_than(expression, target);
+  add_constraint(-target <= expression);
+  add_constraint(expression <= target);
 }
 
-ProblemConstraint& Problem::add_constraint(ProblemConstraint& constraint_)
+ProblemConstraint& Problem::add_constraint(const ProblemConstraint& constraint_)
 {
   ProblemConstraint* constraint = new ProblemConstraint;
   *constraint = constraint_;
