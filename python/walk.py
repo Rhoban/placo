@@ -46,6 +46,10 @@ parameters.zmp_margin = 0.02
 # Creating the kinematics solver
 solver = robot.make_solver()
 
+robot.set_velocity_limits(5.)
+solver.enable_velocity_limits(True)
+solver.dt = 0.005
+
 T_world_left = placo.flatten_on_floor(robot.get_T_world_left())
 T_world_right = placo.flatten_on_floor(robot.get_T_world_right())
 
@@ -80,9 +84,9 @@ T_world_rightTarget[0, 3] += .5
 naive_footsteps_planner.configure(T_world_leftTarget, T_world_rightTarget)
 
 repetitive_footsteps_planner = placo.FootstepsPlannerRepetitive(parameters)
-d_x = 0.1
+d_x = 0.15
 d_y = 0.
-d_theta = 0.3
+d_theta = 0.
 nb_steps = 10
 repetitive_footsteps_planner.configure(d_x, d_y, d_theta, nb_steps)
 
@@ -171,7 +175,7 @@ elif args.pybullet or args.meshcat or args.torque:
         footsteps_viz(trajectory.supports)
 
     start_t = time.time()
-    t = -0. if args.pybullet or args.meshcat or args.torque else 0.
+    t = -3. if args.pybullet or args.meshcat or args.torque else 0.
     dt = 0.005
     last_display = 0
 
