@@ -34,7 +34,7 @@ class TestProblem(unittest.TestCase):
     def test_expressions(self):
         """
         Testing basic expression shapes
-        """        
+        """
         problem = placo.Problem()
         x = problem.add_variable("x", 2)
         y = problem.add_variable("y", 2)
@@ -124,18 +124,26 @@ class TestProblem(unittest.TestCase):
         x = problem.add_variable("x", 10)
         integrator = placo.Integrator(x, np.array([0.0, 0.0, 0.0]), 3, 0.1)
 
-        # Adding constraint at arrival
+        # Adding constraint at arrival
         problem.add_constraint(integrator.expr(10, 0) == 1)
         problem.add_constraint(integrator.expr(10, 1) == 0)
         problem.add_constraint(integrator.expr(10, 2) == 0)
         problem.solve()
 
-        # Plotting
-        ts = np.linspace(0., 1., 100)
-        import matplotlib.pyplot as plt
-        plt.plot(ts, [integrator.value(t, 0) for t in ts])
-        plt.grid()
-        plt.show()
+        # XXX: Do some tests
+
+    def test_soft_inequality(self):
+        problem = placo.Problem()
+        x = problem.add_variable("x", 1)
+
+        inequality = problem.add_constraint(x.expr() >= 5.0)
+        inequality.configure("soft", 1.0)
+
+        inequality = problem.add_constraint(x.expr() >= 6.0)
+
+        problem.solve()
+        self.assertNumpyEqual(x.value, 6.0, msg="Hard constraint should be enforced")
+        self.assertNumpyEqual(problem.slacks, 1.0, msg="Soft constraint should be slacking")
 
 
 if __name__ == "__main__":

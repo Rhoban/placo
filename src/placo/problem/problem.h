@@ -41,8 +41,8 @@ public:
 
   /**
    * @brief Adds an equality constraint (Ax + b = t)
-   * @param expression 
-   * @param target 
+   * @param expression
+   * @param target
    * @return The constraint
    */
   ProblemConstraint& add_equality(Expression expression, Eigen::VectorXd target);
@@ -63,39 +63,41 @@ public:
 
   /**
    * @brief Adds an inequality constraint (Ax + b >= t)
-   * @param expression 
-   * @param target 
+   * @param expression
+   * @param target
    * @return The constraint
    */
   ProblemConstraint& add_greater_than(Expression expression, Eigen::VectorXd target);
 
   /**
    * @brief Adds an inequality constraint (Ax + b <= t)
-   * @param expression 
-   * @param target 
+   * @param expression
+   * @param target
    * @return The constraint
    */
   ProblemConstraint& add_lower_than(Expression expression, Eigen::VectorXd target);
 
   /**
    * @brief Adds a limit, "absolute" inequality constraint (abs(Ax + b) <= t)
-   * @param expression 
-   * @param target 
+   * @param expression
+   * @param target
    * @return The constraint
    */
   void add_limit(Expression expression, Eigen::VectorXd target);
 
   /**
    * @brief Adds a given constraint to the problem
-   * @param constraint 
+   * @param constraint
    * @return The constraint
    */
-  ProblemConstraint &add_constraint(ProblemConstraint &constraint);
+  ProblemConstraint& add_constraint(ProblemConstraint& constraint);
 
   void solve();
 
   std::vector<Variable*> variables;
   int n_variables = 0;
+
+  Eigen::VectorXd slacks;
 
   std::vector<ProblemConstraint*> constraints;
 };

@@ -92,22 +92,34 @@ void Problem::solve()
 {
   int n_equalities = 0;
   int n_inequalities = 0;
+  int slack_variables = 0;
 
-  Eigen::MatrixXd P(n_variables, n_variables);
-  Eigen::VectorXd q(n_variables);
+  for (auto constraint : constraints)
+  {
+    if (constraint->inequality && !constraint->hard)
+    {
+      slack_variables += constraint->expression.rows();
+    }
+  }
+
+  Eigen::MatrixXd P(n_variables + slack_variables, n_variables + slack_variables);
+  Eigen::VectorXd q(n_variables + slack_variables);
 
   P.setZero();
   q.setZero();
 
   // Adding regularization
+  // XXX: The user variables should maybe not be regularized by default?
   P.setIdentity();
-  P *= 1e-6;
+  P *= 1e-8;
 
   // Scanning the constraints (counting inequalities and equalities, building objectif function)
   for (auto constraint : constraints)
   {
     if (constraint->inequality)
     {
+      // If the constraint is hard, this will be the true inequality, else, this will be the inequality
+      // enforcing the slack variable to be >= 0
       n_inequalities += constraint->expression.rows();
     }
     else
@@ -126,30 +138,62 @@ void Problem::solve()
   }
 
   // Equality constraints
-  Eigen::MatrixXd A(n_equalities, n_variables);
+  Eigen::MatrixXd A(n_equalities, n_variables + slack_variables);
   Eigen::VectorXd b(n_equalities);
   A.setZero();
   b.setZero();
 
   // Inequality constraints
-  Eigen::MatrixXd G(n_inequalities, n_variables);
+  Eigen::MatrixXd G(n_inequalities, n_variables + slack_variables);
   Eigen::VectorXd h(n_inequalities);
   G.setZero();
   h.setZero();
 
   int k_equality = 0;
   int k_inequality = 0;
+  int k_slack = 0;
+
+  // Slack variables should be positive
+  for (int slack = 0; slack < slack_variables; slack += 1)
+  {
+    // s_i >= 0
+    G(k_inequality, n_variables + slack) = 1;
+    k_inequality += 1;
+  }
 
   for (auto constraint : constraints)
   {
     if (constraint->inequality)
     {
-      G.block(k_inequality, 0, constraint->expression.rows(), constraint->expression.cols()) = constraint->expression.A;
-      h.block(k_inequality, 0, constraint->expression.rows(), 1) = constraint->expression.b;
-      k_inequality += constraint->expression.rows();
+      if (constraint->hard)
+      {
+        // Ax + b >= 0
+        G.block(k_inequality, 0, constraint->expression.rows(), constraint->expression.cols()) =
+            constraint->expression.A;
+        h.block(k_inequality, 0, constraint->expression.rows(), 1) = constraint->expression.b;
+        k_inequality += constraint->expression.rows();
+      }
+      else
+      {
+        // min(Ax + b - s)
+        // A slack variable is assigend with all "soft" inequality and a minimization is added to the problem
+        Eigen::MatrixXd As(constraint->expression.rows(), n_variables + slack_variables);
+        As.setZero();
+        As.block(0, 0, As.rows(), n_variables) = constraint->expression.A;
+
+        for (int k = 0; k < constraint->expression.rows(); k++)
+        {
+          As(k, n_variables + k_slack) = -1;
+          k_slack += 1;
+        }
+
+        P.noalias() += constraint->weight * (As.transpose() * As);
+        q.noalias() += constraint->weight * (As.transpose() * constraint->expression.b);
+      }
     }
     else if (constraint->hard)
     {
+      // Ax + b = 0
       A.block(k_equality, 0, constraint->expression.rows(), constraint->expression.cols()) = constraint->expression.A;
       b.block(k_equality, 0, constraint->expression.rows(), 1) = constraint->expression.b;
       k_equality += constraint->expression.rows();
@@ -159,7 +203,7 @@ void Problem::solve()
   Eigen::VectorXi activeSet;
   size_t activeSetSize;
 
-  Eigen::VectorXd x(n_variables);
+  Eigen::VectorXd x(n_variables + slack_variables);
   x.setZero();
   double result =
       eiquadprog::solvers::solve_quadprog(P, q, A.transpose(), b, G.transpose(), h, x, activeSet, activeSetSize);
@@ -168,6 +212,8 @@ void Problem::solve()
   {
     throw std::runtime_error("Problem: Infeasible QP (check your hard equality and inequality constraints)");
   }
+
+  slacks = x.block(n_variables, 0, slack_variables, 1);
 
   for (auto variable : variables)
   {

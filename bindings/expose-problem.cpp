@@ -51,7 +51,9 @@ void exposeProblem()
       .def("add_lower_than", &Problem::add_lower_than, return_internal_reference<>())
       .def("add_constraint", &Problem::add_constraint, return_internal_reference<>())
       .def("add_limit", &Problem::add_limit)
-      .def("solve", &Problem::solve);
+      .def("solve", &Problem::solve)
+      .add_property(
+          "slacks", +[](const Problem& problem) { return problem.slacks; });
 
   class_<Variable>("Variable")
       .add_property("k_start", &Variable::k_start)
