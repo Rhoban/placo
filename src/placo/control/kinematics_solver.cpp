@@ -303,6 +303,11 @@ void KinematicsSolver::compute_self_collision_inequalities(Eigen::MatrixXd& P, E
 
 void KinematicsSolver::compute_limits_inequalities()
 {
+  if ((velocity_limits || velocity_post_limits) && dt == 0.)
+  {
+    throw std::runtime_error("You enabled velocity limits but didn't set solver.dt");
+  }
+
   int constrained_dofs = N - 6;
   int n_inequalities = 0;
   if (joint_limits)

@@ -268,7 +268,7 @@ public:
   /**
    * @brief solver dt (for speeds limiting)
    */
-  double dt = 0.01;
+  double dt = 0.;
 
 protected:
   struct Inequality
