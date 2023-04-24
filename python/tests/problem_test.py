@@ -182,6 +182,20 @@ class TestProblem(unittest.TestCase):
             msg="The [3., 3.] value should be projected in the polygon top-right corner at [2., 2.]",
         )
 
+    def test_problem_overconstrained(self):
+        """
+        Checking that overconstrained equalities solve raise an exception
+        """        
+        problem = placo.Problem()
+
+        x = problem.add_variable(1)
+        y = problem.add_variable(1)
+
+        problem.add_constraint(x.expr() + y.expr() == 1.)
+        problem.add_constraint(x.expr() + y.expr() == 2.)
+
+        self.assertRaises(RuntimeError, problem.solve)
+
 
 if __name__ == "__main__":
     unittest.main()

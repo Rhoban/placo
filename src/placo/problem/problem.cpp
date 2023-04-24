@@ -166,9 +166,23 @@ void Problem::solve()
   double result =
       eiquadprog::solvers::solve_quadprog(P, q, A.transpose(), b, G.transpose(), h, x, activeSet, activeSetSize);
 
+  // Checking that the problem is indeed feasible
   if (result == std::numeric_limits<double>::infinity())
   {
-    throw std::runtime_error("Problem: Infeasible QP (check your hard equality and inequality constraints)");
+    throw std::runtime_error("Problem: Infeasible QP (check your hard inequality constraints)");
+  }
+
+  // Checking that equality constraints were enforced, since this is not covered by above result
+  if (A.rows() > 0)
+  {
+    Eigen::VectorXd equality_constraints = A * x + b;
+    for (int k = 0; k < A.rows(); k++)
+    {
+      if (fabs(equality_constraints[k]) > 1e-8)
+      {
+        throw std::runtime_error("Problem: Infeasible QP (equality constraints were not enforced)");
+      }
+    }
   }
 
   slacks = x.block(n_variables, 0, slack_variables, 1);
