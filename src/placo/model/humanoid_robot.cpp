@@ -210,7 +210,6 @@ void HumanoidRobot::readFromHistories(rhoban_utils::HistoryCollection& histories
 
     ensure_on_floor();
   }
-#endif
 
   // Setting the trunk orientation from the IMU
   else
@@ -222,4 +221,5 @@ void HumanoidRobot::readFromHistories(rhoban_utils::HistoryCollection& histories
     update_trunk_orientation(imuRoll, imuPitch, imuYaw);
   }
 }
+#endif
 }  // namespace placo
