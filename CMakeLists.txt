@@ -77,7 +77,6 @@ target_link_libraries(libplaco PUBLIC
     Threads::Threads
     pinocchio::pinocchio
     eigenpy::eigenpy
-    rhoban_utils
     eiquadprog::eiquadprog
     ${PROTOBUF_LIBRARIES}
   ${PROTOBUF_LIBRARIES}
