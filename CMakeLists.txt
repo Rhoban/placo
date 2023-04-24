@@ -73,14 +73,11 @@ target_include_directories(libplaco PUBLIC
   ${CMAKE_CURRENT_BINARY_DIR})
 
 target_link_libraries(libplaco PUBLIC
-    CLI11::CLI11
     Eigen3::Eigen
     Threads::Threads
     pinocchio::pinocchio
     eigenpy::eigenpy
     rhoban_utils
-    libzmq
-    cppzmq
     eiquadprog::eiquadprog
     ${PROTOBUF_LIBRARIES}
   ${PROTOBUF_LIBRARIES}
