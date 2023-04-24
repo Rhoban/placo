@@ -25,7 +25,7 @@ void FootstepsPlannerNaive::plan_impl(std::vector<FootstepsPlanner::Footstep>& f
                                       HumanoidRobot::Side flying_side, Eigen::Affine3d T_world_left,
                                       Eigen::Affine3d T_world_right)
 {
-  Eigen::Affine3d T_world_target = rhoban_utils::averageFrames(T_world_targetLeft, T_world_targetRight, 0.5);
+  Eigen::Affine3d T_world_target = placo::interpolate_frames(T_world_targetLeft, T_world_targetRight, 0.5);
 
   auto T_world_currentLeft = T_world_left;
   auto T_world_currentRight = T_world_right;
@@ -151,7 +151,7 @@ void FootstepsPlannerNaive::plan_impl(std::vector<FootstepsPlanner::Footstep>& f
 //                                       HumanoidRobot::Side flying_side, Eigen::Affine3d T_world_left,
 //                                       Eigen::Affine3d T_world_right)
 // {
-//   Eigen::Affine3d T_world_target = rhoban_utils::averageFrames(T_world_targetLeft, T_world_targetRight, 0.5);
+//   Eigen::Affine3d T_world_target = placo::interpolate_frames(T_world_targetLeft, T_world_targetRight, 0.5);
 
 //   Footstep footstep = footsteps[1];
 

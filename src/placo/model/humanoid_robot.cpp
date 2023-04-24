@@ -62,7 +62,7 @@ Eigen::Affine3d HumanoidRobot::get_T_world_trunk()
 
 Eigen::Affine3d HumanoidRobot::get_T_world_self()
 {
-  return flatten_on_floor(rhoban_utils::averageFrames(get_T_world_right(), get_T_world_left(), 0.5));
+  return flatten_on_floor(placo::interpolate_frames(get_T_world_right(), get_T_world_left(), 0.5));
 }
 
 void HumanoidRobot::update_support_side(HumanoidRobot::Side new_side)

@@ -3,7 +3,8 @@
 #include "pinocchio/multibody/geometry.hpp"
 #include <Eigen/Dense>
 
-namespace placo {
+namespace placo
+{
 /**
  * @brief Interpolate between two frames
  * @param frameA Frame A
@@ -12,8 +13,12 @@ namespace placo {
  * frame A, 1: frameB)
  * @return
  */
-Eigen::Affine3d interpolate_frames(Eigen::Affine3d frameA,
-                                   Eigen::Affine3d frameB, double AtoB);
+Eigen::Affine3d interpolate_frames(Eigen::Affine3d frameA, Eigen::Affine3d frameB, double AtoB);
+
+/**
+ * @brief Wraps an angle between -pi and pi
+ */
+double wrap_angle(double angle);
 
 /**
  * @brief Computes the "yaw" of an orientation
@@ -35,18 +40,23 @@ Eigen::Affine3d frame(Eigen::Matrix4d matrix);
  * @param transformation a 3D transformation
  * @return a 3D transformation that lies on the floor (no pitch/roll and no z)
  */
-Eigen::Affine3d flatten_on_floor(const Eigen::Affine3d &transformation);
+Eigen::Affine3d flatten_on_floor(const Eigen::Affine3d& transformation);
 
 /**
  * @brief Converts a pinocchio's SE3 transformation to Eigen Affine3d
  * @param se3 pinocchio SE3 transformation
  * @return Eigen affine3d
  */
-Eigen::Affine3d pin_se3_to_eigen(const pinocchio::GeometryData::SE3 &se3);
+Eigen::Affine3d pin_se3_to_eigen(const pinocchio::GeometryData::SE3& se3);
 
 /**
  * @brief Returns the acos of v, with safety on v values
  * @param v value
  */
 double safe_acos(double v);
-} // namespace placo
+
+/**
+ * @brief Check file existence
+ */
+bool file_exists(const std::string& name);
+}  // namespace placo

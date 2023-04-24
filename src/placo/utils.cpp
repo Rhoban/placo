@@ -1,4 +1,5 @@
 #include "placo/utils.h"
+#include <sys/stat.h>
 #include <iostream>
 
 namespace placo
@@ -16,6 +17,11 @@ Eigen::Affine3d interpolate_frames(Eigen::Affine3d frameA, Eigen::Affine3d frame
   result.translation() = frameA.translation() * (1 - AtoB) + frameB.translation() * AtoB;
 
   return result;
+}
+
+double wrap_angle(double angle)
+{
+  return atan2(sin(angle), cos(angle));
 }
 
 double frame_yaw(Eigen::Matrix3d rotation)
@@ -68,5 +74,11 @@ double safe_acos(double v)
   }
 
   return acos(v);
+}
+
+bool file_exists(const std::string& name)
+{
+  struct stat buffer;
+  return (stat(name.c_str(), &buffer) == 0);
 }
 }  // namespace placo

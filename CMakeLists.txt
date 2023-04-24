@@ -19,6 +19,12 @@ add_library(libplaco
     src/placo/model/humanoid_robot.cpp
     src/placo/utils.cpp
 
+    # Trajectories
+    src/placo/trajectory/swing_foot.cpp
+    src/placo/trajectory/swing_foot_quintic.cpp
+    src/placo/trajectory/cubic_spline.cpp
+    src/placo/trajectory/cubic_spline_3d.cpp
+
     # Problem formulation
     src/placo/problem/problem.cpp
     src/placo/problem/variable.cpp
@@ -54,8 +60,6 @@ add_library(libplaco
     src/placo/footsteps/footsteps_planner_repetitive.cpp
     src/placo/planning/jerk_planner.cpp
     src/placo/planning/walk_pattern_generator.cpp
-    src/placo/planning/swing_foot.cpp
-    src/placo/planning/swing_foot_quintic.cpp
     src/placo/planning/walk_tasks.cpp
     src/placo/model/humanoid_parameters.cpp
 

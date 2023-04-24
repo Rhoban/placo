@@ -4,6 +4,10 @@
 
 namespace placo
 {
+WalkPatternGenerator::Trajectory::Trajectory() : left_foot_yaw(true), right_foot_yaw(true), trunk_yaw(true)
+{
+}
+
 WalkPatternGenerator::WalkPatternGenerator(HumanoidRobot& robot, HumanoidParameters& parameters)
   : robot(robot), parameters(parameters)
 {
@@ -66,11 +70,11 @@ Eigen::Affine3d WalkPatternGenerator::Trajectory::get_T_world_left(double t)
 
   if (is_flying(HumanoidRobot::Left, t))
   {
-    return _buildFrame(part.swing_trajectory.pos(t), left_foot_yaw.get(t));
+    return _buildFrame(part.swing_trajectory.pos(t), left_foot_yaw.pos(t));
   }
   else
   {
-    return _buildFrame(part.support.footstep_frame(HumanoidRobot::Left).translation(), left_foot_yaw.get(t));
+    return _buildFrame(part.support.footstep_frame(HumanoidRobot::Left).translation(), left_foot_yaw.pos(t));
   }
 }
 
@@ -80,11 +84,11 @@ Eigen::Affine3d WalkPatternGenerator::Trajectory::get_T_world_right(double t)
 
   if (is_flying(HumanoidRobot::Right, t))
   {
-    return _buildFrame(part.swing_trajectory.pos(t), right_foot_yaw.get(t));
+    return _buildFrame(part.swing_trajectory.pos(t), right_foot_yaw.pos(t));
   }
   else
   {
-    return _buildFrame(part.support.footstep_frame(HumanoidRobot::Right).translation(), right_foot_yaw.get(t));
+    return _buildFrame(part.support.footstep_frame(HumanoidRobot::Right).translation(), right_foot_yaw.pos(t));
   }
 }
 
@@ -119,7 +123,7 @@ Eigen::Vector3d WalkPatternGenerator::Trajectory::get_p_world_CoM(double t)
 
 Eigen::Matrix3d WalkPatternGenerator::Trajectory::get_R_world_trunk(double t)
 {
-  return Eigen::AngleAxisd(trunk_yaw.get(t), Eigen::Vector3d::UnitZ()).matrix() *
+  return Eigen::AngleAxisd(trunk_yaw.pos(t), Eigen::Vector3d::UnitZ()).matrix() *
          Eigen::AngleAxisd(trunk_pitch, Eigen::Vector3d::UnitY()).matrix();
 }
 
@@ -133,7 +137,7 @@ bool WalkPatternGenerator::Trajectory::is_both_support(double t)
   return _findPart(parts, t).support.is_both();
 }
 
-rhoban_utils::PolySpline& WalkPatternGenerator::Trajectory::yaw(HumanoidRobot::Side side)
+placo::CubicSpline& WalkPatternGenerator::Trajectory::yaw(HumanoidRobot::Side side)
 {
   if (side == HumanoidRobot::Left)
   {
@@ -284,7 +288,7 @@ static void _addSupports(WalkPatternGenerator::Trajectory& trajectory, double t,
   for (auto footstep : support.footsteps)
   {
     auto T_world_foot = footstep.frame;
-    trajectory.yaw(footstep.side).addPoint(t, frame_yaw(T_world_foot.rotation()), 0, true);
+    trajectory.yaw(footstep.side).add_point(t, frame_yaw(T_world_foot.rotation()), 0);
   }
 }
 
@@ -295,7 +299,7 @@ void WalkPatternGenerator::planFeetTrajectories(Trajectory& trajectory, Trajecto
   // Add the initial position to the trajectory
   _addSupports(trajectory, t, trajectory.supports[0]);
 
-  trajectory.trunk_yaw.addPoint(t, frame_yaw(trajectory.supports[0].frame().rotation()), 0, true);
+  trajectory.trunk_yaw.add_point(t, frame_yaw(trajectory.supports[0].frame().rotation()), 0);
 
   if (!trajectory.supports[0].is_both())
   {
@@ -306,7 +310,7 @@ void WalkPatternGenerator::planFeetTrajectories(Trajectory& trajectory, Trajecto
 
     // Retrieving initial flying foot yaw from old trajectory
     HumanoidRobot::Side side = HumanoidRobot::other_side(trajectory.supports[0].side());
-    trajectory.yaw(side).addPoint(t, old_trajectory->yaw(side).get(t), 0, true);
+    trajectory.yaw(side).add_point(t, old_trajectory->yaw(side).pos(t), 0);
   }
 
   for (size_t step = 0; step < trajectory.supports.size(); step++)
@@ -341,13 +345,13 @@ void WalkPatternGenerator::planFeetTrajectories(Trajectory& trajectory, Trajecto
                                        T_world_startTarget.translation(), T_world_flyingTarget.translation());
       }
 
-      trajectory.yaw(flying_side).addPoint(t, frame_yaw(T_world_flyingTarget.rotation()), 0, true);
+      trajectory.yaw(flying_side).add_point(t, frame_yaw(T_world_flyingTarget.rotation()), 0);
 
       // The trunk orientation follow the steps orientation if there isn't double support phases
       // If there is double support phases, it follow the double supports orientation
       if (parameters.double_support_duration() < parameters.dt())
       {
-        trajectory.trunk_yaw.addPoint(t, frame_yaw(T_world_flyingTarget.rotation()), 0, true);
+        trajectory.trunk_yaw.add_point(t, frame_yaw(T_world_flyingTarget.rotation()), 0);
       }
 
       // Support foot remaining steady
@@ -366,7 +370,7 @@ void WalkPatternGenerator::planFeetTrajectories(Trajectory& trajectory, Trajecto
         t += parameters.double_support_duration();
       }
       _addSupports(trajectory, t, support);
-      trajectory.trunk_yaw.addPoint(t, frame_yaw(support.frame().rotation()), 0, true);
+      trajectory.trunk_yaw.add_point(t, frame_yaw(support.frame().rotation()), 0);
     }
 
     part.t_end = t;

@@ -185,14 +185,14 @@ class TestProblem(unittest.TestCase):
     def test_problem_overconstrained(self):
         """
         Checking that overconstrained equalities solve raise an exception
-        """        
+        """
         problem = placo.Problem()
 
         x = problem.add_variable(1)
         y = problem.add_variable(1)
 
-        problem.add_constraint(x.expr() + y.expr() == 1.)
-        problem.add_constraint(x.expr() + y.expr() == 2.)
+        problem.add_constraint(x.expr() + y.expr() == 1.0)
+        problem.add_constraint(x.expr() + y.expr() == 2.0)
 
         self.assertRaises(RuntimeError, problem.solve)
 

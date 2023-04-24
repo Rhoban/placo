@@ -1,4 +1,4 @@
-#include "placo/planning/swing_foot_quintic.h"
+#include "placo/trajectory/swing_foot_quintic.h"
 #include "eiquadprog/eiquadprog.hpp"
 
 namespace placo

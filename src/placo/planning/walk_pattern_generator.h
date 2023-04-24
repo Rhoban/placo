@@ -1,13 +1,11 @@
 #pragma once
 
-#include "rhoban_utils/spline/poly_spline_3d.h"
 #include "placo/footsteps/footsteps_planner.h"
 #include "placo/model/humanoid_robot.h"
 #include "placo/model/humanoid_parameters.h"
 #include "placo/planning/jerk_planner.h"
-#include "rhoban_utils/spline/poly_spline.h"
-#include "rhoban_utils/spline/poly_spline_3d.h"
-#include "placo/planning/swing_foot.h"
+#include "placo/trajectory/cubic_spline_3d.h"
+#include "placo/trajectory/swing_foot.h"
 #include "placo/control/kinematics_solver.h"
 #include "placo/control/frame_task.h"
 #include "placo/control/com_task.h"
@@ -29,6 +27,8 @@ public:
 
   struct Trajectory
   {
+    Trajectory();
+
     double com_height;
     double trunk_pitch;
 
@@ -42,11 +42,11 @@ public:
     JerkPlanner::JerkTrajectory2D com;
 
     // Feet trajectory
-    rhoban_utils::PolySpline left_foot_yaw;
-    rhoban_utils::PolySpline right_foot_yaw;
-    rhoban_utils::PolySpline trunk_yaw;
+    placo::CubicSpline left_foot_yaw;
+    placo::CubicSpline right_foot_yaw;
+    placo::CubicSpline trunk_yaw;
 
-    rhoban_utils::PolySpline& yaw(HumanoidRobot::Side side);
+    placo::CubicSpline& yaw(HumanoidRobot::Side side);
 
     Eigen::Affine3d get_T_world_left(double t);
     Eigen::Affine3d get_T_world_right(double t);

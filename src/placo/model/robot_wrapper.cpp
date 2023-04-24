@@ -7,7 +7,6 @@
 #include "pinocchio/algorithm/crba.hpp"
 #include "pinocchio/algorithm/centroidal.hpp"
 #include "placo/utils.h"
-#include "rhoban_utils/util.h"
 #include <jsoncpp/json/json.h>
 #include <filesystem>
 #include <algorithm>
@@ -72,7 +71,7 @@ RobotWrapper::RobotWrapper(std::string model_directory, int flags, std::string u
   // Load collisions pairs
   if (!(flags & IGNORE_COLLISIONS))
   {
-    if (rhoban_utils::file_exists(model_directory + "/collisions.json"))
+    if (file_exists(model_directory + "/collisions.json"))
     {
       load_collisions_pairs(model_directory + "/collisions.json");
     }

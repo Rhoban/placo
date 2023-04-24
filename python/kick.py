@@ -25,9 +25,9 @@ robot.update_kinematics()
 
 solver = robot.make_solver()
 
-robot.set_velocity_limits(5.)
-solver.enable_velocity_limits(True)
-solver.dt = 0.005
+# robot.set_velocity_limits(5.)
+# solver.enable_velocity_limits(True)
+# solver.dt = 0.005
 
 # Retrieving initial position of the feet, com and trunk orientation
 T_world_left = robot.get_T_world_frame("left_foot")
@@ -75,25 +75,25 @@ shoulder_pitchs_tasks.set_joints({
 
 solver.add_regularization_task(1e-6)
 
-foot_spline = placo.PolySpline3D()
-foot_spline.addPoint(0., np.array([0., -0.1, 0.]), np.array([0., 0., 0.]),)
-foot_spline.addPoint(0.5, np.array([0., -0.1, 0.]), np.array([0., 0., 0.]))
-foot_spline.addPoint(1., np.array([0., -0.1, 0.05]), np.array([0., 0., 0.]))
-foot_spline.addPoint(1.5, np.array(
+foot_spline = placo.CubicSpline3D()
+foot_spline.add_point(0., np.array([0., -0.1, 0.]), np.array([0., 0., 0.]),)
+foot_spline.add_point(0.5, np.array([0., -0.1, 0.]), np.array([0., 0., 0.]))
+foot_spline.add_point(1., np.array([0., -0.1, 0.05]), np.array([0., 0., 0.]))
+foot_spline.add_point(1.5, np.array(
     [-0.08, -0.1, 0.05]), np.array([0., 0., 0.]))
-foot_spline.addPoint(1.51, np.array(
+foot_spline.add_point(1.51, np.array(
     [0.08, -0.1, 0.05]), np.array([0., 0., 0.]))
-foot_spline.addPoint(2., np.array([0.0, -0.1, 0.05]), np.array([0., 0., 0.]))
-foot_spline.addPoint(2.5, np.array([0.0, -0.1, 0.]), np.array([0., 0., 0.]))
+foot_spline.add_point(2., np.array([0.0, -0.1, 0.05]), np.array([0., 0., 0.]))
+foot_spline.add_point(2.5, np.array([0.0, -0.1, 0.]), np.array([0., 0., 0.]))
 
-T_world_right[:3, 3] = foot_spline.get(0)
+T_world_right[:3, 3] = foot_spline.pos(0)
 
-com_spline = placo.PolySpline()
-com_spline.addPoint(0., -0.05, 0, False)
-com_spline.addPoint(1, 0., 0, False)
-com_spline.addPoint(2.5, 0., 0, False)
-com_spline.addPoint(3.5, -0.05, 0, False)
-com[1] = com_spline.get(0)
+com_spline = placo.CubicSpline()
+com_spline.add_point(0., -0.05, 0)
+com_spline.add_point(1, 0., 0)
+com_spline.add_point(2.5, 0., 0)
+com_spline.add_point(3.5, -0.05, 0)
+com[1] = com_spline.pos(0)
 
 rising = False
 
@@ -139,8 +139,8 @@ try:
                     trunk_task.configure("trunk_task", "soft", 1e-4)
                     solver.add_centroidal_momentum_task(np.array([0., 0., 0.]))
 
-            T_world_right[:3, 3] = foot_spline.get(motion_t)
-            com[1] = com_spline.get(motion_t)
+            T_world_right[:3, 3] = foot_spline.pos(motion_t)
+            com[1] = com_spline.pos(motion_t)
 
             right_foot_task.T_world_frame = T_world_right
             com_task.target_world = com
