@@ -43,6 +43,7 @@ void exposeKinematics()
           .add_property("noise", &KinematicsSolver::noise, &KinematicsSolver::noise)
           .add_property("dt", &KinematicsSolver::dt, &KinematicsSolver::dt)
           .add_property("N", &KinematicsSolver::N)
+          .add_property("slacks", &KinematicsSolver::slacks)
           .add_property(
               "robot",
               +[](const KinematicsSolver& solver) {
@@ -117,7 +118,7 @@ void exposeKinematics()
           .def("enable_velocity_limits", &KinematicsSolver::enable_velocity_limits)
           .def("enable_velocity_post_limits", &KinematicsSolver::enable_velocity_post_limits)
           .def("enable_self_collision_avoidance", &KinematicsSolver::enable_self_collision_avoidance)
-
+          .def("configure_self_collision_avoidance", &KinematicsSolver::configure_self_collision_avoidance)
           .def(
               "remove_task", +[](KinematicsSolver& solver, FrameTask& task) { solver.remove_task(task); })
 
