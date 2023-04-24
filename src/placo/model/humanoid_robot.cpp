@@ -185,6 +185,7 @@ void HumanoidRobot::update_trunk_orientation(double roll, double pitch, double y
   update_kinematics();
 }
 
+#ifdef HAVE_RHOBAN_UTILS
 void HumanoidRobot::readFromHistories(rhoban_utils::HistoryCollection& histories, double timestamp, bool use_imu)
 {
   // Updating DOFs from replay
@@ -209,6 +210,7 @@ void HumanoidRobot::readFromHistories(rhoban_utils::HistoryCollection& histories
 
     ensure_on_floor();
   }
+#endif
 
   // Setting the trunk orientation from the IMU
   else

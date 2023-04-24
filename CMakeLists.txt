@@ -66,8 +66,13 @@ target_link_libraries(libplaco PUBLIC
     ${PROTOBUF_LIBRARIES}
   ${PROTOBUF_LIBRARIES}
 )
-target_compile_definitions(libplaco PUBLIC -DMOTORS_CONFIGURATION_${MOTORS_CONFIGURATION}
-  -DPINOCCHIO_WITH_HPP_FCL)
+target_compile_definitions(libplaco PUBLIC -DPINOCCHIO_WITH_HPP_FCL)
+
+if(TARGET rhoban_utils)
+  message("Placo: Rhoban utils is present, enabling it")
+  target_compile_definitions(libplaco PUBLIC -DHAVE_RHOBAN_UTILS)
+  target_link_libraries(libplaco PUBLIC rhoban_utils)
+endif ()
 
 set(CMAKE_SHARED_MODULE_PREFIX "")
 

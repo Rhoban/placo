@@ -1,7 +1,9 @@
 #pragma once
 
 #include "placo/model/robot_wrapper.h"
+#ifdef HAVE_RHOBAN_UTILS
 #include "rhoban_utils/history/history.h"
+#endif
 
 namespace placo
 {
@@ -81,6 +83,7 @@ public:
 
   void update_trunk_orientation(double roll, double pitch, double yaw);
 
+#ifdef HAVE_RHOBAN_UTILS
   /**
    * @brief Load the robot state from an history log
    * @param histories Log file
@@ -88,6 +91,7 @@ public:
    * @param use_imu Use IMU values for the trunk orientation
    */
   void readFromHistories(rhoban_utils::HistoryCollection& histories, double timestamp, bool use_imu = false);
+#endif
 
   /**
    * @brief The current side (left, right or both) supporting the robot
