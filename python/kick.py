@@ -3,7 +3,7 @@ import placo
 import numpy as np
 import argparse
 from onshape_to_robot.simulation import Simulation
-from visualization import robot_viz, frame_viz, point_viz, robot_frame_viz
+from placo_utils.visualization import robot_viz, frame_viz, point_viz, robot_frame_viz
 
 parser = argparse.ArgumentParser(description="Process some integers.")
 parser.add_argument("-p", "--pybullet", action="store_true",
@@ -24,6 +24,10 @@ robot.set_T_world_frame("left_foot", np.eye(4))
 robot.update_kinematics()
 
 solver = robot.make_solver()
+
+robot.set_velocity_limits(5.)
+solver.enable_velocity_limits(True)
+solver.dt = 0.005
 
 # Retrieving initial position of the feet, com and trunk orientation
 T_world_left = robot.get_T_world_frame("left_foot")
@@ -72,7 +76,7 @@ shoulder_pitchs_tasks.set_joints({
 solver.add_regularization_task(1e-6)
 
 foot_spline = placo.PolySpline3D()
-foot_spline.addPoint(0., np.array([0., -0.1, 0.]), np.array([0., 0., 0.]))
+foot_spline.addPoint(0., np.array([0., -0.1, 0.]), np.array([0., 0., 0.]),)
 foot_spline.addPoint(0.5, np.array([0., -0.1, 0.]), np.array([0., 0., 0.]))
 foot_spline.addPoint(1., np.array([0., -0.1, 0.05]), np.array([0., 0., 0.]))
 foot_spline.addPoint(1.5, np.array(
@@ -85,10 +89,10 @@ foot_spline.addPoint(2.5, np.array([0.0, -0.1, 0.]), np.array([0., 0., 0.]))
 T_world_right[:3, 3] = foot_spline.get(0)
 
 com_spline = placo.PolySpline()
-com_spline.addPoint(0., -0.05, 0)
-com_spline.addPoint(1, 0., 0)
-com_spline.addPoint(2.5, 0., 0)
-com_spline.addPoint(3.5, -0.05, 0)
+com_spline.addPoint(0., -0.05, 0, False)
+com_spline.addPoint(1, 0., 0, False)
+com_spline.addPoint(2.5, 0., 0, False)
+com_spline.addPoint(3.5, -0.05, 0, False)
 com[1] = com_spline.get(0)
 
 rising = False
