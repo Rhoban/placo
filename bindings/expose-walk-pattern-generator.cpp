@@ -5,7 +5,7 @@
 #include "placo/planning/walk_pattern_generator.h"
 #include "placo/control/kinematics_solver.h"
 #include "placo/footsteps/footsteps_planner.h"
-#include "placo/planning/swing_foot_quintic.h"
+#include "placo/trajectory/swing_foot_quintic.h"
 #include "placo/planning/walk_tasks.h"
 #include <Eigen/Dense>
 #include <boost/python.hpp>
