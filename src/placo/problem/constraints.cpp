@@ -1,5 +1,3 @@
-#pragma once
-
 #include "placo/problem/constraints.h"
 
 namespace placo
