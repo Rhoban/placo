@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <map>
 #include "placo/problem/variable.h"
 #include "placo/problem/expression.h"
@@ -32,6 +33,8 @@ public:
    * @param dt delta time
    */
   Integrator(Variable& variable, Eigen::VectorXd X0, Eigen::MatrixXd system_matrix, double dt);
+
+  virtual ~Integrator();
 
   /**
    * @brief Builds a matrix M so that the system differential equation is dX = M X
@@ -83,7 +86,7 @@ public:
   double value(double t, int diff);
 
   // Decision variable
-  Variable& variable;
+  std::shared_ptr<Variable> variable;
 
   // System steps (variable size)
   int N;

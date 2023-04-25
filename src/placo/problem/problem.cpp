@@ -9,14 +9,6 @@ Problem::Problem()
 
 Problem::~Problem()
 {
-  for (auto variable : variables)
-  {
-    delete variable;
-  }
-  for (auto constraint : constraints)
-  {
-    delete constraint;
-  }
 }
 
 Variable& Problem::add_variable(int size)
@@ -26,7 +18,7 @@ Variable& Problem::add_variable(int size)
   variable->k_end = n_variables + size;
   n_variables += size;
 
-  variables.push_back(variable);
+  variables.push_back(std::shared_ptr<placo::Variable>(variable));
   return *variable;
 }
 
@@ -41,7 +33,7 @@ ProblemConstraint& Problem::add_constraint(const ProblemConstraint& constraint_)
 {
   ProblemConstraint* constraint = new ProblemConstraint;
   *constraint = constraint_;
-  constraints.push_back(constraint);
+  constraints.push_back(std::shared_ptr<placo::ProblemConstraint>(constraint));
 
   return *constraint;
 }

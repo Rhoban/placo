@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <string>
 #include <vector>
 #include "placo/problem/expression.h"
@@ -49,11 +50,11 @@ public:
 
   void solve();
 
-  std::vector<Variable*> variables;
+  std::vector<std::shared_ptr<Variable>> variables;
   int n_variables = 0;
 
   Eigen::VectorXd slacks;
 
-  std::vector<ProblemConstraint*> constraints;
+  std::vector<std::shared_ptr<ProblemConstraint>> constraints;
 };
 }  // namespace placo

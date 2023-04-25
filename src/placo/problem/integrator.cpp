@@ -5,12 +5,12 @@
 
 namespace placo
 {
-Integrator::Integrator(Variable& variable, Eigen::VectorXd X0, Eigen::MatrixXd system_matrix, double dt)
-  : variable(variable), X0(X0), dt(dt), M(system_matrix)
+Integrator::Integrator(Variable& variable_, Eigen::VectorXd X0, Eigen::MatrixXd system_matrix, double dt)
+  : variable(std::shared_ptr<Variable>(&variable_)), X0(X0), dt(dt), M(system_matrix)
 {
   order = system_matrix.rows() - 1;
 
-  N = variable.size();
+  N = variable->size();
 
   auto AB = AB_matrices(order, dt);
   A = AB.first;
@@ -32,8 +32,12 @@ Integrator::Integrator(Variable& variable, Eigen::VectorXd X0, Eigen::MatrixXd s
   }
 }
 
-Integrator::Integrator(Variable& variable, Eigen::VectorXd X0, int order, double dt)
-  : Integrator(variable, X0, continuous_system_matrix(order), dt)
+Integrator::Integrator(Variable& variable_, Eigen::VectorXd X0, int order, double dt)
+  : Integrator(variable_, X0, continuous_system_matrix(order), dt)
+{
+}
+
+Integrator::~Integrator()
 {
 }
 
@@ -76,34 +80,34 @@ Expression Integrator::expr(int step, int diff)
 {
   check_diff(diff, true);
 
-  if (step < 0 || step > variable.size())
+  if (step < 0 || step > variable->size())
   {
     std::ostringstream oss;
-    oss << "Asking an expression for step " << step << ", should be between " << 0 << " and " << variable.size();
+    oss << "Asking an expression for step " << step << ", should be between " << 0 << " and " << variable->size();
     throw std::runtime_error(oss.str());
   }
 
   if (diff == order)
   {
     // At order, we just select the relevant variable
-    return variable.expr(step, 1);
+    return variable->expr(step, 1);
   }
   else
   {
     Expression e;
     int rows = (diff == -1) ? order : 1;
-    e.A = Eigen::MatrixXd(rows, variable.k_end);
+    e.A = Eigen::MatrixXd(rows, variable->k_end);
     e.A.setZero();
     e.b = Eigen::VectorXd(rows);
 
     if (diff == -1)
     {
-      e.A.block(0, variable.k_start, rows, step) = final_transition_matrix.block(0, N - step, rows, step);
+      e.A.block(0, variable->k_start, rows, step) = final_transition_matrix.block(0, N - step, rows, step);
       e.b = a_powers[step] * X0;
     }
     else
     {
-      e.A.block(0, variable.k_start, 1, step) = final_transition_matrix.block(diff, N - step, 1, step);
+      e.A.block(0, variable->k_start, 1, step) = final_transition_matrix.block(diff, N - step, 1, step);
       e.b(0, 0) = (a_powers[step] * X0)(diff, 0);
     }
 
@@ -113,16 +117,16 @@ Expression Integrator::expr(int step, int diff)
 
 Expression Integrator::expr_t(double t, int diff)
 {
-  if (t < 0 || t > variable.size() * dt)
+  if (t < 0 || t > variable->size() * dt)
   {
     throw std::runtime_error("expr_t called with a t out of the scope of the integrator");
   }
 
-  int step = std::max<int>(std::min<int>(variable.size() - 1, t / dt), 0);
+  int step = std::max<int>(std::min<int>(variable->size() - 1, t / dt), 0);
 
   if (diff == order)
   {
-    return variable.expr(step, 1);
+    return variable->expr(step, 1);
   }
   else
   {
@@ -132,7 +136,7 @@ Expression Integrator::expr_t(double t, int diff)
     Eigen::MatrixXd Ar = AB.first;
     Eigen::MatrixXd Br = AB.second;
 
-    Expression e = (Ar * expr(step)) + Br * variable.expr(step);
+    Expression e = (Ar * expr(step)) + Br * variable->expr(step);
 
     if (diff > -1)
     {
@@ -148,7 +152,7 @@ double Integrator::value(double t, int diff)
 {
   check_diff(diff);
 
-  if (version != variable.version)
+  if (version != variable->version)
   {
     update_keyframes();
   }
@@ -158,14 +162,14 @@ double Integrator::value(double t, int diff)
   if (k < 0)
     k = 0;
 
-  if (k >= variable.size())
-    k = variable.size() - 1;
+  if (k >= variable->size())
+    k = variable->size() - 1;
 
   double remaining_dt = t - k * dt;
 
   if (diff == order)
   {
-    return variable.value[k];
+    return variable->value[k];
   }
   else
   {
@@ -173,7 +177,7 @@ double Integrator::value(double t, int diff)
     Eigen::MatrixXd Ar = AB.first;
     Eigen::MatrixXd Br = AB.second;
 
-    Eigen::VectorXd result = Ar * keyframes[k] + Br * variable.value(k);
+    Eigen::VectorXd result = Ar * keyframes[k] + Br * variable->value(k);
 
     return result[diff];
   }
@@ -184,13 +188,13 @@ void Integrator::update_keyframes()
   Eigen::VectorXd X = X0;
   keyframes[0] = X;
 
-  for (int k = 1; k <= variable.size(); k++)
+  for (int k = 1; k <= variable->size(); k++)
   {
-    X = A * X + B * variable.value[k - 1];
+    X = A * X + B * variable->value[k - 1];
     keyframes[k] = X;
   }
 
-  version = variable.version;
+  version = variable->version;
 }
 
 }  // namespace placo
