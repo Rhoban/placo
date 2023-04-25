@@ -5,9 +5,11 @@
 
 namespace placo
 {
-Integrator::Integrator(Variable& variable, Eigen::VectorXd X0, int order, double dt)
-  : variable(variable), X0(X0), order(order), dt(dt)
+Integrator::Integrator(Variable& variable, Eigen::VectorXd X0, Eigen::MatrixXd system_matrix, double dt)
+  : variable(variable), X0(X0), dt(dt), M(system_matrix)
 {
+  order = system_matrix.rows() - 1;
+
   N = variable.size();
 
   auto AB = AB_matrices(order, dt);
@@ -30,11 +32,13 @@ Integrator::Integrator(Variable& variable, Eigen::VectorXd X0, int order, double
   }
 }
 
+Integrator::Integrator(Variable& variable, Eigen::VectorXd X0, int order, double dt)
+  : Integrator(variable, X0, continuous_system_matrix(order), dt)
+{
+}
+
 std::pair<Eigen::MatrixXd, Eigen::VectorXd> Integrator::AB_matrices(int order, double dt)
 {
-  // Computing the system matrix
-  M = continuous_system_matrix(order);
-
   // Computing A and B transition matrices
   Eigen::MatrixXd Me = (M * dt).exp();
   Eigen::MatrixXd A = Me.block(0, 0, order, order);

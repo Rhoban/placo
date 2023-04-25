@@ -5,6 +5,8 @@ import numpy as np
 
 class TestProblem(unittest.TestCase):
     def assertNumpyEqual(self, a, b, msg=None, epsilon=1e-6):
+        if msg is None:
+            msg = f"Checking that {a} equals {b}"
         self.assertTrue(np.linalg.norm(a - b) < epsilon, msg=msg)
 
     def test_expression_arithmetics(self):
@@ -220,6 +222,50 @@ class TestProblem(unittest.TestCase):
         self.assertNumpyEqual(integrator.value(0.5, 0), 1.5)
         self.assertNumpyEqual(integrator.value(0.51, 0), 2.5)
         self.assertNumpyEqual(integrator.value(1., 0), 0.)
+
+    def test_integrator_zmp(self):
+        """
+        Testing using the integrator with the ZMP differential equation instead. Here:
+
+        z = c - 1/(omega**2) ddc
+        Thus: ddc = omega**2 c - omega**2 z
+
+        If the state is, the control variable is delta zmps:
+        [ c  ]
+        [ dc ]
+        [ z  ]
+        [ dz ]
+        """        
+        problem = placo.Problem()
+        omega = 0.5
+
+        dzmp = problem.add_variable(16)
+        integrator = placo.Integrator(dzmp, np.array([0., 0., 0.]), np.array([
+            [0., 1., 0., 0.],
+            [omega**2, 0., -omega**2, 0.],
+            [0., 0., 0., 1.],
+            [0., 0., 0., 0.],
+        ]), 0.1)
+
+        problem.add_constraint(integrator.expr(8, 0) == 0.5)
+        problem.add_constraint(integrator.expr(16, 0) == 0.)
+        problem.add_constraint(integrator.expr(16, 1) == 0.)
+        problem.solve()
+
+        self.assertNumpyEqual(integrator.value(0.8, 0), 0.5)
+        self.assertNumpyEqual(integrator.value(1.6, 0), 0.)
+        self.assertNumpyEqual(integrator.value(1.6, 1), 0.)
+
+        # We compute ddc from the trajectory and checks that it matches the finite difference on velocity
+        epsilon = 1e-8
+        for t_test in [0., 0.25, 0.5, 1.5]:
+            # Finite differences
+            acc_fd = (integrator.value(t_test + epsilon, 1) - integrator.value(t_test, 1))/epsilon
+            # ddc = omega**2 c - omega**2 z
+            acc_zmp = omega**2 * integrator.value(t_test, 0) - omega**2 * integrator.value(t_test, 2)
+            
+            self.assertNumpyEqual(acc_fd, acc_zmp, epsilon=1e-3)
+
 
 
 if __name__ == "__main__":

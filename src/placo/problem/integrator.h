@@ -9,7 +9,29 @@ namespace placo
 class Integrator
 {
 public:
+  /**
+   * @brief Creates an integrator able to build expressions and values over a decision variable.
+   *        With this constructor, a continuous system matrix will be used (see below)
+   * @param variable variable to integrate
+   * @param X0 x0 (initial state)
+   * @param order order
+   * @param dt delta time
+   */
   Integrator(Variable& variable, Eigen::VectorXd X0, int order, double dt);
+
+  /**
+   * @brief Creates an integrator able to build expressions and values over a decision variable. A custom continuous
+   *        system matrix is passed, so that:
+   *
+   *        dX = MX
+   *
+   *        Where X is the state to be integrated.
+   * @param variable variable to integrate
+   * @param X0 x0 (initial state)
+   * @param system_matrix custom continuous sytem matrix dX = MX
+   * @param dt delta time
+   */
+  Integrator(Variable& variable, Eigen::VectorXd X0, Eigen::MatrixXd system_matrix, double dt);
 
   /**
    * @brief Builds a matrix M so that the system differential equation is dX = M X

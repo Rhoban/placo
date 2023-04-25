@@ -36,6 +36,7 @@ void exposeProblem()
       .staticmethod("add_polygon_constraint");
 
   class_<Integrator>("Integrator", init<Variable&, Eigen::VectorXd, int, double>())
+      .def(init<Variable&, Eigen::VectorXd, Eigen::MatrixXd, double>())
       .def("continuous_system_matrix", &Integrator::continuous_system_matrix)
       .staticmethod("continuous_system_matrix")
       .add_property(
