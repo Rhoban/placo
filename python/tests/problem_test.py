@@ -51,6 +51,9 @@ class TestProblem(unittest.TestCase):
         self.assertEqual(y.expr(0, 1).A.shape, (4,))
 
     def test_stacking(self):
+        """
+        The operator / allow to stack expressions
+        """        
         problem = placo.Problem()
 
         x = problem.add_variable(8)
@@ -61,10 +64,10 @@ class TestProblem(unittest.TestCase):
         A[1, 2] = 1
         A[2, 4] = 1
         A[3, 6] = 1
-        self.assertTrue(np.linalg.norm(A - e.A) < 1e-6, msg="Expected matrix obtained by stacking")
+        self.assertNumpyEqual(A, e.A, msg="Expected matrix obtained by stacking")
 
         b = np.zeros(4)
-        self.assertTrue(np.linalg.norm(b - e.b) < 1e-6, msg="Expected vector obtained by stacking")
+        self.assertNumpyEqual(b, e.b, msg="Expected vector obtained by stacking")
 
     def test_simple_solve(self):
         problem = placo.Problem()
