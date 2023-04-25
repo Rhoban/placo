@@ -259,10 +259,14 @@ void KinematicsSolver::compute_self_collision_inequalities()
         Eigen::MatrixXd X_B_world = pinocchio::SE3(Eigen::Matrix3d::Identity(), -distance.pointB).toActionMatrix();
         Eigen::MatrixXd JB = X_B_world * robot->joint_jacobian(distance.parentB, pinocchio::ReferenceFrame::WORLD);
 
-        Expression e = distance.min_distance + n.transpose() * (JB - JA).block(0, 0, 3, N) * qd->expr();
+        Expression e;
+        e.A = n.transpose() * (JB - JA).block(0, 0, 3, N);
+        e.b = Eigen::VectorXd(1);
+        e.b.setZero();
 
         // Adding constraint that dist + Jdq >= margin
-        problem.add_constraint(e >= self_collisions_margin).configure(!self_collisions_soft, self_collisions_weight);
+        problem.add_constraint((distance.min_distance + e) >= self_collisions_margin)
+            .configure(!self_collisions_soft, self_collisions_weight);
       }
     }
   }
