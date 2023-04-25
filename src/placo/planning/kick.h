@@ -1,6 +1,6 @@
 #pragma once
 
-#include "rhoban_utils/spline/poly_spline_3d.h"
+#include "placo/trajectory/cubic_spline.h"
 #include "placo/model/humanoid_robot.h"
 #include "placo/model/humanoid_parameters.h"
 #include "placo/planning/walk_pattern_generator.h"
@@ -21,11 +21,11 @@ public:
   Eigen::Affine3d get_T_world_right(double t);
   Eigen::Vector3d get_com_world(double t);
 
-  rhoban_utils::PolySpline3D left_foot_trajectory;
-  rhoban_utils::PolySpline3D right_foot_trajectory;
+  CubicSpline3D left_foot_trajectory;
+  CubicSpline3D right_foot_trajectory;
 
   JerkPlanner::JerkTrajectory2D com_trajectory;
-  rhoban_utils::PolySpline com_height;
+  CubicSpline com_height;
 
   double duration;
 
