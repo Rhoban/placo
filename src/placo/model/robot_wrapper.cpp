@@ -258,8 +258,11 @@ void RobotWrapper::load_collisions_pairs(const std::string& filename)
   std::map<std::string, std::vector<size_t>> name_to_objects;
   for (size_t k = 0; k < collision_model.geometryObjects.size(); k++)
   {
-    std::string name = model.frames[collision_model.geometryObjects[k].parentFrame].name;
-    name_to_objects[name].push_back(k);
+    if (collision_model.geometryObjects[k].parentFrame != std::numeric_limits<FrameIndex>::max())
+    {
+      std::string name = model.frames[collision_model.geometryObjects[k].parentFrame].name;
+      name_to_objects[name].push_back(k);
+    }
   }
 
   collision_model.removeAllCollisionPairs();
