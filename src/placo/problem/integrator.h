@@ -86,7 +86,7 @@ public:
   double value(double t, int diff);
 
   // Decision variable
-  std::shared_ptr<Variable> variable;
+  Variable* variable;
 
   // System steps (variable size)
   int N;

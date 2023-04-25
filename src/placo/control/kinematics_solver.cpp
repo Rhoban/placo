@@ -10,13 +10,11 @@ namespace placo
 KinematicsSolver::KinematicsSolver(RobotWrapper& robot_) : robot(&robot_), masked_fbase(false)
 {
   N = robot->model.nv;
-  qd = &problem.add_variable(N);
 }
 
 KinematicsSolver::KinematicsSolver(RobotWrapper* robot_) : robot(robot_), masked_fbase(false)
 {
   N = robot->model.nv;
-  qd = &problem.add_variable(N);
 }
 
 PositionTask& KinematicsSolver::add_position_task(RobotWrapper::FrameIndex frame, Eigen::Vector3d target_world)
@@ -296,6 +294,12 @@ void KinematicsSolver::compute_limits_inequalities()
 
 Eigen::VectorXd KinematicsSolver::solve(bool apply)
 {
+  // Ensure variable is created
+  if (qd == nullptr)
+  {
+    qd = &problem.add_variable(N);
+  }
+
   // Clear previously created constraints
   problem.clear_constraints();
 
@@ -320,8 +324,11 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
   // Adding equality constraints
   for (auto task : tasks)
   {
-    problem.add_constraint(task->A * qd->expr() == task->b)
-        .configure(task->priority == Task::Priority::Hard, task->weight);
+    Expression e;
+    e.A = task->A;
+    e.b = -task->b;
+
+    problem.add_constraint(e == 0).configure(task->priority == Task::Priority::Hard, task->weight);
   }
 
   // Masked DoFs are hard equality constraints enforcing no deltas

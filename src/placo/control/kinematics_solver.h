@@ -279,7 +279,7 @@ public:
 
 protected:
   placo::Problem problem;
-  placo::Variable* qd;
+  placo::Variable* qd = nullptr;
 
   std::set<int> masked_dof;
   bool masked_fbase;

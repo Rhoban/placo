@@ -6,7 +6,7 @@
 namespace placo
 {
 Integrator::Integrator(Variable& variable_, Eigen::VectorXd X0, Eigen::MatrixXd system_matrix, double dt)
-  : variable(std::shared_ptr<Variable>(&variable_)), X0(X0), dt(dt), M(system_matrix)
+  : variable(&variable_), X0(X0), dt(dt), M(system_matrix)
 {
   order = system_matrix.rows() - 1;
 

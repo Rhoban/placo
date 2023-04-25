@@ -55,11 +55,11 @@ public:
 
   void solve();
 
-  std::vector<std::shared_ptr<Variable>> variables;
+  std::vector<Variable*> variables;
   int n_variables = 0;
 
   Eigen::VectorXd slacks;
 
-  std::vector<std::shared_ptr<ProblemConstraint>> constraints;
+  std::vector<ProblemConstraint*> constraints;
 };
 }  // namespace placo
