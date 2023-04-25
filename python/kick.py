@@ -17,9 +17,6 @@ args = parser.parse_args()
 # Loading the robot
 robot = placo.HumanoidRobot("sigmaban/")
 
-# robot.set_joint("left_knee", 0.1)
-# robot.set_joint("right_knee", 0.1)
-# robot.update_kinematics()
 robot.set_T_world_frame("left_foot", np.eye(4))
 robot.update_kinematics()
 
@@ -71,7 +68,6 @@ shoulder_pitchs_tasks.set_joints({
     "left_shoulder_pitch": 0.,
     "right_shoulder_pitch": 0.,
 })
-
 
 solver.add_regularization_task(1e-6)
 

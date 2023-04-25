@@ -232,6 +232,7 @@ void FootstepsPlannerNaive::plan_impl(std::vector<FootstepsPlanner::Footstep>& f
 //       left_arrived = arrived;
 //     }
 //   }
+//   }
 
 void FootstepsPlannerNaive::configure(Eigen::Affine3d T_world_left_target, Eigen::Affine3d T_world_right_target)
 {

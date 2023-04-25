@@ -109,12 +109,12 @@ public:
    */
   Eigen::Affine3d neutral_frame(Footstep footstep);
 
+  Footstep create_footstep(HumanoidRobot::Side side, Eigen::Affine3d T_world_foot);
+
   // Humanoid parameters for planning and control
   HumanoidParameters& parameters;
 
 protected:
-  Footstep create_footstep(HumanoidRobot::Side side, Eigen::Affine3d T_world_foot);
-
   virtual void plan_impl(std::vector<Footstep>&, HumanoidRobot::Side flying_side, Eigen::Affine3d T_world_left,
                          Eigen::Affine3d T_world_right) = 0;
 };
