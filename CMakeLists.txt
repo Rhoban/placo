@@ -63,6 +63,7 @@ add_library(libplaco
     src/placo/footsteps/footsteps_planner_repetitive.cpp
     src/placo/planning/jerk_planner.cpp
     src/placo/planning/walk_pattern_generator.cpp
+    src/placo/planning/kick.cpp
     src/placo/planning/walk_tasks.cpp
     src/placo/model/humanoid_parameters.cpp
 

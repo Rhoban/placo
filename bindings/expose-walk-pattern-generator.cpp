@@ -3,6 +3,7 @@
 #include "expose-utils.hpp"
 #include "module.h"
 #include "placo/planning/walk_pattern_generator.h"
+#include "placo/planning/kick.h"
 #include "placo/control/kinematics_solver.h"
 #include "placo/footsteps/footsteps_planner.h"
 #include "placo/trajectory/swing_foot_quintic.h"
@@ -38,6 +39,15 @@ void exposeWalkPatternGenerator()
       .def("can_replan_supports", &WalkPatternGenerator::can_replan_supports)
       .def("replan_supports", &WalkPatternGenerator::replan_supports);
 
+  class_<Kick>("Kick", init<HumanoidRobot&, HumanoidParameters&>())
+      .add_property("duration", &Kick::duration)
+      .add_property("t_init", &Kick::t_init, &Kick::t_init)
+      .add_property("t_up", &Kick::t_up, &Kick::t_up)
+      .def("one_foot_balance", &Kick::one_foot_balance)
+      .def("get_T_world_left", &Kick::get_T_world_left)
+      .def("get_T_world_right", &Kick::get_T_world_right)
+      .def("get_com_world", &Kick::get_com_world);
+
   class_<SwingFoot>("SwingFoot", init<>())
       .def("make_trajectory", &SwingFoot::make_trajectory)
       .def("remake_trajectory", &SwingFoot::remake_trajectory);
@@ -55,7 +65,17 @@ void exposeWalkPatternGenerator()
   class_<WalkTasks>("WalkTasks", init<>())
       .def(
           "initialize_tasks", +[](WalkTasks& tasks, KinematicsSolver& solver) { tasks.initialize_tasks(&solver); })
-      .def("update_tasks", &WalkTasks::update_tasks)
+      .def(
+          "update_tasks_from_trajectory", +[](WalkTasks& tasks, WalkPatternGenerator::Trajectory& trajectory,
+                                              double t) { return tasks.update_tasks(trajectory, t); })
+      .def(
+          "update_tasks_from_kick", +[](WalkTasks& tasks, Kick& kick, double t) { return tasks.update_tasks(kick, t); })
+      .def(
+          "update_tasks",
+          +[](WalkTasks& tasks, Eigen::Affine3d& T_world_left, Eigen::Affine3d& T_world_right,
+              Eigen::Vector3d& com_world, Eigen::Matrix3d& R_world_trunk) {
+            return tasks.update_tasks(T_world_left, T_world_right, com_world, R_world_trunk);
+          })
       .def("remove_tasks", &WalkTasks::remove_tasks)
       .add_property(
           "solver", +[](WalkTasks& tasks) { return *tasks.solver; })

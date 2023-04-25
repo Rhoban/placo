@@ -142,8 +142,8 @@ bool FootstepsPlanner::Support::is_both()
   return footsteps.size() == 2;
 }
 
-std::vector<FootstepsPlanner::Support> FootstepsPlanner::make_supports(
-    std::vector<FootstepsPlanner::Footstep> footsteps, bool start, bool middle, bool end)  // NEED TO CHANGE FOR REPLAN
+std::vector<FootstepsPlanner::Support>
+FootstepsPlanner::make_supports(std::vector<FootstepsPlanner::Footstep> footsteps, bool start, bool middle, bool end)
 {
   std::vector<Support> supports;
 

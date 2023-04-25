@@ -61,10 +61,10 @@ joints_task = solver.add_joints_task()
 joints_task.set_joints({
     "left_shoulder_roll": 0.,
     "left_shoulder_pitch": 0.,
-    "left_elbow": -1.0,
+    "left_elbow": elbow,
     "right_shoulder_roll": 0.,
     "right_shoulder_pitch": 0.,
-    "right_elbow": -1.0,
+    "right_elbow": elbow,
     "head_pitch": 0.,
     "head_yaw": 0.
 })
@@ -184,7 +184,7 @@ elif args.pybullet or args.meshcat or args.torque:
         if T > trajectory.t_end:
             continue
 
-        tasks.update_tasks(trajectory, T)
+        tasks.update_tasks_from_trajectory(trajectory, T)
         robot.update_kinematics()
         solver.solve(True)
 
