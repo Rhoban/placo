@@ -22,6 +22,9 @@
 #include "placo/control/regularization_task.h"
 #include "placo/control/centroidal_momentum_task.h"
 
+// Problem formulation
+#include "placo/problem/problem.h"
+
 namespace placo
 {
 class KinematicsSolver
@@ -263,7 +266,6 @@ public:
    * @brief Size of the problem (number of variables)
    */
   int N;
-  int slacks = 0;
 
   /**
    * @brief Some configuration noise added before solving
@@ -276,14 +278,8 @@ public:
   double dt = 0.;
 
 protected:
-  struct Inequality
-  {
-    // Inequality of the form
-    // Ax <= b
-    Eigen::MatrixXd A;
-    Eigen::VectorXd b;
-  };
-  std::vector<Inequality> inequalities;
+  placo::Problem problem;
+  placo::Variable* qd;
 
   std::set<int> masked_dof;
   bool masked_fbase;
@@ -307,10 +303,7 @@ protected:
   double self_collisions_weight = 1.;
 
   void compute_limits_inequalities();
-
-  std::vector<RobotWrapper::Distance> distances;
-  void precompute_self_collision_slacks();
-  void compute_self_collision_inequalities(Eigen::MatrixXd& P, Eigen::VectorXd& q);
+  void compute_self_collision_inequalities();
 
   // Task id (this is only useful when task names are not specified, each task will have an unique ID)
   int task_id = 0;

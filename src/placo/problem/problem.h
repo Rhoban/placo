@@ -48,6 +48,11 @@ public:
    */
   ProblemConstraint& add_constraint(const ProblemConstraint& constraint);
 
+  /**
+   * @brief Clear all the constraints
+   */
+  void clear_constraints();
+
   void solve();
 
   std::vector<std::shared_ptr<Variable>> variables;

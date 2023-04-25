@@ -2,6 +2,7 @@
 #include "eiquadprog/eiquadprog.hpp"
 #include "pinocchio/algorithm/geometry.hpp"
 #include "placo/model/robot_wrapper.h"
+#include "placo/problem/problem.h"
 #include "placo/utils.h"
 
 namespace placo
@@ -9,11 +10,13 @@ namespace placo
 KinematicsSolver::KinematicsSolver(RobotWrapper& robot_) : robot(&robot_), masked_fbase(false)
 {
   N = robot->model.nv;
+  qd = &problem.add_variable(N);
 }
 
 KinematicsSolver::KinematicsSolver(RobotWrapper* robot_) : robot(robot_), masked_fbase(false)
 {
   N = robot->model.nv;
+  qd = &problem.add_variable(N);
 }
 
 PositionTask& KinematicsSolver::add_position_task(RobotWrapper::FrameIndex frame, Eigen::Vector3d target_world)
@@ -234,29 +237,11 @@ int KinematicsSolver::tasks_count()
   return tasks.size();
 }
 
-void KinematicsSolver::precompute_self_collision_slacks()
+void KinematicsSolver::compute_self_collision_inequalities()
 {
-  distances = robot->distances();
-  slacks = 0;
-
-  if (avoid_self_collisions && robot != nullptr && self_collisions_soft)
-  {
-    for (auto& distance : distances)
-    {
-      if (distance.min_distance < self_collisions_trigger)
-      {
-        slacks += 1;
-      }
-    }
-  }
-}
-
-void KinematicsSolver::compute_self_collision_inequalities(Eigen::MatrixXd& P, Eigen::VectorXd& q)
-{
-  int slack = 0;
-
   if (avoid_self_collisions && robot != nullptr)
   {
+    std::vector<RobotWrapper::Distance> distances = robot->distances();
     for (auto& distance : distances)
     {
       if (distance.min_distance < self_collisions_trigger)
@@ -276,40 +261,10 @@ void KinematicsSolver::compute_self_collision_inequalities(Eigen::MatrixXd& P, E
         Eigen::MatrixXd X_B_world = pinocchio::SE3(Eigen::Matrix3d::Identity(), -distance.pointB).toActionMatrix();
         Eigen::MatrixXd JB = X_B_world * robot->joint_jacobian(distance.parentB, pinocchio::ReferenceFrame::WORLD);
 
-        Inequality inequality;
-        inequality.A = Eigen::MatrixXd(1, N + slacks);
-        inequality.A.setZero();
-        inequality.b = Eigen::VectorXd(1);
-        inequality.b.setZero();
+        Expression e = distance.min_distance + n.transpose() * (JB - JA).block(0, 0, 3, N) * qd->expr();
 
-        if (self_collisions_soft)
-        {
-          // Adding only one relative constraint
-          Eigen::MatrixXd A(1, N + slacks);
-          A.setZero();
-          A.block(0, 0, 1, N) = n.transpose() * (JB - JA).block(0, 0, 3, N);
-          A(0, N + slack) = -1;
-
-          // We try to enforce:
-          // d + nT Jb qdot - nT Ja qdot - s = epsilon
-          // with s a slack variable greater than 0
-          Eigen::VectorXd b(1);
-          b[0] = distance.min_distance - self_collisions_margin;
-          P.noalias() += self_collisions_weight * A.transpose() * A;
-          q.noalias() += self_collisions_weight * A.transpose() * b;
-
-          // s > 0
-          inequality.A(0, N + slack) = -1;
-
-          slack += 1;
-        }
-        else
-        {
-          // Enforcing the collision as an hard inequality
-          inequality.A.block(0, 0, 1, N) = -n.transpose() * (JB - JA).block(0, 0, 3, N);
-          inequality.b[0] = distance.min_distance - self_collisions_margin;
-        }
-        inequalities.push_back(inequality);
+        // Adding constraint that dist + Jdq >= margin
+        problem.add_constraint(e >= self_collisions_margin).configure(!self_collisions_soft, self_collisions_weight);
       }
     }
   }
@@ -322,60 +277,28 @@ void KinematicsSolver::compute_limits_inequalities()
     throw std::runtime_error("You enabled velocity limits but didn't set solver.dt");
   }
 
-  int constrained_dofs = N - 6;
-  int n_inequalities = 0;
-  if (joint_limits)
+  // Iterating for each actuated joints
+  for (int k = 0; k < N - 6; k++)
   {
-    n_inequalities += constrained_dofs * 2;
-  }
-  if (velocity_limits)
-  {
-    n_inequalities += constrained_dofs * 2;
-  }
-  int current_row = 0;
-
-  if (n_inequalities > 0)
-  {
-    Inequality inequality;
-    inequality.A = Eigen::MatrixXd(n_inequalities, N + slacks);
-    inequality.b = Eigen::VectorXd(n_inequalities);
-    inequality.A.setZero();
-
-    for (int k = 0; k < N - 6; k++)
+    if (joint_limits)
     {
-      if (joint_limits)
-      {
-        // delta_q <= q_max - q
-        inequality.A(current_row, 6 + k) = 1;
-        inequality.b[current_row] = robot->model.upperPositionLimit[k + 7] - robot->state.q[k + 7];
-
-        // -delta_q <= q - q_min
-        inequality.A(current_row + 1, 6 + k) = -1;
-        inequality.b[current_row + 1] = robot->state.q[k + 7] - robot->model.lowerPositionLimit[k + 7];
-
-        current_row += 2;
-      }
-
-      if (velocity_limits)
-      {
-        // delta_q <= dt * qdot_max
-        inequality.A(current_row, 6 + k) = 1;
-        inequality.b[current_row] = dt * robot->model.velocityLimit[k + 6];
-
-        // -delta_q <= dt * qdot_max
-        inequality.A(current_row + 1, 6 + k) = -1;
-        inequality.b[current_row + 1] = dt * robot->model.velocityLimit[k + 6];
-
-        current_row += 2;
-      }
+      problem.add_constraint((robot->state.q[k + 7] + qd->expr(k + 6, 1)) <= robot->model.upperPositionLimit[k + 7]);
+      problem.add_constraint((robot->state.q[k + 7] + qd->expr(k + 6, 1)) >= robot->model.lowerPositionLimit[k + 7]);
     }
 
-    inequalities.push_back(inequality);
+    if (velocity_limits)
+    {
+      problem.add_constraint(qd->expr(k + 6, 1) <= (dt * robot->model.velocityLimit(k + 6)));
+      problem.add_constraint(qd->expr(k + 6, 1) >= (-dt * robot->model.velocityLimit(k + 6)));
+    }
   }
 }
 
 Eigen::VectorXd KinematicsSolver::solve(bool apply)
 {
+  // Clear previously created constraints
+  problem.clear_constraints();
+
   // Adding some random noise
   auto q_save = robot->state.q;
 
@@ -394,130 +317,31 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
     task->update();
   }
 
-  // Computing the number of required slack variables for "Soft" inequalities
-  precompute_self_collision_slacks();
-
-  // Building objective function
-  Eigen::MatrixXd P(N + slacks, N + slacks);
-  Eigen::VectorXd q(N + slacks);
-
-  P.setZero();
-  q.setZero();
-
-  if (slacks > 0)
-  {
-    P.block(N, N, slacks, slacks).setIdentity();
-    P.block(N, N, slacks, slacks) *= 1e-6;
-  }
-
-  int n_equalities = 0;
-
+  // Adding equality constraints
   for (auto task : tasks)
   {
-    if (task->priority == Task::Priority::Soft)
-    {
-      // The original equality is: Ax = b
-      // In term of minimization, we want to minimize (Ax - b)^T (Ax - b)
-      // Thus, (x^T A^T - b^T) (Ax - b) = x^T A^T A x - 2 b^T A
-      // P (hessian) is A^T A
-      // q (linear) is - A^T b
-      // We removed the "2" because the solver already solves for 1/2 x^T P x + q^T x
-
-      P.noalias() += task->weight * (task->A.transpose() * task->A);
-      q.noalias() += task->weight * (-task->A.transpose() * task->b);
-    }
-    else
-    {
-      n_equalities += task->A.rows();
-    }
+    problem.add_constraint(task->A * qd->expr() == task->b)
+        .configure(task->priority == Task::Priority::Hard, task->weight);
   }
 
-  // Adding masked DoF in equality constraints
-  n_equalities += masked_dof.size();
-
-  if (masked_fbase)
-  {
-    n_equalities += 6;
-  }
-
-  // Constraint matrices
-  Eigen::MatrixXd A(n_equalities, N + slacks);
-  Eigen::VectorXd b(n_equalities);
-  A.setZero();
-  b.setZero();
-
-  // Adding constraints
-  int current_equality_row = 0;
-
-  for (auto task : tasks)
-  {
-    if (task->priority == Task::Priority::Hard)
-    {
-      A.block(current_equality_row, 0, task->A.rows(), N) = task->A;
-      b.block(current_equality_row, 0, task->A.rows(), 1) = task->b;
-      current_equality_row += task->A.rows();
-    }
-  }
-
-  // Adding 1s in columns of a, yielding delta_q_i = 0 and preventing the DoF from being
-  // used by the solver
+  // Masked DoFs are hard equality constraints enforcing no deltas
   for (auto& joint : masked_dof)
   {
-    A(current_equality_row, joint) = 1;
-    current_equality_row += 1;
+    problem.add_constraint(qd->expr(joint, 1) == 0);
   }
 
   if (masked_fbase)
   {
-    // Masking the 6 first dof to disable fbase in optimization
-    for (int k = 0; k < 6; k++)
-    {
-      A(current_equality_row, k) = 1;
-      current_equality_row += 1;
-    }
+    problem.add_constraint(qd->expr(0, 6) == 0.);
   }
-
-  // Handling degree of freedoms limit inequalities
-  inequalities.clear();
 
   compute_limits_inequalities();
-  compute_self_collision_inequalities(P, q);
+  compute_self_collision_inequalities();
 
-  int nb_inequalities = 0;
-  for (auto& inequality : inequalities)
-  {
-    nb_inequalities += inequality.A.rows();
-  }
-
-  Eigen::MatrixXd CI(nb_inequalities, N + slacks);
-  Eigen::VectorXd ci0(nb_inequalities);
-
-  int current_inequality_row = 0;
-  for (auto& inequality : inequalities)
-  {
-    int rows = inequality.A.rows();
-    CI.block(current_inequality_row, 0, rows, N + slacks) = -inequality.A;
-    ci0.block(current_inequality_row, 0, rows, 1) = inequality.b;
-    current_inequality_row += rows;
-  }
-
-  Eigen::VectorXd solution;
-
-  double result = eiquadprog::solvers::solve_quadprog(P, q, A.transpose(), -b, CI.transpose(), ci0, solution, activeSet,
-                                                      activeSetSize);
+  problem.solve();
 
   // Retrieving qd (ignoring slack variables)
-  Eigen::VectorXd qd = solution.block(0, 0, N, 1);
-
-  if (result == std::numeric_limits<double>::infinity())
-  {
-    throw std::runtime_error("KinematicsSolver: Infeasible QP (check your equality and inequality constraints)");
-  }
-
-  if (qd.hasNaN())
-  {
-    throw std::runtime_error("KinematicsSolver: NaN encountered in result");
-  }
+  Eigen::VectorXd qd_sol = qd->value;
 
   if (velocity_post_limits)
   {
@@ -526,7 +350,7 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
     for (int k = 0; k < N - 6; k++)
     {
       double max_variation = dt * robot->model.velocityLimit[k + 6];
-      double variation = fabs(qd[k + 6]);
+      double variation = fabs(qd_sol[k + 6]);
 
       if (variation > max_variation)
       {
@@ -534,19 +358,19 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
       }
     }
 
-    qd = qd * ratio;
+    qd_sol = qd_sol * ratio;
   }
 
   if (apply)
   {
-    robot->state.q = pinocchio::integrate(robot->model, robot->state.q, qd);
+    robot->state.q = pinocchio::integrate(robot->model, robot->state.q, qd_sol);
   }
   else
   {
     robot->state.q = q_save;
   }
 
-  return qd;
+  return qd_sol;
 }
 
 void KinematicsSolver::clear_tasks()

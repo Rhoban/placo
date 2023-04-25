@@ -38,6 +38,11 @@ ProblemConstraint& Problem::add_constraint(const ProblemConstraint& constraint_)
   return *constraint;
 }
 
+void Problem::clear_constraints()
+{
+  constraints.clear();
+}
+
 void Problem::solve()
 {
   int n_equalities = 0;
@@ -175,6 +180,12 @@ void Problem::solve()
         throw std::runtime_error("Problem: Infeasible QP (equality constraints were not enforced)");
       }
     }
+  }
+
+  // Checking for NaNs in solution
+  if (x.hasNaN())
+  {
+    throw std::runtime_error("Problem: NaN in the QP solution");
   }
 
   slacks = x.block(n_variables, 0, slack_variables, 1);
