@@ -1,0 +1,2 @@
+deps:
+  - rhobandeps/jsoncpp#cmake_only
