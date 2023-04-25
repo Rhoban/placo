@@ -241,6 +241,21 @@ void KinematicsSolver::compute_self_collision_inequalities()
   {
     std::vector<RobotWrapper::Distance> distances = robot->distances();
 
+    int constraints = 0;
+
+    for (auto& distance : distances)
+    {
+      if (distance.min_distance < self_collisions_trigger)
+      {
+        constraints += 1;
+      }
+    }
+
+    Expression e;
+    e.A = Eigen::MatrixXd(constraints, N);
+    e.b = Eigen::VectorXd(constraints);
+    int constraint = 0;
+
     for (auto& distance : distances)
     {
       if (distance.min_distance < self_collisions_trigger)
@@ -260,16 +275,15 @@ void KinematicsSolver::compute_self_collision_inequalities()
         Eigen::MatrixXd X_B_world = pinocchio::SE3(Eigen::Matrix3d::Identity(), -distance.pointB).toActionMatrix();
         Eigen::MatrixXd JB = X_B_world * robot->joint_jacobian(distance.parentB, pinocchio::ReferenceFrame::WORLD);
 
-        Expression e;
-        e.A = n.transpose() * (JB - JA).block(0, 0, 3, N);
-        e.b = Eigen::VectorXd(1);
-        e.b.setZero();
+        // We want: current_distance + J dq >= margin
+        e.A.block(constraint, 0, 1, N) = n.transpose() * (JB - JA).block(0, 0, 3, N);
+        e.b[constraint] = distance.min_distance - self_collisions_margin;
 
-        // Adding constraint that dist + Jdq >= margin
-        problem.add_constraint((distance.min_distance + e) >= self_collisions_margin)
-            .configure(!self_collisions_soft, self_collisions_weight);
+        constraint += 1;
       }
     }
+
+    problem.add_constraint(e >= 0).configure(!self_collisions_soft, self_collisions_weight);
   }
 }
 
