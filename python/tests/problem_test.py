@@ -54,7 +54,7 @@ class TestProblem(unittest.TestCase):
         problem = placo.Problem()
 
         x = problem.add_variable(8)
-        e = x.expr(0, 1) << x.expr(2, 1) << x.expr(4, 1) << x.expr(6, 1)
+        e = x.expr(0, 1) / x.expr(2, 1) / x.expr(4, 1) / x.expr(6, 1)
 
         A = np.zeros((4, 8))
         A[0, 0] = 1
@@ -167,19 +167,21 @@ class TestProblem(unittest.TestCase):
         # This is a unit square (drawn clockwise)
         polygon = np.array([[1.0, 1.0], [1.0, 2.0], [2.0, 2.0], [2.0, 1.0]])
 
-        xy = problem.add_variable(2)
-        placo.PolygonConstraint.add_polygon_constraint(problem, xy.expr(), polygon, 0.0)
+        x = problem.add_variable(1)
+        y = problem.add_variable(1)
+        placo.PolygonConstraint.add_polygon_constraint(problem, x.expr(), y.expr(), polygon, 0.0)
         problem.solve()
+
         self.assertNumpyEqual(
-            xy.value,
-            np.array([1.0, 1.0]),
+            np.hstack((x.value, y.value)),
+            np.array([1.0,]),
             msg="The [0., 0.] value should be projected in the polygon bottom-left corner at [1., 1.]",
         )
 
-        problem.add_constraint(xy.expr() == np.array([3.0, 3.0])).configure("soft", 1.0)
+        problem.add_constraint((x.expr() / y.expr()) == np.array([3.0, 3.0])).configure("soft", 1.0)
         problem.solve()
         self.assertNumpyEqual(
-            xy.value,
+            np.hstack((x.value, y.value)),
             np.array([2.0, 2.0]),
             msg="The [3., 3.] value should be projected in the polygon top-right corner at [2., 2.]",
         )

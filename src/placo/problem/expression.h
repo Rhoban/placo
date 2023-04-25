@@ -40,6 +40,12 @@ public:
   Expression operator-(const Eigen::VectorXd v) const;
   friend Expression operator-(const Eigen::VectorXd v, const Expression& e);
 
+  // Adding a number
+  Expression operator+(const double f) const;
+  friend Expression operator+(double, const Expression& e);
+  Expression operator-(const double f) const;
+  friend Expression operator-(double, const Expression& e);
+
   // Multiplying by a matrix
   friend Expression operator*(const Eigen::MatrixXd M, const Expression& e);
   Expression multiply(const Eigen::MatrixXd M);
@@ -49,7 +55,7 @@ public:
   Expression mean();
 
   // Stacking expressions
-  Expression operator<<(const Expression& other);
+  Expression operator/(const Expression& other);
 
   // Comparing to produce constraints
   ProblemConstraint operator>=(const Expression& other) const;
