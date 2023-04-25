@@ -146,6 +146,32 @@ Expression operator-(const Eigen::VectorXd v, const Expression& e)
   return e - v;
 }
 
+Expression Expression::operator+(const double f) const
+{
+  Eigen::VectorXd fv(1);
+  fv(0, 0) = f;
+
+  return (*this) + fv;
+}
+
+Expression operator+(double f, const Expression& e)
+{
+  return e + f;
+}
+
+Expression Expression::operator-(const double f) const
+{
+  Eigen::VectorXd fv(1);
+  fv(0, 0) = f;
+
+  return (*this) - fv;
+}
+
+Expression operator-(double f, const Expression& e)
+{
+  return (-e) + f;
+}
+
 Expression operator*(const Eigen::MatrixXd M, const Expression& e_)
 {
   Expression e(e_);
@@ -186,7 +212,7 @@ Expression Expression::mean()
   return e;
 }
 
-Expression Expression::operator<<(const Expression& other)
+Expression Expression::operator/(const Expression& other)
 {
   Expression e;
 
