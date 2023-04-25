@@ -82,6 +82,7 @@ target_link_libraries(libplaco PUBLIC
     pinocchio::pinocchio
     eigenpy::eigenpy
     eiquadprog::eiquadprog
+    jsoncpp_lib
     ${PROTOBUF_LIBRARIES}
   ${PROTOBUF_LIBRARIES}
 )
