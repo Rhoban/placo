@@ -196,6 +196,31 @@ class TestProblem(unittest.TestCase):
 
         self.assertRaises(RuntimeError, problem.solve)
 
+    def test_expr_t(self):
+        """
+        Testing expr_t, that allows adding constraints that are not aligned with integrator timesteps
+        """        
+        problem = placo.Problem()
+
+        xdd = problem.add_variable(10)
+        integrator = placo.Integrator(xdd, np.array([0., 0.]), 2, 0.1)
+
+        # Adding constraint non aligned with timesteps
+        problem.add_constraint(integrator.expr_t(0.5, 0) == 1.5)
+        problem.add_constraint(integrator.expr_t(0.51, 0) == 2.5)
+
+        for k in range(10):
+            problem.add_limit(integrator.expr(k, 0), np.array([3.]))
+
+        problem.add_constraint(integrator.expr_t(1., 0) == 0.)
+
+        problem.solve()
+
+        self.assertNumpyEqual(integrator.value(0., 0), 0.)
+        self.assertNumpyEqual(integrator.value(0.5, 0), 1.5)
+        self.assertNumpyEqual(integrator.value(0.51, 0), 2.5)
+        self.assertNumpyEqual(integrator.value(1., 0), 0.)
+
 
 if __name__ == "__main__":
     unittest.main()

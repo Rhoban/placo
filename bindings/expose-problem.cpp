@@ -47,6 +47,7 @@ void exposeProblem()
       .add_property(
           "final_transition_matrix", +[](const Integrator& i) { return i.final_transition_matrix; })
       .def("expr", &Integrator::expr)
+      .def("expr_t", &Integrator::expr_t)
       .def("value", &Integrator::value);
 
   class_<Problem>("Problem")

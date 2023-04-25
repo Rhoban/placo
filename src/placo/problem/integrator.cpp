@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <iostream>
 #include <unsupported/Eigen/MatrixFunctions>
 #include "placo/problem/integrator.h"
@@ -36,8 +37,8 @@ std::pair<Eigen::MatrixXd, Eigen::VectorXd> Integrator::AB_matrices(int order, d
 
   // Computing A and B transition matrices
   Eigen::MatrixXd Me = (M * dt).exp();
-  A = Me.block(0, 0, order, order);
-  B = Me.block(0, order, order, 1);
+  Eigen::MatrixXd A = Me.block(0, 0, order, order);
+  Eigen::MatrixXd B = Me.block(0, order, order, 1);
 
   return std::pair<Eigen::MatrixXd, Eigen::VectorXd>(A, B);
 }
@@ -55,14 +56,21 @@ Eigen::MatrixXd Integrator::continuous_system_matrix(int order)
   return M;
 }
 
-Expression Integrator::expr(int step, int diff)
+void Integrator::check_diff(int diff, bool allow_all)
 {
-  if (diff < 0 || diff > order)
+  int diff_min = allow_all ? -1 : 0;
+
+  if (diff < diff_min || diff > order)
   {
     std::ostringstream oss;
     oss << "Asked differentiation order of " << diff << " for an integrator of order " << order;
     throw std::runtime_error(oss.str());
   }
+}
+
+Expression Integrator::expr(int step, int diff)
+{
+  check_diff(diff, true);
 
   if (step < 0 || step > variable.size())
   {
@@ -79,14 +87,54 @@ Expression Integrator::expr(int step, int diff)
   else
   {
     Expression e;
-
-    e.A = Eigen::MatrixXd(1, variable.k_end);
+    int rows = (diff == -1) ? order : 1;
+    e.A = Eigen::MatrixXd(rows, variable.k_end);
     e.A.setZero();
-    e.b = Eigen::VectorXd(1);
+    e.b = Eigen::VectorXd(rows);
 
-    e.A.block(0, variable.k_start, 1, step) = final_transition_matrix.block(diff, N - step, 1, step);
+    if (diff == -1)
+    {
+      e.A.block(0, variable.k_start, rows, step) = final_transition_matrix.block(0, N - step, rows, step);
+      e.b = a_powers[step] * X0;
+    }
+    else
+    {
+      e.A.block(0, variable.k_start, 1, step) = final_transition_matrix.block(diff, N - step, 1, step);
+      e.b(0, 0) = (a_powers[step] * X0)(diff, 0);
+    }
 
-    e.b(0, 0) = (a_powers[step] * X0)(diff, 0);
+    return e;
+  }
+}
+
+Expression Integrator::expr_t(double t, int diff)
+{
+  if (t < 0 || t > variable.size() * dt)
+  {
+    throw std::runtime_error("expr_t called with a t out of the scope of the integrator");
+  }
+
+  int step = std::max<int>(std::min<int>(variable.size() - 1, t / dt), 0);
+
+  if (diff == order)
+  {
+    return variable.expr(step, 1);
+  }
+  else
+  {
+    double remaining_dt = t - step * dt;
+
+    auto AB = AB_matrices(order, remaining_dt);
+    Eigen::MatrixXd Ar = AB.first;
+    Eigen::MatrixXd Br = AB.second;
+
+    Expression e = (Ar * expr(step)) + Br * variable.expr(step);
+
+    if (diff > -1)
+    {
+      e.A = Eigen::MatrixXd(e.A.block(diff, 0, 1, e.A.cols()));
+      e.b = Eigen::MatrixXd(e.b.block(diff, 0, 1, e.b.cols()));
+    }
 
     return e;
   }
@@ -94,6 +142,8 @@ Expression Integrator::expr(int step, int diff)
 
 double Integrator::value(double t, int diff)
 {
+  check_diff(diff);
+
   if (version != variable.version)
   {
     update_keyframes();
@@ -108,13 +158,6 @@ double Integrator::value(double t, int diff)
     k = variable.size() - 1;
 
   double remaining_dt = t - k * dt;
-
-  if (diff < 0 || diff > variable.size())
-  {
-    std::ostringstream oss;
-    oss << "Unable to get the value for order: " << order;
-    throw std::runtime_error(oss.str());
-  }
 
   if (diff == order)
   {

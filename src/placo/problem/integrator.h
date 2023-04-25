@@ -39,10 +39,18 @@ public:
   /**
    * @brief Builds an expression for the given step and differentiation
    * @param step the step
-   * @param diff differentiation
+   * @param diff differentiation (if -1, the expression will be a vector of size order with all orders)
    * @return an expression
    */
-  Expression expr(int step, int diff);
+  Expression expr(int step, int diff = -1);
+
+  /**
+   * @brief Builds an expression for the given time and differentiation
+   * @param t the time
+   * @param diff differentiation (if -1, the expression will be a vector of size order with all orders)
+   * @return an expression
+   */
+  Expression expr_t(double t, int diff = -1);
 
   /**
    * @brief Computes
@@ -84,6 +92,8 @@ public:
 protected:
   // Keeping track of the variable version
   int version = 0;
+
+  void check_diff(int diff, bool allow_all = false);
 
   void update_keyframes();
 };
