@@ -103,7 +103,7 @@ Sparsity Sparsity::detect_columns_sparsity(const Eigen::MatrixXd M)
 
   for (int column = 0; column < M.cols(); column++)
   {
-    if (M.col(column).isZero(1e-6))
+    if (M.col(column).isZero(1e-12))
     {
       if (last_nonzero_column != -1)
       {

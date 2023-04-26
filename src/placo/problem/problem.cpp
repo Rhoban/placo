@@ -132,10 +132,10 @@ void Problem::solve()
           }
 
           int constraints = constraint->expression.A.rows();
-          
+
           for (auto interval : sparsity.intervals)
           {
-            int size = interval.end - interval.start;
+            int size = 1 + interval.end - interval.start;
 
             Eigen::MatrixXd block = constraint->expression.A.block(0, interval.start, constraints, size);
 
