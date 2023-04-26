@@ -40,6 +40,7 @@ void exposeKinematics()
 {
   class_<KinematicsSolver> solver_class =
       class_<KinematicsSolver>("KinematicsSolver", init<RobotWrapper&>())
+          .add_property("problem", &KinematicsSolver::problem)
           .add_property("noise", &KinematicsSolver::noise, &KinematicsSolver::noise)
           .add_property("dt", &KinematicsSolver::dt, &KinematicsSolver::dt)
           .add_property("N", &KinematicsSolver::N)

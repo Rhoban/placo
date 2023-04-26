@@ -10,11 +10,13 @@ namespace placo
 KinematicsSolver::KinematicsSolver(RobotWrapper& robot_) : robot(&robot_), masked_fbase(false)
 {
   N = robot->model.nv;
+  problem.use_sparsity = false;
 }
 
 KinematicsSolver::KinematicsSolver(RobotWrapper* robot_) : robot(robot_), masked_fbase(false)
 {
   N = robot->model.nv;
+  problem.use_sparsity = false;
 }
 
 PositionTask& KinematicsSolver::add_position_task(RobotWrapper::FrameIndex frame, Eigen::Vector3d target_world)

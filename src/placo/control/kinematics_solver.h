@@ -1,5 +1,7 @@
 #pragma once
+
 #include <Eigen/Dense>
+#include <set>
 
 #include "placo/model/robot_wrapper.h"
 
@@ -277,8 +279,12 @@ public:
    */
   double dt = 0.;
 
-protected:
+  /**
+   * @brief The underlying QP problem
+   */
   placo::Problem problem;
+
+protected:
   placo::Variable* qd = nullptr;
 
   std::set<int> masked_dof;
