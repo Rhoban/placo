@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <Eigen/Dense>
 
 namespace placo
 {
@@ -23,5 +24,6 @@ public:
   std::vector<Interval> intervals;
 
   Sparsity operator+(const Sparsity& other) const;
+  static Sparsity detect_columns_sparsity(const Eigen::MatrixXd M);
 };
 }  // namespace placo

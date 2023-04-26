@@ -95,4 +95,36 @@ void Sparsity::print_intervals()
     std::cout << "* " << interval.start << " -> " << interval.end << std::endl;
   }
 }
+
+Sparsity Sparsity::detect_columns_sparsity(const Eigen::MatrixXd M)
+{
+  Sparsity sparsity;
+  int last_nonzero_column = -1;
+
+  for (int column = 0; column < M.cols(); column++)
+  {
+    if (M.col(column).isZero(1e-6))
+    {
+      if (last_nonzero_column != -1)
+      {
+        sparsity.add_interval(last_nonzero_column, column - 1);
+        last_nonzero_column = -1;
+      }
+    }
+    else
+    {
+      if (last_nonzero_column == -1)
+      {
+        last_nonzero_column = column;
+      }
+    }
+  }
+
+  if (last_nonzero_column != -1)
+  {
+    sparsity.add_interval(last_nonzero_column, M.cols() - 1);
+  }
+
+  return sparsity;
+}
 };  // namespace placo

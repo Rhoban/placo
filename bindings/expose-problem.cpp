@@ -43,7 +43,9 @@ void exposeProblem()
           })
       .def(self + self)
       .def("add_interval", &Sparsity::add_interval)
-      .def("print_intervals", &Sparsity::print_intervals);
+      .def("detect_columns_sparsity", &Sparsity::detect_columns_sparsity)
+      .def("print_intervals", &Sparsity::print_intervals)
+      .staticmethod("detect_columns_sparsity");
 
   class_<ProblemConstraint>("ProblemConstraint")
       .add_property("expression", &ProblemConstraint::expression)
@@ -83,6 +85,7 @@ void exposeProblem()
       .def("clear_variables", &Problem::clear_variables)
       .def("clear_constraints", &Problem::clear_constraints)
       .add_property("use_sparsity", &Problem::use_sparsity, &Problem::use_sparsity)
+      .add_property("detect_sparsity", &Problem::detect_sparsity, &Problem::detect_sparsity)
       .add_property(
           "slacks", +[](const Problem& problem) { return problem.slacks; });
 

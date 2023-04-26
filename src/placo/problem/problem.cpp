@@ -118,10 +118,22 @@ void Problem::solve()
       else
       {
         // Adding the soft constraint to the objective function
-        if (constraint->expression.has_sparsity && use_sparsity)
+        if (use_sparsity && (detect_sparsity || constraint->expression.has_sparsity))
         {
+          Sparsity sparsity;
+
+          if (detect_sparsity)
+          {
+            sparsity = Sparsity::detect_columns_sparsity(constraint->expression.A);
+          }
+          else
+          {
+            sparsity = constraint->expression.sparsity;
+          }
+
           int constraints = constraint->expression.A.rows();
-          for (auto interval : constraint->expression.sparsity.intervals)
+          
+          for (auto interval : sparsity.intervals)
           {
             int size = interval.end - interval.start;
 
