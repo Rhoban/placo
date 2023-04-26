@@ -11,6 +11,9 @@ namespace placo
 class ProblemConstraints
 {
 public:
+  ProblemConstraints();
+  ProblemConstraints(std::vector<ProblemConstraint*>);
+
   void configure(std::string type, double weight);
   void configure(bool hard, double weight);
 

@@ -27,6 +27,8 @@ public:
     double dt;
   };
 
+  Integrator();
+
   /**
    * @brief Creates an integrator able to build expressions and values over a decision variable.
    *        With this constructor, a continuous system matrix will be used (see below)

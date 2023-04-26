@@ -67,6 +67,7 @@ add_library(libplaco
     src/placo/planning/kick.cpp
     src/placo/planning/walk_tasks.cpp
     src/placo/model/humanoid_parameters.cpp
+    src/placo/planning/lipm.cpp
 
     ${PROTO_SRCS}
     ${PROTO_HDRS}  

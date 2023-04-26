@@ -3,15 +3,14 @@
 
 namespace placo
 {
-ProblemConstraints PolygonConstraint::add_polygon_constraint(Problem& problem, Expression& expression_x,
-                                                             Expression& expression_y,
-                                                             std::vector<Eigen::Vector2d> polygon, double margin)
+ProblemConstraints PolygonConstraint::add_polygon_constraint_xy(Problem& problem, Expression& expression_xy,
+                                                                std::vector<Eigen::Vector2d> polygon, double margin)
 {
   ProblemConstraints constraints;
 
-  if (expression_x.rows() != 1 || expression_y.rows() != 1)
+  if (expression_xy.rows() != 2)
   {
-    throw std::runtime_error("add_polygon_constraint should be called with 1 row expressions (for x and y)");
+    throw std::runtime_error("add_polygon_constraint should be called with a 2 rows expressions");
   }
 
   for (size_t i = 0; i < polygon.size(); i++)
@@ -27,12 +26,19 @@ ProblemConstraints PolygonConstraint::add_polygon_constraint(Problem& problem, E
     n << (B - A).y(), (A - B).x();
     n.normalize();
 
-    // The distance to the line is given by n.T * (P - A) = n.x * (P.x - A.x) + n.Y * (P.y - A.y)
-    ProblemConstraint& constraint =
-        problem.add_constraint((n.x() * (expression_x - A.x()) + n.y() * (expression_y - A.y())) >= margin);
+    // The distance to the line is given by n.T * (P - A) >= margin
+    ProblemConstraint& constraint = problem.add_constraint((n.transpose() * (expression_xy - A)) >= margin);
     constraints.constraints.push_back(&constraint);
   }
 
   return constraints;
+}
+
+ProblemConstraints PolygonConstraint::add_polygon_constraint(Problem& problem, Expression& expression_x,
+                                                             Expression& expression_y,
+                                                             std::vector<Eigen::Vector2d> polygon, double margin)
+{
+  Expression e = expression_x / expression_y;
+  return add_polygon_constraint_xy(problem, e, polygon, margin);
 }
 };  // namespace placo

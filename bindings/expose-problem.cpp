@@ -59,6 +59,7 @@ void exposeProblem()
 
   class_<PolygonConstraint>("PolygonConstraint")
       .def("add_polygon_constraint", &PolygonConstraint::add_polygon_constraint)
+      .def("add_polygon_constraint_xy", &PolygonConstraint::add_polygon_constraint_xy)
       .staticmethod("add_polygon_constraint");
 
   class_<Integrator>("Integrator", init<Variable&, Eigen::VectorXd, int, double>())

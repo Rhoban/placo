@@ -10,6 +10,8 @@
 #include "placo/control/frame_task.h"
 #include "placo/control/com_task.h"
 #include "placo/control/orientation_task.h"
+#include "placo/problem/integrator.h"
+#include "placo/problem/problem.h"
 
 namespace placo
 {

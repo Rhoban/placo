@@ -2,6 +2,14 @@
 
 namespace placo
 {
+ProblemConstraints::ProblemConstraints()
+{
+}
+
+ProblemConstraints::ProblemConstraints(std::vector<ProblemConstraint*> constraints) : constraints(constraints)
+{
+}
+
 void ProblemConstraints::configure(std::string type, double weight)
 {
   configure(type == "hard", weight);

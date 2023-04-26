@@ -5,7 +5,6 @@
 
 namespace placo
 {
-
 double Integrator::Trajectory::value(double t, int diff)
 {
   Integrator::check_diff(order, diff);
@@ -34,6 +33,10 @@ double Integrator::Trajectory::value(double t, int diff)
 
     return result[diff];
   }
+}
+
+Integrator::Integrator()
+{
 }
 
 Integrator::Integrator(Variable& variable_, Eigen::VectorXd X0, Eigen::MatrixXd system_matrix, double dt)

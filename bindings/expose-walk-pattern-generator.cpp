@@ -8,6 +8,7 @@
 #include "placo/footsteps/footsteps_planner.h"
 #include "placo/trajectory/swing_foot_quintic.h"
 #include "placo/planning/walk_tasks.h"
+#include "placo/planning/lipm.h"
 #include <Eigen/Dense>
 #include <boost/python.hpp>
 
@@ -85,4 +86,20 @@ void exposeWalkPatternGenerator()
           "com_task", +[](WalkTasks& tasks) { return *tasks.com_task; })
       .add_property(
           "trunk_orientation_task", +[](WalkTasks& tasks) { return *tasks.trunk_orientation_task; });
+
+  class_<LIPM::Trajectory>("LIPMTrajectory", init<>())
+      .def("com", &LIPM::Trajectory::com)
+      .def("vel", &LIPM::Trajectory::vel)
+      .def("acc", &LIPM::Trajectory::acc)
+      .def("zmp", &LIPM::Trajectory::zmp)
+      .def("dcm", &LIPM::Trajectory::dcm);
+
+  class_<LIPM>("LIPM", init<int, double, double, Eigen::Vector2d, Eigen::Vector2d, Eigen::Vector2d>())
+      .add_property("problem", &LIPM::problem)
+      .def("com", &LIPM::com)
+      .def("vel", &LIPM::vel)
+      .def("acc", &LIPM::acc)
+      .def("zmp", &LIPM::zmp)
+      .def("dcm", &LIPM::dcm)
+      .def("get_trajectory", &LIPM::get_trajectory);
 }
