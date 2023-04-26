@@ -96,6 +96,9 @@ kick.t_init = 0.7
 kick.t_delay = 0.3
 kick.t_up = 0.3
 
+ampl_sin = 0.1
+init_sin = False
+
 kicking = False
 
 if args.pybullet or args.meshcat:
@@ -115,8 +118,8 @@ if args.pybullet or args.meshcat:
     last_display = 0
 
     while True:
+        T = max(0, t)
         if not kicking:
-            T = max(0, t)
             if T > trajectory.t_end:
 
                 kick.one_foot_balance(
@@ -130,11 +133,31 @@ if args.pybullet or args.meshcat:
             tasks.update_tasks_from_trajectory(trajectory, T)
 
         else:
-            T = max(0, t)
             if T > kick.duration:
-                T = kick.duration
+                if not init_sin:
+                    init_T_world_left = robot.get_T_world_left()
+                    init_T_world_right = robot.get_T_world_right()
+                    init_com_world = robot.com_world()
+                    init_R_world_trunk = robot.get_T_world_trunk()[:3, :3]
+                    init_sin = True
 
-            tasks.update_tasks_from_kick(kick, T)
+                T -= kick.duration
+
+                T_world_left = init_T_world_left.copy()
+                T_world_right = init_T_world_right.copy()
+
+                if kicking_side == placo.HumanoidRobot_Side.left:
+                    T_world_left[:3, 3] += T_world_left[:3, :3] \
+                        @ np.array([ampl_sin * np.sin(2*T), 0., 0.])
+                else:
+                    T_world_right[:3, 3] += T_world_right[:3, :3] \
+                        @ np.array([ampl_sin * np.sin(2*T), 0., 0.])
+
+                tasks.update_tasks(T_world_left, T_world_right,
+                                   init_com_world, init_R_world_trunk)
+
+            else:
+                tasks.update_tasks_from_kick(kick, T)
 
         robot.update_kinematics()
         solver.solve(True)
@@ -169,4 +192,4 @@ if args.pybullet or args.meshcat:
         t += dt
         while time.time() < start_t + t:
             time.sleep(1e-3)
-        time.sleep(1e-2)
+        time.sleep(dt)
