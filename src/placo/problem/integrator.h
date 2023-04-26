@@ -10,6 +10,23 @@ namespace placo
 class Integrator
 {
 public:
+  struct Trajectory
+  {
+    double value(double t, int diff);
+
+    // A copy of the variable value
+    Eigen::VectorXd variable_value;
+
+    // (continous) system matrix so that dX = M X
+    Eigen::MatrixXd M;
+
+    // Caching the keyframes for integration
+    std::map<int, Eigen::VectorXd> keyframes;
+
+    int order;
+    double dt;
+  };
+
   /**
    * @brief Creates an integrator able to build expressions and values over a decision variable.
    *        With this constructor, a continuous system matrix will be used (see below)
@@ -59,7 +76,7 @@ public:
    * @param dt the delta time for integration
    * @return a pair of matrix A and vector B
    */
-  std::pair<Eigen::MatrixXd, Eigen::VectorXd> AB_matrices(int order, double dt);
+  static std::pair<Eigen::MatrixXd, Eigen::VectorXd> AB_matrices(Eigen::MatrixXd& M, int order, double dt);
 
   /**
    * @brief Builds an expression for the given step and differentiation
@@ -105,21 +122,24 @@ public:
   Eigen::MatrixXd final_transition_matrix;
   std::map<int, Eigen::MatrixXd> a_powers;
 
-  // Caching the keyframes for integration
-  std::map<int, Eigen::VectorXd> keyframes;
-
   // Integrator order
   int order;
 
   // Time step
   double dt;
 
+  Trajectory get_trajectory();
+
+  static void check_diff(int order, int diff, bool allow_all = false);
+
 protected:
   // Keeping track of the variable version
   int version = 0;
 
-  void check_diff(int diff, bool allow_all = false);
+  // Internal trajectory
+  Trajectory trajectory;
 
-  void update_keyframes();
+  // Update the internal trajectory
+  void update_trajectory();
 };
 }  // namespace placo

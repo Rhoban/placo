@@ -5,6 +5,37 @@
 
 namespace placo
 {
+
+double Integrator::Trajectory::value(double t, int diff)
+{
+  Integrator::check_diff(order, diff);
+
+  int k = std::floor(t / dt);
+
+  if (k < 0)
+    k = 0;
+
+  if (k >= variable_value.size())
+    k = variable_value.size() - 1;
+
+  double remaining_dt = fmax(0, fmin(dt, t - k * dt));
+
+  if (diff == order)
+  {
+    return variable_value[k];
+  }
+  else
+  {
+    auto AB = AB_matrices(M, order, remaining_dt);
+    Eigen::MatrixXd Ar = AB.first;
+    Eigen::MatrixXd Br = AB.second;
+
+    Eigen::VectorXd result = Ar * keyframes[k] + Br * variable_value[k];
+
+    return result[diff];
+  }
+}
+
 Integrator::Integrator(Variable& variable_, Eigen::VectorXd X0, Eigen::MatrixXd system_matrix, double dt)
   : variable(&variable_), X0(X0), dt(dt), M(system_matrix)
 {
@@ -12,7 +43,7 @@ Integrator::Integrator(Variable& variable_, Eigen::VectorXd X0, Eigen::MatrixXd 
 
   N = variable->size();
 
-  auto AB = AB_matrices(order, dt);
+  auto AB = AB_matrices(M, order, dt);
   A = AB.first;
   B = AB.second;
 
@@ -41,7 +72,7 @@ Integrator::~Integrator()
 {
 }
 
-std::pair<Eigen::MatrixXd, Eigen::VectorXd> Integrator::AB_matrices(int order, double dt)
+std::pair<Eigen::MatrixXd, Eigen::VectorXd> Integrator::AB_matrices(Eigen::MatrixXd& M, int order, double dt)
 {
   // Computing A and B transition matrices
   Eigen::MatrixXd Me = (M * dt).exp();
@@ -64,7 +95,7 @@ Eigen::MatrixXd Integrator::continuous_system_matrix(int order)
   return M;
 }
 
-void Integrator::check_diff(int diff, bool allow_all)
+void Integrator::check_diff(int order, int diff, bool allow_all)
 {
   int diff_min = allow_all ? -1 : 0;
 
@@ -78,7 +109,7 @@ void Integrator::check_diff(int diff, bool allow_all)
 
 Expression Integrator::expr(int step, int diff)
 {
-  check_diff(diff, true);
+  check_diff(order, diff, true);
 
   if (step < 0 || step > variable->size())
   {
@@ -132,7 +163,7 @@ Expression Integrator::expr_t(double t, int diff)
   {
     double remaining_dt = t - step * dt;
 
-    auto AB = AB_matrices(order, remaining_dt);
+    auto AB = AB_matrices(M, order, remaining_dt);
     Eigen::MatrixXd Ar = AB.first;
     Eigen::MatrixXd Br = AB.second;
 
@@ -150,51 +181,45 @@ Expression Integrator::expr_t(double t, int diff)
 
 double Integrator::value(double t, int diff)
 {
-  check_diff(diff);
+  update_trajectory();
+
+  return trajectory.value(t, diff);
+}
+
+Integrator::Trajectory Integrator::get_trajectory()
+{
+  update_trajectory();
+
+  return trajectory;
+}
+
+void Integrator::update_trajectory()
+{
+  if (variable->version == 0)
+  {
+    throw std::runtime_error("Trying to get the trajectory with a variable that was not solved");
+  }
 
   if (version != variable->version)
   {
-    update_keyframes();
+    // Updating trajectory data
+    trajectory.M = M;
+    trajectory.dt = dt;
+    trajectory.order = order;
+    trajectory.variable_value = variable->value;
+
+    // Updating keyframes
+    Eigen::VectorXd X = X0;
+    trajectory.keyframes[0] = X;
+
+    for (int k = 1; k <= variable->size(); k++)
+    {
+      X = A * X + B * variable->value[k - 1];
+      trajectory.keyframes[k] = X;
+    }
+
+    version = variable->version;
   }
-
-  int k = std::floor(t / dt);
-
-  if (k < 0)
-    k = 0;
-
-  if (k >= variable->size())
-    k = variable->size() - 1;
-
-  double remaining_dt = t - k * dt;
-
-  if (diff == order)
-  {
-    return variable->value[k];
-  }
-  else
-  {
-    auto AB = AB_matrices(order, remaining_dt);
-    Eigen::MatrixXd Ar = AB.first;
-    Eigen::MatrixXd Br = AB.second;
-
-    Eigen::VectorXd result = Ar * keyframes[k] + Br * variable->value(k);
-
-    return result[diff];
-  }
-}
-
-void Integrator::update_keyframes()
-{
-  Eigen::VectorXd X = X0;
-  keyframes[0] = X;
-
-  for (int k = 1; k <= variable->size(); k++)
-  {
-    X = A * X + B * variable->value[k - 1];
-    keyframes[k] = X;
-  }
-
-  version = variable->version;
 }
 
 }  // namespace placo

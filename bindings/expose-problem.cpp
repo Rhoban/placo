@@ -75,7 +75,10 @@ void exposeProblem()
           "final_transition_matrix", +[](const Integrator& i) { return i.final_transition_matrix; })
       .def("expr", &Integrator::expr)
       .def("expr_t", &Integrator::expr_t)
-      .def("value", &Integrator::value);
+      .def("value", &Integrator::value)
+      .def("get_trajectory", &Integrator::get_trajectory);
+
+  class_<Integrator::Trajectory>("IntegratorTrajectory").def("value", &Integrator::Trajectory::value);
 
   class_<Problem>("Problem")
       .def("add_variable", &Problem::add_variable, return_internal_reference<>())
