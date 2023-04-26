@@ -19,9 +19,6 @@ Expression Variable::expr(int start, int rows)
   e.b = Eigen::VectorXd(rows);
   e.b.setZero();
 
-  e.has_sparsity = true;
-  e.sparsity.add_interval(k_start, k_end - 1);
-
   for (int k = 0; k < rows; k++)
   {
     e.A(k, k_start + start + k) = 1;

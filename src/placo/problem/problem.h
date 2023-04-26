@@ -66,7 +66,6 @@ public:
   Eigen::VectorXd slacks;
 
   bool use_sparsity = true;
-  bool detect_sparsity = false;
 
   std::vector<ProblemConstraint*> constraints;
 };

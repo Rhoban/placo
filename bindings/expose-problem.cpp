@@ -85,7 +85,6 @@ void exposeProblem()
       .def("clear_variables", &Problem::clear_variables)
       .def("clear_constraints", &Problem::clear_constraints)
       .add_property("use_sparsity", &Problem::use_sparsity, &Problem::use_sparsity)
-      .add_property("detect_sparsity", &Problem::detect_sparsity, &Problem::detect_sparsity)
       .add_property(
           "slacks", +[](const Problem& problem) { return problem.slacks; });
 
@@ -101,8 +100,6 @@ void exposeProblem()
           "A", +[](Expression& e) { return e.A; })
       .add_property(
           "b", +[](Expression& e) { return e.b; })
-      .add_property("has_sparsity", &Expression::has_sparsity)
-      .add_property("sparsity", &Expression::sparsity)
       .def("__len__", &Expression::rows)
       .def("is_scalar", &Expression::is_scalar)
       .def("rows", &Expression::rows)

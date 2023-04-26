@@ -100,9 +100,6 @@ Expression Integrator::expr(int step, int diff)
     e.A.setZero();
     e.b = Eigen::VectorXd(rows);
 
-    e.has_sparsity = true;
-    e.sparsity.add_interval(variable->k_start, variable->k_start + step);
-
     if (diff == -1)
     {
       e.A.block(0, variable->k_start, rows, step) = final_transition_matrix.block(0, N - step, rows, step);
