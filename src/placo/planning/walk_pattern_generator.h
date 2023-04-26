@@ -57,7 +57,7 @@ public:
     Eigen::Matrix3d get_R_world_trunk(double t);
 
     HumanoidRobot::Side support_side(double t);
-    bool is_both_support(double t);
+    bool support_is_both(double t);
     bool is_flying(HumanoidRobot::Side side, double t);
 
     FootstepsPlanner::Support get_support(double t);

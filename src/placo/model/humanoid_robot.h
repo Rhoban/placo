@@ -94,7 +94,12 @@ public:
 #endif
 
   /**
-   * @brief The current side (left, right or both) supporting the robot
+   * @brief Are both feet supporting the robot
+   */
+  bool support_is_both;
+
+  /**
+   * @brief The current side (left or right) associated with T_world_support
    */
   Side support_side;
 

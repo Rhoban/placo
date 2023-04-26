@@ -196,7 +196,7 @@ elif args.pybullet or args.meshcat or args.torque:
         T_world_trunk[:3, 3] = trajectory.get_p_world_CoM(T)
         frame_viz("trunk_target", T_world_trunk)
 
-        if not trajectory.is_both_support(T):
+        if not trajectory.support_is_both(T):
             robot.update_support_side(str(trajectory.support_side(T)))
             robot.ensure_on_floor()
 

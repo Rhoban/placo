@@ -31,7 +31,9 @@ public:
 
   // Kick parameters
   double kick_com_height = 0.3;
+  double kick_foot_height = 0.1;
   double t_init = 1;
+  double t_delay = 0.5;
   double t_up = 0.3;
 
 protected:

@@ -20,31 +20,32 @@ void Kick::one_foot_balance(FootstepsPlanner& planner, HumanoidRobot::Side suppo
 
   // Feet trajectories
   left_foot_trajectory.add_point(0, T_world_left.translation(), Eigen::Vector3d::Zero());
-  left_foot_trajectory.add_point(t_init, T_world_left.translation(), Eigen::Vector3d::Zero());
+  left_foot_trajectory.add_point(t_init + t_delay, T_world_left.translation(), Eigen::Vector3d::Zero());
   right_foot_trajectory.add_point(0, T_world_right.translation(), Eigen::Vector3d::Zero());
-  right_foot_trajectory.add_point(t_init, T_world_right.translation(), Eigen::Vector3d::Zero());
+  right_foot_trajectory.add_point(t_init + t_delay, T_world_right.translation(), Eigen::Vector3d::Zero());
 
   if (support_side == HumanoidRobot::Left)
   {
     single_support.footsteps = { left_footstep };
 
-    left_foot_trajectory.add_point(t_init + t_up, T_world_left.translation(), Eigen::Vector3d::Zero());
-    Eigen::Vector3d flying_position = T_world_right * Eigen::Vector3d(0., 0., parameters.walk_foot_height);
-    right_foot_trajectory.add_point(t_init + t_up, flying_position, Eigen::Vector3d::Zero());
+    left_foot_trajectory.add_point(t_init + t_delay + t_up, T_world_left.translation(), Eigen::Vector3d::Zero());
+    Eigen::Vector3d flying_position = T_world_right * Eigen::Vector3d(0., 0., kick_foot_height);
+    right_foot_trajectory.add_point(t_init + t_delay + t_up, flying_position, Eigen::Vector3d::Zero());
   }
   else
   {
     single_support.footsteps = { right_footstep };
 
-    right_foot_trajectory.add_point(t_init + t_up, T_world_right.translation(), Eigen::Vector3d::Zero());
+    right_foot_trajectory.add_point(t_init + t_delay + t_up, T_world_right.translation(), Eigen::Vector3d::Zero());
     Eigen::Vector3d flying_position = T_world_left * Eigen::Vector3d(0., 0., parameters.walk_foot_height);
-    left_foot_trajectory.add_point(t_init + t_up, flying_position, Eigen::Vector3d::Zero());
+    left_foot_trajectory.add_point(t_init + t_delay + t_up, flying_position, Eigen::Vector3d::Zero());
   }
 
   // CoM jerk_trajectory
   int t_init_ts = std::round(t_init / parameters.dt());
+  int t_delay_ts = std::round(t_delay / parameters.dt());
   int t_up_ts = std::round(t_up / parameters.dt());
-  int nb_timesteps = t_init_ts + t_up_ts;
+  int nb_timesteps = t_init_ts + t_delay_ts + t_up_ts;
 
   Eigen::Vector3d com_world = robot.com_world();
   JerkPlanner jerk_planner(nb_timesteps, Eigen::Vector2d(com_world[0], com_world[1]), Eigen::Vector2d::Zero(),
@@ -67,8 +68,8 @@ void Kick::one_foot_balance(FootstepsPlanner& planner, HumanoidRobot::Side suppo
   // CoM height
   com_height.add_point(0, parameters.walk_com_height, 0);
   com_height.add_point(t_init, kick_com_height, 0);
-  com_height.add_point(t_init + t_up, kick_com_height, 0);
-  duration = t_init + t_up;
+  com_height.add_point(t_init + t_delay + t_up, kick_com_height, 0);
+  duration = t_init + t_delay + t_up;
 }
 
 Eigen::Affine3d Kick::get_T_world_left(double t)

@@ -148,7 +148,7 @@ while True:
     tasks.update_tasks_from_trajectory(trajectory, T)
     solver.solve(True)
 
-    if not trajectory.is_both_support(T):
+    if not trajectory.support_is_both(T):
         robot.update_support_side(str(trajectory.support_side(T)))
         robot.ensure_on_floor()
 

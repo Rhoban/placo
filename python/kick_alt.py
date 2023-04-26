@@ -93,6 +93,7 @@ kicking_side = placo.HumanoidRobot_Side.left
 support_side = placo.HumanoidRobot.other_side(kicking_side)
 
 kick.t_init = 0.7
+kick.t_delay = 0.3
 kick.t_up = 0.3
 
 kicking = False
@@ -138,7 +139,7 @@ if args.pybullet or args.meshcat:
         robot.update_kinematics()
         solver.solve(True)
 
-        if not kicking and not trajectory.is_both_support(T):
+        if not kicking and not trajectory.support_is_both(T):
             robot.update_support_side(str(trajectory.support_side(T)))
         robot.ensure_on_floor()
 
