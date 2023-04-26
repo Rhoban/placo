@@ -92,14 +92,15 @@ void exposeWalkPatternGenerator()
       .def("vel", &LIPM::Trajectory::vel)
       .def("acc", &LIPM::Trajectory::acc)
       .def("zmp", &LIPM::Trajectory::zmp)
+      .def("dzmp", &LIPM::Trajectory::dzmp)
       .def("dcm", &LIPM::Trajectory::dcm);
 
-  class_<LIPM>("LIPM", init<int, double, double, Eigen::Vector2d, Eigen::Vector2d, Eigen::Vector2d>())
-      .add_property("problem", &LIPM::problem)
+  class_<LIPM>("LIPM", init<Problem&, int, double, double, Eigen::Vector2d, Eigen::Vector2d, Eigen::Vector2d>())
       .def("com", &LIPM::com)
       .def("vel", &LIPM::vel)
       .def("acc", &LIPM::acc)
       .def("zmp", &LIPM::zmp)
+      .def("dzmp", &LIPM::dzmp)
       .def("dcm", &LIPM::dcm)
       .def("get_trajectory", &LIPM::get_trajectory);
 }

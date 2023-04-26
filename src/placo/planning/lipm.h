@@ -16,6 +16,7 @@ public:
     Eigen::VectorXd acc(double t);
     Eigen::VectorXd zmp(double t);
     Eigen::VectorXd dcm(double t);
+    Eigen::VectorXd dzmp(double t);
 
     Integrator::Trajectory x;
     Integrator::Trajectory y;
@@ -24,8 +25,8 @@ public:
     double omega_2;
   };
 
-  LIPM(int timesteps, double omega, double dt, Eigen::Vector2d initial_pos, Eigen::Vector2d initial_vel,
-       Eigen::Vector2d initial_zmp);
+  LIPM(Problem& problem, int timesteps, double omega, double dt, Eigen::Vector2d initial_pos,
+       Eigen::Vector2d initial_vel, Eigen::Vector2d initial_zmp);
 
   Trajectory get_trajectory();
 
@@ -34,9 +35,7 @@ public:
   Expression acc(int timestep);
   Expression zmp(int timestep);
   Expression dcm(int timestep);
-
-  // Problem
-  Problem problem;
+  Expression dzmp(int timestep);
 
   // x and y integrators
   Integrator x;

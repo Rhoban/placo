@@ -22,13 +22,18 @@ Eigen::VectorXd LIPM::Trajectory::zmp(double t)
   return Eigen::Vector2d(x.value(t, 2), y.value(t, 2));
 }
 
+Eigen::VectorXd LIPM::Trajectory::dzmp(double t)
+{
+  return Eigen::Vector2d(x.value(t, 3), y.value(t, 3));
+}
+
 Eigen::VectorXd LIPM::Trajectory::dcm(double t)
 {
   return com(t) + (1 / omega) * vel(t);
 }
 
-LIPM::LIPM(int timesteps, double omega, double dt, Eigen::Vector2d initial_pos, Eigen::Vector2d initial_vel,
-           Eigen::Vector2d initial_zmp)
+LIPM::LIPM(Problem& problem, int timesteps, double omega, double dt, Eigen::Vector2d initial_pos,
+           Eigen::Vector2d initial_vel, Eigen::Vector2d initial_zmp)
   : timesteps(timesteps), omega(omega), dt(dt)
 {
   x_var = &problem.add_variable(timesteps);
@@ -60,6 +65,11 @@ Expression LIPM::vel(int timestep)
 Expression LIPM::zmp(int timestep)
 {
   return x.expr(timestep, 2) / y.expr(timestep, 2);
+}
+
+Expression LIPM::dzmp(int timestep)
+{
+  return x.expr(timestep, 3) / y.expr(timestep, 3);
 }
 
 Expression LIPM::acc(int timestep)
