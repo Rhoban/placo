@@ -132,8 +132,9 @@ void Problem::solve()
 
             P.block(interval.start, interval.start, size, size).noalias() +=
                 constraint->weight * block.transpose() * block;
-            q.noalias() += constraint->weight * (constraint->expression.A.transpose() * constraint->expression.b);
           }
+
+          q.noalias() += constraint->weight * (constraint->expression.A.transpose() * constraint->expression.b);
         }
         else
         {
