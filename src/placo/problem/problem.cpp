@@ -62,6 +62,17 @@ void Problem::clear_constraints()
   constraints.clear();
 }
 
+void Problem::clear_variables()
+{
+  for (auto variable : variables)
+  {
+    delete variable;
+  }
+
+  variables.clear();
+  n_variables = 0;
+}
+
 void Problem::solve()
 {
   int n_equalities = 0;

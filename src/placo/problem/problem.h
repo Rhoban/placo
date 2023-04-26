@@ -53,6 +53,11 @@ public:
    */
   void clear_constraints();
 
+  /**
+   * @brief Clear all the variables
+   */
+  void clear_variables();
+
   void solve();
 
   std::vector<Variable*> variables;

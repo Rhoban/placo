@@ -80,6 +80,8 @@ void exposeProblem()
       .def("add_constraint", &Problem::add_constraint, return_internal_reference<>())
       .def("add_limit", &Problem::add_limit)
       .def("solve", &Problem::solve)
+      .def("clear_variables", &Problem::clear_variables)
+      .def("clear_constraints", &Problem::clear_constraints)
       .add_property("use_sparsity", &Problem::use_sparsity, &Problem::use_sparsity)
       .add_property(
           "slacks", +[](const Problem& problem) { return problem.slacks; });
