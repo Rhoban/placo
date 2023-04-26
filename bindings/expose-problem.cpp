@@ -96,6 +96,8 @@ void exposeProblem()
           "A", +[](Expression& e) { return e.A; })
       .add_property(
           "b", +[](Expression& e) { return e.b; })
+      .add_property("has_sparsity", &Expression::has_sparsity)
+      .add_property("sparsity", &Expression::sparsity)
       .def("__len__", &Expression::rows)
       .def("is_scalar", &Expression::is_scalar)
       .def("rows", &Expression::rows)
