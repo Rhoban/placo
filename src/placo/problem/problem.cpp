@@ -1,5 +1,6 @@
 #include "placo/problem/problem.h"
 #include "eiquadprog/eiquadprog.hpp"
+#include "rhoban_utils/timing/time_stamp.h"
 
 namespace placo
 {
@@ -86,6 +87,8 @@ void Problem::solve()
   P.setIdentity();
   P *= 1e-8;
 
+  // rhoban_utils::TimeStamp t0 = rhoban_utils::TimeStamp::now();
+
   // Scanning the constraints (counting inequalities and equalities, building objectif function)
   for (auto constraint : constraints)
   {
@@ -104,11 +107,31 @@ void Problem::solve()
       else
       {
         // Adding the soft constraint to the objective function
-        P.noalias() += constraint->weight * (constraint->expression.A.transpose() * constraint->expression.A);
-        q.noalias() += constraint->weight * (constraint->expression.A.transpose() * constraint->expression.b);
+        if (constraint->expression.has_sparsity && use_sparsity)
+        {
+          int constraints = constraint->expression.A.rows();
+          for (auto interval : constraint->expression.sparsity.intervals)
+          {
+            int size = interval.end - interval.start;
+
+            Eigen::MatrixXd block = constraint->expression.A.block(0, interval.start, constraints, size);
+
+            P.block(interval.start, interval.start, size, size).noalias() +=
+                constraint->weight * block.transpose() * block;
+            q.noalias() += constraint->weight * (constraint->expression.A.transpose() * constraint->expression.b);
+          }
+        }
+        else
+        {
+          P.noalias() += constraint->weight * (constraint->expression.A.transpose() * constraint->expression.A);
+          q.noalias() += constraint->weight * (constraint->expression.A.transpose() * constraint->expression.b);
+        }
       }
     }
   }
+
+  // rhoban_utils::TimeStamp t1 = rhoban_utils::TimeStamp::now();
+  // std::cout << "Hessian computation: " << (diffMs(t0, t1) * 1e3) << std::endl;
 
   // Equality constraints
   Eigen::MatrixXd A(n_equalities, n_variables + slack_variables);

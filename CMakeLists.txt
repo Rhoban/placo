@@ -36,6 +36,7 @@ add_library(libplaco
     src/placo/problem/constraint.cpp
     src/placo/problem/constraints.cpp
     src/placo/problem/polygon_constraint.cpp
+    src/placo/problem/sparsity.cpp
 
     # Kinematics QP solver
     src/placo/control/kinematics_solver.cpp

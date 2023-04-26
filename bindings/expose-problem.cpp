@@ -11,6 +11,7 @@
 #include "placo/problem/constraint.h"
 #include "placo/problem/polygon_constraint.h"
 #include "placo/problem/integrator.h"
+#include "placo/problem/sparsity.h"
 #include <Eigen/Dense>
 #include <boost/python.hpp>
 
@@ -21,6 +22,29 @@ BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(expr_overloads, expr, 0, 2);
 
 void exposeProblem()
 {
+  class_<Sparsity::Interval>("SparsityInterval")
+      .add_property("start", &Sparsity::Interval::start, &Sparsity::Interval::start)
+      .add_property("end", &Sparsity::Interval::end, &Sparsity::Interval::end);
+
+  class_<Sparsity>("Sparsity")
+      .add_property(
+          "intervals",
+          +[](const Sparsity& sparsity) {
+            Eigen::MatrixXi intervals(sparsity.intervals.size(), 2);
+            int k = 0;
+            for (auto& interval : sparsity.intervals)
+            {
+              intervals(k, 0) = interval.start;
+              intervals(k, 1) = interval.end;
+              k++;
+            }
+
+            return intervals;
+          })
+      .def(self + self)
+      .def("add_interval", &Sparsity::add_interval)
+      .def("print_intervals", &Sparsity::print_intervals);
+
   class_<ProblemConstraint>("ProblemConstraint")
       .add_property("expression", &ProblemConstraint::expression)
       .add_property("inequality", &ProblemConstraint::inequality)
@@ -56,6 +80,7 @@ void exposeProblem()
       .def("add_constraint", &Problem::add_constraint, return_internal_reference<>())
       .def("add_limit", &Problem::add_limit)
       .def("solve", &Problem::solve)
+      .add_property("use_sparsity", &Problem::use_sparsity, &Problem::use_sparsity)
       .add_property(
           "slacks", +[](const Problem& problem) { return problem.slacks; });
 

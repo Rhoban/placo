@@ -60,6 +60,8 @@ public:
 
   Eigen::VectorXd slacks;
 
+  bool use_sparsity = true;
+
   std::vector<ProblemConstraint*> constraints;
 };
 }  // namespace placo

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Eigen/Dense>
+#include "placo/problem/sparsity.h"
 
 namespace placo
 {
@@ -80,5 +81,11 @@ public:
 
   ProblemConstraint operator==(double f) const;
   friend ProblemConstraint operator==(double f, const Expression& e);
+
+  void sparsity_union(const Expression& e1, const Expression& e2);
+
+  // Sparsity
+  Sparsity sparsity;
+  bool has_sparsity = false;
 };
 }  // namespace placo

@@ -15,6 +15,8 @@ Expression Expression::from_vector(const Eigen::VectorXd& v)
   Expression e;
   e.A = Eigen::MatrixXd(v.rows(), 0);
   e.b = v;
+  e.has_sparsity = true;
+
   return e;
 }
 
@@ -24,6 +26,7 @@ Expression Expression::from_double(const double& value)
   e.A = Eigen::MatrixXd(1, 0);
   e.b = Eigen::VectorXd(1);
   e.b(0, 0) = value;
+  e.has_sparsity = true;
 
   return e;
 }
@@ -32,6 +35,8 @@ Expression::Expression(const Expression& other)
 {
   A = other.A;
   b = other.b;
+  sparsity = other.sparsity;
+  has_sparsity = other.has_sparsity;
 }
 
 bool Expression::is_scalar() const
@@ -52,9 +57,7 @@ int Expression::rows() const
 Expression Expression::piecewise_add(double f) const
 {
   // Assuming a scalar piece-wise sum
-  Expression e;
-  e.A = A;
-  e.b = b;
+  Expression e(*this);
 
   for (int k = 0; k < e.b.rows(); k++)
   {
@@ -62,6 +65,19 @@ Expression Expression::piecewise_add(double f) const
   }
 
   return e;
+}
+
+void Expression::sparsity_union(const Expression& e1, const Expression& e2)
+{
+  if (e1.has_sparsity && e2.has_sparsity)
+  {
+    has_sparsity = true;
+    sparsity = e1.sparsity + e2.sparsity;
+  }
+  else
+  {
+    has_sparsity = false;
+  }
 }
 
 Expression Expression::operator+(const Expression& other) const
@@ -93,6 +109,8 @@ Expression Expression::operator+(const Expression& other) const
   e.A.block(0, 0, rows(), other.cols()) += other.A.block(0, 0, rows(), other.cols());
   e.b = b;
   e.b += other.b;
+
+  e.sparsity_union(*this, other);
 
   return e;
 }
@@ -138,6 +156,7 @@ Expression Expression::operator-(const Eigen::VectorXd v) const
 {
   Expression e(*this);
   e.b -= v;
+
   return e;
 }
 
@@ -193,6 +212,8 @@ Expression Expression::sum()
   e.A.setZero();
   e.b = Eigen::VectorXd(1);
   e.b.setZero();
+  e.has_sparsity = has_sparsity;
+  e.sparsity = sparsity;
 
   for (int k = 0; k < rows(); k++)
   {
@@ -226,6 +247,8 @@ Expression Expression::operator/(const Expression& other)
 
   e.b.block(0, 0, rows(), 1) = b;
   e.b.block(rows(), 0, other.rows(), 1) = other.b;
+
+  e.sparsity_union(*this, other);
 
   return e;
 }
