@@ -125,6 +125,6 @@ protected:
 
   void planFeetTrajectories(Trajectory& trajectory, Trajectory* old_trajectory = nullptr, double t_replan = 0.);
 
-  int support_dt(FootstepsPlanner::Support& support);
+  int support_timesteps(FootstepsPlanner::Support& support);
 };
 }  // namespace placo

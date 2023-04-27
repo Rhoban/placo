@@ -42,9 +42,10 @@ LIPM::LIPM(Problem& problem, int timesteps, double omega, double dt, Eigen::Vect
            Eigen::Vector2d initial_vel, Eigen::Vector2d initial_acc)
   : timesteps(timesteps), omega(omega), dt(dt)
 {
+  omega_2 = omega * omega;
+
   x_var = &problem.add_variable(timesteps);
   y_var = &problem.add_variable(timesteps);
-  omega_2 = omega * omega;
 
   x = Integrator(*x_var, Eigen::Vector3d(initial_pos.x(), initial_vel.x(), initial_acc.x()), 3, dt);
   y = Integrator(*y_var, Eigen::Vector3d(initial_pos.y(), initial_vel.y(), initial_acc.y()), 3, dt);

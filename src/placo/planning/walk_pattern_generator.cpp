@@ -176,7 +176,7 @@ double WalkPatternGenerator::Trajectory::get_part_t_start(double t)
   return part.t_start;
 }
 
-int WalkPatternGenerator::support_dt(FootstepsPlanner::Support& support)
+int WalkPatternGenerator::support_timesteps(FootstepsPlanner::Support& support)
 {
   if (support.footsteps.size() == 1)
   {
@@ -202,7 +202,7 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
 
   for (size_t i = 0; i < trajectory.supports.size(); i++)
   {
-    timesteps += support_dt(trajectory.supports[i]);
+    timesteps += support_timesteps(trajectory.supports[i]);
 
     if (timesteps >= parameters.planned_timesteps)
     {
@@ -218,6 +218,7 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
   // Creating the planner
   Problem problem = Problem();
   LIPM lipm = LIPM(problem, timesteps, parameters.omega(), parameters.dt(), initial_pos, initial_vel, initial_acc);
+  lipm.t_start = trajectory.t_start;
 
   // We ensure that the first tile of the old trajectory starts with the same jerks as initially planned
   if (old_trajectory != nullptr)
@@ -235,7 +236,7 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
   for (size_t i = 0; i < trajectory.supports.size(); i++)
   {
     current_support = trajectory.supports[i];
-    int step_timesteps = support_dt(current_support);
+    int step_timesteps = support_timesteps(current_support);
 
     for (int timestep = constrained_timesteps; timestep < constrained_timesteps + step_timesteps; timestep++)
     {
@@ -264,7 +265,7 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
       Eigen::Vector3d zmp_target = current_support.frame() * Eigen::Vector3d(parameters.foot_zmp_target_x, y_offset, 0);
 
       problem.add_constraint(lipm.zmp(timestep) == Eigen::Vector2d(zmp_target.x(), zmp_target.y()))
-          .configure(false, 10.0);
+          .configure(false, 1e-1);
     }
 
     constrained_timesteps += step_timesteps;
@@ -286,8 +287,6 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
   }
 
   problem.solve();
-
-  lipm.t_start = trajectory.t_start;
   trajectory.com = lipm.get_trajectory();
 }
 

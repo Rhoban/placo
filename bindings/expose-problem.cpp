@@ -66,7 +66,7 @@ void exposeProblem()
       .def(init<Variable&, Eigen::VectorXd, Eigen::MatrixXd, double>())
       .def("continuous_system_matrix", &Integrator::continuous_system_matrix)
       .staticmethod("continuous_system_matrix")
-      .add_property("t_start", &Integrator::t_start)
+      .add_property("t_start", &Integrator::t_start, &Integrator::t_start)
       .add_property(
           "M", +[](const Integrator& i) { return i.M; })
       .add_property(
