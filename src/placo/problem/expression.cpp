@@ -212,7 +212,7 @@ Expression Expression::mean()
   return e;
 }
 
-Expression Expression::operator/(const Expression& other)
+Expression Expression::operator/(const Expression& other) const
 {
   Expression e;
 

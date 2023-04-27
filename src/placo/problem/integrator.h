@@ -25,6 +25,7 @@ public:
 
     int order;
     double dt;
+    double t_start = 0.;
   };
 
   Integrator();
@@ -133,6 +134,9 @@ public:
   Trajectory get_trajectory();
 
   static void check_diff(int order, int diff, bool allow_all = false);
+
+  // Time offset for output trajectory
+  double t_start = 0.;
 
 protected:
   // Keeping track of the variable version

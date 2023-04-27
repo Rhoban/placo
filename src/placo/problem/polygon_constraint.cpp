@@ -3,7 +3,7 @@
 
 namespace placo
 {
-ProblemConstraints PolygonConstraint::add_polygon_constraint_xy(Problem& problem, Expression& expression_xy,
+ProblemConstraints PolygonConstraint::add_polygon_constraint_xy(Problem& problem, const Expression& expression_xy,
                                                                 std::vector<Eigen::Vector2d> polygon, double margin)
 {
   ProblemConstraints constraints;
@@ -34,8 +34,8 @@ ProblemConstraints PolygonConstraint::add_polygon_constraint_xy(Problem& problem
   return constraints;
 }
 
-ProblemConstraints PolygonConstraint::add_polygon_constraint(Problem& problem, Expression& expression_x,
-                                                             Expression& expression_y,
+ProblemConstraints PolygonConstraint::add_polygon_constraint(Problem& problem, const Expression& expression_x,
+                                                             const Expression& expression_y,
                                                              std::vector<Eigen::Vector2d> polygon, double margin)
 {
   Expression e = expression_x / expression_y;

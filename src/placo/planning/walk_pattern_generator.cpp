@@ -1,5 +1,6 @@
 #include "placo/planning/walk_pattern_generator.h"
 #include "placo/footsteps/footsteps_planner.h"
+#include "placo/problem/polygon_constraint.h"
 #include "placo/utils.h"
 
 namespace placo
@@ -215,15 +216,16 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
   int kept_timesteps = std::round((t_replan - trajectory.t_start) / parameters.dt());
 
   // Creating the planner
-  JerkPlanner planner(timesteps, initial_pos, initial_vel, initial_acc, parameters.dt(), parameters.omega());
+  Problem problem = Problem();
+  LIPM lipm = LIPM(problem, timesteps, parameters.omega(), parameters.dt(), initial_pos, initial_vel, initial_acc);
 
+  // We ensure that the first tile of the old trajectory starts with the same jerks as initially planned
   if (old_trajectory != nullptr)
   {
     for (int timestep = 0; timestep < kept_timesteps; timestep++)
     {
-      planner.add_equality_constraint(timestep,
-                                      old_trajectory->com.jerk(trajectory.t_start + timestep * parameters.dt() + 1e-6),
-                                      JerkPlanner::Jerk);
+      problem.add_constraint(lipm.jerk(timestep) ==
+                             old_trajectory->com.jerk(trajectory.t_start + timestep * parameters.dt() + 1e-6));
     }
   }
 
@@ -237,10 +239,14 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
 
     for (int timestep = constrained_timesteps; timestep < constrained_timesteps + step_timesteps; timestep++)
     {
+      // Ensuring ZMP remains in the support polygon
       if (timestep > kept_timesteps)
-        planner.add_polygon_constraint(timestep, current_support.support_polygon(), JerkPlanner::ZMP,
-                                       parameters.zmp_margin);
+      {
+        PolygonConstraint::add_polygon_constraint_xy(problem, lipm.zmp(timestep), current_support.support_polygon(),
+                                                     parameters.zmp_margin);
+      }
 
+      // ZMP reference trajectory
       double y_offset = 0.;
 
       if (!current_support.is_both())
@@ -254,10 +260,11 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
           y_offset = -parameters.foot_zmp_target_y;
         }
       }
+
       Eigen::Vector3d zmp_target = current_support.frame() * Eigen::Vector3d(parameters.foot_zmp_target_x, y_offset, 0);
 
-      planner.add_equality_constraint(timestep, Eigen::Vector2d(zmp_target.x(), zmp_target.y()), JerkPlanner::ZMP)
-          .configure(JerkPlanner::Soft, 10.);
+      problem.add_constraint(lipm.zmp(timestep) == Eigen::Vector2d(zmp_target.x(), zmp_target.y()))
+          .configure(false, 10.0);
     }
 
     constrained_timesteps += step_timesteps;
@@ -271,16 +278,17 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
   // We reach the target with the given position, a null speed and a null acceleration
   if (current_support.end)
   {
-    planner.add_equality_constraint(
-        timesteps - 1,
-        Eigen::Vector2d(current_support.frame().translation().x(), current_support.frame().translation().y()),
-        JerkPlanner::Position);
-    planner.add_equality_constraint(timesteps - 1, Eigen::Vector2d(0., 0.), JerkPlanner::Velocity);
-    planner.add_equality_constraint(timesteps - 1, Eigen::Vector2d(0., 0.), JerkPlanner::Acceleration);
+    problem.add_constraint(lipm.pos(timesteps - 1) == Eigen::Vector2d(current_support.frame().translation().x(),
+                                                                      current_support.frame().translation().y()));
+
+    problem.add_constraint(lipm.vel(timesteps - 1) == Eigen::Vector2d(0., 0.));
+    problem.add_constraint(lipm.acc(timesteps - 1) == Eigen::Vector2d(0., 0.));
   }
 
-  trajectory.com = planner.plan();
-  trajectory.com.t_start = trajectory.t_start;
+  problem.solve();
+
+  lipm.t_start = trajectory.t_start;
+  trajectory.com = lipm.get_trajectory();
 }
 
 static void _addSupports(WalkPatternGenerator::Trajectory& trajectory, double t, FootstepsPlanner::Support& support)

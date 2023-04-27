@@ -7,6 +7,8 @@ namespace placo
 {
 double Integrator::Trajectory::value(double t, int diff)
 {
+  t -= t_start;
+
   Integrator::check_diff(order, diff);
 
   int k = std::floor(t / dt);
@@ -151,6 +153,8 @@ Expression Integrator::expr(int step, int diff)
 
 Expression Integrator::expr_t(double t, int diff)
 {
+  t -= t_start;
+
   if (t < 0 || t > variable->size() * dt)
   {
     throw std::runtime_error("expr_t called with a t out of the scope of the integrator");
@@ -209,6 +213,7 @@ void Integrator::update_trajectory()
     trajectory.M = M;
     trajectory.dt = dt;
     trajectory.order = order;
+    trajectory.t_start = t_start;
     trajectory.variable_value = variable->value;
 
     // Updating keyframes

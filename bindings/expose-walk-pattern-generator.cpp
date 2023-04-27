@@ -88,19 +88,23 @@ void exposeWalkPatternGenerator()
           "trunk_orientation_task", +[](WalkTasks& tasks) { return *tasks.trunk_orientation_task; });
 
   class_<LIPM::Trajectory>("LIPMTrajectory", init<>())
-      .def("com", &LIPM::Trajectory::com)
+      .def("pos", &LIPM::Trajectory::pos)
       .def("vel", &LIPM::Trajectory::vel)
       .def("acc", &LIPM::Trajectory::acc)
+      .def("jerk", &LIPM::Trajectory::jerk)
       .def("zmp", &LIPM::Trajectory::zmp)
       .def("dzmp", &LIPM::Trajectory::dzmp)
       .def("dcm", &LIPM::Trajectory::dcm);
 
   class_<LIPM>("LIPM", init<Problem&, int, double, double, Eigen::Vector2d, Eigen::Vector2d, Eigen::Vector2d>())
-      .def("com", &LIPM::com)
+      .def("pos", &LIPM::pos)
       .def("vel", &LIPM::vel)
       .def("acc", &LIPM::acc)
+      .def("jerk", &LIPM::jerk)
       .def("zmp", &LIPM::zmp)
       .def("dzmp", &LIPM::dzmp)
       .def("dcm", &LIPM::dcm)
-      .def("get_trajectory", &LIPM::get_trajectory);
+      .def("get_trajectory", &LIPM::get_trajectory)
+      .add_property("x", &LIPM::x)
+      .add_property("y", &LIPM::y);
 }

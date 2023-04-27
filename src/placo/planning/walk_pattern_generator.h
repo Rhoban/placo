@@ -12,6 +12,7 @@
 #include "placo/control/orientation_task.h"
 #include "placo/problem/integrator.h"
 #include "placo/problem/problem.h"
+#include "placo/planning/lipm.h"
 
 namespace placo
 {
@@ -41,7 +42,7 @@ public:
     std::vector<TrajectoryPart> parts;
 
     // CoM trajectory
-    JerkPlanner::JerkTrajectory2D com;
+    LIPM::Trajectory com;
 
     // Feet trajectory
     placo::CubicSpline left_foot_yaw;

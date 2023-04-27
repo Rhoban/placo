@@ -56,7 +56,7 @@ public:
   Expression mean();
 
   // Stacking expressions
-  Expression operator/(const Expression& other);
+  Expression operator/(const Expression& other) const;
 
   // Comparing to produce constraints
   ProblemConstraint operator>=(const Expression& other) const;
