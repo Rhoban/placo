@@ -62,7 +62,6 @@ add_library(libplaco
     src/placo/footsteps/footsteps_planner.cpp
     src/placo/footsteps/footsteps_planner_naive.cpp
     src/placo/footsteps/footsteps_planner_repetitive.cpp
-    src/placo/planning/jerk_planner.cpp
     src/placo/planning/walk_pattern_generator.cpp
     src/placo/planning/kick.cpp
     src/placo/planning/walk_tasks.cpp
@@ -111,7 +110,6 @@ add_library(placo MODULE
     bindings/expose-eigen.cpp
     bindings/expose-utils.cpp
     bindings/expose-footsteps.cpp
-    bindings/expose-jerk-planner.cpp
     bindings/expose-robot-wrapper.cpp
     bindings/expose-parameters.cpp
     bindings/expose-kinematics.cpp

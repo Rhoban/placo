@@ -3,7 +3,6 @@
 #include "placo/footsteps/footsteps_planner.h"
 #include "placo/model/humanoid_robot.h"
 #include "placo/model/humanoid_parameters.h"
-#include "placo/planning/jerk_planner.h"
 #include "placo/trajectory/cubic_spline_3d.h"
 #include "placo/trajectory/swing_foot.h"
 #include "placo/control/kinematics_solver.h"

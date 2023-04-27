@@ -3,7 +3,6 @@
 void exposeUtils();
 void exposeEigen();
 void exposeFootsteps();
-void exposeJerkPlanner();
 void exposeProblem();
 void exposeRobotWrapper();
 void exposeParameters();

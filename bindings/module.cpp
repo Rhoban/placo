@@ -15,7 +15,6 @@ BOOST_PYTHON_MODULE(placo)
   exposeEigen();
   exposeUtils();
   exposeFootsteps();
-  exposeJerkPlanner();
   exposeProblem();
   exposeRobotWrapper();
   exposeParameters();

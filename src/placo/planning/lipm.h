@@ -8,7 +8,7 @@ namespace placo
 {
 /**
  * @brief LIPM is an helper that can be used to build problem involving LIPM dynamics. The decision variables
- * introduced here are dZMP, which is piecewise constant.
+ * introduced here are jerks, which is piecewise constant.
  */
 class LIPM
 {

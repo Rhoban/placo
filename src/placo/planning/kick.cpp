@@ -47,22 +47,22 @@ void Kick::one_foot_balance(FootstepsPlanner& planner, HumanoidRobot::Side suppo
   int nb_timesteps = t_init_ts + t_up_ts;
 
   Eigen::Vector3d com_world = robot.com_world();
-  JerkPlanner jerk_planner(nb_timesteps, Eigen::Vector2d(com_world[0], com_world[1]), Eigen::Vector2d::Zero(),
-                           Eigen::Vector2d::Zero(), parameters.dt(), parameters.omega());
+  // JerkPlanner jerk_planner(nb_timesteps, Eigen::Vector2d(com_world[0], com_world[1]), Eigen::Vector2d::Zero(),
+  //                          Eigen::Vector2d::Zero(), parameters.dt(), parameters.omega());
 
-  for (int timestep = 0; timestep < t_init_ts; timestep++)
-  {
-    jerk_planner.add_polygon_constraint(timestep, double_support.support_polygon(), JerkPlanner::ZMP,
-                                        parameters.zmp_margin);
-  }
+  // for (int timestep = 0; timestep < t_init_ts; timestep++)
+  // {
+  //   jerk_planner.add_polygon_constraint(timestep, double_support.support_polygon(), JerkPlanner::ZMP,
+  //                                       parameters.zmp_margin);
+  // }
 
-  jerk_planner.add_equality_constraint(
-      t_init_ts, Eigen::Vector2d(single_support.frame().translation().x(), single_support.frame().translation().y()),
-      JerkPlanner::Position);
-  jerk_planner.add_equality_constraint(t_init_ts, Eigen::Vector2d(0., 0.), JerkPlanner::Velocity);
-  jerk_planner.add_equality_constraint(t_init_ts, Eigen::Vector2d(0., 0.), JerkPlanner::Acceleration);
+  // jerk_planner.add_equality_constraint(
+  //     t_init_ts, Eigen::Vector2d(single_support.frame().translation().x(), single_support.frame().translation().y()),
+  //     JerkPlanner::Position);
+  // jerk_planner.add_equality_constraint(t_init_ts, Eigen::Vector2d(0., 0.), JerkPlanner::Velocity);
+  // jerk_planner.add_equality_constraint(t_init_ts, Eigen::Vector2d(0., 0.), JerkPlanner::Acceleration);
 
-  com_trajectory = jerk_planner.plan();
+  // com_trajectory = jerk_planner.plan();
 
   // CoM height
   com_height.add_point(0, parameters.walk_com_height, 0);
@@ -89,6 +89,6 @@ Eigen::Affine3d Kick::get_T_world_right(double t)
 
 Eigen::Vector3d Kick::get_com_world(double t)
 {
-  return Eigen::Vector3d(com_trajectory.pos(t)[0], com_trajectory.pos(t)[1], com_height.pos(t));
+  // return Eigen::Vector3d(com_trajectory.pos(t)[0], com_trajectory.pos(t)[1], com_height.pos(t));
 }
 }  // namespace placo
