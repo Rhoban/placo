@@ -276,14 +276,14 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
     }
   }
 
+  problem.add_constraint(lipm.pos(timesteps) == Eigen::Vector2d(current_support.frame().translation().x(),
+                                                                current_support.frame().translation().y()));
+
   // We reach the target with the given position, a null speed and a null acceleration
   if (current_support.end)
   {
-    problem.add_constraint(lipm.pos(timesteps - 1) == Eigen::Vector2d(current_support.frame().translation().x(),
-                                                                      current_support.frame().translation().y()));
-
-    problem.add_constraint(lipm.vel(timesteps - 1) == Eigen::Vector2d(0., 0.));
-    problem.add_constraint(lipm.acc(timesteps - 1) == Eigen::Vector2d(0., 0.));
+    problem.add_constraint(lipm.vel(timesteps) == Eigen::Vector2d(0., 0.));
+    problem.add_constraint(lipm.acc(timesteps) == Eigen::Vector2d(0., 0.));
   }
 
   problem.solve();
