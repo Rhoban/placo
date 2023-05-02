@@ -33,8 +33,16 @@ public:
   void update_support_side(Side side);
   void update_support_side(const std::string& side);
 
-  void update_trunk_angular_velocity(double elapsed);
+  /**
+   * @brief Place the robot on its support on the floor
+   */
   void ensure_on_floor();
+
+  /**
+   * @brief Rotate the robot around its support
+   * @param R_world_trunk Orientation of the trunk from the IMU
+   */
+  void update_from_imu(Eigen::Matrix3d R_world_trunk);
 
   Eigen::Affine3d get_T_world_left();
   Eigen::Affine3d get_T_world_right();
@@ -81,8 +89,6 @@ public:
    */
   bool camera_look_at(double& pan, double& tilt, const Eigen::Vector3d& P_world_target);
 
-  void update_trunk_orientation(double roll, double pitch, double yaw);
-
 #ifdef HAVE_RHOBAN_UTILS
   /**
    * @brief Load the robot state from an history log
@@ -112,10 +118,6 @@ public:
   RobotWrapper::FrameIndex left_foot;
   RobotWrapper::FrameIndex right_foot;
   RobotWrapper::FrameIndex trunk;
-
-  // Angular velocity of the trunk in the body frame
-  Eigen::Vector3d omega_b = Eigen::Vector3d::Zero();
-  Eigen::Matrix3d R_world_trunk = Eigen::Matrix3d::Identity();
 
   // Useful distances based on the URDF
   double dist_z_pan_tilt;    // Distance along z between the pan DoF and the tilt DoF in the head

@@ -126,9 +126,6 @@ void exposeRobotWrapper()
       .def("dcm", &HumanoidRobot::dcm)
       .def("zmp", &HumanoidRobot::zmp)
       .def("other_side", &HumanoidRobot::other_side)
-      .def("update_trunk_angular_velocity", &HumanoidRobot::update_trunk_angular_velocity)
-      .def(
-          "get_omega", +[](const HumanoidRobot& robot) { return robot.omega_b; })
       .def(
           "get_support_side", +[](const HumanoidRobot& robot) { return robot.support_side; });
 
