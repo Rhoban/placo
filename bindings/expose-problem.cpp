@@ -12,6 +12,7 @@
 #include "placo/problem/polygon_constraint.h"
 #include "placo/problem/integrator.h"
 #include "placo/problem/sparsity.h"
+#include "placo/problem/qp_error.h"
 #include <Eigen/Dense>
 #include <boost/python.hpp>
 
@@ -22,6 +23,8 @@ BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(expr_overloads, expr, 0, 2);
 
 void exposeProblem()
 {
+  class_<QPError>("QPError", init<std::string>()).def("what", &QPError::what);
+
   class_<Sparsity::Interval>("SparsityInterval")
       .add_property("start", &Sparsity::Interval::start, &Sparsity::Interval::start)
       .add_property("end", &Sparsity::Interval::end, &Sparsity::Interval::end);
