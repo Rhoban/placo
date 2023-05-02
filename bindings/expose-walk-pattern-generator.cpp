@@ -28,7 +28,7 @@ void exposeWalkPatternGenerator()
       .def("get_p_world_CoM", &WalkPatternGenerator::Trajectory::get_p_world_CoM)
       .def("get_R_world_trunk", &WalkPatternGenerator::Trajectory::get_R_world_trunk)
       .def("support_side", &WalkPatternGenerator::Trajectory::support_side)
-      .def("is_both_support", &WalkPatternGenerator::Trajectory::is_both_support)
+      .def("support_is_both", &WalkPatternGenerator::Trajectory::support_is_both)
       .def("get_support", &WalkPatternGenerator::Trajectory::get_support)
       .def("get_next_support", &WalkPatternGenerator::Trajectory::get_next_support)
       .def("get_prev_support", &WalkPatternGenerator::Trajectory::get_prev_support)
@@ -43,6 +43,7 @@ void exposeWalkPatternGenerator()
   class_<Kick>("Kick", init<HumanoidRobot&, HumanoidParameters&>())
       .add_property("duration", &Kick::duration)
       .add_property("t_init", &Kick::t_init, &Kick::t_init)
+      .add_property("t_delay", &Kick::t_delay, &Kick::t_delay)
       .add_property("t_up", &Kick::t_up, &Kick::t_up)
       .def("one_foot_balance", &Kick::one_foot_balance)
       .def("get_T_world_left", &Kick::get_T_world_left)
@@ -73,8 +74,8 @@ void exposeWalkPatternGenerator()
           "update_tasks_from_kick", +[](WalkTasks& tasks, Kick& kick, double t) { return tasks.update_tasks(kick, t); })
       .def(
           "update_tasks",
-          +[](WalkTasks& tasks, Eigen::Affine3d& T_world_left, Eigen::Affine3d& T_world_right,
-              Eigen::Vector3d& com_world, Eigen::Matrix3d& R_world_trunk) {
+          +[](WalkTasks& tasks, Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right, Eigen::Vector3d com_world,
+              Eigen::Matrix3d R_world_trunk) {
             return tasks.update_tasks(T_world_left, T_world_right, com_world, R_world_trunk);
           })
       .def("remove_tasks", &WalkTasks::remove_tasks)

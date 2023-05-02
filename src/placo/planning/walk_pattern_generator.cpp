@@ -133,7 +133,7 @@ HumanoidRobot::Side WalkPatternGenerator::Trajectory::support_side(double t)
   return _findPart(parts, t).support.side();
 }
 
-bool WalkPatternGenerator::Trajectory::is_both_support(double t)
+bool WalkPatternGenerator::Trajectory::support_is_both(double t)
 {
   return _findPart(parts, t).support.is_both();
 }

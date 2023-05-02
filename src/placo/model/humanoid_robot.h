@@ -73,7 +73,7 @@ public:
   RobotWrapper::FrameIndex flying_frame();
 
   /**
-   * @brief Get the pan and tilt target for the camera to look at a targeted position
+   * @brief Get the pan and tilt target for the camera to look at a target position
    * @param pan Pan adress
    * @param tilt Tilt adress
    * @param P_world_target Position in the world referential of the target we want to look at
@@ -94,7 +94,12 @@ public:
 #endif
 
   /**
-   * @brief The current side (left, right or both) supporting the robot
+   * @brief Are both feet supporting the robot
+   */
+  bool support_is_both;
+
+  /**
+   * @brief The current side (left or right) associated with T_world_support
    */
   Side support_side;
 
