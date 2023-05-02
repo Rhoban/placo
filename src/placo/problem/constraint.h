@@ -21,5 +21,7 @@ public:
 
   void configure(std::string type, double weight);
   void configure(bool hard, double weight);
+
+  bool operator==(const ProblemConstraint& other) const;
 };
 }  // namespace placo

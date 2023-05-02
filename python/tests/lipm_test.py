@@ -26,18 +26,18 @@ class TestLIPM(unittest.TestCase):
         polygon = np.array([[1.0, 1.0], [1.0, 2.0], [2.0, 2.0], [2.0, 1.0]])
 
         for k in range(32, 33):
-            placo.PolygonConstraint.add_polygon_constraint_xy(problem, lipm.pos(k), polygon, 0.0)
+            problem.add_constraints(placo.PolygonConstraint.in_polygon_xy(lipm.pos(k), polygon, 0.0))
 
         problem.solve()
         trajectory = lipm.get_trajectory()
 
-        self.assertNumpyEqual(trajectory.pos(0.), np.array([0., 0.]))
-        self.assertNumpyEqual(trajectory.vel(0.), np.array([0., 0.]))
-        self.assertNumpyEqual(trajectory.acc(0.), np.array([0., 0.]))
+        self.assertNumpyEqual(trajectory.pos(0.0), np.array([0.0, 0.0]))
+        self.assertNumpyEqual(trajectory.vel(0.0), np.array([0.0, 0.0]))
+        self.assertNumpyEqual(trajectory.acc(0.0), np.array([0.0, 0.0]))
 
         self.assertNumpyEqual(trajectory.pos(6.4), np.array([1.0, -1.0]))
-        self.assertNumpyEqual(trajectory.vel(6.4), np.array([0., 0.]))
-        self.assertNumpyEqual(trajectory.acc(6.4), np.array([0., 0.]))
+        self.assertNumpyEqual(trajectory.vel(6.4), np.array([0.0, 0.0]))
+        self.assertNumpyEqual(trajectory.acc(6.4), np.array([0.0, 0.0]))
 
 
 if __name__ == "__main__":

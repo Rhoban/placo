@@ -58,14 +58,17 @@ void exposeProblem()
       .def<void (ProblemConstraints::*)(std::string, double)>("configure", &ProblemConstraints::configure);
 
   class_<PolygonConstraint>("PolygonConstraint")
-      .def("add_polygon_constraint", &PolygonConstraint::add_polygon_constraint)
-      .def("add_polygon_constraint_xy", &PolygonConstraint::add_polygon_constraint_xy)
-      .staticmethod("add_polygon_constraint");
+      .def("in_polygon", &PolygonConstraint::in_polygon)
+      .staticmethod("in_polygon")
+      .def("in_polygon_xy", &PolygonConstraint::in_polygon_xy)
+      .staticmethod("in_polygon_xy");
+
+  exposeStdVector<ProblemConstraint>("vector_ProblemConstraint");
 
   class_<Integrator>("Integrator", init<Variable&, Eigen::VectorXd, int, double>())
       .def(init<Variable&, Eigen::VectorXd, Eigen::MatrixXd, double>())
-      .def("continuous_system_matrix", &Integrator::continuous_system_matrix)
-      .staticmethod("continuous_system_matrix")
+      .def("upper_shift_matrix", &Integrator::upper_shift_matrix)
+      .staticmethod("upper_shift_matrix")
       .add_property("t_start", &Integrator::t_start, &Integrator::t_start)
       .add_property(
           "M", +[](const Integrator& i) { return i.M; })
@@ -85,6 +88,7 @@ void exposeProblem()
   class_<Problem>("Problem")
       .def("add_variable", &Problem::add_variable, return_internal_reference<>())
       .def("add_constraint", &Problem::add_constraint, return_internal_reference<>())
+      .def("add_constraints", &Problem::add_constraints)
       .def("add_limit", &Problem::add_limit)
       .def("solve", &Problem::solve)
       .def("clear_variables", &Problem::clear_variables)

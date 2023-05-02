@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vector>
 #include "placo/problem/problem.h"
 #include "placo/problem/constraints.h"
 
@@ -13,11 +14,10 @@ public:
    * WARNING: Polygon must be clockwise (meaning that the exterior of the shape is on the  trigonometric normal of
    * the vertices)
    */
-  static ProblemConstraints add_polygon_constraint_xy(Problem& problem, const Expression& expression_xy,
+  static std::vector<ProblemConstraint> in_polygon_xy(const Expression& expression_xy,
                                                       std::vector<Eigen::Vector2d> polygon, double margin = 0.);
 
-  static ProblemConstraints add_polygon_constraint(Problem& problem, const Expression& expression_x,
-                                                   const Expression& expression_y, std::vector<Eigen::Vector2d> polygon,
-                                                   double margin = 0.);
+  static std::vector<ProblemConstraint> in_polygon(const Expression& expression_x, const Expression& expression_y,
+                                                   std::vector<Eigen::Vector2d> polygon, double margin = 0.);
 };
 }  // namespace placo

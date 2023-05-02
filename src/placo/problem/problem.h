@@ -6,6 +6,7 @@
 #include "placo/problem/expression.h"
 #include "placo/problem/variable.h"
 #include "placo/problem/constraint.h"
+#include "placo/problem/constraints.h"
 
 namespace placo
 {
@@ -47,6 +48,13 @@ public:
    * @return The constraint
    */
   ProblemConstraint& add_constraint(const ProblemConstraint& constraint);
+
+  /**
+   * @brief Add constraints
+   * @param constraints
+   * @return ProblemConstraints, which is a contained allowing to configure all the constraint
+   */
+  ProblemConstraints add_constraints(const std::vector<ProblemConstraint>& constraints);
 
   /**
    * @brief Clear all the constraints

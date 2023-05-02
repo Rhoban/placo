@@ -105,7 +105,7 @@ class TestProblem(unittest.TestCase):
         self.assertNumpyEqual(p2.value, np.array([18, 19]), msg="P2 should be in 18, 19")
 
     def test_integrator_matrix(self):
-        M = placo.Integrator.continuous_system_matrix(3)
+        M = placo.Integrator.upper_shift_matrix(3)
 
         expected = np.zeros((4, 4))
         expected[:3] = np.eye(4)[1:]
@@ -172,7 +172,7 @@ class TestProblem(unittest.TestCase):
 
         x = problem.add_variable(1)
         y = problem.add_variable(1)
-        placo.PolygonConstraint.add_polygon_constraint(problem, x.expr(), y.expr(), polygon, 0.0)
+        problem.add_constraints(placo.PolygonConstraint.in_polygon(x.expr(), y.expr(), polygon, 0.0))
         problem.solve()
 
         self.assertNumpyEqual(

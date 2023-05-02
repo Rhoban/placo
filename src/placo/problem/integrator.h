@@ -68,7 +68,7 @@ public:
    *
    * @return the matrix M
    */
-  static Eigen::MatrixXd continuous_system_matrix(int order);
+  static Eigen::MatrixXd upper_shift_matrix(int order);
 
   /**
    * @brief Computes the A and B matrices in the discrete recurrent equation:

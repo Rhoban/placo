@@ -243,8 +243,8 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
       // Ensuring ZMP remains in the support polygon
       if (timestep > kept_timesteps)
       {
-        PolygonConstraint::add_polygon_constraint_xy(problem, lipm.zmp(timestep), current_support.support_polygon(),
-                                                     parameters.zmp_margin);
+        problem.add_constraints(PolygonConstraint::in_polygon_xy(lipm.zmp(timestep), current_support.support_polygon(),
+                                                                 parameters.zmp_margin));
       }
 
       // ZMP reference trajectory
@@ -276,6 +276,7 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
     }
   }
 
+  // XXX: In the case we are not on an "end", maybe we want to target another final condition
   problem.add_constraint(lipm.pos(timesteps) == Eigen::Vector2d(current_support.frame().translation().x(),
                                                                 current_support.frame().translation().y()));
 

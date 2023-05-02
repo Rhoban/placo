@@ -3,10 +3,10 @@
 
 namespace placo
 {
-ProblemConstraints PolygonConstraint::add_polygon_constraint_xy(Problem& problem, const Expression& expression_xy,
+std::vector<ProblemConstraint> PolygonConstraint::in_polygon_xy(const Expression& expression_xy,
                                                                 std::vector<Eigen::Vector2d> polygon, double margin)
 {
-  ProblemConstraints constraints;
+  std::vector<ProblemConstraint> constraints;
 
   if (expression_xy.rows() != 2)
   {
@@ -27,18 +27,17 @@ ProblemConstraints PolygonConstraint::add_polygon_constraint_xy(Problem& problem
     n.normalize();
 
     // The distance to the line is given by n.T * (P - A) >= margin
-    ProblemConstraint& constraint = problem.add_constraint((n.transpose() * (expression_xy - A)) >= margin);
-    constraints.constraints.push_back(&constraint);
+    constraints.push_back((n.transpose() * (expression_xy - A)) >= margin);
   }
 
   return constraints;
 }
 
-ProblemConstraints PolygonConstraint::add_polygon_constraint(Problem& problem, const Expression& expression_x,
+std::vector<ProblemConstraint> PolygonConstraint::in_polygon(const Expression& expression_x,
                                                              const Expression& expression_y,
                                                              std::vector<Eigen::Vector2d> polygon, double margin)
 {
   Expression e = expression_x / expression_y;
-  return add_polygon_constraint_xy(problem, e, polygon, margin);
+  return in_polygon_xy(e, polygon, margin);
 }
 };  // namespace placo

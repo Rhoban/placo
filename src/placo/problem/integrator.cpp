@@ -69,7 +69,7 @@ Integrator::Integrator(Variable& variable_, Eigen::VectorXd X0, Eigen::MatrixXd 
 }
 
 Integrator::Integrator(Variable& variable_, Eigen::VectorXd X0, int order, double dt)
-  : Integrator(variable_, X0, continuous_system_matrix(order), dt)
+  : Integrator(variable_, X0, upper_shift_matrix(order), dt)
 {
 }
 
@@ -87,7 +87,7 @@ std::pair<Eigen::MatrixXd, Eigen::VectorXd> Integrator::AB_matrices(Eigen::Matri
   return std::pair<Eigen::MatrixXd, Eigen::VectorXd>(A, B);
 }
 
-Eigen::MatrixXd Integrator::continuous_system_matrix(int order)
+Eigen::MatrixXd Integrator::upper_shift_matrix(int order)
 {
   Eigen::MatrixXd M(order + 1, order + 1);
   M.setZero();

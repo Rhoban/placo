@@ -52,6 +52,16 @@ ProblemConstraint& Problem::add_constraint(const ProblemConstraint& constraint_)
   return *constraint;
 }
 
+ProblemConstraints Problem::add_constraints(const std::vector<ProblemConstraint>& constraints)
+{
+  ProblemConstraints problem_constraints;
+  for (auto& constraint : constraints)
+  {
+    problem_constraints.constraints.push_back(&add_constraint(constraint));
+  }
+  return problem_constraints;
+}
+
 void Problem::clear_constraints()
 {
   for (auto constraint : constraints)

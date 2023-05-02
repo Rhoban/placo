@@ -5,6 +5,7 @@
 #include "placo/model/humanoid_parameters.h"
 #include "placo/planning/walk_pattern_generator.h"
 #include "placo/footsteps/footsteps_planner.h"
+#include "placo/planning/lipm.h"
 
 namespace placo
 {
@@ -23,7 +24,7 @@ public:
   CubicSpline3D left_foot_trajectory;
   CubicSpline3D right_foot_trajectory;
 
-  // JerkPlanner::JerkTrajectory2D com_trajectory;
+  LIPM::Trajectory com_trajectory;
   CubicSpline com_height;
 
   double duration;

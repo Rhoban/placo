@@ -1,5 +1,6 @@
 #include "placo/planning/kick.h"
 #include "placo/utils.h"
+#include "placo/problem/polygon_constraint.h"
 
 namespace placo
 {
@@ -47,22 +48,23 @@ void Kick::one_foot_balance(FootstepsPlanner& planner, HumanoidRobot::Side suppo
   int nb_timesteps = t_init_ts + t_up_ts;
 
   Eigen::Vector3d com_world = robot.com_world();
-  // JerkPlanner jerk_planner(nb_timesteps, Eigen::Vector2d(com_world[0], com_world[1]), Eigen::Vector2d::Zero(),
-  //                          Eigen::Vector2d::Zero(), parameters.dt(), parameters.omega());
+  Problem problem;
+  LIPM lipm(problem, nb_timesteps, parameters.omega(), parameters.dt(), Eigen::Vector2d(com_world[0], com_world[1]),
+            Eigen::Vector2d::Zero(), Eigen::Vector2d::Zero());
 
-  // for (int timestep = 0; timestep < t_init_ts; timestep++)
-  // {
-  //   jerk_planner.add_polygon_constraint(timestep, double_support.support_polygon(), JerkPlanner::ZMP,
-  //                                       parameters.zmp_margin);
-  // }
+  for (int timestep = 0; timestep < t_init_ts; timestep++)
+  {
+    problem.add_constraints(
+        PolygonConstraint::in_polygon_xy(lipm.zmp(timestep), double_support.support_polygon(), parameters.zmp_margin));
+  }
 
-  // jerk_planner.add_equality_constraint(
-  //     t_init_ts, Eigen::Vector2d(single_support.frame().translation().x(), single_support.frame().translation().y()),
-  //     JerkPlanner::Position);
-  // jerk_planner.add_equality_constraint(t_init_ts, Eigen::Vector2d(0., 0.), JerkPlanner::Velocity);
-  // jerk_planner.add_equality_constraint(t_init_ts, Eigen::Vector2d(0., 0.), JerkPlanner::Acceleration);
+  problem.add_constraint(lipm.pos(t_init_ts) == Eigen::Vector2d(single_support.frame().translation().x(),
+                                                                single_support.frame().translation().y()));
+  problem.add_constraint(lipm.vel(t_init_ts) == Eigen::Vector2d(0., 0.));
+  problem.add_constraint(lipm.acc(t_init_ts) == Eigen::Vector2d(0., 0.));
 
-  // com_trajectory = jerk_planner.plan();
+  problem.solve();
+  com_trajectory = lipm.get_trajectory();
 
   // CoM height
   com_height.add_point(0, parameters.walk_com_height, 0);
