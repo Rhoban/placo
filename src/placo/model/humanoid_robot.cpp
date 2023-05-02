@@ -77,16 +77,21 @@ void HumanoidRobot::update_support_side(HumanoidRobot::Side new_side)
   }
 }
 
-void HumanoidRobot::update_trunk_angular_velocity(double elapsed)
-{
-  omega_b = pinocchio::log3(R_world_trunk.transpose() * get_T_world_trunk().rotation()) / elapsed;
-  R_world_trunk = get_T_world_trunk().rotation();
-}
-
 void HumanoidRobot::ensure_on_floor()
 {
   // Updating the floating base so that the foot is where we want
   update_kinematics();
+  set_T_world_frame(support_frame(), T_world_support);
+  update_kinematics();
+}
+
+void HumanoidRobot::update_from_imu(Eigen::Matrix3d R_world_trunk)
+{
+  update_kinematics();
+
+  Eigen::Affine3d T_trunk_support = get_T_a_b(trunk, support_frame());
+  T_world_support.linear() = R_world_trunk * T_trunk_support.linear();
+
   set_T_world_frame(support_frame(), T_world_support);
   update_kinematics();
 }
@@ -126,7 +131,7 @@ Eigen::Vector3d HumanoidRobot::get_com_velocity(Eigen::VectorXd qd_a, Side suppo
   Eigen::MatrixXd J_a = J.rightCols(20);
 
   // XXX : is it better to use pseudo_invers or inverse ?
-  Eigen::MatrixXd J_u_pinv = J_u.completeOrthogonalDecomposition().pseudoInverse();  // J_u.inverse();
+  Eigen::MatrixXd J_u_pinv = J_u.completeOrthogonalDecomposition().pseudoInverse();
 
   Eigen::VectorXd M(6);
   M << 0, 0, 0, omega_b;
@@ -173,16 +178,6 @@ bool HumanoidRobot::camera_look_at(double& pan, double& tilt, const Eigen::Vecto
   return true;
 }
 
-void HumanoidRobot::update_trunk_orientation(double roll, double pitch, double yaw)
-{
-  Eigen::Affine3d T_world_trunk = get_T_world_trunk();
-  T_world_trunk.linear() = pinocchio::rpy::rpyToMatrix(Eigen::Vector3d(roll, pitch, yaw));
-
-  update_kinematics();
-  set_T_world_frame(trunk, T_world_trunk);
-  update_kinematics();
-}
-
 #ifdef HAVE_RHOBAN_UTILS
 void HumanoidRobot::readFromHistories(rhoban_utils::HistoryCollection& histories, double timestamp, bool use_imu)
 {
@@ -192,31 +187,28 @@ void HumanoidRobot::readFromHistories(rhoban_utils::HistoryCollection& histories
     set_joint(name, histories.number("read:" + name)->interpolate(timestamp));
   }
 
-  // Set the support foot on the floor
-  if (!use_imu)
+  // Set the support
+  double left_pressure = histories.number("left_pressure_weight")->interpolate(timestamp);
+  double right_pressure = histories.number("right_pressure_weight")->interpolate(timestamp);
+  if (left_pressure > right_pressure)
   {
-    double left_pressure = histories.number("left_pressure_weight")->interpolate(timestamp);
-    double right_pressure = histories.number("right_pressure_weight")->interpolate(timestamp);
-    if (left_pressure > right_pressure)
-    {
-      update_support_side(Left);
-    }
-    else
-    {
-      update_support_side(Right);
-    }
-
-    ensure_on_floor();
+    update_support_side(Left);
   }
+  else
+  {
+    update_support_side(Right);
+  }
+  ensure_on_floor();
 
   // Setting the trunk orientation from the IMU
-  else
+  if (use_imu)
   {
     double imuYaw = histories.angle("imu_yaw")->interpolate(timestamp);
     double imuPitch = histories.angle("imu_pitch")->interpolate(timestamp);
     double imuRoll = histories.angle("imu_roll")->interpolate(timestamp);
 
-    update_trunk_orientation(imuRoll, imuPitch, imuYaw);
+    Eigen::Matrix3d R_world_trunk = pinocchio::rpy::rpyToMatrix(imuRoll, imuPitch, imuYaw);
+    update_from_imu(R_world_trunk);
   }
 }
 #endif

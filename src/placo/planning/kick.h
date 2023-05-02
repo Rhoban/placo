@@ -29,6 +29,10 @@ public:
 
   double duration;
 
+  bool support_is_both(double t);
+  HumanoidRobot::Side support_side;
+  Eigen::Affine3d support_frame;
+
   // Kick parameters
   double kick_com_height = 0.3;
   double kick_foot_height = 0.1;
