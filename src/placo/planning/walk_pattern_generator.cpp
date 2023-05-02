@@ -276,13 +276,12 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
     }
   }
 
-  // XXX: In the case we are not on an "end", maybe we want to target another final condition
-  problem.add_constraint(lipm.pos(timesteps) == Eigen::Vector2d(current_support.frame().translation().x(),
-                                                                current_support.frame().translation().y()));
-
   // We reach the target with the given position, a null speed and a null acceleration
   if (current_support.end)
   {
+    // XXX: In the case we are not on an "end", maybe we want to target another final condition
+    problem.add_constraint(lipm.pos(timesteps) == Eigen::Vector2d(current_support.frame().translation().x(),
+                                                                  current_support.frame().translation().y()));
     problem.add_constraint(lipm.vel(timesteps) == Eigen::Vector2d(0., 0.));
     problem.add_constraint(lipm.acc(timesteps) == Eigen::Vector2d(0., 0.));
   }
