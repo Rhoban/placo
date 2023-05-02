@@ -30,6 +30,7 @@ add_library(libplaco
 
     # Problem formulation
     src/placo/problem/problem.cpp
+    src/placo/problem/qp_error.cpp
     src/placo/problem/variable.cpp
     src/placo/problem/expression.cpp
     src/placo/problem/integrator.cpp
