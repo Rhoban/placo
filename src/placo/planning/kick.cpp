@@ -8,7 +8,7 @@ Kick::Kick(HumanoidRobot& robot, HumanoidParameters& parameters) : robot(robot),
 {
 }
 
-void Kick::one_foot_balance(FootstepsPlanner& planner, HumanoidRobot::Side support_side)
+void Kick::one_foot_balance(FootstepsPlanner& planner, HumanoidRobot::Side support_side_)
 {
   Eigen::Affine3d T_world_left = placo::flatten_on_floor(robot.get_T_world_left());
   Eigen::Affine3d T_world_right = placo::flatten_on_floor(robot.get_T_world_right());
@@ -18,7 +18,7 @@ void Kick::one_foot_balance(FootstepsPlanner& planner, HumanoidRobot::Side suppo
   FootstepsPlanner::Support double_support;
   double_support.footsteps = { left_footstep, right_footstep };
   FootstepsPlanner::Support single_support;
-  support_side = support_side;
+  support_side = support_side_;
 
   // Feet trajectories
   left_foot_trajectory.add_point(0, T_world_left.translation(), Eigen::Vector3d::Zero());
@@ -95,11 +95,12 @@ Eigen::Affine3d Kick::get_T_world_right(double t)
 
 Eigen::Vector3d Kick::get_com_world(double t)
 {
-  // return Eigen::Vector3d(com_trajectory.pos(t)[0], com_trajectory.pos(t)[1], com_height.pos(t));
+  return Eigen::Vector3d(com_trajectory.pos(t)[0], com_trajectory.pos(t)[1], com_height.pos(t));
 }
 
 bool Kick::support_is_both(double t)
 {
-  return t < (t_init + t_delay);
+  return false;
+  // return t < (t_init + t_delay);
 }
 }  // namespace placo
