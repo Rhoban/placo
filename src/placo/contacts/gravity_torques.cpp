@@ -1,6 +1,7 @@
 #include "placo/contacts/gravity_torques.h"
 #include "placo/problem/problem.h"
 
+// Some helpers for readability
 #define F_X 0
 #define F_Y 1
 #define F_Z 2
@@ -70,12 +71,12 @@ GravityTorques::Result GravityTorques::compute_gravity_torques(RobotWrapper& rob
   // We want to minimize moments in x and y
   for (auto wrench : contact_wrenches)
   {
-    problem.add_constraint(wrench->expr(M_X, 1) == 0).configure(false, 32.0);
-    problem.add_constraint(wrench->expr(M_Y, 1) == 0).configure(false, 32.0);
+    problem.add_constraint(wrench->expr(M_X, 1) == 0).configure(ProblemConstraint::Soft, 32.0);
+    problem.add_constraint(wrench->expr(M_Y, 1) == 0).configure(ProblemConstraint::Soft, 32.0);
   }
 
   // We want to minimize torques
-  problem.add_constraint(tau.expr() == 0).configure(false, 1.0);
+  problem.add_constraint(tau.expr() == 0).configure(ProblemConstraint::Soft, 1.0);
 
   try
   {

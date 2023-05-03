@@ -8,6 +8,12 @@ namespace placo
 class ProblemConstraint
 {
 public:
+  enum Priority
+  {
+    Soft = 0,
+    Hard = 1
+  };
+
   // Equality: Ax + b = 0
   // Inequality: Ax + b >= 0
   Expression expression;
@@ -16,11 +22,11 @@ public:
   bool inequality = false;
 
   // Constraint type
-  bool hard = true;
+  Priority priority = Hard;
   double weight = 1.0;
 
   void configure(std::string type, double weight);
-  void configure(bool hard, double weight);
+  void configure(Priority priority, double weight);
 
   bool operator==(const ProblemConstraint& other) const;
 };

@@ -17,22 +17,6 @@ public:
   Problem();
   virtual ~Problem();
 
-  struct Constraint
-  {
-    // Equality: Ax + b = 0
-    // Inequality: Ax + b >= 0
-    Expression expression;
-
-    // Inequality ?
-    bool inequality = false;
-
-    // Constraint type
-    bool hard = true;
-    double weight = 1.0;
-
-    void configure(bool hard, double weight);
-  };
-
   Variable& add_variable(int size = 1);
 
   /**

@@ -92,7 +92,7 @@ void Problem::solve()
 
   for (auto constraint : constraints)
   {
-    if (constraint->inequality && !constraint->hard)
+    if (constraint->inequality && constraint->priority == ProblemConstraint::Soft)
     {
       slack_variables += constraint->expression.rows();
     }
@@ -122,7 +122,7 @@ void Problem::solve()
     }
     else
     {
-      if (constraint->hard)
+      if (constraint->priority == ProblemConstraint::Hard)
       {
         n_equalities += constraint->expression.rows();
       }
@@ -187,7 +187,7 @@ void Problem::solve()
   {
     if (constraint->inequality)
     {
-      if (constraint->hard)
+      if (constraint->priority == ProblemConstraint::Hard)
       {
         // Ax + b >= 0
         G.block(k_inequality, 0, constraint->expression.rows(), constraint->expression.cols()) =
@@ -213,7 +213,7 @@ void Problem::solve()
         q.noalias() += constraint->weight * (As.transpose() * constraint->expression.b);
       }
     }
-    else if (constraint->hard)
+    else if (constraint->priority == ProblemConstraint::Hard)
     {
       // Ax + b = 0
       A.block(k_equality, 0, constraint->expression.rows(), constraint->expression.cols()) = constraint->expression.A;

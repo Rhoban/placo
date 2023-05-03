@@ -53,7 +53,18 @@ void exposeProblem()
   class_<ProblemConstraint>("ProblemConstraint")
       .add_property("expression", &ProblemConstraint::expression)
       .add_property("inequality", &ProblemConstraint::inequality)
-      .add_property("hard", &ProblemConstraint::hard)
+      .add_property(
+          "priority",
+          +[](const ProblemConstraint& constraint) {
+            if (constraint.priority == ProblemConstraint::Hard)
+            {
+              return "hard";
+            }
+            else
+            {
+              return "soft";
+            }
+          })
       .add_property("weight", &ProblemConstraint::weight)
       .def<void (ProblemConstraint::*)(std::string, double)>("configure", &ProblemConstraint::configure);
 
