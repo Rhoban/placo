@@ -69,6 +69,9 @@ add_library(libplaco
     src/placo/model/humanoid_parameters.cpp
     src/placo/planning/lipm.cpp
 
+    # Contacts
+    src/placo/contacts/gravity_torques.cpp
+
     ${PROTO_SRCS}
     ${PROTO_HDRS}  
 )
@@ -116,6 +119,7 @@ add_library(placo MODULE
     bindings/expose-kinematics.cpp
     bindings/expose-walk-pattern-generator.cpp
     bindings/expose-problem.cpp
+    bindings/expose-contacts.cpp
     bindings/module.cpp
 )
 target_link_libraries(placo ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} libplaco)

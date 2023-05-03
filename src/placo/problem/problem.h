@@ -7,6 +7,7 @@
 #include "placo/problem/variable.h"
 #include "placo/problem/constraint.h"
 #include "placo/problem/constraints.h"
+#include "placo/problem/qp_error.h"
 
 namespace placo
 {
