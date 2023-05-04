@@ -37,8 +37,9 @@ public:
   double kick_com_height = 0.3;
   double kick_foot_height = 0.1;
   double t_init = 1;
-  double t_delay = 0.5;
+  double t_pre_delay = 0.5;
   double t_up = 0.3;
+  double t_post_delay = 0.5;
 
 protected:
   // Robot associated to the WPG
@@ -46,5 +47,8 @@ protected:
 
   // The parameters to use for planning. The values are forwarded to the relevant solvers when needed.
   HumanoidParameters& parameters;
+
+  Eigen::Matrix3d R_world_left;
+  Eigen::Matrix3d R_world_right;
 };
 }  // namespace placo

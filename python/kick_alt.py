@@ -92,9 +92,10 @@ kick = placo.Kick(robot, parameters)
 kicking_side = placo.HumanoidRobot_Side.left
 support_side = placo.HumanoidRobot.other_side(kicking_side)
 
-kick.t_init = 0.7
-kick.t_delay = 0.3
+kick.t_init = 2
+kick.t_pre_delay = 1
 kick.t_up = 0.3
+kick.t_post_delay = 1
 
 ampl_sin = 0.1
 init_sin = False
