@@ -26,13 +26,13 @@ public:
    * formulates and try to solve a QP problem with the following properties:
    *
    * - Objective function:
-   *   - Trying to minimize the moments at contact (as a result, center of pressure is tried to be kept as much as
+   *   - Trying to minimize the moments at contact (as a result, ZMP is tried to be kept as much as
    *     possible at the center of the contact)
    *   - Trying to minimize the required torques
    * - Constraints:
    *   - Equation of motion: tau + sum(J^T f) = g
    *   - The contact fz are positive (contacts are unilaterals)
-   *   - The center of pressure is kept in the admissible rectangles (using foot_length and foot_width)
+   *   - The ZMP is kept in the admissible rectangles (using foot_length and foot_width)
    *   - Friction cones using the given mu ratio
    *
    * (In the future, this API might change in favour of more versatile contacts representation)
@@ -45,6 +45,6 @@ public:
    * @return
    */
   static Result compute_gravity_torques(RobotWrapper& robot, std::vector<std::string> unilateral_contacts,
-                                        double contact_length, double contact_width, double mu = 0.1);
+                                        double contact_length, double contact_width, double mu = 1.);
 };
 }  // namespace placo

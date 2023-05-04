@@ -7,8 +7,15 @@
 #include "module.h"
 #include "placo/utils.h"
 #include "expose-utils.hpp"
+#ifdef HAVE_RHOBAN_UTILS
+#include "rhoban_utils/history/history.h"
+#endif
 
 using namespace boost::python;
+
+#ifdef HAVE_RHOBAN_UTILS
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(loadReplays_overloads, loadReplays, 1, 2);
+#endif
 
 void exposeUtils()
 {
@@ -36,4 +43,27 @@ void exposeUtils()
       .def("pos", &placo::CubicSpline3D::pos)
       .def("vel", &placo::CubicSpline3D::vel)
       .def("add_point", &placo::CubicSpline3D::add_point);
+
+#ifdef HAVE_RHOBAN_UTILS
+  using namespace rhoban_utils;
+
+  // History collection
+  class_<HistoryCollection>("HistoryCollection")
+      .def("loadReplays", &HistoryCollection::loadReplays, loadReplays_overloads())
+      .def("smallestTimestamp", &HistoryCollection::smallestTimestamp)
+      .def("biggestTimestamp", &HistoryCollection::biggestTimestamp)
+      .def(
+          "number", +[](HistoryCollection& collection, std::string name,
+                        double t) { return collection.number(name)->interpolate(t); })
+      .def(
+          "angle", +[](HistoryCollection& collection, std::string name,
+                       double t) { return collection.angle(name)->interpolate(t); })
+      .def(
+          "pose", +[](HistoryCollection& collection, std::string name,
+                      double t) { return collection.pose(name)->interpolate(t); })
+      .def(
+          "bool", +[](HistoryCollection& collection, std::string name, double t) {
+            return collection.boolean(name)->interpolate(t);
+          });
+#endif
 }

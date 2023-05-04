@@ -25,7 +25,7 @@ GravityTorques::Result GravityTorques::compute_gravity_torques(RobotWrapper& rob
   problem.add_constraint(tau.expr(0, 6) == 0);
 
   // We must satisfy the equation of motion with contact unilateral forces
-  // tau + sum(J^T forces) = h
+  // tau + sum(J^T forces) = g
   Expression torque_forces = tau.expr();
   // Computing body jacobians
   for (auto& frame : unilateral_contacts)

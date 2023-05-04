@@ -11,6 +11,10 @@
 using namespace boost::python;
 using namespace placo;
 
+#ifdef HAVE_RHOBAN_UTILS
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(read_from_histories_overloads, read_from_histories, 2, 3);
+#endif
+
 template <class RobotType, class W1>
 void exposeRobotType(class_<RobotType, W1>& type)
 {
@@ -130,6 +134,9 @@ void exposeRobotWrapper()
       .def("dcm", &HumanoidRobot::dcm)
       .def("zmp", &HumanoidRobot::zmp)
       .def("other_side", &HumanoidRobot::other_side)
+#ifdef HAVE_RHOBAN_UTILS
+      .def("read_from_histories", &HumanoidRobot::read_from_histories, read_from_histories_overloads())
+#endif
       .def(
           "get_support_side", +[](const HumanoidRobot& robot) { return robot.support_side; });
 

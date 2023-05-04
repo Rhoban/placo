@@ -96,7 +96,7 @@ public:
    * @param timestamp Timestamp
    * @param use_imu Use IMU values for the trunk orientation
    */
-  void readFromHistories(rhoban_utils::HistoryCollection& histories, double timestamp, bool use_imu = false);
+  void read_from_histories(rhoban_utils::HistoryCollection& histories, double timestamp, bool use_imu = false);
 #endif
 
   /**
