@@ -482,8 +482,9 @@ void KinematicsSolver::dump_status_stream(std::ostream& stream)
       stream << "soft (weight:" << task->weight << ")";
     }
     stream << std::endl;
-    printf("    - Error: %.06f [%s]\n", task->error(), task->error_unit().c_str());
-    stream << std::endl;
+    char buffer[128];
+    sprintf(buffer, "    - Error: %.06f [%s]\n", task->error(), task->error_unit().c_str());
+    stream << buffer << std::endl;
   }
 }
 
