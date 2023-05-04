@@ -21,6 +21,7 @@ void exposeUtils()
   exposeStdVector<int>("vector_int");
   exposeStdVector<double>("vector_double");
   exposeStdVector<std::string>("vector_string");
+  exposeStdVector<Eigen::MatrixXd>("vector_MatrixXd");
 
   // exposeStdMap<std::string, double>("map_string_double");
 

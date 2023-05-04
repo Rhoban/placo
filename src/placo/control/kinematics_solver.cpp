@@ -285,7 +285,8 @@ void KinematicsSolver::compute_self_collision_inequalities()
       }
     }
 
-    problem.add_constraint(e >= 0).configure(!self_collisions_soft, self_collisions_weight);
+    problem.add_constraint(e >= 0).configure(self_collisions_soft ? ProblemConstraint::Soft : ProblemConstraint::Hard,
+                                             self_collisions_weight);
   }
 }
 
@@ -380,7 +381,8 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
     e.A = task->A;
     e.b = -task->b;
 
-    problem.add_constraint(e == 0).configure(task->priority == Task::Priority::Hard, task->weight);
+    problem.add_constraint(e == 0).configure(
+        task->priority == Task::Priority::Hard ? ProblemConstraint::Hard : ProblemConstraint::Soft, task->weight);
   }
 
   // Masked DoFs are hard equality constraints enforcing no deltas

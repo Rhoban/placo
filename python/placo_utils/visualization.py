@@ -92,7 +92,7 @@ def robot_frame_viz(robot: placo.RobotWrapper, frame: str) -> None:
 steps: int = 0
 
 
-def footsteps_viz(footsteps: placo.Footsteps) -> None:
+def footsteps_viz(footsteps: placo.Footsteps, T: np.ndarray = np.eye(4)) -> None:
     global steps
     vis = get_viewer()
 
@@ -103,7 +103,7 @@ def footsteps_viz(footsteps: placo.Footsteps) -> None:
     k = 0
     for footstep in footsteps:
         k += 1
-        polygon = [[*xy, 0] for xy in footstep.support_polygon()]
+        polygon = [(T @ [*xy, 0, 1])[:3] for xy in footstep.support_polygon()]
         polygon = np.array([*polygon, polygon[-1]])
 
         if isinstance(footstep, placo.Support):

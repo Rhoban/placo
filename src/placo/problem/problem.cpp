@@ -1,4 +1,5 @@
 #include "placo/problem/problem.h"
+#include "placo/problem/qp_error.h"
 #include "eiquadprog/eiquadprog.hpp"
 #include "rhoban_utils/timing/time_stamp.h"
 
@@ -91,7 +92,7 @@ void Problem::solve()
 
   for (auto constraint : constraints)
   {
-    if (constraint->inequality && !constraint->hard)
+    if (constraint->inequality && constraint->priority == ProblemConstraint::Soft)
     {
       slack_variables += constraint->expression.rows();
     }
@@ -121,7 +122,7 @@ void Problem::solve()
     }
     else
     {
-      if (constraint->hard)
+      if (constraint->priority == ProblemConstraint::Hard)
       {
         n_equalities += constraint->expression.rows();
       }
@@ -186,7 +187,7 @@ void Problem::solve()
   {
     if (constraint->inequality)
     {
-      if (constraint->hard)
+      if (constraint->priority == ProblemConstraint::Hard)
       {
         // Ax + b >= 0
         G.block(k_inequality, 0, constraint->expression.rows(), constraint->expression.cols()) =
@@ -212,7 +213,7 @@ void Problem::solve()
         q.noalias() += constraint->weight * (As.transpose() * constraint->expression.b);
       }
     }
-    else if (constraint->hard)
+    else if (constraint->priority == ProblemConstraint::Hard)
     {
       // Ax + b = 0
       A.block(k_equality, 0, constraint->expression.rows(), constraint->expression.cols()) = constraint->expression.A;
@@ -232,7 +233,7 @@ void Problem::solve()
   // Checking that the problem is indeed feasible
   if (result == std::numeric_limits<double>::infinity())
   {
-    throw std::runtime_error("Problem: Infeasible QP (check your hard inequality constraints)");
+    throw QPError("Problem: Infeasible QP (check your hard inequality constraints)");
   }
 
   // Checking that equality constraints were enforced, since this is not covered by above result
@@ -243,7 +244,7 @@ void Problem::solve()
     {
       if (fabs(equality_constraints[k]) > 1e-8)
       {
-        throw std::runtime_error("Problem: Infeasible QP (equality constraints were not enforced)");
+        throw QPError("Problem: Infeasible QP (equality constraints were not enforced)");
       }
     }
   }
@@ -251,7 +252,7 @@ void Problem::solve()
   // Checking for NaNs in solution
   if (x.hasNaN())
   {
-    throw std::runtime_error("Problem: NaN in the QP solution");
+    throw QPError("Problem: NaN in the QP solution");
   }
 
   slacks = x.block(n_variables, 0, slack_variables, 1);

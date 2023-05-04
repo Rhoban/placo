@@ -11,11 +11,10 @@
 using namespace boost::python;
 using namespace placo;
 
-template <typename RobotType>
-class_<RobotType> exposeRobotType(const char* name)
+template <class RobotType, class W1>
+void exposeRobotType(class_<RobotType, W1>& type)
 {
-  return class_<RobotType>(name, init<std::string, optional<int, std::string> >())
-      .add_property("state", &RobotType::state)
+  type.add_property("state", &RobotType::state)
       .add_property("model", &RobotType::model)
       .add_property("collision_model", &RobotType::collision_model)
       .add_property("visual_model", &RobotType::visual_model)
@@ -114,9 +113,14 @@ void exposeRobotWrapper()
           "normal", +[](RobotWrapper::Distance& distance) { return distance.normal; })
       .add_property("min_distance", &RobotWrapper::Distance::min_distance);
 
-  exposeRobotType<RobotWrapper>("RobotWrapper");
+  class_<RobotWrapper> robotWrapper("RobotWrapper", init<std::string, optional<int, std::string>>());
+  exposeRobotType<RobotWrapper>(robotWrapper);
 
-  exposeRobotType<HumanoidRobot>("HumanoidRobot")
+  class_<HumanoidRobot, bases<RobotWrapper>> humanoidWrapper("HumanoidRobot",
+                                                             init<std::string, optional<int, std::string>>());
+
+  exposeRobotType<HumanoidRobot>(humanoidWrapper);
+  humanoidWrapper
       .def<void (HumanoidRobot::*)(const std::string&)>("update_support_side", &HumanoidRobot::update_support_side)
       .def("ensure_on_floor", &HumanoidRobot::ensure_on_floor)
       .def("get_T_world_left", &HumanoidRobot::get_T_world_left)

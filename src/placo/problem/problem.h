@@ -7,6 +7,7 @@
 #include "placo/problem/variable.h"
 #include "placo/problem/constraint.h"
 #include "placo/problem/constraints.h"
+#include "placo/problem/qp_error.h"
 
 namespace placo
 {
@@ -15,22 +16,6 @@ class Problem
 public:
   Problem();
   virtual ~Problem();
-
-  struct Constraint
-  {
-    // Equality: Ax + b = 0
-    // Inequality: Ax + b >= 0
-    Expression expression;
-
-    // Inequality ?
-    bool inequality = false;
-
-    // Constraint type
-    bool hard = true;
-    double weight = 1.0;
-
-    void configure(bool hard, double weight);
-  };
 
   Variable& add_variable(int size = 1);
 

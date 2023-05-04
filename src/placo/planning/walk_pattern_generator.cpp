@@ -265,7 +265,7 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
       Eigen::Vector3d zmp_target = current_support.frame() * Eigen::Vector3d(parameters.foot_zmp_target_x, y_offset, 0);
 
       problem.add_constraint(lipm.zmp(timestep) == Eigen::Vector2d(zmp_target.x(), zmp_target.y()))
-          .configure(false, 1e-1);
+          .configure(ProblemConstraint::Soft, 1e-1);
     }
 
     constrained_timesteps += step_timesteps;

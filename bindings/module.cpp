@@ -14,6 +14,7 @@ BOOST_PYTHON_MODULE(placo)
 
   exposeEigen();
   exposeUtils();
+  exposeContacts();
   exposeFootsteps();
   exposeProblem();
   exposeRobotWrapper();

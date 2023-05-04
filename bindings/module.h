@@ -1,6 +1,7 @@
 #pragma once
 
 void exposeUtils();
+void exposeContacts();
 void exposeEigen();
 void exposeFootsteps();
 void exposeProblem();
