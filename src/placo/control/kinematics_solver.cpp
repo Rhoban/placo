@@ -465,26 +465,31 @@ void KinematicsSolver::remove_task(FrameTask& task)
   delete task.orientation;
 }
 
-void KinematicsSolver::dump_status()
+void KinematicsSolver::dump_status_stream(std::ostream& stream)
 {
-  std::cout << "* Kinematics Tasks:" << std::endl;
+  stream << "* Kinematics Tasks:" << std::endl;
   for (auto task : tasks)
   {
     task->update();
-    std::cout << "  * " << task->name << " [" << task->type_name() << "]" << std::endl;
-    std::cout << "    - Priority: ";
+    stream << "  * " << task->name << " [" << task->type_name() << "]" << std::endl;
+    stream << "    - Priority: ";
     if (task->priority == Task::Priority::Hard)
     {
-      std::cout << "hard";
+      stream << "hard";
     }
     else
     {
-      std::cout << "soft (weight:" << task->weight << ")";
+      stream << "soft (weight:" << task->weight << ")";
     }
-    std::cout << std::endl;
+    stream << std::endl;
     printf("    - Error: %.06f [%s]\n", task->error(), task->error_unit().c_str());
-    std::cout << std::endl;
+    stream << std::endl;
   }
+}
+
+void KinematicsSolver::dump_status()
+{
+  dump_status_stream(std::cout);
 }
 
 };  // namespace placo

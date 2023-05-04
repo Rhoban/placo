@@ -222,6 +222,11 @@ public:
   void remove_task(FrameTask& task);
 
   /**
+   * @brief Dumps the status to a given stream
+   */
+  void dump_status_stream(std::ostream& stream);
+
+  /**
    * @brief Shows the tasks status
    */
   void dump_status();
