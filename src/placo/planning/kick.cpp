@@ -52,7 +52,7 @@ void Kick::one_foot_balance(FootstepsPlanner& planner, HumanoidRobot::Side suppo
     right_foot_trajectory.add_point(t_init + t_pre_delay + t_up + t_post_delay, T_world_right.translation(),
                                     Eigen::Vector3d::Zero());
 
-    Eigen::Vector3d flying_position = T_world_left * Eigen::Vector3d(0., 0., parameters.walk_foot_height);
+    Eigen::Vector3d flying_position = T_world_left * Eigen::Vector3d(0., 0., kick_foot_height);
     left_foot_trajectory.add_point(t_init + t_pre_delay + t_up, flying_position, Eigen::Vector3d::Zero());
     left_foot_trajectory.add_point(t_init + t_pre_delay + t_up + t_post_delay, flying_position,
                                    Eigen::Vector3d::Zero());
