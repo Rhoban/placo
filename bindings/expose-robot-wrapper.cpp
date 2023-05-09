@@ -131,6 +131,9 @@ void exposeRobotWrapper()
       .def("get_T_world_right", &HumanoidRobot::get_T_world_right)
       .def("get_T_world_trunk", &HumanoidRobot::get_T_world_trunk)
       .def("get_com_velocity", &HumanoidRobot::get_com_velocity)
+      .def(
+          "T_world_support", +[](HumanoidRobot& robot) { return robot.T_world_support; },
+          +[](HumanoidRobot& robot, Eigen::MatrixXd T_world_support_) { robot.T_world_support = T_world_support_; })
       .def("dcm", &HumanoidRobot::dcm)
       .def("zmp", &HumanoidRobot::zmp)
       .def("other_side", &HumanoidRobot::other_side)
