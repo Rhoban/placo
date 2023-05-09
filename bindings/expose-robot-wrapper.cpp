@@ -131,9 +131,6 @@ void exposeRobotWrapper()
       .def("get_T_world_right", &HumanoidRobot::get_T_world_right)
       .def("get_T_world_trunk", &HumanoidRobot::get_T_world_trunk)
       .def("get_com_velocity", &HumanoidRobot::get_com_velocity)
-      .def(
-          "T_world_support", +[](HumanoidRobot& robot) { return robot.T_world_support; },
-          +[](HumanoidRobot& robot, Eigen::MatrixXd T_world_support_) { robot.T_world_support = T_world_support_; })
       .def("dcm", &HumanoidRobot::dcm)
       .def("zmp", &HumanoidRobot::zmp)
       .def("other_side", &HumanoidRobot::other_side)
@@ -141,7 +138,10 @@ void exposeRobotWrapper()
       .def("read_from_histories", &HumanoidRobot::read_from_histories, read_from_histories_overloads())
 #endif
       .def(
-          "get_support_side", +[](const HumanoidRobot& robot) { return robot.support_side; });
+          "get_support_side", +[](const HumanoidRobot& robot) { return robot.support_side; })
+      .add_property(
+          "T_world_support", +[](HumanoidRobot& robot) { return robot.T_world_support; },
+          +[](HumanoidRobot& robot, Eigen::Affine3d T_world_support_) { robot.T_world_support = T_world_support_; });
 
   exposeStdVector<RobotWrapper::Collision>("vector_Collision");
   exposeStdVector<RobotWrapper::Distance>("vector_Distance");
