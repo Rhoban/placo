@@ -71,8 +71,8 @@ GravityTorques::Result GravityTorques::compute_gravity_torques(RobotWrapper& rob
   // We want to minimize moments in x and y
   for (auto wrench : contact_wrenches)
   {
-    problem.add_constraint(wrench->expr(M_X, 1) == 0).configure(ProblemConstraint::Soft, 32.0);
-    problem.add_constraint(wrench->expr(M_Y, 1) == 0).configure(ProblemConstraint::Soft, 32.0);
+    problem.add_constraint(wrench->expr(M_X, 1) == 0).configure(ProblemConstraint::Soft, 100.0);
+    problem.add_constraint(wrench->expr(M_Y, 1) == 0).configure(ProblemConstraint::Soft, 100.0);
   }
 
   // We want to minimize torques
