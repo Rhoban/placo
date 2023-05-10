@@ -22,7 +22,8 @@ void exposeParameters()
                     &HumanoidParameters::double_support_ratio)
       .add_property("startend_double_support_ratio", &HumanoidParameters::startend_double_support_ratio,
                     &HumanoidParameters::startend_double_support_ratio)
-      .add_property("kick_duration", &HumanoidParameters::kick_duration, &HumanoidParameters::kick_duration)
+      .add_property("kick_support_ratio", &HumanoidParameters::kick_support_ratio,
+                    &HumanoidParameters::kick_support_ratio)
       .add_property("planned_timesteps", &HumanoidParameters::planned_timesteps, &HumanoidParameters::planned_timesteps)
       .add_property("replan_timesteps", &HumanoidParameters::replan_timesteps, &HumanoidParameters::replan_timesteps)
       .add_property("zmp_margin", &HumanoidParameters::zmp_margin, &HumanoidParameters::zmp_margin)
@@ -39,8 +40,10 @@ void exposeParameters()
       .def("dt", &HumanoidParameters::dt)
       .def("double_support_duration", &HumanoidParameters::double_support_duration)
       .def("startend_double_support_duration", &HumanoidParameters::startend_double_support_duration)
+      .def("kick_support_duration", &HumanoidParameters::kick_support_duration)
       .def("double_support_timesteps", &HumanoidParameters::double_support_timesteps)
       .def("startend_double_support_timesteps", &HumanoidParameters::startend_double_support_timesteps)
+      .def("kick_support_timesteps", &HumanoidParameters::kick_support_timesteps)
       .def("has_double_support", &HumanoidParameters::has_double_support)
       .def("omega", &HumanoidParameters::omega);
 }

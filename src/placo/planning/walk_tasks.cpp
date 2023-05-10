@@ -34,13 +34,6 @@ void WalkTasks::update_tasks(WalkPatternGenerator::Trajectory& trajectory, doubl
   trunk_orientation_task->R_world_frame = trajectory.get_R_world_trunk(t);
 }
 
-void WalkTasks::update_tasks(Kick& kick, double t)
-{
-  left_foot_task.set_T_world_frame(kick.get_T_world_left(t));
-  right_foot_task.set_T_world_frame(kick.get_T_world_right(t));
-  com_task->target_world = kick.get_com_world(t);
-}
-
 void WalkTasks::update_tasks(Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right, Eigen::Vector3d com_world,
                              Eigen::Matrix3d R_world_trunk)
 {

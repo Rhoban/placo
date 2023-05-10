@@ -220,11 +220,16 @@ FootstepsPlanner::Footstep FootstepsPlanner::neutral_opposite_footstep(Footsteps
 
 Eigen::Affine3d FootstepsPlanner::neutral_frame(Footstep footstep)
 {
+  neutral_frame(footstep, parameters);
+}
+
+Eigen::Affine3d FootstepsPlanner::neutral_frame(Footstep footstep, HumanoidParameters parameters_)
+{
   if (footstep.side == HumanoidRobot::Side::Left)
   {
-    return footstep.frame.translate(-parameters.feet_spacing / 2 * Eigen::Vector3d::UnitY());
+    return footstep.frame.translate(-parameters_.feet_spacing / 2 * Eigen::Vector3d::UnitY());
   }
-  return footstep.frame.translate(parameters.feet_spacing / 2 * Eigen::Vector3d::UnitY());
+  return footstep.frame.translate(parameters_.feet_spacing / 2 * Eigen::Vector3d::UnitY());
 }
 
 FootstepsPlanner::Footstep FootstepsPlanner::create_footstep(HumanoidRobot::Side side, Eigen::Affine3d T_world_foot)

@@ -30,6 +30,11 @@ double HumanoidParameters::startend_double_support_duration()
   return startend_double_support_ratio * single_support_duration;
 }
 
+double HumanoidParameters::kick_support_duration()
+{
+  return kick_support_ratio * single_support_duration;
+}
+
 int HumanoidParameters::double_support_timesteps()
 {
   return std::round(double_support_ratio * single_support_timesteps);
@@ -38,6 +43,11 @@ int HumanoidParameters::double_support_timesteps()
 int HumanoidParameters::startend_double_support_timesteps()
 {
   return std::round(startend_double_support_ratio * single_support_timesteps);
+}
+
+int HumanoidParameters::kick_support_timesteps()
+{
+  return std::round(kick_support_ratio * single_support_timesteps);
 }
 
 bool HumanoidParameters::has_double_support()

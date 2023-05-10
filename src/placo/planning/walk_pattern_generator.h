@@ -5,6 +5,7 @@
 #include "placo/model/humanoid_parameters.h"
 #include "placo/trajectory/cubic_spline_3d.h"
 #include "placo/trajectory/swing_foot.h"
+#include "placo/trajectory/kick.h"
 #include "placo/control/kinematics_solver.h"
 #include "placo/control/frame_task.h"
 #include "placo/control/com_task.h"
@@ -20,9 +21,12 @@ class WalkPatternGenerator
 public:
   struct TrajectoryPart
   {
-    SwingFoot::Trajectory swing_trajectory;
     double t_start;
     double t_end;
+
+    bool kick_part = false;
+    SwingFoot::SwingTrajectory swing_trajectory;
+    Kick::KickTrajectory kick_trajectory;
 
     FootstepsPlanner::Support support;
   };

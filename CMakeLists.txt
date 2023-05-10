@@ -27,6 +27,7 @@ add_library(libplaco
     src/placo/trajectory/swing_foot_quintic.cpp
     src/placo/trajectory/cubic_spline.cpp
     src/placo/trajectory/cubic_spline_3d.cpp
+    src/placo/trajectory/kick.cpp
 
     # Problem formulation
     src/placo/problem/problem.cpp
@@ -64,7 +65,6 @@ add_library(libplaco
     src/placo/footsteps/footsteps_planner_naive.cpp
     src/placo/footsteps/footsteps_planner_repetitive.cpp
     src/placo/planning/walk_pattern_generator.cpp
-    src/placo/planning/kick.cpp
     src/placo/planning/walk_tasks.cpp
     src/placo/model/humanoid_parameters.cpp
     src/placo/planning/lipm.cpp

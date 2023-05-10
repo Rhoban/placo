@@ -40,6 +40,7 @@ public:
     bool computed_polygon = false;
     bool start = false;
     bool end = false;
+    bool kick = false;
     std::vector<Eigen::Vector2d> support_polygon();
 
     /**
@@ -108,6 +109,7 @@ public:
    * @param footstep The footstep of one of the feet
    */
   Eigen::Affine3d neutral_frame(Footstep footstep);
+  static Eigen::Affine3d neutral_frame(Footstep footstep, HumanoidParameters parameters_);
 
   Footstep create_footstep(HumanoidRobot::Side side, Eigen::Affine3d T_world_foot);
 
