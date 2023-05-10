@@ -203,7 +203,8 @@ void FootstepsPlanner::add_first_support(std::vector<Support>& supports, Support
   supports[0].start = true;
 }
 
-FootstepsPlanner::Footstep FootstepsPlanner::neutral_opposite_footstep(FootstepsPlanner::Footstep footstep)
+FootstepsPlanner::Footstep FootstepsPlanner::neutral_opposite_footstep(FootstepsPlanner::Footstep footstep, double d_x,
+                                                                       double d_y, double d_theta)
 {
   if (footstep.side == HumanoidRobot::Side::Left)
   {
@@ -214,8 +215,20 @@ FootstepsPlanner::Footstep FootstepsPlanner::neutral_opposite_footstep(Footsteps
     footstep.frame.translate(parameters.feet_spacing * Eigen::Vector3d::UnitY());
   }
 
+  footstep.frame.translate(Eigen::Vector3d(d_x, d_y, 0));
+  footstep.frame.rotate(Eigen::AngleAxisd(d_theta, Eigen::Vector3d(0, 0, 1)));
+
   footstep.side = HumanoidRobot::other_side(footstep.side);
   return footstep;
+}
+
+FootstepsPlanner::Footstep FootstepsPlanner::clipped_neutral_opposite_footstep(Footstep footstep, double d_x,
+                                                                               double d_y, double d_theta)
+{
+  Eigen::Vector3d step(d_x, d_y, d_theta);
+  step = parameters.ellipsoid_clip(step);
+
+  return neutral_opposite_footstep(footstep, step.x(), step.y(), step.z());
 }
 
 Eigen::Affine3d FootstepsPlanner::neutral_frame(Footstep footstep)

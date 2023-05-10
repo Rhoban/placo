@@ -15,19 +15,14 @@ void FootstepsPlannerRepetitive::plan_impl(std::vector<FootstepsPlanner::Footste
 
   if (nb_steps > 0)
   {
-    int steps = 0;
-    while (steps < nb_steps - 1)
+    for (int steps = 0; steps < nb_steps - 1; steps += 1)
     {
-      footstep = neutral_opposite_footstep(footstep);
-      footstep.frame.translate(Eigen::Vector3d(d_x, d_y, 0));
-      footstep.frame.rotate(Eigen::AngleAxisd(d_theta, Eigen::Vector3d(0, 0, 1)));
-
+      footstep = clipped_neutral_opposite_footstep(footstep, d_x, d_y, d_theta);
       footsteps.push_back(footstep);
-      steps += 1;
     }
 
     // Adding last footstep to go double support
-    footsteps.push_back(neutral_opposite_footstep(footstep));
+    footsteps.push_back(clipped_neutral_opposite_footstep(footstep));
   }
 }
 

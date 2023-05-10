@@ -36,11 +36,18 @@ void exposeParameters()
       .add_property("foot_length", &HumanoidParameters::foot_length, &HumanoidParameters::foot_length)
       .add_property("foot_zmp_target_x", &HumanoidParameters::foot_zmp_target_x, &HumanoidParameters::foot_zmp_target_x)
       .add_property("foot_zmp_target_y", &HumanoidParameters::foot_zmp_target_y, &HumanoidParameters::foot_zmp_target_y)
+      .add_property("walk_max_dx_forward", &HumanoidParameters::walk_max_dx_forward,
+                    &HumanoidParameters::walk_max_dx_forward)
+      .add_property("walk_max_dx_backward", &HumanoidParameters::walk_max_dx_backward,
+                    &HumanoidParameters::walk_max_dx_backward)
+      .add_property("walk_max_dy", &HumanoidParameters::walk_max_dy, &HumanoidParameters::walk_max_dy)
+      .add_property("walk_max_dtheta", &HumanoidParameters::walk_max_dtheta, &HumanoidParameters::walk_max_dtheta)
       .def("dt", &HumanoidParameters::dt)
       .def("double_support_duration", &HumanoidParameters::double_support_duration)
       .def("startend_double_support_duration", &HumanoidParameters::startend_double_support_duration)
       .def("double_support_timesteps", &HumanoidParameters::double_support_timesteps)
       .def("startend_double_support_timesteps", &HumanoidParameters::startend_double_support_timesteps)
       .def("has_double_support", &HumanoidParameters::has_double_support)
-      .def("omega", &HumanoidParameters::omega);
+      .def("omega", &HumanoidParameters::omega)
+      .def("ellipsoid_clip", &HumanoidParameters::ellipsoid_clip);
 }

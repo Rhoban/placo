@@ -117,7 +117,6 @@ Eigen::Vector3d Kick::get_com_world(double t)
 
 bool Kick::support_is_both(double t)
 {
-  return false;
-  // return t < (t_init + t_pre_delay);
+  return t < (t_init);
 }
 }  // namespace placo

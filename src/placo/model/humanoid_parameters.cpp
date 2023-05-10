@@ -44,4 +44,24 @@ bool HumanoidParameters::has_double_support()
 {
   return double_support_timesteps() > 0;
 }
+
+Eigen::Vector3d HumanoidParameters::ellipsoid_clip(Eigen::Vector3d step)
+{
+  Eigen::Vector3d factor((step.x() >= 0) ? walk_max_dx_forward : walk_max_dx_backward, walk_max_dy, walk_max_dtheta);
+  step.x() /= factor.x();
+  step.y() /= factor.y();
+  step.z() /= factor.z();
+
+  double norm = step.norm();
+  if (norm > 1)
+  {
+    step /= norm;
+  }
+
+  step.x() *= factor.x();
+  step.y() *= factor.y();
+  step.z() *= factor.z();
+
+  return step;
+}
 }  // namespace placo

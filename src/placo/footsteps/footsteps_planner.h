@@ -101,7 +101,12 @@ public:
    * @brief Return the opposite footstep in a neutral position (i.e. at a
    * distance parameters.feet_spacing from the given footstep)
    */
-  Footstep neutral_opposite_footstep(Footstep footstep);
+  Footstep neutral_opposite_footstep(Footstep footstep, double d_x = 0., double d_y = 0., double d_theta = 0.);
+
+  /**
+   * @brief Same as neutral_opposite footstep, but the clipping is applied
+   */
+  Footstep clipped_neutral_opposite_footstep(Footstep footstep, double d_x = 0., double d_y = 0., double d_theta = 0.);
 
   /**
    * @brief Return the frame between the feet in the neutral position

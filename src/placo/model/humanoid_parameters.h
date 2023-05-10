@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Eigen/Dense>
+
 namespace placo
 {
 /**
@@ -98,9 +100,29 @@ public:
   double walk_trunk_pitch = 0.0;
 
   /**
-   * @brief How muc hthe foot tilts during the walk [rad]
+   * @brief How much the foot tilts during the walk [rad]
    */
   double walk_foot_tilt = 0.2;
+
+  /**
+   * @brief Maximum step (forward)
+   */
+  double walk_max_dx_forward = 0.08;
+
+  /**
+   * @brief Maximum step (backward)
+   */
+  double walk_max_dx_backward = 0.03;
+
+  /**
+   * @brief Maximum step (lateral)
+   */
+  double walk_max_dy = 0.04;
+
+  /**
+   * @brief Maximum step (yaw)
+   */
+  double walk_max_dtheta = 0.35;
 
   /**
    * @brief Robot center of mass height for LIPM model. This is used to compute the pendulum constant
@@ -113,7 +135,7 @@ public:
   /**
    * @brief Lateral spacing between feet [m]
    */
-  double feet_spacing = 0.1;
+  double feet_spacing = 0.15;
 
   /**
    * @brief Foot width [m]
@@ -136,8 +158,23 @@ public:
   double foot_zmp_target_y = 0.0;
 
   /**
+   * @brief Kick tolerance distance [m]
+   */
+  double kick_tolerance_distance = 0.03;
+
+  /**
+   * @brief Kick tolerance orientation [rad]
+   */
+  double kick_tolerance_orientation = 0.06;
+
+  /**
    * Natural frequency of the Linear Inverted Pendulum (LIP) model used in the walk
    */
   double omega();
+
+  /**
+   * @brief Applies the ellipsoid clipping to a given step size (dx, dy, dtheta)
+   */
+  Eigen::Vector3d ellipsoid_clip(Eigen::Vector3d step);
 };
 }  // namespace placo
