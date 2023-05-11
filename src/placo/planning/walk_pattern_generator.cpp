@@ -71,10 +71,10 @@ Eigen::Affine3d WalkPatternGenerator::Trajectory::get_T_world_left(double t)
 
   if (is_flying(HumanoidRobot::Left, t))
   {
-    // if (part.kick_part)
-    // {
-    //   return _buildFrame(part.kick_trajectory.pos(t), left_foot_yaw.pos(t));
-    // }
+    if (part.kick_part)
+    {
+      return _buildFrame(part.kick_trajectory.pos(t), left_foot_yaw.pos(t));
+    }
     return _buildFrame(part.swing_trajectory.pos(t), left_foot_yaw.pos(t));
   }
   else
@@ -89,10 +89,10 @@ Eigen::Affine3d WalkPatternGenerator::Trajectory::get_T_world_right(double t)
 
   if (is_flying(HumanoidRobot::Right, t))
   {
-    // if (part.kick_part)
-    // {
-    //   return _buildFrame(part.kick_trajectory.pos(t), right_foot_yaw.pos(t));
-    // }
+    if (part.kick_part)
+    {
+      return _buildFrame(part.kick_trajectory.pos(t), right_foot_yaw.pos(t));
+    }
     return _buildFrame(part.swing_trajectory.pos(t), right_foot_yaw.pos(t));
   }
   else
@@ -107,10 +107,10 @@ Eigen::Vector3d WalkPatternGenerator::Trajectory::get_v_world_left(double t)
 
   if (part.support.side() == HumanoidRobot::Right)
   {
-    // if (part.kick_part)
-    // {
-    //   return part.kick_trajectory.vel(t);
-    // }
+    if (part.kick_part)
+    {
+      return part.kick_trajectory.vel(t);
+    }
     return part.swing_trajectory.vel(t);
   }
   return Eigen::Vector3d::Zero();
@@ -122,10 +122,10 @@ Eigen::Vector3d WalkPatternGenerator::Trajectory::get_v_world_right(double t)
 
   if (part.support.side() == HumanoidRobot::Left)
   {
-    // if (part.kick_part)
-    // {
-    //   return part.kick_trajectory.vel(t);
-    // }
+    if (part.kick_part)
+    {
+      return part.kick_trajectory.vel(t);
+    }
     return part.swing_trajectory.vel(t);
   }
   return Eigen::Vector3d::Zero();
@@ -349,25 +349,24 @@ void WalkPatternGenerator::planFeetTrajectories(Trajectory& trajectory, Trajecto
     part.support = support;
     part.t_start = t;
 
-    // if (support.kick)
-    // {
-    //   part.kick_part = true;
-    //   t += parameters.kick_support_duration();
+    if (support.kick)
+    {
+      part.kick_part = true;
+      t += parameters.kick_support_duration();
 
-    //   HumanoidRobot::Side kicking_side = HumanoidRobot::other_side(support.side());
-    //   Eigen::Vector3d start = trajectory.supports[step - 1].footstep_frame(kicking_side).translation();
-    //   Eigen::Vector3d target = trajectory.supports[step - 1].footstep_frame(support.side()).translation();
-    //   Eigen::Vector3d neutral = FootstepsPlanner::neutral_frame(support.footsteps[0], parameters).translation();
+      HumanoidRobot::Side kicking_side = HumanoidRobot::other_side(support.side());
+      Eigen::Vector3d start = trajectory.supports[step - 1].footstep_frame(kicking_side).translation();
+      Eigen::Vector3d target = trajectory.supports[step + 1].footstep_frame(kicking_side).translation();
+      Eigen::Vector3d neutral = FootstepsPlanner::neutral_frame(support.footsteps[0], parameters).translation();
 
-    //   part.kick_trajectory =
-    //       Kick::make_trajectory(kicking_side, t - parameters.kick_support_duration(), t, start, target, neutral);
+      part.kick_trajectory =
+          Kick::make_trajectory(kicking_side, t - parameters.kick_support_duration(), t, start, target, neutral);
 
-    //   // Support foot remaining steady
-    //   _addSupports(trajectory, t, support);
-    // }
+      // Support foot remaining steady
+      _addSupports(trajectory, t, support);
+    }
 
-    // else
-    if (support.footsteps.size() == 1)
+    else if (support.footsteps.size() == 1)
     {
       // Single support, add the flying trajectory
       HumanoidRobot::Side flying_side = HumanoidRobot::other_side(support.footsteps[0].side);
@@ -375,11 +374,7 @@ void WalkPatternGenerator::planFeetTrajectories(Trajectory& trajectory, Trajecto
       // Computing the intermediary flying foot inflection target
       Eigen::Affine3d T_world_flyingTarget = trajectory.supports[step + 1].footstep_frame(flying_side);
 
-      double duration = parameters.single_support_duration;
-      if (support.kick)
-        duration = parameters.kick_support_duration();
-
-      t += duration;
+      t += parameters.single_support_duration;
 
       if (support.start)
       {
@@ -391,8 +386,8 @@ void WalkPatternGenerator::planFeetTrajectories(Trajectory& trajectory, Trajecto
 
         // Flying foot reaching its position
         part.swing_trajectory =
-            SwingFoot::make_trajectory(t - duration, t, parameters.walk_foot_height, T_world_startTarget.translation(),
-                                       T_world_flyingTarget.translation());
+            SwingFoot::make_trajectory(t - parameters.single_support_duration, t, parameters.walk_foot_height,
+                                       T_world_startTarget.translation(), T_world_flyingTarget.translation());
       }
 
       trajectory.yaw(flying_side).add_point(t, frame_yaw(T_world_flyingTarget.rotation()), 0);
