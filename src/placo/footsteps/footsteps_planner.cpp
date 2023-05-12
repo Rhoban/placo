@@ -19,6 +19,9 @@ std::vector<Eigen::Vector2d> FootstepsPlanner::Footstep::support_polygon()
 {
   if (!computed_polygon)
   {
+    // Ensure polygon is cleared
+    polygon.clear();
+
     // Making a clockwise polygon
     std::vector<std::pair<double, double>> contour = {
       std::make_pair(-1., 1.),
@@ -43,6 +46,8 @@ std::vector<Eigen::Vector2d> FootstepsPlanner::Support::support_polygon()
 {
   if (!computed_polygon)
   {
+    polygon.clear();
+
     b_polygon poly, hull;
     for (auto& footstep : footsteps)
     {
@@ -140,6 +145,20 @@ HumanoidRobot::Side FootstepsPlanner::Support::side()
 bool FootstepsPlanner::Support::is_both()
 {
   return footsteps.size() == 2;
+}
+
+FootstepsPlanner::Support operator*(Eigen::Affine3d T, const FootstepsPlanner::Support& support)
+{
+  FootstepsPlanner::Support new_support = support;
+
+  for (auto& footstep : new_support.footsteps)
+  {
+    footstep.frame = T * footstep.frame;
+    footstep.computed_polygon = false;
+  }
+  new_support.computed_polygon = false;
+
+  return new_support;
 }
 
 std::vector<FootstepsPlanner::Support>

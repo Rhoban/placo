@@ -67,6 +67,11 @@ public:
      * @brief Checks whether this support is a double support
      */
     bool is_both();
+
+    /**
+     * @brief Apply a transformation to a support (applied to all the footstep frames)
+     */
+    friend Support operator*(Eigen::Affine3d T, const Support& support);
   };
 
   /**
