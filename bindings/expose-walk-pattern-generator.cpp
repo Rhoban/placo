@@ -18,21 +18,23 @@ using namespace placo;
 void exposeWalkPatternGenerator()
 {
   class_<WalkPatternGenerator::Trajectory>("WalkTrajectory")
-      .add_property("supports", &WalkPatternGenerator::Trajectory::supports)
-      .add_property("com", &WalkPatternGenerator::Trajectory::com)
       .add_property("t_start", &WalkPatternGenerator::Trajectory::t_start)
       .add_property("t_end", &WalkPatternGenerator::Trajectory::t_end)
       .add_property("jerk_planner_timesteps", &WalkPatternGenerator::Trajectory::jerk_planner_timesteps)
       .def("get_T_world_left", &WalkPatternGenerator::Trajectory::get_T_world_left)
+      .def("get_supports", &WalkPatternGenerator::Trajectory::get_supports)
       .def("get_T_world_right", &WalkPatternGenerator::Trajectory::get_T_world_right)
       .def("get_p_world_CoM", &WalkPatternGenerator::Trajectory::get_p_world_CoM)
+      .def("get_v_world_CoM", &WalkPatternGenerator::Trajectory::get_v_world_CoM)
+      .def("get_a_world_CoM", &WalkPatternGenerator::Trajectory::get_a_world_CoM)
       .def("get_R_world_trunk", &WalkPatternGenerator::Trajectory::get_R_world_trunk)
       .def("support_side", &WalkPatternGenerator::Trajectory::support_side)
       .def("support_is_both", &WalkPatternGenerator::Trajectory::support_is_both)
       .def("get_support", &WalkPatternGenerator::Trajectory::get_support)
       .def("get_next_support", &WalkPatternGenerator::Trajectory::get_next_support)
       .def("get_prev_support", &WalkPatternGenerator::Trajectory::get_prev_support)
-      .def("get_part_t_start", &WalkPatternGenerator::Trajectory::get_part_t_start);
+      .def("get_part_t_start", &WalkPatternGenerator::Trajectory::get_part_t_start)
+      .def("apply_transform", &WalkPatternGenerator::Trajectory::apply_transform);
 
   class_<WalkPatternGenerator>("WalkPatternGenerator", init<HumanoidRobot&, HumanoidParameters&>())
       .def("plan", &WalkPatternGenerator::plan)

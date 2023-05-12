@@ -34,6 +34,50 @@ public:
     double com_height;
     double trunk_pitch;
 
+    Eigen::Affine3d get_T_world_left(double t);
+    Eigen::Affine3d get_T_world_right(double t);
+    Eigen::Vector3d get_v_world_left(double t);
+    Eigen::Vector3d get_v_world_right(double t);
+
+    Eigen::Vector3d get_p_world_CoM(double t);
+    Eigen::Vector3d get_v_world_CoM(double t);
+    Eigen::Vector3d get_a_world_CoM(double t);
+    Eigen::Vector3d get_j_world_CoM(double t);
+    Eigen::Matrix3d get_R_world_trunk(double t);
+
+    HumanoidRobot::Side support_side(double t);
+    bool support_is_both(double t);
+    bool is_flying(HumanoidRobot::Side side, double t);
+
+    FootstepsPlanner::Support get_support(double t);
+    FootstepsPlanner::Support get_next_support(double t);
+    FootstepsPlanner::Support get_prev_support(double t);
+
+    std::vector<FootstepsPlanner::Support> get_supports();
+
+    /**
+     * @brief Applies a given transformation to the left of all values issued by the trajectory
+     */
+    void apply_transform(Eigen::Affine3d T);
+
+    // Trajectory duration
+    double t_start = 0.0;
+    double t_end = 0.0;
+
+    /**
+     * @brief Returns the trajectory time start for the support corresponding to the given time
+     */
+    double get_part_t_start(double t);
+
+    // Number of dt planned by the jerk planner
+    int jerk_planner_timesteps = 0;
+
+  protected:
+    /**
+     * @brief Retrieves the yaw value
+     */
+    placo::CubicSpline& yaw(HumanoidRobot::Side side);
+
     // Planned supports
     std::vector<FootstepsPlanner::Support> supports;
 
@@ -48,35 +92,17 @@ public:
     placo::CubicSpline right_foot_yaw;
     placo::CubicSpline trunk_yaw;
 
-    placo::CubicSpline& yaw(HumanoidRobot::Side side);
-
-    Eigen::Affine3d get_T_world_left(double t);
-    Eigen::Affine3d get_T_world_right(double t);
-    Eigen::Vector3d get_v_world_left(double t);
-    Eigen::Vector3d get_v_world_right(double t);
-
-    Eigen::Vector3d get_p_world_CoM(double t);
-    Eigen::Matrix3d get_R_world_trunk(double t);
-
-    HumanoidRobot::Side support_side(double t);
-    bool support_is_both(double t);
-    bool is_flying(HumanoidRobot::Side side, double t);
-
-    FootstepsPlanner::Support get_support(double t);
-    FootstepsPlanner::Support get_next_support(double t);
-    FootstepsPlanner::Support get_prev_support(double t);
+    void add_supports(double t, FootstepsPlanner::Support& support);
 
     /**
-     * @brief Returns the trajectory time start for the support corresponding to the given time
+     * @brief A (left) transformation to apply to all the outputs
      */
-    double get_part_t_start(double t);
+    Eigen::Affine3d T;
 
-    // Trajectory duration
-    double t_start = 0.0;
-    double t_end = 0.0;
-
-    // Number of dt planned by the jerk planner
-    int jerk_planner_timesteps = 0;
+    /**
+     * @brief WalkPatternGenerator is allowed to access the protected fields in the trajectory when building it
+     */
+    friend class WalkPatternGenerator;
   };
 
   WalkPatternGenerator(HumanoidRobot& robot, HumanoidParameters& parameters);
