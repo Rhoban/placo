@@ -163,7 +163,7 @@ void FootstepsPlannerNaive::plan_impl(std::vector<FootstepsPlanner::Footstep>& f
 //     steps += 1;
 //     bool arrived = true;
 
-//     footstep = neutral_opposite_footstep(footstep);
+//     footstep = opposite_footstep(footstep);
 
 //     Eigen::Vector3d error = footstep.side == HumanoidRobot::Left ?
 //                                 T_world_targetLeft.translation() - footstep.frame.translation() :

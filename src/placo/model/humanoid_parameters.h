@@ -17,7 +17,7 @@ public:
   double dt();
 
   /**
-   * @brief SSP duration [ms], must be a multiple of dt
+   * @brief SSP duration [s]
    */
   double single_support_duration = 1.;
 
@@ -37,11 +37,6 @@ public:
   double startend_double_support_ratio = 1.;
 
   /**
-   * @brief Duration ratio between single support and kick support
-   */
-  double kick_support_ratio = 3.;
-
-  /**
    * @brief Duratuon [s] of a double support
    */
   double double_support_duration();
@@ -52,11 +47,6 @@ public:
   double startend_double_support_duration();
 
   /**
-   * @brief Duration [s] of a kick support
-   */
-  double kick_support_duration();
-
-  /**
    * @brief Duration [timesteps] of a double support
    */
   int double_support_timesteps();
@@ -65,11 +55,6 @@ public:
    * @brief Duration [timesteps] of a start/end double support
    */
   int startend_double_support_timesteps();
-
-  /**
-   * @brief Duration [timesteps] of a kick double support
-   */
-  int kick_support_timesteps();
 
   /**
    * @brief Checks if the walk resulting from those parameters will have double supports
@@ -144,6 +129,35 @@ public:
    * @brief Target offset for the ZMP x reference trajectory in the foot frame, positive is "outward" [m]
    */
   double foot_zmp_target_y = 0.0;
+
+  // Kick parameters
+  double kicking_foot_height = 0.05;
+  double kick_zmp_target_x = -0.01;
+  double kick_zmp_target_y = -0.01;
+
+  // Timings
+  double kick_ratio_up = 1.;
+  double kick_ratio_delay = 1.;
+  double kick_ratio_down = 1.;
+
+  double kick_up_duration();
+  double kick_delay_duration();
+  double kick_down_duration();
+  
+  /**
+   * @brief Duration ratio between single support and kick support
+   */
+  double kick_support_ratio();
+
+  /**
+   * @brief Duration [s] of a kick support
+   */
+  double kick_support_duration();
+
+  /**
+   * @brief Duration [timesteps] of a kick support
+   */
+  int kick_support_timesteps();
 
   /**
    * Natural frequency of the Linear Inverted Pendulum (LIP) model used in the walk

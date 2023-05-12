@@ -18,7 +18,7 @@ void FootstepsPlannerRepetitive::plan_impl(std::vector<FootstepsPlanner::Footste
     int steps = 0;
     while (steps < nb_steps - 1)
     {
-      footstep = neutral_opposite_footstep(footstep);
+      footstep = opposite_footstep(footstep);
       footstep.frame.translate(Eigen::Vector3d(d_x, d_y, 0));
       footstep.frame.rotate(Eigen::AngleAxisd(d_theta, Eigen::Vector3d(0, 0, 1)));
 
@@ -27,7 +27,7 @@ void FootstepsPlannerRepetitive::plan_impl(std::vector<FootstepsPlanner::Footste
     }
 
     // Adding last footstep to go double support
-    footsteps.push_back(neutral_opposite_footstep(footstep));
+    footsteps.push_back(opposite_footstep(footstep));
   }
 }
 

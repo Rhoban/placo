@@ -203,24 +203,9 @@ void FootstepsPlanner::add_first_support(std::vector<Support>& supports, Support
   supports[0].start = true;
 }
 
-FootstepsPlanner::Footstep FootstepsPlanner::neutral_opposite_footstep(FootstepsPlanner::Footstep footstep)
-{
-  if (footstep.side == HumanoidRobot::Side::Left)
-  {
-    footstep.frame.translate(-parameters.feet_spacing * Eigen::Vector3d::UnitY());
-  }
-  else
-  {
-    footstep.frame.translate(parameters.feet_spacing * Eigen::Vector3d::UnitY());
-  }
-
-  footstep.side = HumanoidRobot::other_side(footstep.side);
-  return footstep;
-}
-
 Eigen::Affine3d FootstepsPlanner::neutral_frame(Footstep footstep)
 {
-  neutral_frame(footstep, parameters);
+  return neutral_frame(footstep, parameters);
 }
 
 Eigen::Affine3d FootstepsPlanner::neutral_frame(Footstep footstep, HumanoidParameters parameters_)
@@ -239,6 +224,27 @@ FootstepsPlanner::Footstep FootstepsPlanner::create_footstep(HumanoidRobot::Side
   footstep.side = side;
   footstep.frame = T_world_foot;
 
+  return footstep;
+}
+
+Eigen::Affine3d FootstepsPlanner::opposite_frame(Footstep footstep)
+{
+  return opposite_frame(footstep, parameters);
+}
+
+Eigen::Affine3d FootstepsPlanner::opposite_frame(Footstep footstep, HumanoidParameters parameters_)
+{
+  if (footstep.side == HumanoidRobot::Side::Left)
+  {
+    return footstep.frame.translate(-parameters_.feet_spacing * Eigen::Vector3d::UnitY());
+  }
+  return footstep.frame.translate(parameters_.feet_spacing * Eigen::Vector3d::UnitY());
+}
+
+FootstepsPlanner::Footstep FootstepsPlanner::opposite_footstep(FootstepsPlanner::Footstep footstep)
+{
+  footstep.frame = opposite_frame(footstep);
+  footstep.side = HumanoidRobot::other_side(footstep.side);
   return footstep;
 }
 

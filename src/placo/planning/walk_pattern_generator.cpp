@@ -225,6 +225,13 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
   {
     timesteps += support_timesteps(trajectory.supports[i]);
 
+    // While kicking, we always want to plan the CoM for the next support
+    if (trajectory.supports[i].kick)
+    {
+      i++;
+      timesteps += support_timesteps(trajectory.supports[i]);
+    }
+
     if (timesteps >= parameters.planned_timesteps)
     {
       break;
@@ -270,20 +277,43 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
 
       // ZMP reference trajectory
       double y_offset = 0.;
-
       if (!current_support.is_both())
       {
         if (current_support.side() == HumanoidRobot::Left)
         {
-          y_offset = parameters.foot_zmp_target_y;
+          if (current_support.kick)
+          {
+            y_offset = parameters.kick_zmp_target_y;
+          }
+          else
+          {
+            y_offset = parameters.foot_zmp_target_y;
+          }
         }
         else
         {
-          y_offset = -parameters.foot_zmp_target_y;
+          if (current_support.kick)
+          {
+            y_offset = -parameters.kick_zmp_target_y;
+          }
+          else
+          {
+            y_offset = -parameters.foot_zmp_target_y;
+          }
         }
       }
 
-      Eigen::Vector3d zmp_target = current_support.frame() * Eigen::Vector3d(parameters.foot_zmp_target_x, y_offset, 0);
+      double x_offset = 0.;
+      if (current_support.kick)
+      {
+        x_offset = parameters.kick_zmp_target_x;
+      }
+      else
+      {
+        x_offset = parameters.foot_zmp_target_x;
+      }
+
+      Eigen::Vector3d zmp_target = current_support.frame() * Eigen::Vector3d(x_offset, y_offset, 0);
 
       problem.add_constraint(lipm.zmp(timestep) == Eigen::Vector2d(zmp_target.x(), zmp_target.y()))
           .configure(ProblemConstraint::Soft, 1e-1);
@@ -357,10 +387,11 @@ void WalkPatternGenerator::planFeetTrajectories(Trajectory& trajectory, Trajecto
       HumanoidRobot::Side kicking_side = HumanoidRobot::other_side(support.side());
       Eigen::Vector3d start = trajectory.supports[step - 1].footstep_frame(kicking_side).translation();
       Eigen::Vector3d target = trajectory.supports[step + 1].footstep_frame(kicking_side).translation();
-      Eigen::Vector3d neutral = FootstepsPlanner::neutral_frame(support.footsteps[0], parameters).translation();
+      Eigen::Vector3d support_opposite =
+          FootstepsPlanner::opposite_frame(support.footsteps[0], parameters).translation();
 
-      part.kick_trajectory =
-          Kick::make_trajectory(kicking_side, t - parameters.kick_support_duration(), t, start, target, neutral);
+      part.kick_trajectory = Kick::make_trajectory(kicking_side, t - parameters.kick_support_duration(), t, start,
+                                                   target, support_opposite, parameters);
 
       // Support foot remaining steady
       _addSupports(trajectory, t, support);

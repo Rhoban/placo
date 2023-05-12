@@ -43,7 +43,7 @@ void exposeFootsteps()
   class_<FootstepsPlanner, boost::noncopyable>("FootstepsPlanner", no_init)
       .def("make_supports", &FootstepsPlanner::make_supports)
       .def("add_first_support", &FootstepsPlanner::add_first_support)
-      .def("neutral_opposite_footstep", &FootstepsPlanner::neutral_opposite_footstep)
+      .def("opposite_footstep", &FootstepsPlanner::opposite_footstep)
       .def(
           "neutral_frame", +[](FootstepsPlanner& planner, FootstepsPlanner::Footstep footstep) {
             return planner.neutral_frame(footstep);
