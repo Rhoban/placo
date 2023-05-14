@@ -387,19 +387,19 @@ void WalkPatternGenerator::planFeetTrajectories(Trajectory& trajectory, Trajecto
       {
         auto& old_part = _findPart(old_trajectory->parts, t_replan);
 
-        part.swing_trajectory =
-            SwingFoot::make_trajectory(old_part.t_start, old_part.t_end, parameters.walk_foot_height,
-                                       old_trajectory->T * old_part.swing_trajectory.pos(old_part.t_start),
-                                       old_trajectory->T * old_part.swing_trajectory.pos(old_part.t_end));
+        part.swing_trajectory = SwingFootCubic::make_trajectory(
+            old_part.t_start, old_part.t_end, parameters.walk_foot_height, parameters.walk_foot_rise_ratio,
+            old_trajectory->T * old_part.swing_trajectory.pos(old_part.t_start),
+            old_trajectory->T * old_part.swing_trajectory.pos(old_part.t_end));
       }
       else
       {
         Eigen::Affine3d T_world_startTarget = trajectory.supports[step - 1].footstep_frame(flying_side);
 
         // Flying foot reaching its position
-        part.swing_trajectory =
-            SwingFoot::make_trajectory(t - parameters.single_support_duration, t, parameters.walk_foot_height,
-                                       T_world_startTarget.translation(), T_world_flyingTarget.translation());
+        part.swing_trajectory = SwingFootCubic::make_trajectory(
+            t - parameters.single_support_duration, t, parameters.walk_foot_height, parameters.walk_foot_rise_ratio,
+            T_world_startTarget.translation(), T_world_flyingTarget.translation());
       }
 
       trajectory.yaw(flying_side).add_point(t, frame_yaw(T_world_flyingTarget.rotation()), 0);
