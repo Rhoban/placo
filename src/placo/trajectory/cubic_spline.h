@@ -12,9 +12,9 @@ public:
 
   struct Point
   {
-    double position;
-    double value;
-    double delta;
+    double t;
+    double x;
+    double dx;
   };
 
   typedef std::vector<Point> Points;
@@ -25,10 +25,9 @@ public:
   double duration() const;
 
   /**
-   * Add a point with its x position, y value and
-   * its derivative slope
+   * Add a point with its time, x and dx
    */
-  void add_point(double pos, double val, double delta);
+  void add_point(double t, double x, double dx);
 
   void clear();
 
@@ -71,8 +70,8 @@ private:
   struct Spline
   {
     Polynom poly;
-    double min;
-    double max;
+    double t_start;
+    double t_end;
   };
 
   typedef std::vector<Spline> Splines;
@@ -99,10 +98,9 @@ private:
   static double polynom_diff(double t, const Polynom& p);
 
   /**
-   * Fit a polynom between 0 and 1 with
-   * given value and slope
+   * Fit a polynom
    */
-  static Polynom fit(double t1, double val1, double delta1, double t2, double val2, double delta2);
+  static Polynom fit(double t1, double x1, double dx1, double t2, double x2, double dx2);
 
   /**
    * Recompute splines interpolation model

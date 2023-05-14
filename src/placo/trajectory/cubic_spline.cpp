@@ -12,16 +12,16 @@ CubicSpline::CubicSpline(bool angular) : angular(angular)
 {
 }
 
-void CubicSpline::add_point(double pos, double val, double delta)
+void CubicSpline::add_point(double t, double x, double dx)
 {
   // Discontinuity of angle
   if (angular && _points.size() > 0)
   {
-    val = _points.back().value + wrap_angle(val - _points.back().value);
+    x = _points.back().x + wrap_angle(x - _points.back().x);
   }
-  struct Point point = { pos, val, delta };
+  struct Point point = { t, x, dx };
 
-  if (_points.size() > 0 && pos <= _points.back().position)
+  if (_points.size() > 0 && t <= _points.back().t)
   {
     throw std::runtime_error("Trying to add a point in a cublic spline before a previous one");
   }
@@ -38,14 +38,14 @@ void CubicSpline::clear()
 
 double CubicSpline::duration() const
 {
-  return _splines[_splines.size() - 1].max - _splines[0].min;
+  return _splines[_splines.size() - 1].t_end - _splines[0].t_start;
 }
 
 /**
  * Return the spline interpolation
  * for given x position
  */
-double CubicSpline::interpolation(double x, CubicSpline::ValueType type)
+double CubicSpline::interpolation(double t, CubicSpline::ValueType type)
 {
   if (dirty)
   {
@@ -61,35 +61,35 @@ double CubicSpline::interpolation(double x, CubicSpline::ValueType type)
   {
     if (type == Value)
     {
-      return _points.front().value;
+      return _points.front().x;
     }
     else
     {
-      return _points.front().delta;
+      return _points.front().dx;
     }
   }
   else
   {
-    if (x < _splines.front().min)
+    if (t < _splines.front().t_start)
     {
-      x = _splines.front().min;
+      t = _splines.front().t_start;
     }
-    if (x > _splines.back().max)
+    if (t > _splines.back().t_end)
     {
-      x = _splines.back().max;
+      t = _splines.back().t_end;
     }
 
     for (size_t i = 0; i < _splines.size(); i++)
     {
-      if (x >= _splines[i].min && x <= _splines[i].max)
+      if (t >= _splines[i].t_start && t <= _splines[i].t_end)
       {
         if (type == Value)
         {
-          return polynom_value(x, _splines[i].poly);
+          return polynom_value(t - _splines[i].t_start, _splines[i].poly);
         }
         else if (type == Speed)
         {
-          return polynom_diff(x, _splines[i].poly);
+          return polynom_diff(t - _splines[i].t_start, _splines[i].poly);
         }
       }
     }
@@ -125,7 +125,7 @@ double CubicSpline::polynom_diff(double t, const Polynom& p)
   return t * (3 * p.a * t + 2 * p.b) + p.c;
 }
 
-CubicSpline::Polynom CubicSpline::fit(double t1, double val1, double delta1, double t2, double val2, double delta2)
+CubicSpline::Polynom CubicSpline::fit(double t1, double x1, double dx1, double t2, double x2, double dx2)
 {
   Eigen::Matrix4d M;
   double t1_2 = t1 * t1;
@@ -140,7 +140,7 @@ CubicSpline::Polynom CubicSpline::fit(double t1, double val1, double delta1, dou
       ;
 
   Eigen::Vector4d v;
-  v << val1, delta1, val2, delta2;
+  v << x1, dx1, x2, dx2;
 
   Eigen::Vector4d abcd = M.inverse() * v;
 
@@ -159,13 +159,15 @@ void CubicSpline::compute_splines()
 
   for (size_t i = 1; i < _points.size(); i++)
   {
-    if (fabs(_points[i - 1].position - _points[i].position) < 0.00001)
+    if (fabs(_points[i - 1].t - _points[i].t) < 0.00001)
     {
       continue;
     }
-    struct Spline spline = { fit(_points[i - 1].position, _points[i - 1].value, _points[i - 1].delta,
-                                 _points[i].position, _points[i].value, _points[i].delta),
-                             _points[i - 1].position, _points[i].position };
+
+    double t_start = _points[i - 1].t;
+    struct Spline spline = { fit(_points[i - 1].t - t_start, _points[i - 1].x, _points[i - 1].dx,
+                                 _points[i].t - t_start, _points[i].x, _points[i].dx),
+                             _points[i - 1].t, _points[i].t };
 
     _splines.push_back(spline);
   }
