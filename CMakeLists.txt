@@ -25,6 +25,7 @@ add_library(libplaco
     # Trajectories
     src/placo/trajectory/swing_foot.cpp
     src/placo/trajectory/swing_foot_quintic.cpp
+    src/placo/trajectory/swing_foot_cubic.cpp
     src/placo/trajectory/cubic_spline.cpp
     src/placo/trajectory/cubic_spline_3d.cpp
 

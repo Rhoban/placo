@@ -90,6 +90,11 @@ public:
   double walk_foot_height = 0.05;
 
   /**
+   * @brief ratio of time spent at foot height during the step
+   */
+  double walk_foot_rise_ratio = 0.2;
+
+  /**
    * @brief CoM height while walking [m]
    */
   double walk_com_height = 0.4;

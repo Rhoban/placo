@@ -27,6 +27,8 @@ void exposeParameters()
       .add_property("replan_timesteps", &HumanoidParameters::replan_timesteps, &HumanoidParameters::replan_timesteps)
       .add_property("zmp_margin", &HumanoidParameters::zmp_margin, &HumanoidParameters::zmp_margin)
       .add_property("walk_foot_height", &HumanoidParameters::walk_foot_height, &HumanoidParameters::walk_foot_height)
+      .add_property("walk_foot_rise_ratio", &HumanoidParameters::walk_foot_rise_ratio,
+                    &HumanoidParameters::walk_foot_rise_ratio)
       .add_property("walk_com_height", &HumanoidParameters::walk_com_height, &HumanoidParameters::walk_com_height)
       .add_property("walk_trunk_pitch", &HumanoidParameters::walk_trunk_pitch, &HumanoidParameters::walk_trunk_pitch)
       .add_property("walk_foot_tilt", &HumanoidParameters::walk_foot_tilt, &HumanoidParameters::walk_foot_tilt)
