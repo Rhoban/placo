@@ -139,7 +139,7 @@ if args.graph:
     # plt.grid()
     # plt.show()
 
-    draw_footsteps(trajectory.supports, show=False)
+    draw_footsteps(trajectory.get_supports(), show=False)
 
     for t in np.linspace(0, trajectory.t_end, 100):
         x_values = np.array(
@@ -172,7 +172,7 @@ elif args.pybullet or args.meshcat or args.torque:
 
     if args.meshcat:
         viz = robot_viz(robot)
-        footsteps_viz(trajectory.supports)
+        footsteps_viz(trajectory.get_supports())
 
     start_t = time.time()
     t = -3. if args.pybullet or args.meshcat or args.torque else 0.
