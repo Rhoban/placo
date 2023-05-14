@@ -38,6 +38,7 @@ public:
     Eigen::Affine3d get_T_world_right(double t);
     Eigen::Vector3d get_v_world_left(double t);
     Eigen::Vector3d get_v_world_right(double t);
+    Eigen::Affine3d get_T_world_foot(HumanoidRobot::Side side, double t);
 
     Eigen::Vector3d get_p_world_CoM(double t);
     Eigen::Vector3d get_v_world_CoM(double t);

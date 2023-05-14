@@ -94,6 +94,11 @@ Eigen::Affine3d WalkPatternGenerator::Trajectory::get_T_world_right(double t)
   }
 }
 
+Eigen::Affine3d WalkPatternGenerator::Trajectory::get_T_world_foot(HumanoidRobot::Side side, double t)
+{
+  return (side == HumanoidRobot::Left) ? get_T_world_left(t) : get_T_world_right(t);
+}
+
 Eigen::Vector3d WalkPatternGenerator::Trajectory::get_v_world_left(double t)
 {
   TrajectoryPart& part = _findPart(parts, t);
@@ -357,7 +362,7 @@ void WalkPatternGenerator::planFeetTrajectories(Trajectory& trajectory, Trajecto
 
     // Retrieving initial flying foot yaw from old trajectory
     HumanoidRobot::Side side = HumanoidRobot::other_side(trajectory.supports[0].side());
-    trajectory.yaw(side).add_point(t, placo::frame_yaw(old_trajectory->get_R_world_trunk(t)), 0);
+    trajectory.yaw(side).add_point(t, placo::frame_yaw(old_trajectory->get_T_world_foot(side, t).linear()), 0);
   }
 
   for (size_t step = 0; step < trajectory.supports.size(); step++)
