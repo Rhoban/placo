@@ -55,7 +55,7 @@ def plot_CoM(trajectory, t_replan=0.0, plot_time=0.8):
     plt.plot(data.T[0][1], data.T[1][1], label="ZMP", lw=3)
     plt.plot(data.T[0][2], data.T[1][2], label="DCM", lw=3)
 
-    draw_footsteps(trajectory.supports, show=False)
+    draw_footsteps(trajectory.get_supports(), show=False)
 
     plt.legend()
     plt.grid()
@@ -131,7 +131,7 @@ if args.pybullet:
 
 if args.meshcat:
     viz = robot_viz(robot)
-    footsteps_viz(trajectory.supports)
+    footsteps_viz(trajectory.get_supports())
 
 start_t = time.time()
 t = -3
