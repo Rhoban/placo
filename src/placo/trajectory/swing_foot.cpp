@@ -35,10 +35,10 @@ SwingFoot::Trajectory SwingFoot::make_trajectory(double t_start, double t_end, d
   // and ending velocities.
   Eigen::MatrixXd A(4, 4);
   A.setZero();
-  A << position_coefficients(t_start),  //
-      position_coefficients(t_end),     //
-      velocity_coefficients(t_start),   //
-      velocity_coefficients(t_end);
+  A << position_coefficients(0),               //
+      position_coefficients(t_end - t_start),  //
+      velocity_coefficients(0),                //
+      velocity_coefficients(t_end - t_start);
   A = A.transpose().inverse();
 
   Eigen::VectorXd x(4);
@@ -51,10 +51,10 @@ SwingFoot::Trajectory SwingFoot::make_trajectory(double t_start, double t_end, d
 
   // Constraining position when starting, 1/4, 3/4 and ending
   Eigen::MatrixXd B(4, 4);
-  B << position_coefficients(t_start),                                 //
-      position_coefficients(t_start + (1. / 4.) * (t_end - t_start)),  //
-      position_coefficients(t_start + (3. / 4.) * (t_end - t_start)),  //
-      position_coefficients(t_end);                                    //
+  B << position_coefficients(0),                             //
+      position_coefficients((1. / 4.) * (t_end - t_start)),  //
+      position_coefficients((3. / 4.) * (t_end - t_start)),  //
+      position_coefficients(t_end - t_start);                //
   B = B.transpose().inverse();
 
   Eigen::VectorXd z(4);
@@ -78,10 +78,10 @@ SwingFoot::Trajectory SwingFoot::remake_trajectory(Trajectory& old_trajectory, d
   // We ensure the given timepoint is preserved and replan the landing
   Eigen::MatrixXd A(4, 4);
   A.setZero();
-  A << position_coefficients(t),                //
-      position_coefficients(trajectory.t_end),  //
-      velocity_coefficients(t),                 //
-      velocity_coefficients(trajectory.t_end);
+  A << position_coefficients(t - trajectory.t_start),                //
+      position_coefficients(trajectory.t_end - trajectory.t_start),  //
+      velocity_coefficients(t - trajectory.t_start),                 //
+      velocity_coefficients(trajectory.t_end - trajectory.t_start);
   A = A.transpose().inverse();
 
   Eigen::VectorXd x(4);
@@ -102,6 +102,7 @@ SwingFoot::Trajectory SwingFoot::remake_trajectory(Trajectory& old_trajectory, d
 
 Eigen::Vector3d SwingFoot::Trajectory::pos(double t)
 {
+  t -= t_start;
   double t_2 = t * t;
   double t_3 = t_2 * t;
 
@@ -110,6 +111,7 @@ Eigen::Vector3d SwingFoot::Trajectory::pos(double t)
 
 Eigen::Vector3d SwingFoot::Trajectory::vel(double t)
 {
+  t -= t_start;
   double t_2 = t * t;
 
   return 3 * a * t_2 + 2 * b * t + c;
