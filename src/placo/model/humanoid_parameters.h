@@ -209,7 +209,7 @@ public:
   enum SwingFootSpline
   {
     SplineSwingFoot = 0,
-    SplingSwingFootCubic = 1
+    SplineSwingFootCubic = 1
   };
   SwingFootSpline swing_foot_spline = SplineSwingFoot;
 
