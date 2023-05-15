@@ -8,6 +8,7 @@ namespace placo
 struct FootTrajectory
 {
 public:
+  virtual ~FootTrajectory();
   virtual Eigen::Vector3d pos(double t) = 0;
   virtual Eigen::Vector3d vel(double t) = 0;
 

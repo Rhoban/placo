@@ -3,6 +3,7 @@
 #include <Eigen/Dense>
 #include "placo/model/humanoid_parameters.h"
 #include "placo/trajectory/cubic_spline.h"
+#include "placo/trajectory/foot_trajectory.h"
 
 namespace placo
 {
@@ -12,10 +13,10 @@ namespace placo
 class SwingFootCubic
 {
 public:
-  struct Trajectory
+  struct Trajectory : FootTrajectory
   {
-    Eigen::Vector3d pos(double t);
-    Eigen::Vector3d vel(double t);
+    virtual Eigen::Vector3d pos(double t);
+    virtual Eigen::Vector3d vel(double t);
 
     CubicSpline x;
     CubicSpline y;
