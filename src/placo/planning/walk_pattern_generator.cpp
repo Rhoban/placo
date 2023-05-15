@@ -504,12 +504,7 @@ bool WalkPatternGenerator::can_replan_supports(Trajectory& trajectory, double t_
   placo::FootstepsPlanner::Support current_support = trajectory.get_support(t_replan);
   placo::FootstepsPlanner::Support next_support = trajectory.get_next_support(t_replan);
 
-  if (current_support.is_both() || next_support.is_both())
-  {
-    return false;
-  }
-
-  return true;
+  return !current_support.is_both();
 }
 
 std::vector<FootstepsPlanner::Support> WalkPatternGenerator::replan_supports(FootstepsPlanner& planner,
@@ -541,7 +536,7 @@ std::vector<FootstepsPlanner::Support> WalkPatternGenerator::replan_supports(Foo
   auto footsteps = planner.plan(flying_side, T_world_left, T_world_right);
 
   std::vector<FootstepsPlanner::Support> supports;
-  supports = placo::FootstepsPlanner::make_supports(footsteps, false, false, true);
+  supports = placo::FootstepsPlanner::make_supports(footsteps, false, parameters.has_double_support(), true);
 
   return supports;
 }
