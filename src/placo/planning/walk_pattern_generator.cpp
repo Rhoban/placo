@@ -589,7 +589,7 @@ WalkPatternGenerator::Trajectory WalkPatternGenerator::replan(std::vector<Footst
 bool WalkPatternGenerator::can_replan_supports(Trajectory& trajectory, double t_replan)
 {
   // We can't replan from an "end"
-  if (trajectory.get_support(t_replan).end)
+  if (trajectory.get_support(t_replan).end || trajectory.get_next_support(t_replan).end)
   {
     return false;
   }
