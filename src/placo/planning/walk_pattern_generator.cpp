@@ -162,16 +162,14 @@ Eigen::Vector3d WalkPatternGenerator::Trajectory::get_j_world_CoM(double t)
   return T.linear() * Eigen::Vector3d(jerk.x(), jerk.y(), 0);
 }
 
-Eigen::Vector3d WalkPatternGenerator::Trajectory::get_p_world_DCM(double t)
+Eigen::Vector3d WalkPatternGenerator::Trajectory::get_p_world_DCM(double t, double omega)
 {
-  auto dcm = com.dcm(t);
-  return T * Eigen::Vector3d(dcm.x(), dcm.y(), 0);
+  return get_p_world_CoM(t) + (1 / omega) * get_v_world_CoM(t);
 }
 
-Eigen::Vector3d WalkPatternGenerator::Trajectory::get_p_world_ZMP(double t)
+Eigen::Vector3d WalkPatternGenerator::Trajectory::get_p_world_ZMP(double t, double omega)
 {
-  auto zmp = com.zmp(t);
-  return T * Eigen::Vector3d(zmp.x(), zmp.y(), 0);
+  return get_p_world_CoM(t) - (1 / pow(omega, 2)) * get_a_world_CoM(t);
 }
 
 Eigen::Matrix3d WalkPatternGenerator::Trajectory::get_R_world_trunk(double t)
