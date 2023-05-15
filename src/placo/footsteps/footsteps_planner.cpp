@@ -272,8 +272,8 @@ Eigen::Affine3d FootstepsPlanner::opposite_frame(Footstep footstep, HumanoidPara
     frame.translate(parameters_.feet_spacing * Eigen::Vector3d::UnitY());
   }
 
-  footstep.frame.translate(Eigen::Vector3d(d_x, d_y, 0));
-  footstep.frame.rotate(Eigen::AngleAxisd(d_theta, Eigen::Vector3d(0, 0, 1)));
+  frame.translate(Eigen::Vector3d(d_x, d_y, 0));
+  frame.rotate(Eigen::AngleAxisd(d_theta, Eigen::Vector3d(0, 0, 1)));
   return frame;
 }
 
