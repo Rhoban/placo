@@ -36,14 +36,18 @@ void exposeFootsteps()
       .def(
           "set_end", +[](FootstepsPlanner::Support& support, bool b) { support.end = b; })
       .add_property("footsteps", &FootstepsPlanner::Support::footsteps)
-      .add_property("start", &FootstepsPlanner::Support::start)
-      .add_property("end", &FootstepsPlanner::Support::end);
+      .add_property("start", &FootstepsPlanner::Support::start, &FootstepsPlanner::Support::start)
+      .add_property("end", &FootstepsPlanner::Support::end, &FootstepsPlanner::Support::end)
+      .add_property("kick", &FootstepsPlanner::Support::kick, &FootstepsPlanner::Support::kick);
 
   class_<FootstepsPlanner, boost::noncopyable>("FootstepsPlanner", no_init)
       .def("make_supports", &FootstepsPlanner::make_supports)
       .def("add_first_support", &FootstepsPlanner::add_first_support)
-      .def("neutral_opposite_footstep", &FootstepsPlanner::neutral_opposite_footstep)
-      .def("neutral_frame", &FootstepsPlanner::neutral_frame);
+      .def("opposite_footstep", &FootstepsPlanner::opposite_footstep)
+      .def(
+          "neutral_frame", +[](FootstepsPlanner& planner, FootstepsPlanner::Footstep footstep) {
+            return planner.neutral_frame(footstep);
+          });
 
   class_<FootstepsPlannerNaive, bases<FootstepsPlanner>>("FootstepsPlannerNaive", init<HumanoidParameters&>())
       .def("plan", &FootstepsPlannerNaive::plan)

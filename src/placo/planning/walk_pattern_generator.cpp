@@ -72,6 +72,10 @@ Eigen::Affine3d WalkPatternGenerator::Trajectory::get_T_world_left(double t)
 
   if (is_flying(HumanoidRobot::Left, t))
   {
+    if (part.kick_part)
+    {
+      return T * _buildFrame(part.kick_trajectory.pos(t), left_foot_yaw.pos(t));
+    }
     return T * _buildFrame(part.swing_trajectory.pos(t), left_foot_yaw.pos(t));
   }
   else
@@ -86,6 +90,10 @@ Eigen::Affine3d WalkPatternGenerator::Trajectory::get_T_world_right(double t)
 
   if (is_flying(HumanoidRobot::Right, t))
   {
+    if (part.kick_part)
+    {
+      return T * _buildFrame(part.kick_trajectory.pos(t), right_foot_yaw.pos(t));
+    }
     return T * _buildFrame(part.swing_trajectory.pos(t), right_foot_yaw.pos(t));
   }
   else
@@ -105,6 +113,10 @@ Eigen::Vector3d WalkPatternGenerator::Trajectory::get_v_world_left(double t)
 
   if (part.support.side() == HumanoidRobot::Right)
   {
+    if (part.kick_part)
+    {
+      return T.linear() * part.kick_trajectory.vel(t);
+    }
     return T.linear() * part.swing_trajectory.vel(t);
   }
 
@@ -117,6 +129,10 @@ Eigen::Vector3d WalkPatternGenerator::Trajectory::get_v_world_right(double t)
 
   if (part.support.side() == HumanoidRobot::Left)
   {
+    if (part.kick_part)
+    {
+      return T.linear() * part.kick_trajectory.vel(t);
+    }
     return T.linear() * part.swing_trajectory.vel(t);
   }
   return Eigen::Vector3d::Zero();
@@ -125,29 +141,37 @@ Eigen::Vector3d WalkPatternGenerator::Trajectory::get_v_world_right(double t)
 Eigen::Vector3d WalkPatternGenerator::Trajectory::get_p_world_CoM(double t)
 {
   auto pos = com.pos(t);
-
   return T * Eigen::Vector3d(pos.x(), pos.y(), com_height);
 }
 
 Eigen::Vector3d WalkPatternGenerator::Trajectory::get_v_world_CoM(double t)
 {
-  auto pos = com.vel(t);
-
-  return T.linear() * Eigen::Vector3d(pos.x(), pos.y(), 0);
+  auto vel = com.vel(t);
+  return T.linear() * Eigen::Vector3d(vel.x(), vel.y(), 0);
 }
 
 Eigen::Vector3d WalkPatternGenerator::Trajectory::get_a_world_CoM(double t)
 {
-  auto pos = com.acc(t);
-
-  return T.linear() * Eigen::Vector3d(pos.x(), pos.y(), 0);
+  auto acc = com.acc(t);
+  return T.linear() * Eigen::Vector3d(acc.x(), acc.y(), 0);
 }
 
 Eigen::Vector3d WalkPatternGenerator::Trajectory::get_j_world_CoM(double t)
 {
-  auto pos = com.jerk(t);
+  auto jerk = com.jerk(t);
+  return T.linear() * Eigen::Vector3d(jerk.x(), jerk.y(), 0);
+}
 
-  return T.linear() * Eigen::Vector3d(pos.x(), pos.y(), 0);
+Eigen::Vector3d WalkPatternGenerator::Trajectory::get_p_world_DCM(double t)
+{
+  auto dcm = com.dcm(t);
+  return T * Eigen::Vector3d(dcm.x(), dcm.y(), 0);
+}
+
+Eigen::Vector3d WalkPatternGenerator::Trajectory::get_p_world_ZMP(double t)
+{
+  auto zmp = com.zmp(t);
+  return T * Eigen::Vector3d(zmp.x(), zmp.y(), 0);
 }
 
 Eigen::Matrix3d WalkPatternGenerator::Trajectory::get_R_world_trunk(double t)
@@ -223,6 +247,11 @@ double WalkPatternGenerator::Trajectory::get_part_t_start(double t)
 
 int WalkPatternGenerator::support_timesteps(FootstepsPlanner::Support& support)
 {
+  if (support.kick)
+  {
+    return parameters.kick_support_timesteps();
+  }
+
   if (support.footsteps.size() == 1)
   {
     return parameters.single_support_timesteps;
@@ -235,10 +264,10 @@ int WalkPatternGenerator::support_timesteps(FootstepsPlanner::Support& support)
   else
   {
     return parameters.double_support_timesteps();
-    ;
   }
 }
 
+// XXX : No more management of the CoM height while kicking
 void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initial_pos, Eigen::Vector2d initial_vel,
                                    Eigen::Vector2d initial_acc, Trajectory* old_trajectory, double t_replan)
 {
@@ -248,6 +277,13 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
   for (size_t i = 0; i < trajectory.supports.size(); i++)
   {
     timesteps += support_timesteps(trajectory.supports[i]);
+
+    // While kicking, we always want to plan the CoM for the next support
+    if (trajectory.supports[i].kick)
+    {
+      i++;
+      timesteps += support_timesteps(trajectory.supports[i]);
+    }
 
     if (timesteps >= parameters.planned_timesteps)
     {
@@ -294,20 +330,43 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
 
       // ZMP reference trajectory
       double y_offset = 0.;
-
       if (!current_support.is_both())
       {
         if (current_support.side() == HumanoidRobot::Left)
         {
-          y_offset = parameters.foot_zmp_target_y;
+          if (current_support.kick)
+          {
+            y_offset = parameters.kick_zmp_target_y;
+          }
+          else
+          {
+            y_offset = parameters.foot_zmp_target_y;
+          }
         }
         else
         {
-          y_offset = -parameters.foot_zmp_target_y;
+          if (current_support.kick)
+          {
+            y_offset = -parameters.kick_zmp_target_y;
+          }
+          else
+          {
+            y_offset = -parameters.foot_zmp_target_y;
+          }
         }
       }
 
-      Eigen::Vector3d zmp_target = current_support.frame() * Eigen::Vector3d(parameters.foot_zmp_target_x, y_offset, 0);
+      double x_offset = 0.;
+      if (current_support.kick)
+      {
+        x_offset = parameters.kick_zmp_target_x;
+      }
+      else
+      {
+        x_offset = parameters.foot_zmp_target_x;
+      }
+
+      Eigen::Vector3d zmp_target = current_support.frame() * Eigen::Vector3d(x_offset, y_offset, 0);
 
       problem.add_constraint(lipm.zmp(timestep) == Eigen::Vector2d(zmp_target.x(), zmp_target.y()))
           .configure(ProblemConstraint::Soft, 1e-1);
@@ -373,7 +432,25 @@ void WalkPatternGenerator::planFeetTrajectories(Trajectory& trajectory, Trajecto
     part.support = support;
     part.t_start = t;
 
-    if (support.footsteps.size() == 1)
+    if (support.kick)
+    {
+      part.kick_part = true;
+      t += parameters.kick_support_duration();
+
+      HumanoidRobot::Side kicking_side = HumanoidRobot::other_side(support.side());
+      Eigen::Vector3d start = trajectory.supports[step - 1].footstep_frame(kicking_side).translation();
+      Eigen::Vector3d target = trajectory.supports[step + 1].footstep_frame(kicking_side).translation();
+      Eigen::Vector3d support_opposite =
+          FootstepsPlanner::opposite_frame(support.footsteps[0], parameters).translation();
+
+      part.kick_trajectory = Kick::make_trajectory(kicking_side, t - parameters.kick_support_duration(), t, start,
+                                                   target, support_opposite, parameters);
+
+      // Support foot remaining steady
+      trajectory.add_supports(t, support);
+    }
+
+    else if (support.footsteps.size() == 1)
     {
       // Single support, add the flying trajectory
       HumanoidRobot::Side flying_side = HumanoidRobot::other_side(support.footsteps[0].side);
@@ -404,12 +481,8 @@ void WalkPatternGenerator::planFeetTrajectories(Trajectory& trajectory, Trajecto
 
       trajectory.yaw(flying_side).add_point(t, frame_yaw(T_world_flyingTarget.rotation()), 0);
 
-      // The trunk orientation follow the steps orientation if there isn't double support phases
-      // If there is double support phases, it follow the double supports orientation
-      if (parameters.double_support_duration() < parameters.dt())
-      {
-        trajectory.trunk_yaw.add_point(t, frame_yaw(T_world_flyingTarget.rotation()), 0);
-      }
+      // The trunk orientation follow the steps orientation
+      trajectory.trunk_yaw.add_point(t, frame_yaw(T_world_flyingTarget.rotation()), 0);
 
       // Support foot remaining steady
       trajectory.add_supports(t, support);

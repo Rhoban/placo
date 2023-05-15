@@ -40,6 +40,7 @@ public:
     bool computed_polygon = false;
     bool start = false;
     bool end = false;
+    bool kick = false;
     std::vector<Eigen::Vector2d> support_polygon();
 
     /**
@@ -103,21 +104,31 @@ public:
   static void add_first_support(std::vector<Support>& supports, Support support);
 
   /**
-   * @brief Return the opposite footstep in a neutral position (i.e. at a
-   * distance parameters.feet_spacing from the given footstep)
-   */
-  Footstep neutral_opposite_footstep(Footstep footstep, double d_x = 0., double d_y = 0., double d_theta = 0.);
-
-  /**
-   * @brief Same as neutral_opposite footstep, but the clipping is applied
-   */
-  Footstep clipped_neutral_opposite_footstep(Footstep footstep, double d_x = 0., double d_y = 0., double d_theta = 0.);
-
-  /**
    * @brief Return the frame between the feet in the neutral position
    * @param footstep The footstep of one of the feet
    */
   Eigen::Affine3d neutral_frame(Footstep footstep);
+  static Eigen::Affine3d neutral_frame(Footstep footstep, HumanoidParameters parameters_);
+
+  /**
+   * @brief Return the frame of the opposite footstep in a neutral position (i.e. at a
+   * distance parameters.feet_spacing from the given footstep)
+   * @param footstep The footstep of one of the feet
+   */
+  Eigen::Affine3d opposite_frame(Footstep footstep, double d_x = 0., double d_y = 0., double d_theta = 0.);
+  static Eigen::Affine3d opposite_frame(Footstep footstep, HumanoidParameters parameters_, double d_x = 0.,
+                                        double d_y = 0., double d_theta = 0.);
+
+  /**
+   * @brief Return the opposite footstep in a neutral position (i.e. at a
+   * distance parameters.feet_spacing from the given footstep)
+   */
+  Footstep opposite_footstep(Footstep footstep, double d_x = 0., double d_y = 0., double d_theta = 0.);
+
+  /**
+   * @brief Same as opposite_footstep(), but the clipping is applied
+   */
+  Footstep clipped_opposite_footstep(Footstep footstep, double d_x = 0., double d_y = 0., double d_theta = 0.);
 
   Footstep create_footstep(HumanoidRobot::Side side, Eigen::Affine3d T_world_foot);
 
