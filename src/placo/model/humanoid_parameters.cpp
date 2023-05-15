@@ -45,9 +45,14 @@ double HumanoidParameters::kick_up_duration()
   return kick_ratio_up * single_support_duration;
 }
 
-double HumanoidParameters::kick_delay_duration()
+double HumanoidParameters::kick_shot_duration()
 {
-  return kick_ratio_delay * single_support_duration;
+  return kick_ratio_shot * single_support_duration;
+}
+
+double HumanoidParameters::kick_neutral_duration()
+{
+  return kick_ratio_neutral * single_support_duration;
 }
 
 double HumanoidParameters::kick_down_duration()
@@ -57,7 +62,7 @@ double HumanoidParameters::kick_down_duration()
 
 double HumanoidParameters::kick_support_ratio()
 {
-  return kick_ratio_up + kick_ratio_delay + kick_ratio_down;
+  return kick_ratio_up + kick_ratio_shot + kick_ratio_neutral + kick_ratio_down;
 }
 
 double HumanoidParameters::kick_support_duration()

@@ -137,13 +137,15 @@ public:
 
   // Timings
   double kick_ratio_up = 1.;
-  double kick_ratio_delay = 1.;
-  double kick_ratio_down = 1.;
+  double kick_ratio_shot = 1.;
+  double kick_ratio_neutral = .8;
+  double kick_ratio_down = .2;
 
   double kick_up_duration();
-  double kick_delay_duration();
+  double kick_shot_duration();
+  double kick_neutral_duration();
   double kick_down_duration();
-  
+
   /**
    * @brief Duration ratio between single support and kick support
    */
