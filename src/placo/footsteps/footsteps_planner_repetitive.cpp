@@ -17,12 +17,12 @@ void FootstepsPlannerRepetitive::plan_impl(std::vector<FootstepsPlanner::Footste
   {
     for (int steps = 0; steps < nb_steps - 1; steps += 1)
     {
-      footstep = clipped_neutral_opposite_footstep(footstep, d_x, d_y, d_theta);
+      footstep = clipped_opposite_footstep(footstep, d_x, d_y, d_theta);
       footsteps.push_back(footstep);
     }
 
     // Adding last footstep to go double support
-    footsteps.push_back(clipped_neutral_opposite_footstep(footstep));
+    footsteps.push_back(clipped_opposite_footstep(footstep));
   }
 }
 

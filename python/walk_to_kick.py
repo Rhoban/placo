@@ -17,16 +17,13 @@ args = parser.parse_args()
 # Loading the robot
 robot = placo.HumanoidRobot("sigmaban/")
 
-# Displayed joints (if argument --torque)
-displayed_joints = {"left_hip_roll", "left_hip_pitch",
-                    "right_hip_roll", "right_hip_pitch"}
-
 # Walk parameters
 parameters = placo.HumanoidParameters()
 parameters.single_support_duration = 0.35
 parameters.single_support_timesteps = 12
 parameters.double_support_ratio = 0.0
 parameters.startend_double_support_ratio = 1.5
+parameters.kick_support_ratio = 2
 parameters.planned_timesteps = 500
 parameters.replan_timesteps = 10
 parameters.walk_com_height = 0.32
@@ -36,8 +33,12 @@ parameters.walk_trunk_pitch = 0.2
 parameters.walk_foot_tilt = 0.2
 parameters.foot_length = 0.1576
 parameters.foot_width = 0.092
-parameters.feet_spacing = 0.12
-parameters.zmp_margin = 0.0
+parameters.feet_spacing = 0.122
+parameters.zmp_margin = 0.02
+parameters.foot_zmp_target_x = -0.005
+parameters.foot_zmp_target_y = 0
+parameters.kick_zmp_target_x = -0.01
+parameters.kick_zmp_target_y = -0.01
 
 # Creating the kinematics solver
 solver = robot.make_solver()
@@ -45,6 +46,9 @@ solver = robot.make_solver()
 robot.set_velocity_limits(5.)
 solver.enable_velocity_limits(True)
 solver.dt = 0.005
+
+T_world_left = placo.flatten_on_floor(robot.get_T_world_left())
+T_world_right = placo.flatten_on_floor(robot.get_T_world_right())
 
 tasks = placo.WalkTasks()
 tasks.initialize_tasks(solver)
@@ -68,43 +72,66 @@ solver.add_regularization_task(1e-6)
 robot.update_kinematics()
 solver.solve(True)
 
-# Initializing the walk
 repetitive_footsteps_planner = placo.FootstepsPlannerRepetitive(parameters)
-d_x = 0.1
+d_x = 0.15
 d_y = 0.
 d_theta = 0.
-nb_steps = 3
+nb_steps = 5
 repetitive_footsteps_planner.configure(d_x, d_y, d_theta, nb_steps)
 
-T_world_left = placo.flatten_on_floor(robot.get_T_world_left())
-T_world_right = placo.flatten_on_floor(robot.get_T_world_right())
 footsteps = repetitive_footsteps_planner.plan(placo.HumanoidRobot_Side.left,
                                               T_world_left, T_world_right)
 
 supports = placo.FootstepsPlanner.make_supports(
     footsteps, True, parameters.has_double_support(), True)
 
+# Kick on the last support before double support
+supports[nb_steps].kick = True
+
+# Creating the walk pattern generator and planification
 walk = placo.WalkPatternGenerator(robot, parameters)
 trajectory = walk.plan(supports, 0.)
 
-# Creating the Kick
-kick = placo.Kick(robot, parameters)
-kicking_side = placo.HumanoidRobot_Side.left
-support_side = placo.HumanoidRobot.other_side(kicking_side)
+if args.graph:
+    import matplotlib.pyplot as plt
+    from footsteps_planner import draw_footsteps
 
-kick.t_init = 2
-kick.t_pre_delay = 1
-kick.t_up = 0.3
-kick.t_post_delay = 1
+    ts = np.linspace(0, trajectory.t_end, 1000)
+    data_left = []
+    data_right = []
 
-kick.kick_foot_height = 0.07
+    for t in ts:
+        T = trajectory.get_T_world_left(t)
+        data_left.append(T[:3, 3])
 
-ampl_sin = 0.1
-init_sin = False
+        T = trajectory.get_T_world_right(t)
+        data_right.append(T[:3, 3])
 
-kicking = False
+    data = np.array([[trajectory.com.pos(t), trajectory.com.zmp(
+        t), trajectory.com.dcm(t), trajectory.com.jerk(t)] for t in ts])
 
-if args.pybullet or args.meshcat:
+    data_left = np.array(data_left)
+    data_right = np.array(data_right)
+
+    draw_footsteps(trajectory.supports, show=False)
+
+    for t in np.linspace(0, trajectory.t_end, 100):
+        x_values = np.array(
+            [trajectory.com.pos(t)[0], trajectory.com.dcm(t)[0]])
+        y_values = np.array(
+            [trajectory.com.pos(t)[1], trajectory.com.dcm(t)[1]])
+        plt.plot(x_values, y_values, c="grey")
+
+    plt.plot(data.T[0][0], data.T[1][0], label="CoM", c="red", lw=3)
+    plt.plot(data.T[0][1], data.T[1][1], label="ZMP", lw=3)
+    plt.plot(data.T[0][2], data.T[1][2], label="DCM", c="green", lw=3)
+    # plt.plot(data.T[0][3], data.T[1][3], label="Jerk", c="orange")
+
+    plt.legend()
+    plt.grid()
+    plt.show()
+
+elif args.pybullet or args.meshcat:
     from placo_utils.visualization import robot_viz, frame_viz, point_viz, robot_frame_viz, footsteps_viz
 
     if args.pybullet:
@@ -114,7 +141,7 @@ if args.pybullet or args.meshcat:
 
     if args.meshcat:
         viz = robot_viz(robot)
-        time.sleep(2)
+        footsteps_viz(trajectory.supports)
 
     start_t = time.time()
     t = -3. if args.pybullet or args.meshcat else 0.
@@ -123,57 +150,18 @@ if args.pybullet or args.meshcat:
 
     while True:
         T = max(0, t)
-        if not kicking:
-            if T > trajectory.t_end:
+        if T > trajectory.t_end:
+            continue
 
-                kick.one_foot_balance(
-                    repetitive_footsteps_planner, support_side)
-
-                robot.update_support_side(str(support_side))
-                kicking = True
-                t = 0.
-                continue
-
-            tasks.update_tasks_from_trajectory(trajectory, T)
-
-        else:
-            if T > kick.duration:
-                # if not init_sin:
-                #     init_T_world_left = robot.get_T_world_left()
-                #     init_T_world_right = robot.get_T_world_right()
-                #     init_com_world = robot.com_world()
-                #     init_R_world_trunk = robot.get_T_world_trunk()[:3, :3]
-                #     init_sin = True
-
-                # T -= kick.duration
-
-                # T_world_left = init_T_world_left.copy()
-                # T_world_right = init_T_world_right.copy()
-
-                # if kicking_side == placo.HumanoidRobot_Side.left:
-                #     T_world_left[:3, 3] += T_world_left[:3, :3] \
-                #         @ np.array([ampl_sin * np.sin(2*T), 0., 0.])
-                # else:
-                #     T_world_right[:3, 3] += T_world_right[:3, :3] \
-                #         @ np.array([ampl_sin * np.sin(2*T), 0., 0.])
-
-                # tasks.update_tasks(T_world_left, T_world_right,
-                #                    init_com_world, init_R_world_trunk)
-
-                tasks.update_tasks_from_kick(kick, kick.duration)
-
-            else:
-                tasks.update_tasks_from_kick(kick, T)
-
+        tasks.update_tasks_from_trajectory(trajectory, T)
         robot.update_kinematics()
         solver.solve(True)
-        solver.dump_status()
 
-        if not kicking and not trajectory.support_is_both(T):
+        if not trajectory.support_is_both(T):
             robot.update_support_side(str(trajectory.support_side(T)))
-        robot.ensure_on_floor()
+            robot.ensure_on_floor()
 
-        if args.pybullet and t < -0.5:
+        if args.pybullet and t < -2:
             T_left_origin = sim.transformation("origin", "left_foot_frame")
             T_world_left = sim.poseToMatrix(([0., 0., 0.05], [0., 0., 0., 1.]))
             T_world_origin = T_world_left @ T_left_origin
@@ -185,6 +173,8 @@ if args.pybullet or args.meshcat:
                 last_display = time.time()
                 viz.display(robot.state.q)
 
+            # robot_frame_viz(robot, "left_foot")
+            # robot_frame_viz(robot, "right_foot")
             com = robot.com_world()
             com[2] = 0
             point_viz("com", com)

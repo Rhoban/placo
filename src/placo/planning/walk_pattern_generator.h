@@ -6,6 +6,7 @@
 #include "placo/trajectory/cubic_spline_3d.h"
 #include "placo/trajectory/swing_foot_cubic.h"
 #include "placo/trajectory/swing_foot.h"
+#include "placo/trajectory/kick.h"
 #include "placo/control/kinematics_solver.h"
 #include "placo/control/frame_task.h"
 #include "placo/control/com_task.h"
@@ -23,9 +24,12 @@ class WalkPatternGenerator
 public:
   struct TrajectoryPart
   {
-    WalkSwingFoot::Trajectory swing_trajectory;
     double t_start;
     double t_end;
+
+    bool kick_part = false;
+    WalkSwingFoot::Trajectory swing_trajectory;
+    Kick::KickTrajectory kick_trajectory;
 
     FootstepsPlanner::Support support;
   };
@@ -47,6 +51,10 @@ public:
     Eigen::Vector3d get_v_world_CoM(double t);
     Eigen::Vector3d get_a_world_CoM(double t);
     Eigen::Vector3d get_j_world_CoM(double t);
+
+    Eigen::Vector3d get_p_world_DCM(double t);
+    Eigen::Vector3d get_p_world_ZMP(double t);
+
     Eigen::Matrix3d get_R_world_trunk(double t);
 
     HumanoidRobot::Side support_side(double t);

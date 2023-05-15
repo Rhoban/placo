@@ -19,7 +19,7 @@ public:
   double dt();
 
   /**
-   * @brief SSP duration [ms], must be a multiple of dt
+   * @brief SSP duration [s]
    */
   double single_support_duration = 1.;
 
@@ -29,12 +29,12 @@ public:
   int single_support_timesteps = 10;
 
   /**
-   * @brief Duration ratio betweep single support and double support
+   * @brief Duration ratio between single support and double support
    */
   double double_support_ratio = 1.;
 
   /**
-   * @brief Duration ratio betweep single support and double support
+   * @brief Duration ratio between single support and double support
    */
   double startend_double_support_ratio = 1.;
 
@@ -62,11 +62,6 @@ public:
    * @brief Checks if the walk resulting from those parameters will have double supports
    */
   bool has_double_support();
-
-  /**
-   * @brief Kick duration [ms], must be a multiple of dt
-   */
-  double kick_duration = 1.;
 
   /**
    * @brief Planning horizon for the CoM trajectory
@@ -161,6 +156,37 @@ public:
    * @brief Target offset for the ZMP x reference trajectory in the foot frame, positive is "outward" [m]
    */
   double foot_zmp_target_y = 0.0;
+
+  // Kick parameters
+  double kicking_foot_height = 0.05;
+  double kick_zmp_target_x = -0.01;
+  double kick_zmp_target_y = -0.01;
+
+  // Timings
+  double kick_ratio_up = 1.;
+  double kick_ratio_shot = 1.;
+  double kick_ratio_neutral = .8;
+  double kick_ratio_down = .2;
+
+  double kick_up_duration();
+  double kick_shot_duration();
+  double kick_neutral_duration();
+  double kick_down_duration();
+
+  /**
+   * @brief Duration ratio between single support and kick support
+   */
+  double kick_support_ratio();
+
+  /**
+   * @brief Duration [s] of a kick support
+   */
+  double kick_support_duration();
+
+  /**
+   * @brief Duration [timesteps] of a kick support
+   */
+  int kick_support_timesteps();
 
   /**
    * @brief Kick tolerance distance [m]

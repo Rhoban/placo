@@ -2,6 +2,7 @@
 
 #include <Eigen/Dense>
 #include "placo/model/humanoid_parameters.h"
+#include "placo/trajectory/foot_trajectory.h"
 
 namespace placo
 {
@@ -12,20 +13,18 @@ namespace placo
 class SwingFoot
 {
 public:
-  struct Trajectory
+  struct SwingTrajectory : FootTrajectory
   {
     Eigen::Vector3d pos(double t);
     Eigen::Vector3d vel(double t);
 
     // Computed polynom (ax^3 + bx^2 + cx + d)
     Eigen::Vector3d a, b, c, d;
-
-    double t_start, t_end;
   };
 
-  static Trajectory make_trajectory(double t_start, double t_end, double height, Eigen::Vector3d start,
-                                    Eigen::Vector3d target);
+  static SwingTrajectory make_trajectory(double t_start, double t_end, double height, Eigen::Vector3d start,
+                                         Eigen::Vector3d target);
 
-  static Trajectory remake_trajectory(Trajectory& old_trajectory, double t, Eigen::Vector3d target);
+  static SwingTrajectory remake_trajectory(SwingTrajectory& old_trajectory, double t, Eigen::Vector3d target);
 };
 }  // namespace placo

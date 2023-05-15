@@ -24,10 +24,10 @@ Eigen::VectorXd velocity_coefficients(double t)
   return v;
 }
 
-SwingFoot::Trajectory SwingFoot::make_trajectory(double t_start, double t_end, double height, Eigen::Vector3d start,
-                                                 Eigen::Vector3d target)
+SwingFoot::SwingTrajectory SwingFoot::make_trajectory(double t_start, double t_end, double height,
+                                                      Eigen::Vector3d start, Eigen::Vector3d target)
 {
-  Trajectory trajectory;
+  SwingTrajectory trajectory;
   trajectory.t_start = t_start;
   trajectory.t_end = t_end;
 
@@ -69,9 +69,10 @@ SwingFoot::Trajectory SwingFoot::make_trajectory(double t_start, double t_end, d
   return trajectory;
 }
 
-SwingFoot::Trajectory SwingFoot::remake_trajectory(Trajectory& old_trajectory, double t, Eigen::Vector3d target)
+SwingFoot::SwingTrajectory SwingFoot::remake_trajectory(SwingTrajectory& old_trajectory, double t,
+                                                        Eigen::Vector3d target)
 {
-  Trajectory trajectory;
+  SwingTrajectory trajectory;
   trajectory.t_start = old_trajectory.t_start;
   trajectory.t_end = old_trajectory.t_end;
 
@@ -100,7 +101,7 @@ SwingFoot::Trajectory SwingFoot::remake_trajectory(Trajectory& old_trajectory, d
   return trajectory;
 }
 
-Eigen::Vector3d SwingFoot::Trajectory::pos(double t)
+Eigen::Vector3d SwingFoot::SwingTrajectory::pos(double t)
 {
   t -= t_start;
   double t_2 = t * t;
@@ -109,7 +110,7 @@ Eigen::Vector3d SwingFoot::Trajectory::pos(double t)
   return a * t_3 + b * t_2 + c * t + d;
 }
 
-Eigen::Vector3d SwingFoot::Trajectory::vel(double t)
+Eigen::Vector3d SwingFoot::SwingTrajectory::vel(double t)
 {
   t -= t_start;
   double t_2 = t * t;
