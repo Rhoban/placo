@@ -13,7 +13,7 @@ namespace placo
 class SwingFoot
 {
 public:
-  struct SwingTrajectory : FootTrajectory
+  struct Trajectory : FootTrajectory
   {
     Eigen::Vector3d pos(double t);
     Eigen::Vector3d vel(double t);
@@ -22,9 +22,9 @@ public:
     Eigen::Vector3d a, b, c, d;
   };
 
-  static SwingTrajectory make_trajectory(double t_start, double t_end, double height, Eigen::Vector3d start,
-                                         Eigen::Vector3d target);
+  static Trajectory make_trajectory(double t_start, double t_end, double height, Eigen::Vector3d start,
+                                    Eigen::Vector3d target);
 
-  static SwingTrajectory remake_trajectory(SwingTrajectory& old_trajectory, double t, Eigen::Vector3d target);
+  static Trajectory remake_trajectory(Trajectory& old_trajectory, double t, Eigen::Vector3d target);
 };
 }  // namespace placo

@@ -17,8 +17,6 @@
 
 namespace placo
 {
-typedef SwingFootCubic WalkSwingFoot;
-
 class WalkPatternGenerator
 {
 public:
@@ -28,7 +26,7 @@ public:
     double t_end;
 
     bool kick_part = false;
-    WalkSwingFoot::Trajectory swing_trajectory;
+    std::shared_ptr<FootTrajectory> swing_trajectory = nullptr;
     Kick::KickTrajectory kick_trajectory;
 
     FootstepsPlanner::Support support;

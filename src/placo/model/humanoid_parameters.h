@@ -204,6 +204,16 @@ public:
   double omega();
 
   /**
+   * @brief Defines which swing foot class should be used
+   */
+  enum SwingFootSpline
+  {
+    SplineSwingFoot = 0,
+    SplingSwingFootCubic = 1
+  };
+  SwingFootSpline swing_foot_spline = SplineSwingFoot;
+
+  /**
    * @brief Applies the ellipsoid clipping to a given step size (dx, dy, dtheta)
    */
   Eigen::Vector3d ellipsoid_clip(Eigen::Vector3d step);
