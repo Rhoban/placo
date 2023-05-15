@@ -5,6 +5,7 @@
 #include "placo/model/humanoid_parameters.h"
 #include "placo/trajectory/cubic_spline_3d.h"
 #include "placo/trajectory/swing_foot_cubic.h"
+#include "placo/trajectory/swing_foot.h"
 #include "placo/control/kinematics_solver.h"
 #include "placo/control/frame_task.h"
 #include "placo/control/com_task.h"
@@ -15,12 +16,14 @@
 
 namespace placo
 {
+typedef SwingFootCubic WalkSwingFoot;
+
 class WalkPatternGenerator
 {
 public:
   struct TrajectoryPart
   {
-    SwingFootCubic::Trajectory swing_trajectory;
+    WalkSwingFoot::Trajectory swing_trajectory;
     double t_start;
     double t_end;
 
