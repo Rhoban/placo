@@ -24,7 +24,10 @@ void exposeFootsteps()
           &FootstepsPlanner::Footstep::frame)
       .add_property("foot_length", &FootstepsPlanner::Footstep::foot_length, &FootstepsPlanner::Footstep::foot_length)
       .add_property("foot_width", &FootstepsPlanner::Footstep::foot_width, &FootstepsPlanner::Footstep::foot_width)
-      .def("support_polygon", &FootstepsPlanner::Footstep::support_polygon);
+      .def("support_polygon", &FootstepsPlanner::Footstep::support_polygon)
+      .def("overlap", &FootstepsPlanner::Footstep::overlap)
+      .def("polygon_contains", &FootstepsPlanner::Footstep::polygon_contains)
+      .staticmethod("polygon_contains");
 
   class_<FootstepsPlanner::Support>("Support")
       .def("support_polygon", &FootstepsPlanner::Support::support_polygon)

@@ -15,31 +15,81 @@ FootstepsPlanner::Footstep::Footstep(double foot_width, double foot_length)
 {
 }
 
+std::vector<Eigen::Vector2d> FootstepsPlanner::Footstep::compute_polygon(double margin)
+{
+  std::vector<Eigen::Vector2d> polygon;
+
+  // Making a clockwise polygon
+  std::vector<std::pair<double, double>> contour = {
+    std::make_pair(-1., 1.),
+    std::make_pair(1., 1.),
+    std::make_pair(1., -1.),
+    std::make_pair(-1., -1.),
+  };
+
+  for (auto sxsy : contour)
+  {
+    Eigen::Vector3d corner =
+        frame * Eigen::Vector3d(sxsy.first * (margin + foot_length / 2), sxsy.second * (margin + foot_width / 2), 0.);
+    Eigen::Vector2d point(corner.x(), corner.y());
+    polygon.push_back(point);
+  }
+
+  return polygon;
+}
+
 std::vector<Eigen::Vector2d> FootstepsPlanner::Footstep::support_polygon()
 {
   if (!computed_polygon)
   {
-    // Ensure polygon is cleared
-    polygon.clear();
-
-    // Making a clockwise polygon
-    std::vector<std::pair<double, double>> contour = {
-      std::make_pair(-1., 1.),
-      std::make_pair(1., 1.),
-      std::make_pair(1., -1.),
-      std::make_pair(-1., -1.),
-    };
-
-    for (auto sxsy : contour)
-    {
-      Eigen::Vector3d corner = frame * Eigen::Vector3d(sxsy.first * foot_length / 2, sxsy.second * foot_width / 2, 0.);
-      Eigen::Vector2d point(corner.x(), corner.y());
-      polygon.push_back(point);
-    }
+    polygon = compute_polygon();
     computed_polygon = true;
   }
 
   return polygon;
+}
+
+bool FootstepsPlanner::Footstep::polygon_contains(std::vector<Eigen::Vector2d>& polygon, Eigen::Vector2d point)
+{
+  Eigen::Vector2d last_point = polygon[polygon.size() - 1];
+
+  for (auto current_point : polygon)
+  {
+    Eigen::Vector2d v = current_point - last_point;
+    Eigen::Vector2d n(v.y(), -v.x());
+
+    if (n.dot(point - last_point) < 0)
+    {
+      return false;
+    }
+
+    last_point = current_point;
+  }
+
+  return true;
+}
+
+bool FootstepsPlanner::Footstep::overlap(Footstep& other, double margin)
+{
+  std::vector<Eigen::Vector2d> support1 = compute_polygon(margin);
+  std::vector<Eigen::Vector2d> support2 = other.compute_polygon(margin);
+
+  for (auto pt : support1)
+  {
+    if (polygon_contains(support2, pt))
+    {
+      return true;
+    }
+  }
+  for (auto pt : support2)
+  {
+    if (polygon_contains(support1, pt))
+    {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 std::vector<Eigen::Vector2d> FootstepsPlanner::Support::support_polygon()
@@ -254,6 +304,20 @@ FootstepsPlanner::Footstep FootstepsPlanner::clipped_opposite_footstep(Footstep 
 {
   Eigen::Vector3d step(d_x, d_y, d_theta);
   step = parameters.ellipsoid_clip(step);
+
+  for (int k = 0; k < 32; k++)
+  {
+    Footstep new_footstep = opposite_footstep(footstep, step.x(), step.y(), step.z());
+
+    if (new_footstep.overlap(footstep, 5e-3))
+    {
+      step *= 0.9;
+    }
+    else
+    {
+      return new_footstep;
+    }
+  }
 
   return opposite_footstep(footstep, step.x(), step.y(), step.z());
 }
