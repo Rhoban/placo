@@ -165,6 +165,11 @@ protected:
 
   void planFeetTrajectories(Trajectory& trajectory, Trajectory* old_trajectory = nullptr, double t_replan = 0.);
 
+  void planKickTrajectory(TrajectoryPart& part, Trajectory& trajectory, int step, double& t);
+  void planDoubleSupportTrajectory(TrajectoryPart& part, Trajectory& trajectory, double& t);
+  void planSingleSupportTrajectory(TrajectoryPart& part, Trajectory& trajectory, int step, double& t,
+                                   Trajectory* old_trajectory, double t_replan);
+
   int support_timesteps(FootstepsPlanner::Support& support);
 };
 }  // namespace placo
