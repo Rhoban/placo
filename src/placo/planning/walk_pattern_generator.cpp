@@ -441,7 +441,7 @@ void WalkPatternGenerator::planFeetTrajectories(Trajectory& trajectory, Trajecto
       Eigen::Vector3d start = trajectory.supports[step - 1].footstep_frame(kicking_side).translation();
       Eigen::Vector3d target = trajectory.supports[step + 1].footstep_frame(kicking_side).translation();
       Eigen::Vector3d support_opposite =
-          FootstepsPlanner::opposite_frame(support.footsteps[0], parameters).translation();
+          parameters.opposite_frame(support.footsteps[0].side, support.footsteps[0].frame).translation();
 
       part.kick_trajectory = Kick::make_trajectory(kicking_side, t - parameters.kick_support_duration(), t, start,
                                                    target, support_opposite, parameters);
@@ -627,7 +627,7 @@ std::vector<FootstepsPlanner::Support> WalkPatternGenerator::replan_supports(Foo
     T_world_left = next_support.footstep_frame(placo::HumanoidRobot::Left);
     T_world_right = current_support.footstep_frame(placo::HumanoidRobot::Right);
   }
-  auto footsteps = planner.plan(flying_side, T_world_left, T_world_right);
+  auto footsteps = planner.plan(flying_side, T_world_left, T_world_right, true);
 
   std::vector<FootstepsPlanner::Support> supports;
   supports = placo::FootstepsPlanner::make_supports(footsteps, false, parameters.has_double_support(), true);

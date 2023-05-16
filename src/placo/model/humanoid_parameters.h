@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Eigen/Dense>
+#include "placo/model/humanoid_robot.h"
 
 namespace placo
 {
@@ -217,5 +218,13 @@ public:
    * @brief Applies the ellipsoid clipping to a given step size (dx, dy, dtheta)
    */
   Eigen::Vector3d ellipsoid_clip(Eigen::Vector3d step);
+
+  /**
+   * @brief Frames for opposite and neutral positions
+   */
+  Eigen::Affine3d opposite_frame(HumanoidRobot::Side side, Eigen::Affine3d T_world_foot, double d_x = 0.,
+                                 double d_y = 0., double d_theta = 0.);
+  Eigen::Affine3d neutral_frame(HumanoidRobot::Side side, Eigen::Affine3d T_world_footdouble, double d_x = 0.,
+                                double d_y = 0., double d_theta = 0.);
 };
 }  // namespace placo

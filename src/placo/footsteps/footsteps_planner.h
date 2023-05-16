@@ -88,7 +88,7 @@ public:
    * @param T_world_right frame of the initial right foot
    */
   std::vector<Footstep> plan(HumanoidRobot::Side flying_side, Eigen::Affine3d T_world_left,
-                             Eigen::Affine3d T_world_right);
+                             Eigen::Affine3d T_world_right, bool replan = false);
 
   /**
    * @brief Generate the supports from the footsteps
@@ -102,22 +102,6 @@ public:
                                             bool end = true);
 
   static void add_first_support(std::vector<Support>& supports, Support support);
-
-  /**
-   * @brief Return the frame between the feet in the neutral position
-   * @param footstep The footstep of one of the feet
-   */
-  Eigen::Affine3d neutral_frame(Footstep footstep);
-  static Eigen::Affine3d neutral_frame(Footstep footstep, HumanoidParameters parameters_);
-
-  /**
-   * @brief Return the frame of the opposite footstep in a neutral position (i.e. at a
-   * distance parameters.feet_spacing from the given footstep)
-   * @param footstep The footstep of one of the feet
-   */
-  Eigen::Affine3d opposite_frame(Footstep footstep, double d_x = 0., double d_y = 0., double d_theta = 0.);
-  static Eigen::Affine3d opposite_frame(Footstep footstep, HumanoidParameters parameters_, double d_x = 0.,
-                                        double d_y = 0., double d_theta = 0.);
 
   /**
    * @brief Return the opposite footstep in a neutral position (i.e. at a
@@ -137,6 +121,6 @@ public:
 
 protected:
   virtual void plan_impl(std::vector<Footstep>&, HumanoidRobot::Side flying_side, Eigen::Affine3d T_world_left,
-                         Eigen::Affine3d T_world_right) = 0;
+                         Eigen::Affine3d T_world_right, bool replan = false) = 0;
 };
 }  // namespace placo
