@@ -50,8 +50,8 @@ public:
     Eigen::Vector3d get_a_world_CoM(double t);
     Eigen::Vector3d get_j_world_CoM(double t);
 
-    Eigen::Vector3d get_p_world_DCM(double t);
-    Eigen::Vector3d get_p_world_ZMP(double t);
+    Eigen::Vector3d get_p_world_DCM(double t, double omega);
+    Eigen::Vector3d get_p_world_ZMP(double t, double omega);
 
     Eigen::Matrix3d get_R_world_trunk(double t);
 

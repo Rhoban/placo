@@ -162,16 +162,14 @@ Eigen::Vector3d WalkPatternGenerator::Trajectory::get_j_world_CoM(double t)
   return T.linear() * Eigen::Vector3d(jerk.x(), jerk.y(), 0);
 }
 
-Eigen::Vector3d WalkPatternGenerator::Trajectory::get_p_world_DCM(double t)
+Eigen::Vector3d WalkPatternGenerator::Trajectory::get_p_world_DCM(double t, double omega)
 {
-  auto dcm = com.dcm(t);
-  return T * Eigen::Vector3d(dcm.x(), dcm.y(), 0);
+  return get_p_world_CoM(t) + (1 / omega) * get_v_world_CoM(t);
 }
 
-Eigen::Vector3d WalkPatternGenerator::Trajectory::get_p_world_ZMP(double t)
+Eigen::Vector3d WalkPatternGenerator::Trajectory::get_p_world_ZMP(double t, double omega)
 {
-  auto zmp = com.zmp(t);
-  return T * Eigen::Vector3d(zmp.x(), zmp.y(), 0);
+  return get_p_world_CoM(t) - (1 / pow(omega, 2)) * get_a_world_CoM(t);
 }
 
 Eigen::Matrix3d WalkPatternGenerator::Trajectory::get_R_world_trunk(double t)
@@ -588,8 +586,9 @@ WalkPatternGenerator::Trajectory WalkPatternGenerator::replan(std::vector<Footst
 
 bool WalkPatternGenerator::can_replan_supports(Trajectory& trajectory, double t_replan)
 {
-  // We can't replan from an "end"
-  if (trajectory.get_support(t_replan).end || trajectory.get_next_support(t_replan).end)
+  // We can't replan from an "end" or a "kick"
+  if (trajectory.get_support(t_replan).end || trajectory.get_next_support(t_replan).end ||
+      trajectory.get_support(t_replan).kick)
   {
     return false;
   }
