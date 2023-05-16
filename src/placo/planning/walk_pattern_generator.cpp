@@ -245,7 +245,7 @@ double WalkPatternGenerator::Trajectory::get_part_t_start(double t)
 
 int WalkPatternGenerator::support_timesteps(FootstepsPlanner::Support& support)
 {
-  if (support.kick)
+  if (support.kick())
   {
     return parameters.kick_support_timesteps();
   }
@@ -277,7 +277,7 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
     timesteps += support_timesteps(trajectory.supports[i]);
 
     // While kicking, we always want to plan the CoM for the next support
-    if (trajectory.supports[i].kick)
+    if (trajectory.supports[i].kick())
     {
       i++;
       timesteps += support_timesteps(trajectory.supports[i]);
@@ -332,7 +332,7 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
       {
         if (current_support.side() == HumanoidRobot::Left)
         {
-          if (current_support.kick)
+          if (current_support.kick())
           {
             y_offset = parameters.kick_zmp_target_y;
           }
@@ -343,7 +343,7 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
         }
         else
         {
-          if (current_support.kick)
+          if (current_support.kick())
           {
             y_offset = -parameters.kick_zmp_target_y;
           }
@@ -355,7 +355,7 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
       }
 
       double x_offset = 0.;
-      if (current_support.kick)
+      if (current_support.kick())
       {
         x_offset = parameters.kick_zmp_target_x;
       }
@@ -430,83 +430,93 @@ void WalkPatternGenerator::planFeetTrajectories(Trajectory& trajectory, Trajecto
     part.support = support;
     part.t_start = t;
 
-    if (support.kick)
+    // Single support
+    if (support.footsteps.size() == 1)
     {
-      part.kick_part = true;
-      t += parameters.kick_support_duration();
-
-      HumanoidRobot::Side kicking_side = HumanoidRobot::other_side(support.side());
-      Eigen::Vector3d start = trajectory.supports[step - 1].footstep_frame(kicking_side).translation();
-      Eigen::Vector3d target = trajectory.supports[step + 1].footstep_frame(kicking_side).translation();
-      Eigen::Vector3d support_opposite =
-          parameters.opposite_frame(support.footsteps[0].side, support.footsteps[0].frame).translation();
-
-      part.kick_trajectory = Kick::make_trajectory(kicking_side, t - parameters.kick_support_duration(), t, start,
-                                                   target, support_opposite, parameters);
-
-      // Support foot remaining steady
-      trajectory.add_supports(t, support);
-    }
-
-    else if (support.footsteps.size() == 1)
-    {
-      // Single support, add the flying trajectory
-      HumanoidRobot::Side flying_side = HumanoidRobot::other_side(support.footsteps[0].side);
-
-      // Computing the intermediary flying foot inflection target
-      Eigen::Affine3d T_world_flyingTarget = trajectory.supports[step + 1].footstep_frame(flying_side);
-
-      t += parameters.single_support_duration;
-
-      if (support.start)
+      // Kicking spline
+      if (support.kick())
       {
-        auto& old_part = _findPart(old_trajectory->parts, t_replan);
+        part.kick_part = true;
+        t += parameters.kick_support_duration();
 
-        if (parameters.swing_foot_spline == parameters.SplineSwingFoot)
-        {
-          part.swing_trajectory = std::shared_ptr<FootTrajectory>(new SwingFoot::Trajectory(
-              SwingFoot::make_trajectory(old_part.t_start, old_part.t_end, parameters.walk_foot_height,
-                                         old_trajectory->T * old_part.swing_trajectory->pos(old_part.t_start),
-                                         old_trajectory->T * old_part.swing_trajectory->pos(old_part.t_end))));
-        }
-        else
-        {
-          part.swing_trajectory =
-              std::shared_ptr<FootTrajectory>(new SwingFootCubic::Trajectory(SwingFootCubic::make_trajectory(
-                  old_part.t_start, old_part.t_end, parameters.walk_foot_height, parameters.walk_foot_rise_ratio,
-                  old_trajectory->T * old_part.swing_trajectory->pos(old_part.t_start),
-                  old_trajectory->T * old_part.swing_trajectory->pos(old_part.t_end))));
-        }
+        HumanoidRobot::Side kicking_side = HumanoidRobot::other_side(support.side());
+        Eigen::Vector3d start = trajectory.supports[step - 1].footstep_frame(kicking_side).translation();
+        Eigen::Vector3d target = trajectory.supports[step + 1].footstep_frame(kicking_side).translation();
+        Eigen::Vector3d support_opposite =
+            parameters.opposite_frame(support.footsteps[0].side, support.footsteps[0].frame).translation();
+
+        part.kick_trajectory = Kick::make_trajectory(kicking_side, t - parameters.kick_support_duration(), t, start,
+                                                     target, support_opposite, parameters);
+
+        // Support foot remaining steady
+        trajectory.add_supports(t, support);
       }
+
+      // Walking spline
       else
       {
-        Eigen::Affine3d T_world_startTarget = trajectory.supports[step - 1].footstep_frame(flying_side);
+        // Single support, add the flying trajectory
+        HumanoidRobot::Side flying_side = HumanoidRobot::other_side(support.footsteps[0].side);
 
-        // Flying foot reaching its position
-        if (parameters.swing_foot_spline == parameters.SplineSwingFoot)
+        // Computing the intermediary flying foot inflection target
+        Eigen::Affine3d T_world_flyingTarget = trajectory.supports[step + 1].footstep_frame(flying_side);
+
+        t += parameters.single_support_duration;
+
+        // Current step case
+        if (support.start)
         {
-          part.swing_trajectory = std::shared_ptr<FootTrajectory>(new SwingFoot::Trajectory(
-              SwingFoot::make_trajectory(t - parameters.single_support_duration, t, parameters.walk_foot_height,
-                                         T_world_startTarget.translation(), T_world_flyingTarget.translation())));
+          auto& old_part = _findPart(old_trajectory->parts, t_replan);
+
+          if (parameters.swing_foot_spline == parameters.SplineSwingFoot)
+          {
+            part.swing_trajectory = std::shared_ptr<FootTrajectory>(new SwingFoot::Trajectory(
+                SwingFoot::make_trajectory(old_part.t_start, old_part.t_end, parameters.walk_foot_height,
+                                           old_trajectory->T * old_part.swing_trajectory->pos(old_part.t_start),
+                                           old_trajectory->T * old_part.swing_trajectory->pos(old_part.t_end))));
+          }
+          else
+          {
+            part.swing_trajectory =
+                std::shared_ptr<FootTrajectory>(new SwingFootCubic::Trajectory(SwingFootCubic::make_trajectory(
+                    old_part.t_start, old_part.t_end, parameters.walk_foot_height, parameters.walk_foot_rise_ratio,
+                    old_trajectory->T * old_part.swing_trajectory->pos(old_part.t_start),
+                    old_trajectory->T * old_part.swing_trajectory->pos(old_part.t_end))));
+          }
         }
+
+        // Complete steps case
         else
         {
-          part.swing_trajectory = std::shared_ptr<FootTrajectory>(new SwingFootCubic::Trajectory(
-              SwingFootCubic::make_trajectory(t - parameters.single_support_duration, t, parameters.walk_foot_height,
-                                              parameters.walk_foot_rise_ratio, T_world_startTarget.translation(),
-                                              T_world_flyingTarget.translation())));
+          Eigen::Affine3d T_world_startTarget = trajectory.supports[step - 1].footstep_frame(flying_side);
+
+          // Flying foot reaching its position
+          if (parameters.swing_foot_spline == parameters.SplineSwingFoot)
+          {
+            part.swing_trajectory = std::shared_ptr<FootTrajectory>(new SwingFoot::Trajectory(
+                SwingFoot::make_trajectory(t - parameters.single_support_duration, t, parameters.walk_foot_height,
+                                           T_world_startTarget.translation(), T_world_flyingTarget.translation())));
+          }
+          else
+          {
+            part.swing_trajectory = std::shared_ptr<FootTrajectory>(new SwingFootCubic::Trajectory(
+                SwingFootCubic::make_trajectory(t - parameters.single_support_duration, t, parameters.walk_foot_height,
+                                                parameters.walk_foot_rise_ratio, T_world_startTarget.translation(),
+                                                T_world_flyingTarget.translation())));
+          }
         }
+
+        trajectory.yaw(flying_side).add_point(t, frame_yaw(T_world_flyingTarget.rotation()), 0);
+
+        // The trunk orientation follow the steps orientation
+        trajectory.trunk_yaw.add_point(t, frame_yaw(T_world_flyingTarget.rotation()), 0);
+
+        // Support foot remaining steady
+        trajectory.add_supports(t, support);
       }
-
-      trajectory.yaw(flying_side).add_point(t, frame_yaw(T_world_flyingTarget.rotation()), 0);
-
-      // The trunk orientation follow the steps orientation
-      trajectory.trunk_yaw.add_point(t, frame_yaw(T_world_flyingTarget.rotation()), 0);
-
-      // Support foot remaining steady
-      trajectory.add_supports(t, support);
     }
 
+    // Double support
     else
     {
       // Double support, adding the support foot at the begining and at the end of the trajectory
@@ -588,7 +598,7 @@ bool WalkPatternGenerator::can_replan_supports(Trajectory& trajectory, double t_
 {
   // We can't replan from an "end" or a "kick"
   if (trajectory.get_support(t_replan).end || trajectory.get_next_support(t_replan).end ||
-      trajectory.get_support(t_replan).kick)
+      trajectory.get_support(t_replan).kick())
   {
     return false;
   }
