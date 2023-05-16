@@ -230,20 +230,6 @@ void FootstepsPlanner::add_first_support(std::vector<Support>& supports, Support
   supports[0].start = true;
 }
 
-Eigen::Affine3d FootstepsPlanner::neutral_frame(Footstep footstep)
-{
-  return neutral_frame(footstep, parameters);
-}
-
-Eigen::Affine3d FootstepsPlanner::neutral_frame(Footstep footstep, HumanoidParameters parameters_)
-{
-  if (footstep.side == HumanoidRobot::Side::Left)
-  {
-    return footstep.frame.translate(-parameters_.feet_spacing / 2 * Eigen::Vector3d::UnitY());
-  }
-  return footstep.frame.translate(parameters_.feet_spacing / 2 * Eigen::Vector3d::UnitY());
-}
-
 FootstepsPlanner::Footstep FootstepsPlanner::create_footstep(HumanoidRobot::Side side, Eigen::Affine3d T_world_foot)
 {
   FootstepsPlanner::Footstep footstep(parameters.foot_width, parameters.foot_length);
@@ -254,34 +240,12 @@ FootstepsPlanner::Footstep FootstepsPlanner::create_footstep(HumanoidRobot::Side
   return footstep;
 }
 
-Eigen::Affine3d FootstepsPlanner::opposite_frame(Footstep footstep, double d_x, double d_y, double d_theta)
-{
-  return opposite_frame(footstep, parameters, d_x, d_y, d_theta);
-}
-
-Eigen::Affine3d FootstepsPlanner::opposite_frame(Footstep footstep, HumanoidParameters parameters_, double d_x,
-                                                 double d_y, double d_theta)
-{
-  Eigen::Affine3d frame = footstep.frame;
-  if (footstep.side == HumanoidRobot::Side::Left)
-  {
-    frame.translate(-parameters_.feet_spacing * Eigen::Vector3d::UnitY());
-  }
-  else
-  {
-    frame.translate(parameters_.feet_spacing * Eigen::Vector3d::UnitY());
-  }
-
-  frame.translate(Eigen::Vector3d(d_x, d_y, 0));
-  frame.rotate(Eigen::AngleAxisd(d_theta, Eigen::Vector3d(0, 0, 1)));
-  return frame;
-}
-
 FootstepsPlanner::Footstep FootstepsPlanner::opposite_footstep(FootstepsPlanner::Footstep footstep, double d_x,
                                                                double d_y, double d_theta)
 {
-  footstep.frame = opposite_frame(footstep, d_x, d_y, d_theta);
+  footstep.frame = parameters.opposite_frame(footstep.side, footstep.frame, d_x, d_y, d_theta);
   footstep.side = HumanoidRobot::other_side(footstep.side);
+
   return footstep;
 }
 
@@ -296,7 +260,7 @@ FootstepsPlanner::Footstep FootstepsPlanner::clipped_opposite_footstep(Footstep 
 
 std::vector<FootstepsPlanner::Footstep> FootstepsPlanner::plan(HumanoidRobot::Side flying_side,
                                                                Eigen::Affine3d T_world_left,
-                                                               Eigen::Affine3d T_world_right)
+                                                               Eigen::Affine3d T_world_right, bool replan)
 {
   std::vector<Footstep> footsteps;
 
@@ -310,7 +274,7 @@ std::vector<FootstepsPlanner::Footstep> FootstepsPlanner::plan(HumanoidRobot::Si
   footsteps.push_back(create_footstep(current_side, T_world_current_frame));
 
   // Calling specific implementation
-  plan_impl(footsteps, flying_side, T_world_left, T_world_right);
+  plan_impl(footsteps, flying_side, T_world_left, T_world_right, replan);
 
   return footsteps;
 }

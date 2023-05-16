@@ -99,4 +99,40 @@ Eigen::Vector3d HumanoidParameters::ellipsoid_clip(Eigen::Vector3d step)
 
   return step;
 }
+
+Eigen::Affine3d HumanoidParameters::opposite_frame(HumanoidRobot::Side side, Eigen::Affine3d T_world_foot, double d_x,
+                                                   double d_y, double d_theta)
+{
+  Eigen::Affine3d frame = T_world_foot;
+  if (side == HumanoidRobot::Side::Left)
+  {
+    frame.translate(-feet_spacing * Eigen::Vector3d::UnitY());
+  }
+  else
+  {
+    frame.translate(feet_spacing * Eigen::Vector3d::UnitY());
+  }
+
+  frame.translate(Eigen::Vector3d(d_x, d_y, 0));
+  frame.rotate(Eigen::AngleAxisd(d_theta, Eigen::Vector3d::UnitZ()));
+  return frame;
+}
+
+Eigen::Affine3d HumanoidParameters::neutral_frame(HumanoidRobot::Side side, Eigen::Affine3d T_world_foot, double d_x,
+                                                  double d_y, double d_theta)
+{
+  Eigen::Affine3d frame = T_world_foot;
+  if (side == HumanoidRobot::Side::Left)
+  {
+    frame.translate(-(feet_spacing / 2.) * Eigen::Vector3d::UnitY());
+  }
+  else
+  {
+    frame.translate((feet_spacing / 2.) * Eigen::Vector3d::UnitY());
+  }
+
+  frame.translate(Eigen::Vector3d(d_x, d_y, 0));
+  frame.rotate(Eigen::AngleAxisd(d_theta, Eigen::Vector3d::UnitZ()));
+  return frame;
+}
 }  // namespace placo
