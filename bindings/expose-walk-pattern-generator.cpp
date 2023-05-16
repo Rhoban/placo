@@ -43,28 +43,13 @@ void exposeWalkPatternGenerator()
       .def("can_replan_supports", &WalkPatternGenerator::can_replan_supports)
       .def("replan_supports", &WalkPatternGenerator::replan_supports);
 
-  //   class_<Kick>("Kick", init<HumanoidRobot&, HumanoidParameters&>())
-  //       .add_property("duration", &Kick::duration)
-  //       .add_property("t_init", &Kick::t_init, &Kick::t_init)
-  //       .add_property("t_pre_delay", &Kick::t_pre_delay, &Kick::t_pre_delay)
-  //       .add_property("t_up", &Kick::t_up, &Kick::t_up)
-  //       .add_property("t_post_delay", &Kick::t_post_delay, &Kick::t_post_delay)
-  //       .add_property("kicking_foot_height", &Kick::kicking_foot_height, &Kick::kicking_foot_height)
-  //       .add_property("kicking_com_height", &Kick::kicking_com_height, &Kick::kicking_com_height)
-  //       .add_property("com_support_offset", &Kick::com_support_offset, &Kick::com_support_offset)
-  //       .add_property("feet_spacing", &Kick::feet_spacing, &Kick::feet_spacing)
-  //       .def("one_foot_balance", &Kick::one_foot_balance)
-  //       .def("get_T_world_left", &Kick::get_T_world_left)
-  //       .def("get_T_world_right", &Kick::get_T_world_right)
-  //       .def("get_com_world", &Kick::get_com_world);
-
   class_<SwingFoot>("SwingFoot", init<>())
       .def("make_trajectory", &SwingFoot::make_trajectory)
       .def("remake_trajectory", &SwingFoot::remake_trajectory);
 
-  class_<SwingFoot::SwingTrajectory>("SwingFootTrajectory", init<>())
-      .def("pos", &SwingFoot::SwingTrajectory::pos)
-      .def("vel", &SwingFoot::SwingTrajectory::vel);
+  class_<SwingFoot::Trajectory>("SwingFootTrajectory", init<>())
+      .def("pos", &SwingFoot::Trajectory::pos)
+      .def("vel", &SwingFoot::Trajectory::vel);
 
   class_<SwingFootQuintic>("SwingFootQuintic", init<>()).def("make_trajectory", &SwingFootQuintic::make_trajectory);
 
