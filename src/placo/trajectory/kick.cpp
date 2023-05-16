@@ -29,8 +29,8 @@ Kick::KickTrajectory Kick::make_trajectory(HumanoidRobot::Side kicking_side, dou
   flying_neutral_position.z() = parameters.kicking_foot_height;
   Eigen::Vector3d flying_start_position = flying_neutral_position;
   Eigen::Vector3d flying_end_position = flying_neutral_position;
-  flying_start_position.x() = -0.1;
-  flying_end_position.x() = 0.1;
+  flying_start_position.x() += -0.1;
+  flying_end_position.x() += 0.1;
 
   trajectory.foot_trajectory.add_point(t_start, start, Eigen::Vector3d::Zero());
   trajectory.foot_trajectory.add_point(t_up, flying_start_position, Eigen::Vector3d::Zero());

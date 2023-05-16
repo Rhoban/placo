@@ -633,4 +633,31 @@ std::vector<FootstepsPlanner::Support> WalkPatternGenerator::replan_supports(Foo
 
   return supports;
 }
+
+std::vector<FootstepsPlanner::Support> WalkPatternGenerator::trim_supports(Trajectory& trajectory, double t_replan)
+{
+  if (t_replan > trajectory.t_end || t_replan < trajectory.t_start)
+  {
+    throw std::runtime_error("Supports can't be trimmed if t_replan is not between t_start and t_end !");
+  }
+
+  std::vector<FootstepsPlanner::Support> supports;
+
+  TrajectoryPart part = _findPart(trajectory.parts, t_replan);
+  FootstepsPlanner::Support current_support = part.support;
+  current_support.start = true;
+  supports.push_back(current_support);
+
+  double t = part.t_end + 1e-4;
+  while (!current_support.end)
+  {
+    part = _findPart(trajectory.parts, t);
+    current_support = part.support;
+    supports.push_back(current_support);
+
+    t = part.t_end + 1e-4;
+  }
+
+  return supports;
+}
 }  // namespace placo

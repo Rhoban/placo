@@ -146,6 +146,11 @@ public:
   std::vector<FootstepsPlanner::Support> replan_supports(FootstepsPlanner& planner, Trajectory& trajectory,
                                                          double t_replan);
 
+  /**
+   * @brief Get the supports of a trajectory and remove the already past ones
+   */
+  std::vector<FootstepsPlanner::Support> trim_supports(Trajectory& trajectory, double t_replan);
+
 protected:
   // Robot associated to the WPG
   HumanoidRobot& robot;
