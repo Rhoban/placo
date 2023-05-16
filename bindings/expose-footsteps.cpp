@@ -18,6 +18,7 @@ void exposeFootsteps()
       .value("right", HumanoidRobot::Side::Right);
 
   class_<FootstepsPlanner::Footstep>("Footstep", init<double, double>())
+      .def("support_polygon", &FootstepsPlanner::Footstep::support_polygon)
       .add_property("side", &FootstepsPlanner::Footstep::side, &FootstepsPlanner::Footstep::side)
       .add_property(
           "frame", +[](const FootstepsPlanner::Footstep& footstep) { return footstep.frame; },
@@ -27,7 +28,8 @@ void exposeFootsteps()
       .def("support_polygon", &FootstepsPlanner::Footstep::support_polygon)
       .def("overlap", &FootstepsPlanner::Footstep::overlap)
       .def("polygon_contains", &FootstepsPlanner::Footstep::polygon_contains)
-      .staticmethod("polygon_contains");
+      .staticmethod("polygon_contains")
+      .add_property("kick", &FootstepsPlanner::Footstep::kick, &FootstepsPlanner::Footstep::kick);
 
   class_<FootstepsPlanner::Support>("Support")
       .def("support_polygon", &FootstepsPlanner::Support::support_polygon)
@@ -38,10 +40,10 @@ void exposeFootsteps()
           "set_start", +[](FootstepsPlanner::Support& support, bool b) { support.start = b; })
       .def(
           "set_end", +[](FootstepsPlanner::Support& support, bool b) { support.end = b; })
+      .def("kick", &FootstepsPlanner::Support::kick)
       .add_property("footsteps", &FootstepsPlanner::Support::footsteps)
       .add_property("start", &FootstepsPlanner::Support::start, &FootstepsPlanner::Support::start)
-      .add_property("end", &FootstepsPlanner::Support::end, &FootstepsPlanner::Support::end)
-      .add_property("kick", &FootstepsPlanner::Support::kick, &FootstepsPlanner::Support::kick);
+      .add_property("end", &FootstepsPlanner::Support::end, &FootstepsPlanner::Support::end);
 
   class_<FootstepsPlanner, boost::noncopyable>("FootstepsPlanner", no_init)
       .def("make_supports", &FootstepsPlanner::make_supports)

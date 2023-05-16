@@ -23,6 +23,7 @@ public:
     Eigen::Affine3d frame;
     std::vector<Eigen::Vector2d> polygon;
     bool computed_polygon = false;
+    bool kick = false;
 
     bool operator==(const Footstep& other);
 
@@ -45,7 +46,7 @@ public:
     bool computed_polygon = false;
     bool start = false;
     bool end = false;
-    bool kick = false;
+    bool kick();
     std::vector<Eigen::Vector2d> support_polygon();
 
     /**

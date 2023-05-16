@@ -146,6 +146,11 @@ public:
   std::vector<FootstepsPlanner::Support> replan_supports(FootstepsPlanner& planner, Trajectory& trajectory,
                                                          double t_replan);
 
+  /**
+   * @brief Get the supports of a trajectory and remove the already past ones
+   */
+  std::vector<FootstepsPlanner::Support> trim_supports(Trajectory& trajectory, double t_replan);
+
 protected:
   // Robot associated to the WPG
   HumanoidRobot& robot;
@@ -159,6 +164,11 @@ protected:
                double t_replan = 0.);
 
   void planFeetTrajectories(Trajectory& trajectory, Trajectory* old_trajectory = nullptr, double t_replan = 0.);
+
+  void planKickTrajectory(TrajectoryPart& part, Trajectory& trajectory, int step, double& t);
+  void planDoubleSupportTrajectory(TrajectoryPart& part, Trajectory& trajectory, double& t);
+  void planSingleSupportTrajectory(TrajectoryPart& part, Trajectory& trajectory, int step, double& t,
+                                   Trajectory* old_trajectory, double t_replan);
 
   int support_timesteps(FootstepsPlanner::Support& support);
 };

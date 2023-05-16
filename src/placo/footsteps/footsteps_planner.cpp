@@ -121,6 +121,16 @@ std::vector<Eigen::Vector2d> FootstepsPlanner::Support::support_polygon()
   return polygon;
 }
 
+bool FootstepsPlanner::Support::kick()
+{
+  if (is_both())
+  {
+    return false;
+  }
+
+  return footsteps[0].kick;
+}
+
 Eigen::Affine3d FootstepsPlanner::Support::frame()
 {
   Eigen::Affine3d f;
