@@ -28,6 +28,11 @@ public:
     bool operator==(const Footstep& other);
 
     std::vector<Eigen::Vector2d> support_polygon();
+    std::vector<Eigen::Vector2d> compute_polygon(double margin = 0.);
+
+    bool overlap(Footstep& other, double margin = 0.);
+
+    static bool polygon_contains(std::vector<Eigen::Vector2d>& polygon, Eigen::Vector2d point);
   };
 
   /**

@@ -27,7 +27,7 @@ displayed_joints = {"left_hip_roll", "left_hip_pitch",
 
 # Walk parameters
 parameters = placo.HumanoidParameters()
-parameters.single_support_duration = 0.35
+parameters.single_support_duration = 0.38
 parameters.single_support_timesteps = 12
 parameters.double_support_ratio = 0.0
 parameters.startend_double_support_ratio = 1.5
@@ -36,12 +36,15 @@ parameters.replan_timesteps = 10
 parameters.walk_com_height = 0.32
 parameters.walk_foot_height = 0.04
 parameters.pendulum_height = 0.32
-parameters.walk_trunk_pitch = 0.2
+parameters.walk_trunk_pitch = 0.15
 parameters.walk_foot_tilt = 0.2
+parameters.walk_max_dtheta = 1.
 parameters.foot_length = 0.1576
 parameters.foot_width = 0.092
 parameters.feet_spacing = 0.122
 parameters.zmp_margin = 0.02
+parameters.foot_zmp_target_y = -0.01
+parameters.walk_foot_rise_ratio = 0.2
 
 # Creating the kinematics solver
 solver = robot.make_solver()
@@ -84,10 +87,10 @@ T_world_rightTarget[0, 3] += .5
 naive_footsteps_planner.configure(T_world_leftTarget, T_world_rightTarget)
 
 repetitive_footsteps_planner = placo.FootstepsPlannerRepetitive(parameters)
-d_x = 0.15
-d_y = 0.
+d_x = 0.1
+d_y = 0.0
 d_theta = 0.
-nb_steps = 10
+nb_steps = 20
 repetitive_footsteps_planner.configure(d_x, d_y, d_theta, nb_steps)
 
 # Creating the walk pattern generator and planification
@@ -100,7 +103,7 @@ walk = placo.WalkPatternGenerator(robot, parameters)
 #                                          T_world_left, T_world_right)
 # --------------------------------------
 footsteps = repetitive_footsteps_planner.plan(placo.HumanoidRobot_Side.left,
-                                              T_world_left, T_world_right)
+                                              T_world_left, T_world_right, False)
 # --------------------------------------
 
 supports = placo.FootstepsPlanner.make_supports(
@@ -128,8 +131,8 @@ if args.graph:
         T = trajectory.get_T_world_right(t)
         data_right.append(T[:3, 3])
 
-    data = np.array([[trajectory.com.pos(t), trajectory.com.zmp(
-        t), trajectory.com.dcm(t), trajectory.com.jerk(t)] for t in ts])
+    data = np.array([[trajectory.get_p_world_CoM(t), trajectory.get_p_world_ZMP(
+        t, parameters.omega()), trajectory.get_p_world_DCM(t, parameters.omega()), trajectory.get_j_world_CoM(t)] for t in ts])
 
     data_left = np.array(data_left)
     data_right = np.array(data_right)
@@ -143,9 +146,9 @@ if args.graph:
 
     for t in np.linspace(0, trajectory.t_end, 100):
         x_values = np.array(
-            [trajectory.com.pos(t)[0], trajectory.com.dcm(t)[0]])
+            [trajectory.get_p_world_CoM(t)[0], trajectory.get_p_world_DCM(t, parameters.omega())[0]])
         y_values = np.array(
-            [trajectory.com.pos(t)[1], trajectory.com.dcm(t)[1]])
+            [trajectory.get_p_world_CoM(t)[1], trajectory.get_p_world_DCM(t, parameters.omega())[1]])
         plt.plot(x_values, y_values, c="grey")
 
     plt.plot(data.T[0][0], data.T[1][0], label="CoM", c="red", lw=3)
@@ -234,7 +237,7 @@ elif args.pybullet or args.meshcat or args.torque:
         t += dt
         while time.time() < start_t + t:
             time.sleep(1e-3)
-        # time.sleep(1e-2)
+        # time.sleep(1e-3)
 
         # If displaying torques info, stop the simulation after 5s
         if args.torque and t > 5:
