@@ -97,7 +97,9 @@ void exposeProblem()
       .def("value", &Integrator::value)
       .def("get_trajectory", &Integrator::get_trajectory);
 
-  class_<Integrator::Trajectory>("IntegratorTrajectory").def("value", &Integrator::Trajectory::value);
+  class_<Integrator::Trajectory>("IntegratorTrajectory")
+      .def("value", &Integrator::Trajectory::value)
+      .def("duration", &Integrator::Trajectory::duration);
 
   class_<Problem>("Problem")
       .def("add_variable", &Problem::add_variable, return_internal_reference<>())

@@ -37,6 +37,11 @@ double Integrator::Trajectory::value(double t, int diff)
   }
 }
 
+double Integrator::Trajectory::duration()
+{
+  return keyframes.size() * dt;
+}
+
 Integrator::Integrator()
 {
 }
