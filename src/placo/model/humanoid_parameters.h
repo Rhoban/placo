@@ -162,6 +162,7 @@ public:
   double kicking_foot_height = 0.05;
   double kick_zmp_target_x = -0.01;
   double kick_zmp_target_y = -0.01;
+  double kick_amplitude = 0.13;
 
   // Timings
   double kick_ratio_up = 1.;

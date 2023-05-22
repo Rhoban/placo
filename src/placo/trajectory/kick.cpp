@@ -30,8 +30,8 @@ Kick::KickTrajectory Kick::make_trajectory(HumanoidRobot::Side kicking_side, dou
   Eigen::Vector3d flying_start_position = flying_neutral_position;
   Eigen::Vector3d flying_end_position = flying_neutral_position;
 
-  flying_start_position += T_world_opposite.linear() * Eigen::Vector3d(-0.13, 0., 0.);
-  flying_end_position += T_world_opposite.linear() * Eigen::Vector3d(0.13, 0., 0.);
+  flying_start_position += T_world_opposite.linear() * Eigen::Vector3d(-parameters.kick_amplitude, 0., 0.);
+  flying_end_position += T_world_opposite.linear() * Eigen::Vector3d(parameters.kick_amplitude, 0., 0.);
 
   trajectory.foot_trajectory.add_point(t_start, start, Eigen::Vector3d::Zero());
   trajectory.foot_trajectory.add_point(t_up, flying_start_position, Eigen::Vector3d::Zero());
