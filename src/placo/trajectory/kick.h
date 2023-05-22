@@ -23,7 +23,7 @@ public:
   };
 
   static KickTrajectory make_trajectory(HumanoidRobot::Side kicking_side, double t_start, double t_end,
-                                        Eigen::Vector3d start, Eigen::Vector3d target, Eigen::Vector3d support_opposite,
+                                        Eigen::Vector3d start, Eigen::Vector3d target, Eigen::Affine3d T_world_opposite,
                                         HumanoidParameters& parameters);
 
   // double kicking_com_height = 0.32;

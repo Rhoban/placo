@@ -409,11 +409,11 @@ void WalkPatternGenerator::planKickTrajectory(TrajectoryPart& part, Trajectory& 
   HumanoidRobot::Side kicking_side = HumanoidRobot::other_side(part.support.side());
   Eigen::Vector3d start = trajectory.supports[step - 1].footstep_frame(kicking_side).translation();
   Eigen::Vector3d target = trajectory.supports[step + 1].footstep_frame(kicking_side).translation();
-  Eigen::Vector3d support_opposite =
-      parameters.opposite_frame(part.support.footsteps[0].side, part.support.footsteps[0].frame).translation();
+  Eigen::Affine3d T_world_opposite =
+      parameters.opposite_frame(part.support.footsteps[0].side, part.support.footsteps[0].frame);
 
   part.kick_trajectory = Kick::make_trajectory(kicking_side, t - parameters.kick_support_duration(), t, start, target,
-                                               support_opposite, parameters);
+                                               T_world_opposite, parameters);
 
   // Support foot remaining steady
   trajectory.add_supports(t, part.support);
