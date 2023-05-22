@@ -111,7 +111,7 @@ void HumanoidRobot::update_support_side(const std::string& side)
   update_support_side(string_to_side(side));
 }
 
-Eigen::Vector3d HumanoidRobot::get_com_velocity(Eigen::VectorXd qd_a, Side support, Eigen::Vector3d omega_b)
+Eigen::Vector3d HumanoidRobot::get_com_velocity(Side support, Eigen::Vector3d omega_b)
 {
   // CoM Jacobians
   Eigen::Matrix3Xd J_C = com_jacobian();
@@ -136,7 +136,7 @@ Eigen::Vector3d HumanoidRobot::get_com_velocity(Eigen::VectorXd qd_a, Side suppo
   Eigen::VectorXd M(6);
   M << 0, 0, 0, omega_b;
 
-  return J_u_C * J_u_pinv * M + (J_a_C - J_u_C * J_u_pinv * J_a) * qd_a;
+  return J_u_C * J_u_pinv * M + (J_a_C - J_u_C * J_u_pinv * J_a) * state.qd.block(6, 0, model.nv - 6, 1);
 }
 
 Eigen::Vector2d HumanoidRobot::dcm(Eigen::Vector2d com_velocity, double omega)

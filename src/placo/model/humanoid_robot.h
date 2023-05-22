@@ -53,12 +53,11 @@ public:
 
   /**
    * @brief Compute the center of mass velocity from the speed of the motors and the orientation of the trunk
-   * @param qd_a Velocity of the actuated dofs
    * @param support Support side
    * @param omega_b Trunk angular velocity in the body frame
    * @return Center of mass velocity
    */
-  Eigen::Vector3d get_com_velocity(Eigen::VectorXd qd_a, Side support, Eigen::Vector3d omega_b);
+  Eigen::Vector3d get_com_velocity(Side support, Eigen::Vector3d omega_b);
 
   /**
    * @brief Compute the Divergent Component of Motion (DCM)
