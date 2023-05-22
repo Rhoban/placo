@@ -143,7 +143,7 @@ public:
    * @brief Replan the supports for a given trajectory given a footsteps planner
    */
   std::vector<FootstepsPlanner::Support> replan_supports(FootstepsPlanner& planner, Trajectory& trajectory,
-                                                         double t_replan, bool kick = false);
+                                                         double t_replan);
 
   /**
    * @brief Get the supports of a trajectory and remove the already past ones
