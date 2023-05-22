@@ -188,6 +188,16 @@ int RobotWrapper::get_joint_v_offset(const std::string& name)
   return 6 + model.getJointId(name) - 2;
 }
 
+double RobotWrapper::get_joint_velocity(const std::string& name)
+{
+  return state.qd[get_joint_v_offset(name)];
+}
+
+void RobotWrapper::set_joint_velocity(const std::string& name, double value)
+{
+  state.qd[get_joint_v_offset(name)] = value;
+}
+
 void RobotWrapper::set_velocity_limit(const std::string& name, double limit)
 {
   model.velocityLimit[get_joint_v_offset(name)] = limit;
