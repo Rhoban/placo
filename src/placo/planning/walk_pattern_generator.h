@@ -126,7 +126,6 @@ public:
 
   /**
    * @brief Update the walk trajectory to follow given footsteps based on the parameters of the WPG.
-   * It ensure a continuous CoM trajectory and replan only if replan_frequency dt have passed
    * @param supports Supports generated from the current foosteps or the new
    * ones to follow. Contain the current support
    * @param old_trajectory Current walk trajectory
@@ -144,7 +143,7 @@ public:
    * @brief Replan the supports for a given trajectory given a footsteps planner
    */
   std::vector<FootstepsPlanner::Support> replan_supports(FootstepsPlanner& planner, Trajectory& trajectory,
-                                                         double t_replan);
+                                                         double t_replan, bool kick = false);
 
   /**
    * @brief Get the supports of a trajectory and remove the already past ones

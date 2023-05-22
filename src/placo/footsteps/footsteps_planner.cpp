@@ -334,7 +334,7 @@ FootstepsPlanner::Footstep FootstepsPlanner::clipped_opposite_footstep(Footstep 
 
 std::vector<FootstepsPlanner::Footstep> FootstepsPlanner::plan(HumanoidRobot::Side flying_side,
                                                                Eigen::Affine3d T_world_left,
-                                                               Eigen::Affine3d T_world_right, bool replan)
+                                                               Eigen::Affine3d T_world_right, bool replan, bool kick)
 {
   std::vector<Footstep> footsteps;
 
@@ -349,6 +349,9 @@ std::vector<FootstepsPlanner::Footstep> FootstepsPlanner::plan(HumanoidRobot::Si
 
   // Calling specific implementation
   plan_impl(footsteps, flying_side, T_world_left, T_world_right, replan);
+
+  // Adding a kick on the penultimate footstep
+  footsteps[footsteps.size() - 2].kick = true;
 
   return footsteps;
 }
