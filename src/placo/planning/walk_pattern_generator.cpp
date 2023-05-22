@@ -285,6 +285,7 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
 
     if (timesteps >= parameters.planned_timesteps)
     {
+      timesteps = parameters.planned_timesteps;
       break;
     }
   }
@@ -317,7 +318,8 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
     current_support = trajectory.supports[i];
     int step_timesteps = support_timesteps(current_support);
 
-    for (int timestep = constrained_timesteps; timestep < constrained_timesteps + step_timesteps; timestep++)
+    for (int timestep = constrained_timesteps; timestep < fmin(timesteps, constrained_timesteps + step_timesteps);
+         timestep++)
     {
       // Ensuring ZMP remains in the support polygon
       if (timestep > kept_timesteps)
