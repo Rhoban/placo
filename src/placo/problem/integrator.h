@@ -23,6 +23,8 @@ public:
     // Caching the keyframes for integration
     std::map<int, Eigen::VectorXd> keyframes;
 
+    double duration();
+
     int order;
     double dt;
     double t_start = 0.;

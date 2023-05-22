@@ -60,6 +60,20 @@ public:
   double get_joint(const std::string& name);
 
   /**
+   * @brief Sets the joint velocity
+   * @param name DOF name
+   * @param value DOF velocity [rad/s]
+   */
+  void set_joint_velocity(const std::string& name, double value);
+
+  /**
+   * @brief Gets the joint velocity
+   * @param name DOF name
+   * @return DOF velocity [rad/s]
+   */
+  double get_joint_velocity(const std::string& name);
+
+  /**
    * @brief Gets the offset for a given joint in the state
    * @param name joint name
    * @return offset in state.q
