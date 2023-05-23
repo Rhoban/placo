@@ -213,8 +213,9 @@ void RobotWrapper::set_velocity_limits(double limit)
 
 void RobotWrapper::set_joint_limits(const std::string& name, double lower, double upper)
 {
-  model.lowerPositionLimit[get_joint_offset(name)] = lower;
-  model.upperPositionLimit[get_joint_offset(name)] = upper;
+  int k = get_joint_offset(name);
+  model.lowerPositionLimit[k] = lower;
+  model.upperPositionLimit[k] = upper;
 }
 
 Eigen::Affine3d RobotWrapper::get_T_world_fbase()
