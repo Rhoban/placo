@@ -227,5 +227,16 @@ public:
                                  double d_y = 0., double d_theta = 0.);
   Eigen::Affine3d neutral_frame(HumanoidRobot::Side side, Eigen::Affine3d T_world_footdouble, double d_x = 0.,
                                 double d_y = 0., double d_theta = 0.);
+
+protected:
+  /**
+   * @brief How many timesteps are required for a given ratio ?
+   */
+  int ratio_timesteps(double ratio);
+
+  /**
+   * @brief What is the (rounded to timesteps) duration for a given ratio ?
+   */
+  double ratio_duration(double ratio);
 };
 }  // namespace placo
