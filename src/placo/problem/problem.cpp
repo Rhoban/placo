@@ -1,3 +1,4 @@
+#include <map>
 #include "placo/problem/problem.h"
 #include "placo/problem/qp_error.h"
 #include "eiquadprog/eiquadprog.hpp"
@@ -92,9 +93,17 @@ void Problem::solve()
 
   for (auto constraint : constraints)
   {
-    if (constraint->inequality && constraint->priority == ProblemConstraint::Soft)
+    if (constraint->inequality)
     {
-      slack_variables += constraint->expression.rows();
+      constraint->is_active = false;
+      if (constraint->priority == ProblemConstraint::Soft)
+      {
+        slack_variables += constraint->expression.rows();
+      }
+    }
+    else
+    {
+      constraint->is_active = true;
     }
   }
 
@@ -107,9 +116,10 @@ void Problem::solve()
   // Adding regularization
   // XXX: The user variables should maybe not be regularized by default?
   P.setIdentity();
-  P *= 1e-8;
 
-  // rhoban_utils::TimeStamp t0 = rhoban_utils::TimeStamp::now();
+  // Adding an epsilon regularization for variables (and no regularization fo slack variables)
+  P.block(0, 0, n_variables, n_variables) *= 1e-8;
+  P.block(n_variables, n_variables, slack_variables, slack_variables) *= 0;
 
   // Scanning the constraints (counting inequalities and equalities, building objectif function)
   for (auto constraint : constraints)
@@ -156,9 +166,6 @@ void Problem::solve()
     }
   }
 
-  // rhoban_utils::TimeStamp t1 = rhoban_utils::TimeStamp::now();
-  // std::cout << "Hessian computation: " << (diffMs(t0, t1) * 1e3) << std::endl;
-
   // Equality constraints
   Eigen::MatrixXd A(n_equalities, n_variables + slack_variables);
   Eigen::VectorXd b(n_equalities);
@@ -170,6 +177,12 @@ void Problem::solve()
   Eigen::VectorXd h(n_inequalities);
   G.setZero();
   h.setZero();
+
+  // Used to keep track of the hard/soft inequalities constraints
+  // The hard mapping maps index from inequality row to constraint, and the soft
+  // mapping maps index from slack variables to the constraint.
+  std::map<int, ProblemConstraint*> hard_inequalities_mapping;
+  std::map<int, ProblemConstraint*> soft_inequalities_mapping;
 
   int k_equality = 0;
   int k_inequality = 0;
@@ -193,6 +206,11 @@ void Problem::solve()
         G.block(k_inequality, 0, constraint->expression.rows(), constraint->expression.cols()) =
             constraint->expression.A;
         h.block(k_inequality, 0, constraint->expression.rows(), 1) = constraint->expression.b;
+
+        for (int k = k_inequality; k < k_inequality + constraint->expression.rows(); k++)
+        {
+          hard_inequalities_mapping[k] = constraint;
+        }
         k_inequality += constraint->expression.rows();
       }
       else
@@ -205,6 +223,7 @@ void Problem::solve()
 
         for (int k = 0; k < constraint->expression.rows(); k++)
         {
+          soft_inequalities_mapping[k_slack] = constraint;
           As(k, n_variables + k_slack) = -1;
           k_slack += 1;
         }
@@ -222,13 +241,13 @@ void Problem::solve()
     }
   }
 
-  Eigen::VectorXi activeSet;
-  size_t activeSetSize;
+  Eigen::VectorXi active_set;
+  size_t active_set_size;
 
   Eigen::VectorXd x(n_variables + slack_variables);
   x.setZero();
   double result =
-      eiquadprog::solvers::solve_quadprog(P, q, A.transpose(), b, G.transpose(), h, x, activeSet, activeSetSize);
+      eiquadprog::solvers::solve_quadprog(P, q, A.transpose(), b, G.transpose(), h, x, active_set, active_set_size);
 
   // Checking that the problem is indeed feasible
   if (result == std::numeric_limits<double>::infinity())
@@ -255,7 +274,25 @@ void Problem::solve()
     throw QPError("Problem: NaN in the QP solution");
   }
 
+  // Reporting on the active constraints
+  for (int k = 0; k < active_set_size; k++)
+  {
+    int active_constraint = active_set[k];
+
+    if (active_constraint >= 0 && hard_inequalities_mapping.count(active_constraint))
+    {
+      hard_inequalities_mapping[active_constraint]->is_active = true;
+    }
+  }
+
   slacks = x.block(n_variables, 0, slack_variables, 1);
+  for (int k = 0; k < slacks.rows(); k++)
+  {
+    if (slacks[k] <= 1e-6 && soft_inequalities_mapping.count(k))
+    {
+      soft_inequalities_mapping[k]->is_active = true;
+    }
+  }
 
   for (auto variable : variables)
   {

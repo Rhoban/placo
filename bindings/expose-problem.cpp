@@ -66,10 +66,12 @@ void exposeProblem()
             }
           })
       .add_property("weight", &ProblemConstraint::weight)
+      .add_property("is_active", &ProblemConstraint::is_active)
       .def<void (ProblemConstraint::*)(std::string, double)>("configure", &ProblemConstraint::configure);
 
   class_<ProblemConstraints>("ProblemConstraints")
-      .def<void (ProblemConstraints::*)(std::string, double)>("configure", &ProblemConstraints::configure);
+      .def<void (ProblemConstraints::*)(std::string, double)>("configure", &ProblemConstraints::configure)
+      .def("is_active", &ProblemConstraints::is_active);
 
   class_<PolygonConstraint>("PolygonConstraint")
       .def("in_polygon", &PolygonConstraint::in_polygon)

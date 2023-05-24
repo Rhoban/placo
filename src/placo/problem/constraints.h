@@ -18,5 +18,7 @@ public:
   void configure(bool hard, double weight);
 
   std::vector<ProblemConstraint*> constraints;
+
+  bool is_active();
 };
 };  // namespace placo

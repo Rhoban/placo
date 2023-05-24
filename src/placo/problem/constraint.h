@@ -25,6 +25,10 @@ public:
   Priority priority = Hard;
   double weight = 1.0;
 
+  // Is this constraint active ?
+  // Will be set by the solver
+  bool is_active = false;
+
   void configure(std::string type, double weight);
   void configure(Priority priority, double weight);
 

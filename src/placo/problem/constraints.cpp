@@ -22,4 +22,17 @@ void ProblemConstraints::configure(bool hard, double weight)
     configure(hard, weight);
   }
 }
+
+bool ProblemConstraints::is_active()
+{
+  for (auto& constraint : constraints)
+  {
+    if (constraint->is_active)
+    {
+      return true;
+    }
+  }
+
+  return false;
+}
 }  // namespace placo

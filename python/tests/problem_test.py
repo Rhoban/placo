@@ -53,7 +53,7 @@ class TestProblem(unittest.TestCase):
     def test_stacking(self):
         """
         The operator / allow to stack expressions
-        """        
+        """
         problem = placo.Problem()
 
         x = problem.add_variable(8)
@@ -177,7 +177,11 @@ class TestProblem(unittest.TestCase):
 
         self.assertNumpyEqual(
             np.hstack((x.value, y.value)),
-            np.array([1.0,]),
+            np.array(
+                [
+                    1.0,
+                ]
+            ),
             msg="The [0., 0.] value should be projected in the polygon bottom-left corner at [1., 1.]",
         )
 
@@ -206,27 +210,27 @@ class TestProblem(unittest.TestCase):
     def test_expr_t(self):
         """
         Testing expr_t, that allows adding constraints that are not aligned with integrator timesteps
-        """        
+        """
         problem = placo.Problem()
 
         xdd = problem.add_variable(10)
-        integrator = placo.Integrator(xdd, np.array([0., 0.]), 2, 0.1)
+        integrator = placo.Integrator(xdd, np.array([0.0, 0.0]), 2, 0.1)
 
-        # Adding constraint non aligned with timesteps
+        # Adding constraint non aligned with timesteps
         problem.add_constraint(integrator.expr_t(0.5, 0) == 1.5)
         problem.add_constraint(integrator.expr_t(0.51, 0) == 2.5)
 
         for k in range(10):
-            problem.add_limit(integrator.expr(k, 0), np.array([3.]))
+            problem.add_limit(integrator.expr(k, 0), np.array([3.0]))
 
-        problem.add_constraint(integrator.expr_t(1., 0) == 0.)
+        problem.add_constraint(integrator.expr_t(1.0, 0) == 0.0)
 
         problem.solve()
 
-        self.assertNumpyEqual(integrator.value(0., 0), 0.)
+        self.assertNumpyEqual(integrator.value(0.0, 0), 0.0)
         self.assertNumpyEqual(integrator.value(0.5, 0), 1.5)
         self.assertNumpyEqual(integrator.value(0.51, 0), 2.5)
-        self.assertNumpyEqual(integrator.value(1., 0), 0.)
+        self.assertNumpyEqual(integrator.value(1.0, 0), 0.0)
 
     def test_integrator_zmp(self):
         """
@@ -240,37 +244,61 @@ class TestProblem(unittest.TestCase):
         [ dc ]
         [ z  ]
         [ dz ]
-        """        
+        """
         problem = placo.Problem()
         omega = 0.5
 
         dzmp = problem.add_variable(16)
-        integrator = placo.Integrator(dzmp, np.array([0., 0., 0.]), np.array([
-            [0., 1., 0., 0.],
-            [omega**2, 0., -omega**2, 0.],
-            [0., 0., 0., 1.],
-            [0., 0., 0., 0.],
-        ]), 0.1)
+        integrator = placo.Integrator(
+            dzmp,
+            np.array([0.0, 0.0, 0.0]),
+            np.array(
+                [
+                    [0.0, 1.0, 0.0, 0.0],
+                    [omega**2, 0.0, -(omega**2), 0.0],
+                    [0.0, 0.0, 0.0, 1.0],
+                    [0.0, 0.0, 0.0, 0.0],
+                ]
+            ),
+            0.1,
+        )
 
         problem.add_constraint(integrator.expr(8, 0) == 0.5)
-        problem.add_constraint(integrator.expr(16, 0) == 0.)
-        problem.add_constraint(integrator.expr(16, 1) == 0.)
+        problem.add_constraint(integrator.expr(16, 0) == 0.0)
+        problem.add_constraint(integrator.expr(16, 1) == 0.0)
         problem.solve()
 
         self.assertNumpyEqual(integrator.value(0.8, 0), 0.5)
-        self.assertNumpyEqual(integrator.value(1.6, 0), 0.)
-        self.assertNumpyEqual(integrator.value(1.6, 1), 0.)
+        self.assertNumpyEqual(integrator.value(1.6, 0), 0.0)
+        self.assertNumpyEqual(integrator.value(1.6, 1), 0.0)
 
-        # We compute ddc from the trajectory and checks that it matches the finite difference on velocity
+        # We compute ddc from the trajectory and checks that it matches the finite difference on velocity
         epsilon = 1e-8
-        for t_test in [0., 0.25, 0.5, 1.5]:
-            # Finite differences
-            acc_fd = (integrator.value(t_test + epsilon, 1) - integrator.value(t_test, 1))/epsilon
+        for t_test in [0.0, 0.25, 0.5, 1.5]:
+            # Finite differences
+            acc_fd = (integrator.value(t_test + epsilon, 1) - integrator.value(t_test, 1)) / epsilon
             # ddc = omega**2 c - omega**2 z
             acc_zmp = omega**2 * integrator.value(t_test, 0) - omega**2 * integrator.value(t_test, 2)
-            
+
             self.assertNumpyEqual(acc_fd, acc_zmp, epsilon=1e-3)
 
+    def test_active_constraints(self):
+        """
+        A simple test to check that the active constraints are tracked
+        """
+        problem = placo.Problem()
+        x = problem.add_variable(1)
+        y = problem.add_variable(1)
+
+        problem.add_constraint((x.expr() + y.expr()) == 2)
+        cst1 = problem.add_constraint(x.expr() >= 2.0)
+        cst2 = problem.add_constraint(x.expr() >= 3.0)
+        cst3 = problem.add_constraint(y.expr() >= -1.5)
+        problem.solve()
+
+        self.assertFalse(cst1.is_active)
+        self.assertTrue(cst2.is_active)
+        self.assertFalse(cst3.is_active)
 
 
 if __name__ == "__main__":
