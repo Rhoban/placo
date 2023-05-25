@@ -179,12 +179,13 @@ bool HumanoidRobot::camera_look_at(double& pan, double& tilt, const Eigen::Vecto
 }
 
 #ifdef HAVE_RHOBAN_UTILS
-void HumanoidRobot::read_from_histories(rhoban_utils::HistoryCollection& histories, double timestamp, bool use_imu)
+void HumanoidRobot::read_from_histories(rhoban_utils::HistoryCollection& histories, double timestamp,
+                                        std::string source, bool use_imu)
 {
   // Updating DOFs from replay
   for (const std::string& name : actuated_joint_names())
   {
-    set_joint(name, histories.number("read:" + name)->interpolate(timestamp));
+    set_joint(name, histories.number(source + ":" + name)->interpolate(timestamp));
   }
 
   // Set the support
