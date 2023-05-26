@@ -126,6 +126,11 @@ public:
   double walk_max_dtheta = 0.35;
 
   /**
+   * @brief How much we need to space the feet per dtheta [m/rad]
+   */
+  double walk_dtheta_spacing = 0.05;
+
+  /**
    * @brief Robot center of mass height for LIPM model. This is used to compute the pendulum constant
    * omega, which is sqrt(g/h)
    *

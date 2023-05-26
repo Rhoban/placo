@@ -45,6 +45,8 @@ void exposeParameters()
                     &HumanoidParameters::walk_max_dx_backward)
       .add_property("walk_max_dy", &HumanoidParameters::walk_max_dy, &HumanoidParameters::walk_max_dy)
       .add_property("walk_max_dtheta", &HumanoidParameters::walk_max_dtheta, &HumanoidParameters::walk_max_dtheta)
+      .add_property("walk_dtheta_spacing", &HumanoidParameters::walk_dtheta_spacing,
+                    &HumanoidParameters::walk_dtheta_spacing)
       .def("dt", &HumanoidParameters::dt)
       .def("double_support_duration", &HumanoidParameters::double_support_duration)
       .def("startend_double_support_duration", &HumanoidParameters::startend_double_support_duration)
