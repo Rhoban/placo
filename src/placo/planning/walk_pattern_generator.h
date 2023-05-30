@@ -26,7 +26,7 @@ public:
     double t_end;
 
     bool kick_part = false;
-    std::shared_ptr<FootTrajectory> swing_trajectory = nullptr;
+    SwingFootCubic::Trajectory swing_trajectory;
     Kick::KickTrajectory kick_trajectory;
 
     FootstepsPlanner::Support support;
@@ -78,6 +78,11 @@ public:
      * @brief Returns the trajectory time start for the support corresponding to the given time
      */
     double get_part_t_start(double t);
+
+    /**
+     * @brief Returns the trajectory time end for the support corresponding to the given time
+     */
+    double get_part_t_end(double t);
 
     // Number of dt planned by the jerk planner
     int jerk_planner_timesteps = 0;

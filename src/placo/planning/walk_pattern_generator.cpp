@@ -76,7 +76,7 @@ Eigen::Affine3d WalkPatternGenerator::Trajectory::get_T_world_left(double t)
     {
       return T * _buildFrame(part.kick_trajectory.pos(t), left_foot_yaw.pos(t));
     }
-    return T * _buildFrame(part.swing_trajectory->pos(t), left_foot_yaw.pos(t));
+    return T * _buildFrame(part.swing_trajectory.pos(t), left_foot_yaw.pos(t));
   }
   else
   {
@@ -94,7 +94,7 @@ Eigen::Affine3d WalkPatternGenerator::Trajectory::get_T_world_right(double t)
     {
       return T * _buildFrame(part.kick_trajectory.pos(t), right_foot_yaw.pos(t));
     }
-    return T * _buildFrame(part.swing_trajectory->pos(t), right_foot_yaw.pos(t));
+    return T * _buildFrame(part.swing_trajectory.pos(t), right_foot_yaw.pos(t));
   }
   else
   {
@@ -117,7 +117,7 @@ Eigen::Vector3d WalkPatternGenerator::Trajectory::get_v_world_left(double t)
     {
       return T.linear() * part.kick_trajectory.vel(t);
     }
-    return T.linear() * part.swing_trajectory->vel(t);
+    return T.linear() * part.swing_trajectory.vel(t);
   }
 
   return Eigen::Vector3d::Zero();
@@ -133,7 +133,7 @@ Eigen::Vector3d WalkPatternGenerator::Trajectory::get_v_world_right(double t)
     {
       return T.linear() * part.kick_trajectory.vel(t);
     }
-    return T.linear() * part.swing_trajectory->vel(t);
+    return T.linear() * part.swing_trajectory.vel(t);
   }
   return Eigen::Vector3d::Zero();
 }
@@ -241,6 +241,12 @@ double WalkPatternGenerator::Trajectory::get_part_t_start(double t)
 {
   TrajectoryPart& part = _findPart(parts, t);
   return part.t_start;
+}
+
+double WalkPatternGenerator::Trajectory::get_part_t_end(double t)
+{
+  TrajectoryPart& part = _findPart(parts, t);
+  return part.t_end;
 }
 
 int WalkPatternGenerator::support_timesteps(FootstepsPlanner::Support& support)
@@ -451,21 +457,10 @@ void WalkPatternGenerator::planSingleSupportTrajectory(TrajectoryPart& part, Tra
   {
     auto& old_part = _findPart(old_trajectory->parts, t_replan);
 
-    if (parameters.swing_foot_spline == parameters.SplineSwingFoot)
-    {
-      part.swing_trajectory = std::shared_ptr<FootTrajectory>(new SwingFoot::Trajectory(
-          SwingFoot::make_trajectory(old_part.t_start, old_part.t_end, parameters.walk_foot_height,
-                                     old_trajectory->T * old_part.swing_trajectory->pos(old_part.t_start),
-                                     old_trajectory->T * old_part.swing_trajectory->pos(old_part.t_end))));
-    }
-    else
-    {
-      part.swing_trajectory =
-          std::shared_ptr<FootTrajectory>(new SwingFootCubic::Trajectory(SwingFootCubic::make_trajectory(
-              old_part.t_start, old_part.t_end, parameters.walk_foot_height, parameters.walk_foot_rise_ratio,
-              old_trajectory->T * old_part.swing_trajectory->pos(old_part.t_start),
-              old_trajectory->T * old_part.swing_trajectory->pos(old_part.t_end))));
-    }
+    part.swing_trajectory = SwingFootCubic::make_trajectory(
+        old_part.t_start, old_part.t_end, parameters.walk_foot_height, parameters.walk_foot_rise_ratio,
+        old_trajectory->T * old_part.swing_trajectory.pos(old_part.t_start),
+        old_trajectory->T * old_part.swing_trajectory.pos(old_part.t_end));
   }
 
   // Complete steps case
@@ -474,19 +469,9 @@ void WalkPatternGenerator::planSingleSupportTrajectory(TrajectoryPart& part, Tra
     Eigen::Affine3d T_world_startTarget = trajectory.supports[step - 1].footstep_frame(flying_side);
 
     // Flying foot reaching its position
-    if (parameters.swing_foot_spline == parameters.SplineSwingFoot)
-    {
-      part.swing_trajectory = std::shared_ptr<FootTrajectory>(new SwingFoot::Trajectory(
-          SwingFoot::make_trajectory(t - parameters.single_support_duration, t, parameters.walk_foot_height,
-                                     T_world_startTarget.translation(), T_world_flyingTarget.translation())));
-    }
-    else
-    {
-      part.swing_trajectory =
-          std::shared_ptr<FootTrajectory>(new SwingFootCubic::Trajectory(SwingFootCubic::make_trajectory(
-              t - parameters.single_support_duration, t, parameters.walk_foot_height, parameters.walk_foot_rise_ratio,
-              T_world_startTarget.translation(), T_world_flyingTarget.translation())));
-    }
+    part.swing_trajectory = SwingFootCubic::make_trajectory(
+        t - parameters.single_support_duration, t, parameters.walk_foot_height, parameters.walk_foot_rise_ratio,
+        T_world_startTarget.translation(), T_world_flyingTarget.translation());
   }
 
   trajectory.yaw(flying_side).add_point(t, frame_yaw(T_world_flyingTarget.rotation()), 0);
