@@ -163,6 +163,11 @@ public:
    */
   double foot_zmp_target_y = 0.0;
 
+  /**
+   * @brief Weight for ZMP reference in the solver
+   */
+  double zmp_reference_weight = 1e-1;
+
   // Kick parameters
   double kicking_foot_height = 0.05;
   double kick_zmp_target_x = -0.01;

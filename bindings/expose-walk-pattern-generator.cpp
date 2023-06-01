@@ -78,8 +78,6 @@ void exposeWalkPatternGenerator()
       .add_property("left_foot_task", &WalkTasks::left_foot_task)
       .add_property("right_foot_task", &WalkTasks::right_foot_task)
       .add_property(
-          "com_task", +[](WalkTasks& tasks) { return *tasks.com_task; })
-      .add_property(
           "trunk_orientation_task", +[](WalkTasks& tasks) { return *tasks.trunk_orientation_task; });
 
   class_<LIPM::Trajectory>("LIPMTrajectory", init<>())

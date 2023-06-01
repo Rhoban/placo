@@ -19,7 +19,16 @@ public:
   KinematicsSolver* solver = nullptr;
   placo::FrameTask left_foot_task;
   placo::FrameTask right_foot_task;
-  placo::CoMTask* com_task;
   placo::OrientationTask* trunk_orientation_task;
+
+  placo::CoMTask* com_task = nullptr;
+  placo::PositionTask* trunk_task = nullptr;
+
+  void update_com_task();
+
+  bool trunk_mode = false;
+  double com_delay = 0.;
+  double com_x = 0.;
+  double com_y = 0;
 };
 }  // namespace placo
