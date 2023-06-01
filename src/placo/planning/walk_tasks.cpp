@@ -90,10 +90,12 @@ void WalkTasks::remove_tasks()
     if (com_task != nullptr)
     {
       solver->remove_task(com_task);
+      com_task = nullptr;
     }
     if (trunk_task != nullptr)
     {
       solver->remove_task(trunk_task);
+      trunk_task = nullptr;
     }
     solver->remove_task(trunk_orientation_task);
     solver = nullptr;
