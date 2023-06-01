@@ -15,5 +15,14 @@ struct PositionTask : public Task
   virtual void update();
   virtual std::string type_name();
   virtual std::string error_unit();
+
+  enum Mask
+  {
+    MaskX = 1,
+    MaskY = 2,
+    MaskZ = 4
+  };
+
+  int mask = MaskX | MaskY | MaskZ;
 };
 }  // namespace placo
