@@ -539,7 +539,7 @@ void WalkPatternGenerator::planFeetTrajectories(Trajectory& trajectory, Trajecto
 }
 
 WalkPatternGenerator::Trajectory WalkPatternGenerator::plan(std::vector<FootstepsPlanner::Support>& supports,
-                                                            double t_start)
+                                                            Eigen::Vector3d initial_com_world, double t_start)
 {
   if (supports.size() == 0)
   {
@@ -554,8 +554,7 @@ WalkPatternGenerator::Trajectory WalkPatternGenerator::plan(std::vector<Footstep
   trajectory.supports = supports;
 
   // Planning the center of mass trajectory
-  auto com_world = robot.com_world();
-  planCoM(trajectory, Eigen::Vector2d(com_world.x(), com_world.y()));
+  planCoM(trajectory, Eigen::Vector2d(initial_com_world.x(), initial_com_world.y()));
 
   // Planning the footsteps trajectories
   planFeetTrajectories(trajectory);

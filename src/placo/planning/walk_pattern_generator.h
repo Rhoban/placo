@@ -127,7 +127,8 @@ public:
    * @param supports Supports generated from the foosteps to follow
    * @return Planned trajectory
    */
-  Trajectory plan(std::vector<FootstepsPlanner::Support>& supports, double t_start = 0.);
+  Trajectory plan(std::vector<FootstepsPlanner::Support>& supports, Eigen::Vector3d initial_com_world,
+                  double t_start = 0.);
 
   /**
    * @brief Update the walk trajectory to follow given footsteps based on the parameters of the WPG.
