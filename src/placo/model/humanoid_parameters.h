@@ -101,11 +101,6 @@ public:
   double walk_trunk_pitch = 0.0;
 
   /**
-   * @brief How much the foot tilts during the walk [rad]
-   */
-  double walk_foot_tilt = 0.2;
-
-  /**
    * @brief Maximum step (forward)
    */
   double walk_max_dx_forward = 0.08;
