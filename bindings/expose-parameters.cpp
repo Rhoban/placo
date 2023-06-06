@@ -39,6 +39,8 @@ void exposeParameters()
       .add_property("foot_length", &HumanoidParameters::foot_length, &HumanoidParameters::foot_length)
       .add_property("foot_zmp_target_x", &HumanoidParameters::foot_zmp_target_x, &HumanoidParameters::foot_zmp_target_x)
       .add_property("foot_zmp_target_y", &HumanoidParameters::foot_zmp_target_y, &HumanoidParameters::foot_zmp_target_y)
+      .add_property("zmp_reference_weight", &HumanoidParameters::zmp_reference_weight,
+                    &HumanoidParameters::zmp_reference_weight)
       .add_property("walk_max_dx_forward", &HumanoidParameters::walk_max_dx_forward,
                     &HumanoidParameters::walk_max_dx_forward)
       .add_property("walk_max_dx_backward", &HumanoidParameters::walk_max_dx_backward,
