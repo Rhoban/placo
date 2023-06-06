@@ -48,9 +48,6 @@ public:
   Eigen::Affine3d get_T_world_right();
   Eigen::Affine3d get_T_world_trunk();
 
-  // Gets the self frame in world, ie the weighted average of the 2 foot frames
-  Eigen::Affine3d get_T_world_self();
-
   /**
    * @brief Compute the center of mass velocity from the speed of the motors and the orientation of the trunk
    * @param support Support side
