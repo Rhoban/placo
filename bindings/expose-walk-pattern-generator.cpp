@@ -77,7 +77,7 @@ void exposeWalkPatternGenerator()
           "solver", +[](WalkTasks& tasks) { return *tasks.solver; })
       .add_property("left_foot_task", &WalkTasks::left_foot_task)
       .add_property("right_foot_task", &WalkTasks::right_foot_task)
-      .add_property("trunk_mode", &WalkTasks::trunk_mode)
+      .add_property("trunk_mode", &WalkTasks::trunk_mode, &WalkTasks::trunk_mode)
       .add_property(
           "trunk_orientation_task", +[](WalkTasks& tasks) { return *tasks.trunk_orientation_task; });
 
