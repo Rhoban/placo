@@ -26,7 +26,7 @@ static Eigen::Affine3d _buildFrame(Eigen::Vector3d position, double orientation)
 }
 
 static WalkPatternGenerator::TrajectoryPart& _findPart(std::vector<WalkPatternGenerator::TrajectoryPart>& parts,
-                                                       double t)
+                                                       double t, int* index = nullptr)
 {
   if (parts.size() == 0)
   {
@@ -54,6 +54,11 @@ static WalkPatternGenerator::TrajectoryPart& _findPart(std::vector<WalkPatternGe
     {
       return part;
     }
+  }
+
+  if (index != nullptr)
+  {
+    *index = low;
   }
 
   return parts[low];
@@ -204,6 +209,14 @@ FootstepsPlanner::Support WalkPatternGenerator::Trajectory::get_support(double t
 {
   TrajectoryPart& part = _findPart(parts, t);
   return T * part.support;
+}
+
+int WalkPatternGenerator::Trajectory::remaining_supports(double t)
+{
+  int index;
+  _findPart(parts, t, &index);
+
+  return parts.size() - index - 1;
 }
 
 FootstepsPlanner::Support WalkPatternGenerator::Trajectory::get_next_support(double t)

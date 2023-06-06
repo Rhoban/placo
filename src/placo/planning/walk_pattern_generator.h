@@ -64,6 +64,7 @@ public:
     FootstepsPlanner::Support get_prev_support(double t);
 
     std::vector<FootstepsPlanner::Support> get_supports();
+    int remaining_supports(double t);
 
     /**
      * @brief Applies a given transformation to the left of all values issued by the trajectory
