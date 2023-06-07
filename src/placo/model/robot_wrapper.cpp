@@ -512,8 +512,13 @@ Eigen::MatrixXd RobotWrapper::mass_matrix()
 {
   pinocchio::crba(model, *data, state.q);
   data->M.triangularView<Eigen::StrictlyLower>() = data->M.transpose().triangularView<Eigen::StrictlyLower>();
+  Eigen::MatrixXd M = data->M;
 
-  return data->M;
+  // We account for inertia by adding the rotor inertia times the squared gear ratio to
+  // the diagonal (see Featherstone, Rigid Body Dynamics Algorithm, 2008, end of chapter 9.6)
+  M.diagonal() += model.rotorGearRatio * model.rotorGearRatio * model.rotorInertia;
+
+  return M;
 }
 
 void RobotWrapper::integrate(double dt)
