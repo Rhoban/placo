@@ -98,6 +98,11 @@ public:
   void set_joint_limits(const std::string& name, double lower, double upper);
 
   /**
+   * @brief Get the joint limits
+   */
+  std::pair<double, double> get_joint_limits(const std::string& name);
+
+  /**
    * @brief Sets the velocity limit for all DoFs (overrides the ones from URDF)
    */
   void set_velocity_limits(double limit);
