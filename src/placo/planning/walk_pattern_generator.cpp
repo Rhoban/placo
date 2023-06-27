@@ -180,7 +180,8 @@ Eigen::Vector3d WalkPatternGenerator::Trajectory::get_p_world_ZMP(double t, doub
 Eigen::Matrix3d WalkPatternGenerator::Trajectory::get_R_world_trunk(double t)
 {
   return T.linear() * Eigen::AngleAxisd(trunk_yaw.pos(t), Eigen::Vector3d::UnitZ()).matrix() *
-         Eigen::AngleAxisd(trunk_pitch, Eigen::Vector3d::UnitY()).matrix();
+         Eigen::AngleAxisd(trunk_pitch, Eigen::Vector3d::UnitY()).matrix() *
+         Eigen::AngleAxisd(trunk_roll, Eigen::Vector3d::UnitX()).matrix();
 }
 
 HumanoidRobot::Side WalkPatternGenerator::Trajectory::support_side(double t)
