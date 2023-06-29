@@ -37,7 +37,8 @@ public:
     Trajectory();
 
     double com_height;
-    double trunk_pitch;
+    double trunk_pitch = 0.;
+    double trunk_roll = 0.;
 
     Eigen::Affine3d get_T_world_left(double t);
     Eigen::Affine3d get_T_world_right(double t);

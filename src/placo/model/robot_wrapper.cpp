@@ -221,7 +221,7 @@ void RobotWrapper::set_joint_limits(const std::string& name, double lower, doubl
 std::pair<double, double> RobotWrapper::get_joint_limits(const std::string& name)
 {
   int k = get_joint_offset(name);
-  return std::pair<double, double>(model.lowerPositionLimit[k], model.upperPositionLimit[k]);
+  return std::make_pair(model.lowerPositionLimit[k], model.upperPositionLimit[k]);
 }
 
 Eigen::Affine3d RobotWrapper::get_T_world_fbase()

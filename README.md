@@ -23,6 +23,9 @@ Simply run:
 
 `wks build`
 
+*Note: at the end of the build, the libraries will end up in `build/lib`. the `stubs.py` script will be run to generate
+the `placo.pyi` file that contains more useful informations for autocompletions*
+
 ## Using Python bindings
 
 You will need to add `build/lib` to your `PYTHONPATH` to be able to use `placo` library.

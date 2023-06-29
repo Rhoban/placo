@@ -196,16 +196,6 @@ public:
   int kick_support_timesteps();
 
   /**
-   * @brief Kick tolerance distance [m]
-   */
-  double kick_tolerance_distance = 0.03;
-
-  /**
-   * @brief Kick tolerance orientation [rad]
-   */
-  double kick_tolerance_orientation = 0.06;
-
-  /**
    * Natural frequency of the Linear Inverted Pendulum (LIP) model used in the walk
    */
   double omega();

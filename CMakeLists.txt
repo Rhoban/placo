@@ -103,7 +103,7 @@ endif ()
 
 set(CMAKE_SHARED_MODULE_PREFIX "")
 
-find_package(PythonLibs REQUIRED)
+find_package(Python3 REQUIRED)
 find_package(Boost COMPONENTS python REQUIRED)
 
 ADD_CUSTOM_TARGET(native_python_files ALL
