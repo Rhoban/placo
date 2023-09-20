@@ -65,6 +65,22 @@ void exposeRobotType(class_<RobotType, W1>& type)
             return dict;
           })
       .def(
+          "torques_from_acceleration_with_fixed_frame",
+          +[](RobotType& robot, Eigen::VectorXd qdd_a, const std::string& frame) { return robot.torques_from_acceleration_with_fixed_frame(qdd_a, frame); })
+      .def(
+          "torques_from_acceleration_with_fixed_frame",
+          +[](RobotType& robot, Eigen::VectorXd qdd_a, const std::string& frame) {
+            auto torques = robot.torques_from_acceleration_with_fixed_frame(qdd_a, frame);
+            boost::python::dict dict;
+
+            for (auto& dof : robot.actuated_joint_names())
+            {
+              dict[dof] = torques[robot.get_joint_v_offset(dof) - 6];
+            }
+
+            return dict;
+          })
+      .def(
           "get_T_world_frame",
           +[](RobotType& robot, const std::string& frame) { return robot.get_T_world_frame(frame); })
       .def(

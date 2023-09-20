@@ -285,6 +285,15 @@ public:
   Eigen::VectorXd static_gravity_compensation_torques(std::string frame);
 
   /**
+   * @brief Computes torques in the robot DOFs for a given acceleration of the actuated DOFs, assuming that the 
+   * given frame is fixed
+   *
+   * Dimension of the output is q_a
+   */
+  Eigen::VectorXd torques_from_acceleration_with_fixed_frame(Eigen::VectorXd qdd_a, FrameIndex fixed_frame);
+  Eigen::VectorXd torques_from_acceleration_with_fixed_frame(Eigen::VectorXd qdd_a, std::string fixed_frame);
+
+  /**
    * @brief Return all the joint names
    */
   std::vector<std::string> joint_names();

@@ -553,6 +553,27 @@ Eigen::VectorXd RobotWrapper::static_gravity_compensation_torques(std::string fr
   return static_gravity_compensation_torques(get_frame_index(frame));
 }
 
+Eigen::VectorXd RobotWrapper::torques_from_acceleration_with_fixed_frame(Eigen::VectorXd qdd_a, RobotWrapper::FrameIndex frameIndex)
+{
+  auto h = non_linear_effects();
+  auto M = mass_matrix();
+
+  // Compute f the forces fixing the frame
+  Eigen::MatrixXd J = frame_jacobian(frameIndex);
+  Eigen::VectorXd f = J.transpose().block(0, 0, 6, 6).inverse() * h.block(0, 0, 6, 1);
+
+  auto h_a = h.bottomRows(model.nv - 6);
+  auto M_a = M.bottomRightCorner(model.nv - 6, model.nv - 6);
+  
+  // Compute the torques
+  return M_a * qdd_a + h_a - (J.transpose() * f).bottomRows(model.nv - 6);
+}
+
+Eigen::VectorXd RobotWrapper::torques_from_acceleration_with_fixed_frame(Eigen::VectorXd qdd_a, std::string frame)
+{
+  return torques_from_acceleration_with_fixed_frame(qdd_a, get_frame_index(frame));
+}
+
 std::vector<std::string> RobotWrapper::joint_names()
 {
   return model.names;
