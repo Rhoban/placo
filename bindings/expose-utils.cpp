@@ -62,8 +62,21 @@ void exposeUtils()
           "pose", +[](HistoryCollection& collection, std::string name,
                       double t) { return collection.pose(name)->interpolate(t); })
       .def(
-          "bool", +[](HistoryCollection& collection, std::string name, double t) {
-            return collection.boolean(name)->interpolate(t);
-          });
+          "bool", +[](HistoryCollection& collection, std::string name,
+                      double t) { return collection.boolean(name)->interpolate(t); })
+      .def(
+          "push_number", +[](HistoryCollection& collection, std::string name, double t,
+                             double value) { collection.number(name)->pushValue(t, value); })
+      .def(
+          "push_angle", +[](HistoryCollection& collection, std::string name, double t,
+                            double value) { collection.angle(name)->pushValue(t, value); })
+      .def(
+          "push_pose", +[](HistoryCollection& collection, std::string name, double t,
+                           Eigen::Affine3d value) { collection.pose(name)->pushValue(t, value); })
+      .def(
+          "push_bool", +[](HistoryCollection& collection, std::string name, double t,
+                           bool value) { collection.boolean(name)->pushValue(t, value); })
+
+      ;
 #endif
 }
