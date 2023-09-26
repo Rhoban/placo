@@ -52,6 +52,8 @@ void exposeUtils()
       .def("loadReplays", &HistoryCollection::loadReplays, loadReplays_overloads())
       .def("smallestTimestamp", &HistoryCollection::smallestTimestamp)
       .def("biggestTimestamp", &HistoryCollection::biggestTimestamp)
+      .def("startNamedLog", &HistoryCollection::startNamedLog)
+      .def("stopNamedLog", &HistoryCollection::stopNamedLog)
       .def(
           "number", +[](HistoryCollection& collection, std::string name,
                         double t) { return collection.number(name)->interpolate(t); })
