@@ -68,7 +68,7 @@ void exposeRobotType(class_<RobotType, W1>& type)
           "torques_from_acceleration_with_fixed_frame",
           +[](RobotType& robot, Eigen::VectorXd qdd_a, const std::string& frame) { return robot.torques_from_acceleration_with_fixed_frame(qdd_a, frame); })
       .def(
-          "torques_from_acceleration_with_fixed_frame",
+          "torques_from_acceleration_with_fixed_frame_dict",
           +[](RobotType& robot, Eigen::VectorXd qdd_a, const std::string& frame) {
             auto torques = robot.torques_from_acceleration_with_fixed_frame(qdd_a, frame);
             boost::python::dict dict;
