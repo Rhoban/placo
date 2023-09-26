@@ -12,8 +12,16 @@ HumanoidRobot::HumanoidRobot(std::string model_directory, int flags, std::string
 
   // Measuring some distances
   dist_y_trunk_foot = fabs(get_T_a_b("trunk", "left_hip_yaw").translation().y());
-  dist_z_pan_tilt = get_T_a_b("head_base", "head_pitch").translation().z();
-  dist_z_pan_camera = get_T_a_b("head_base", "camera").translation().z();
+
+  if (model.existFrame("head_base") && model.existFrame("head_pitch") && model.existFrame("camera"))
+  {
+    dist_z_pan_tilt = get_T_a_b("head_base", "head_pitch").translation().z();
+    dist_z_pan_camera = get_T_a_b("head_base", "camera").translation().z();
+  }
+  else
+  {
+    std::cerr << "WARNING: Can't find head frames in the model, camera_look_at won't work" << std::endl;
+  }
 }
 
 void HumanoidRobot::initialize()
