@@ -648,7 +648,7 @@ std::vector<FootstepsPlanner::Support> WalkPatternGenerator::replan_supports(Foo
     T_world_left = next_support.footstep_frame(placo::HumanoidRobot::Left);
     T_world_right = current_support.footstep_frame(placo::HumanoidRobot::Right);
   }
-  auto footsteps = planner.plan(flying_side, T_world_left, T_world_right, true);
+  auto footsteps = planner.plan(flying_side, T_world_left, T_world_right);
 
   std::vector<FootstepsPlanner::Support> supports;
   supports = placo::FootstepsPlanner::make_supports(footsteps, false, parameters.has_double_support(), true);
