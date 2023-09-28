@@ -372,11 +372,9 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
   for (auto task : tasks)
   {
     task->update();
-  }
 
-  // Adding equality constraints
-  for (auto task : tasks)
-  {
+    // This could be written (task->A * qd->expr() == task->b), but would come with the
+    // significant cost of multiplying A with identity matrix for each task
     Expression e;
     e.A = task->A;
     e.b = -task->b;
