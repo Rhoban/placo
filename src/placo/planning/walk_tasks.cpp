@@ -1,12 +1,13 @@
 #include "placo/planning/walk_tasks.h"
 #include "placo/model/humanoid_robot.h"
+#include "placo/utils.h"
 
 namespace placo
 {
-void WalkTasks::initialize_tasks(KinematicsSolver* solver_)
+void WalkTasks::initialize_tasks(KinematicsSolver* solver_, HumanoidRobot* robot_)
 {
   solver = solver_;
-  HumanoidRobot* robot = dynamic_cast<HumanoidRobot*>(solver->robot);
+  robot = robot_;
 
   if (robot == nullptr)
   {
@@ -23,6 +24,11 @@ void WalkTasks::initialize_tasks(KinematicsSolver* solver_)
   trunk_orientation_task->configure("trunk", "soft", 1.);
 
   update_com_task();
+
+  if (adaptative_velocity_limits)
+  {
+    solver->enable_velocity_limits(true);
+  }
 }
 
 void WalkTasks::update_com_task()
@@ -36,7 +42,7 @@ void WalkTasks::update_com_task()
     }
     if (trunk_task == nullptr)
     {
-      trunk_task = &solver->add_position_task("trunk", solver->robot->get_T_world_frame("trunk").translation());
+      trunk_task = &solver->add_position_task("trunk", robot->get_T_world_frame("trunk").translation());
       trunk_task->configure("trunk", "soft", 1.);
     }
   }
@@ -49,7 +55,7 @@ void WalkTasks::update_com_task()
     }
     if (com_task == nullptr)
     {
-      com_task = &solver->add_com_task(solver->robot->com_world());
+      com_task = &solver->add_com_task(robot->com_world());
       com_task->configure("com", "soft", 1.);
     }
   }
@@ -65,7 +71,7 @@ void WalkTasks::update_tasks(Eigen::Affine3d T_world_left, Eigen::Affine3d T_wor
                              Eigen::Matrix3d R_world_trunk)
 {
   update_com_task();
-  Eigen::Vector3d offset = solver->robot->get_T_world_frame("trunk").linear() * Eigen::Vector3d(com_x, com_y, 0);
+  Eigen::Vector3d offset = robot->get_T_world_frame("trunk").linear() * Eigen::Vector3d(com_x, com_y, 0);
 
   if (trunk_mode)
   {
@@ -79,6 +85,16 @@ void WalkTasks::update_tasks(Eigen::Affine3d T_world_left, Eigen::Affine3d T_wor
   left_foot_task.set_T_world_frame(T_world_left);
   right_foot_task.set_T_world_frame(T_world_right);
   trunk_orientation_task->R_world_frame = R_world_trunk;
+
+  if (adaptative_velocity_limits && !robot->support_is_both)
+  {
+    Eigen::VectorXd torques = robot->static_gravity_compensation_torques(robot->support_frame());
+    for (auto dof : robot->actuated_joint_names())
+    {
+      double limit = velocity_limit(torques[robot->get_joint_v_offset(dof)], dof, use_doc_limits);
+      robot->set_velocity_limit(dof, limit);
+    }
+  }
 }
 
 void WalkTasks::remove_tasks()

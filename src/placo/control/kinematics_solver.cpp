@@ -2,6 +2,7 @@
 #include "eiquadprog/eiquadprog.hpp"
 #include "pinocchio/algorithm/geometry.hpp"
 #include "placo/model/robot_wrapper.h"
+#include "placo/model/humanoid_robot.h"
 #include "placo/problem/problem.h"
 #include "placo/utils.h"
 
@@ -421,10 +422,14 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
 
     qd_sol = qd_sol * ratio;
   }
-
+  
   if (apply)
   {
     robot->state.q = pinocchio::integrate(robot->model, robot->state.q, qd_sol);
+    if (dt > 0)
+    {
+      robot->state.qd = pinocchio::difference(robot->model, q_save, robot->state.q) / dt;
+    }
   }
   else
   {

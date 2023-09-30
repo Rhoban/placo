@@ -156,8 +156,8 @@ void exposeRobotWrapper()
 #ifdef HAVE_RHOBAN_UTILS
       .def("read_from_histories", &HumanoidRobot::read_from_histories, read_from_histories_overloads())
 #endif
-      .def(
-          "get_support_side", +[](const HumanoidRobot& robot) { return robot.support_side; })
+      .def("get_support_side", +[](const HumanoidRobot& robot) { return robot.support_side; })
+      .add_property("support_is_both", &HumanoidRobot::support_is_both, &HumanoidRobot::support_is_both)
       .add_property(
           "T_world_support", +[](HumanoidRobot& robot) { return robot.T_world_support; },
           +[](HumanoidRobot& robot, Eigen::Affine3d T_world_support_) { robot.T_world_support = T_world_support_; });
