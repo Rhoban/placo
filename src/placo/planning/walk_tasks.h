@@ -16,6 +16,8 @@ public:
   void update_tasks(Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right, Eigen::Vector3d com_world,
                     Eigen::Matrix3d R_world_trunk);
 
+  std::map<std::string, double> get_tasks_error();
+
   KinematicsSolver* solver = nullptr;
   HumanoidRobot* robot = nullptr;
 
@@ -29,7 +31,7 @@ public:
   void update_com_task();
 
   bool adaptative_velocity_limits = false;
-  bool use_doc_limits = true;
+  bool use_doc_limits = false;
 
   bool trunk_mode = false;
   double com_delay = 0.;

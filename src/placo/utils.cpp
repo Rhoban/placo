@@ -97,7 +97,7 @@ double velocity_limit(double torque, std::string dof, bool use_doc_limits)
   // https://emanual.robotis.com/docs/en/dxl/mx/mx-106-2/
   if (use_doc_limits)
   {
-
+    return std::max(-0.13096 * std::pow(torque, 2) + 0.032812 * std::abs(torque) + 4.4188, min_velocity_limit);
   }
   // Or approximating the limit by an affine function
   return std::max(-0.79223 * std::abs(torque) + 4.5553, min_velocity_limit);

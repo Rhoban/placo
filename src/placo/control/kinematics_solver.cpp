@@ -331,7 +331,7 @@ void KinematicsSolver::compute_limits_inequalities()
       }
 
       if (velocity_limits)
-      {
+      {        
         e.A(constraint, k + 6) = 1;
         e.b[constraint] = -(dt * robot->model.velocityLimit(k + 6));
 

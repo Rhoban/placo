@@ -73,6 +73,7 @@ void exposeWalkPatternGenerator()
             return tasks.update_tasks(T_world_left, T_world_right, com_world, R_world_trunk);
           })
       .def("remove_tasks", &WalkTasks::remove_tasks)
+      .def("get_tasks_error", &WalkTasks::get_tasks_error)
       .add_property(
           "solver", +[](WalkTasks& tasks) { return *tasks.solver; })
       .add_property("left_foot_task", &WalkTasks::left_foot_task)
