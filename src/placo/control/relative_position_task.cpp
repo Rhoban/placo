@@ -17,9 +17,6 @@ void RelativePositionTask::update()
 
   Eigen::MatrixXd R_world_a = T_world_a.linear();
 
-  // Express the error
-  Eigen::Vector3d error = target - T_a_b.translation();
-
   Eigen::MatrixXd J_a_pos =
       solver->robot->frame_jacobian(frame_a, pinocchio::LOCAL_WORLD_ALIGNED).block(0, 0, 3, solver->N);
   Eigen::MatrixXd J_a_rot =
@@ -27,9 +24,9 @@ void RelativePositionTask::update()
   Eigen::MatrixXd J_b_pos =
       solver->robot->frame_jacobian(frame_b, pinocchio::LOCAL_WORLD_ALIGNED).block(0, 0, 3, solver->N);
 
-  A = R_world_a.transpose() * (J_b_pos - J_a_pos) +
-      pinocchio::skew(T_a_b.translation()) * R_world_a.transpose() * J_a_rot;
-  b = error;
+  A = (R_world_a.transpose() * (J_b_pos - J_a_pos) +
+       pinocchio::skew(T_a_b.translation()) * R_world_a.transpose() * J_a_rot)(mask.indices, Eigen::placeholders::all);
+  b = (target - T_a_b.translation())(mask.indices, Eigen::placeholders::all);
 }
 
 std::string RelativePositionTask::type_name()

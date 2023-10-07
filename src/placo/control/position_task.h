@@ -1,6 +1,7 @@
 #pragma once
 
 #include "placo/control/task.h"
+#include "placo/control/axises_mask.h"
 
 namespace placo
 {
@@ -16,13 +17,6 @@ struct PositionTask : public Task
   virtual std::string type_name();
   virtual std::string error_unit();
 
-  enum Mask
-  {
-    MaskX = 1,
-    MaskY = 2,
-    MaskZ = 4
-  };
-
-  int mask = MaskX | MaskY | MaskZ;
+  AxisesMask mask;
 };
 }  // namespace placo
