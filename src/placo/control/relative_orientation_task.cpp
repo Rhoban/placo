@@ -23,9 +23,9 @@ void RelativeOrientationTask::update()
 
   Eigen::MatrixXd J_a = solver->robot->frame_jacobian(frame_a, pinocchio::WORLD);
   Eigen::MatrixXd J_b = solver->robot->frame_jacobian(frame_b, pinocchio::WORLD);
-  Eigen::MatrixXd J_ab = pinocchio::SE3(T_world_a.inverse().matrix()).toActionMatrix() * (J_b - J_a);
+  Eigen::MatrixXd J_ab = T_world_a.linear().transpose() * (J_b - J_a).block(3, 0, 3, solver->N);
 
-  A = J_ab.block(3, 0, 3, solver->N);
+  A = J_ab;
   b = error;
 }
 
