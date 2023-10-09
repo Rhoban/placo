@@ -31,8 +31,8 @@ void exposeContacts()
   class_<GravityTorques::Contact>("GravityTorquesContact")
       .def(
           "configure",
-          +[](GravityTorques::Contact& contact, const std::string& frame_name, std::string type, double mu,
-              double length, double width) {
+          +[](GravityTorques::Contact& contact, const std::string& frame_name, std::string type, double mu = 1.0,
+              double length = 1.0, double width = 1.0) {
             if (type == "planar")
             {
               contact.configure(frame_name, GravityTorques::Contact::Planar, mu, length, width);
@@ -45,7 +45,9 @@ void exposeContacts()
             {
               throw std::runtime_error("Unknown contact type");
             }
-          })
+          },
+          (boost::python::arg("frame_name"), boost::python::arg("type"), boost::python::arg("mu") = 1.0,
+           boost::python::arg("length") = 1.0, boost::python::arg("width") = 1.0))
       .def_readwrite("frame_name", &GravityTorques::Contact::frame_name)
       .def_readwrite("type", &GravityTorques::Contact::type)
       .def_readwrite("length", &GravityTorques::Contact::length)
@@ -53,7 +55,8 @@ void exposeContacts()
       .def_readwrite("mu", &GravityTorques::Contact::mu)
       .def_readwrite("weight_forces", &GravityTorques::Contact::weight_forces)
       .def_readwrite("weight_moments", &GravityTorques::Contact::weight_moments)
-      .def_readwrite("wrench", &GravityTorques::Contact::wrench);
+      .add_property(
+          "wrench", +[](GravityTorques::Contact& contact) { return contact.wrench; });
 
   class_<GravityTorques>("GravityTorques", init<RobotWrapper&>())
       .def("add_contact", &GravityTorques::add_contact, return_internal_reference<>())

@@ -62,8 +62,8 @@ Expression GravityTorques::Contact::add_wrench(RobotWrapper& robot, Problem& pro
   }
   else if (type == Point)
   {
-    Eigen::MatrixXd J = robot.frame_jacobian(frame_name, "local_world_aligned");
-    variable = &problem.add_variable(6);
+    Eigen::MatrixXd J = robot.frame_jacobian(frame_name, "local_world_aligned").block(0, 0, 3, robot.model.nv);
+    variable = &problem.add_variable(3);
 
     // The contact is unilateral
     problem.add_constraint(variable->expr(F_Z, 1) >= 0);
@@ -159,8 +159,6 @@ GravityTorques::Result GravityTorques::compute()
 
   // Equation of motion
   problem.add_constraint(torque_forces == robot.generalized_gravity());
-
-  std::cout << torque_forces.A << std::endl;
 
   // We want to minimize torques
   problem.add_constraint(tau.expr() == 0).configure(ProblemConstraint::Soft, 1.0);
