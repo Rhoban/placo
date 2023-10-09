@@ -104,9 +104,15 @@ void GravityTorques::set_passive(const std::string& joint_name, bool is_passive)
   }
 }
 
-void GravityTorques::add_loop_closing_constraint(const std::string& frame_a, const std::string& frame_b)
+void GravityTorques::add_loop_closing_constraint(const std::string& frame_a, const std::string& frame_b,
+                                                 const std::string& mask)
 {
-  loop_closing_constraints.push_back({ frame_a, frame_b });
+  LoopClosure constraint;
+  constraint.frame_a = frame_a;
+  constraint.frame_b = frame_b;
+  constraint.mask.set_axises(mask);
+
+  loop_closing_constraints.push_back(constraint);
 }
 
 GravityTorques::GravityTorques(RobotWrapper& robot) : robot(robot)
@@ -152,8 +158,10 @@ GravityTorques::Result GravityTorques::compute()
   // Loop closing constraints
   for (auto& constraint : loop_closing_constraints)
   {
-    Eigen::MatrixXd J = robot.relative_position_jacobian(constraint.first, constraint.second);
-    Variable constraint_wrench = problem.add_variable(2);
+    Eigen::MatrixXd J = robot.relative_position_jacobian(constraint.frame_a, constraint.frame_b)(
+        constraint.mask.indices, Eigen::placeholders::all);
+    Variable constraint_wrench = problem.add_variable(constraint.mask.indices.size());
+
     torque_forces = torque_forces + J.transpose() * constraint_wrench.expr();
   }
 

@@ -3,6 +3,7 @@
 #include <Eigen/Dense>
 #include "placo/model/robot_wrapper.h"
 #include "placo/problem/problem.h"
+#include "placo/control/axises_mask.h"
 
 namespace placo
 {
@@ -53,6 +54,13 @@ public:
     Variable* variable;
   };
 
+  struct LoopClosure
+  {
+    std::string frame_a;
+    std::string frame_b;
+    AxisesMask mask;
+  };
+
   GravityTorques(RobotWrapper& robot);
   virtual ~GravityTorques();
 
@@ -80,7 +88,7 @@ public:
    * @param frame_a
    * @param frame_b
    */
-  void add_loop_closing_constraint(const std::string& frame_a, const std::string& frame_b);
+  void add_loop_closing_constraint(const std::string& frame_a, const std::string& frame_b, const std::string& axises);
 
   /**
    * @brief Computes the torques required to compensate gravity given a set of unilateral contacts. This
@@ -109,6 +117,6 @@ public:
 
 protected:
   RobotWrapper& robot;
-  std::vector<std::pair<std::string, std::string>> loop_closing_constraints;
+  std::vector<LoopClosure> loop_closing_constraints;
 };
 }  // namespace placo
