@@ -46,6 +46,7 @@ add_library(libplaco
     src/placo/control/kinematics_solver.cpp
     src/placo/control/task.cpp
     src/placo/control/position_task.cpp
+    src/placo/control/axises_mask.cpp
     src/placo/control/orientation_task.cpp
     src/placo/control/centroidal_momentum_task.cpp
     src/placo/control/frame_task.cpp
@@ -103,7 +104,7 @@ endif ()
 
 set(CMAKE_SHARED_MODULE_PREFIX "")
 
-find_package(PythonLibs REQUIRED)
+find_package(Python3 REQUIRED)
 find_package(Boost COMPONENTS python REQUIRED)
 
 ADD_CUSTOM_TARGET(native_python_files ALL

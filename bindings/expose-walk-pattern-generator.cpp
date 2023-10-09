@@ -62,7 +62,7 @@ void exposeWalkPatternGenerator()
 
   class_<WalkTasks>("WalkTasks", init<>())
       .def(
-          "initialize_tasks", +[](WalkTasks& tasks, KinematicsSolver& solver) { tasks.initialize_tasks(&solver); })
+          "initialize_tasks", +[](WalkTasks& tasks, KinematicsSolver& solver, HumanoidRobot& robot) { tasks.initialize_tasks(&solver, &robot); })
       .def(
           "update_tasks_from_trajectory", +[](WalkTasks& tasks, WalkPatternGenerator::Trajectory& trajectory,
                                               double t) { return tasks.update_tasks(trajectory, t); })
@@ -73,12 +73,16 @@ void exposeWalkPatternGenerator()
             return tasks.update_tasks(T_world_left, T_world_right, com_world, R_world_trunk);
           })
       .def("remove_tasks", &WalkTasks::remove_tasks)
+      .def("get_tasks_error", &WalkTasks::get_tasks_error)
       .add_property(
           "solver", +[](WalkTasks& tasks) { return *tasks.solver; })
       .add_property("left_foot_task", &WalkTasks::left_foot_task)
       .add_property("right_foot_task", &WalkTasks::right_foot_task)
-      .add_property(
-          "com_task", +[](WalkTasks& tasks) { return *tasks.com_task; })
+      .add_property("trunk_mode", &WalkTasks::trunk_mode, &WalkTasks::trunk_mode)
+      .add_property("adaptative_velocity_limits", &WalkTasks::adaptative_velocity_limits, &WalkTasks::adaptative_velocity_limits) 
+      .add_property("use_doc_limits", &WalkTasks::use_doc_limits, &WalkTasks::use_doc_limits)
+      .add_property("com_x", &WalkTasks::com_x, &WalkTasks::com_x)
+      .add_property("com_y", &WalkTasks::com_y, &WalkTasks::com_y)
       .add_property(
           "trunk_orientation_task", +[](WalkTasks& tasks) { return *tasks.trunk_orientation_task; });
 

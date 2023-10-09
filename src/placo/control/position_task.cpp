@@ -14,8 +14,8 @@ void PositionTask::update()
   Eigen::Vector3d error = target_world - T_world_frame.translation();
   Eigen::MatrixXd J = solver->robot->frame_jacobian(frame_index, pinocchio::LOCAL_WORLD_ALIGNED);
 
-  A = J.block(0, 0, 3, solver->N);
-  b = error;
+  A = J.block(0, 0, 3, solver->N)(mask.indices, Eigen::placeholders::all);
+  b = error(mask.indices, Eigen::placeholders::all);
 }
 
 std::string PositionTask::type_name()

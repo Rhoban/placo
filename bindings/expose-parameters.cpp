@@ -32,19 +32,22 @@ void exposeParameters()
                     &HumanoidParameters::walk_foot_rise_ratio)
       .add_property("walk_com_height", &HumanoidParameters::walk_com_height, &HumanoidParameters::walk_com_height)
       .add_property("walk_trunk_pitch", &HumanoidParameters::walk_trunk_pitch, &HumanoidParameters::walk_trunk_pitch)
-      .add_property("walk_foot_tilt", &HumanoidParameters::walk_foot_tilt, &HumanoidParameters::walk_foot_tilt)
       .add_property("pendulum_height", &HumanoidParameters::pendulum_height, &HumanoidParameters::pendulum_height)
       .add_property("feet_spacing", &HumanoidParameters::feet_spacing, &HumanoidParameters::feet_spacing)
       .add_property("foot_width", &HumanoidParameters::foot_width, &HumanoidParameters::foot_width)
       .add_property("foot_length", &HumanoidParameters::foot_length, &HumanoidParameters::foot_length)
       .add_property("foot_zmp_target_x", &HumanoidParameters::foot_zmp_target_x, &HumanoidParameters::foot_zmp_target_x)
       .add_property("foot_zmp_target_y", &HumanoidParameters::foot_zmp_target_y, &HumanoidParameters::foot_zmp_target_y)
+      .add_property("zmp_reference_weight", &HumanoidParameters::zmp_reference_weight,
+                    &HumanoidParameters::zmp_reference_weight)
       .add_property("walk_max_dx_forward", &HumanoidParameters::walk_max_dx_forward,
                     &HumanoidParameters::walk_max_dx_forward)
       .add_property("walk_max_dx_backward", &HumanoidParameters::walk_max_dx_backward,
                     &HumanoidParameters::walk_max_dx_backward)
       .add_property("walk_max_dy", &HumanoidParameters::walk_max_dy, &HumanoidParameters::walk_max_dy)
       .add_property("walk_max_dtheta", &HumanoidParameters::walk_max_dtheta, &HumanoidParameters::walk_max_dtheta)
+      .add_property("walk_dtheta_spacing", &HumanoidParameters::walk_dtheta_spacing,
+                    &HumanoidParameters::walk_dtheta_spacing)
       .def("dt", &HumanoidParameters::dt)
       .def("double_support_duration", &HumanoidParameters::double_support_duration)
       .def("startend_double_support_duration", &HumanoidParameters::startend_double_support_duration)

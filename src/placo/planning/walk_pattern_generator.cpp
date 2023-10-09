@@ -26,7 +26,7 @@ static Eigen::Affine3d _buildFrame(Eigen::Vector3d position, double orientation)
 }
 
 static WalkPatternGenerator::TrajectoryPart& _findPart(std::vector<WalkPatternGenerator::TrajectoryPart>& parts,
-                                                       double t)
+                                                       double t, int* index = nullptr)
 {
   if (parts.size() == 0)
   {
@@ -56,6 +56,11 @@ static WalkPatternGenerator::TrajectoryPart& _findPart(std::vector<WalkPatternGe
     }
   }
 
+  if (index != nullptr)
+  {
+    *index = low;
+  }
+
   return parts[low];
 }
 
@@ -76,7 +81,7 @@ Eigen::Affine3d WalkPatternGenerator::Trajectory::get_T_world_left(double t)
     {
       return T * _buildFrame(part.kick_trajectory.pos(t), left_foot_yaw.pos(t));
     }
-    return T * _buildFrame(part.swing_trajectory->pos(t), left_foot_yaw.pos(t));
+    return T * _buildFrame(part.swing_trajectory.pos(t), left_foot_yaw.pos(t));
   }
   else
   {
@@ -94,7 +99,7 @@ Eigen::Affine3d WalkPatternGenerator::Trajectory::get_T_world_right(double t)
     {
       return T * _buildFrame(part.kick_trajectory.pos(t), right_foot_yaw.pos(t));
     }
-    return T * _buildFrame(part.swing_trajectory->pos(t), right_foot_yaw.pos(t));
+    return T * _buildFrame(part.swing_trajectory.pos(t), right_foot_yaw.pos(t));
   }
   else
   {
@@ -117,7 +122,7 @@ Eigen::Vector3d WalkPatternGenerator::Trajectory::get_v_world_left(double t)
     {
       return T.linear() * part.kick_trajectory.vel(t);
     }
-    return T.linear() * part.swing_trajectory->vel(t);
+    return T.linear() * part.swing_trajectory.vel(t);
   }
 
   return Eigen::Vector3d::Zero();
@@ -133,7 +138,7 @@ Eigen::Vector3d WalkPatternGenerator::Trajectory::get_v_world_right(double t)
     {
       return T.linear() * part.kick_trajectory.vel(t);
     }
-    return T.linear() * part.swing_trajectory->vel(t);
+    return T.linear() * part.swing_trajectory.vel(t);
   }
   return Eigen::Vector3d::Zero();
 }
@@ -175,7 +180,8 @@ Eigen::Vector3d WalkPatternGenerator::Trajectory::get_p_world_ZMP(double t, doub
 Eigen::Matrix3d WalkPatternGenerator::Trajectory::get_R_world_trunk(double t)
 {
   return T.linear() * Eigen::AngleAxisd(trunk_yaw.pos(t), Eigen::Vector3d::UnitZ()).matrix() *
-         Eigen::AngleAxisd(trunk_pitch, Eigen::Vector3d::UnitY()).matrix();
+         Eigen::AngleAxisd(trunk_pitch, Eigen::Vector3d::UnitY()).matrix() *
+         Eigen::AngleAxisd(trunk_roll, Eigen::Vector3d::UnitX()).matrix();
 }
 
 HumanoidRobot::Side WalkPatternGenerator::Trajectory::support_side(double t)
@@ -204,6 +210,14 @@ FootstepsPlanner::Support WalkPatternGenerator::Trajectory::get_support(double t
 {
   TrajectoryPart& part = _findPart(parts, t);
   return T * part.support;
+}
+
+int WalkPatternGenerator::Trajectory::remaining_supports(double t)
+{
+  int index;
+  _findPart(parts, t, &index);
+
+  return parts.size() - index - 1;
 }
 
 FootstepsPlanner::Support WalkPatternGenerator::Trajectory::get_next_support(double t)
@@ -241,6 +255,12 @@ double WalkPatternGenerator::Trajectory::get_part_t_start(double t)
 {
   TrajectoryPart& part = _findPart(parts, t);
   return part.t_start;
+}
+
+double WalkPatternGenerator::Trajectory::get_part_t_end(double t)
+{
+  TrajectoryPart& part = _findPart(parts, t);
+  return part.t_end;
 }
 
 int WalkPatternGenerator::support_timesteps(FootstepsPlanner::Support& support)
@@ -369,7 +389,7 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
       Eigen::Vector3d zmp_target = current_support.frame() * Eigen::Vector3d(x_offset, y_offset, 0);
 
       problem.add_constraint(lipm.zmp(timestep) == Eigen::Vector2d(zmp_target.x(), zmp_target.y()))
-          .configure(ProblemConstraint::Soft, 1e-1);
+          .configure(ProblemConstraint::Soft, parameters.zmp_reference_weight);
     }
 
     constrained_timesteps += step_timesteps;
@@ -451,21 +471,10 @@ void WalkPatternGenerator::planSingleSupportTrajectory(TrajectoryPart& part, Tra
   {
     auto& old_part = _findPart(old_trajectory->parts, t_replan);
 
-    if (parameters.swing_foot_spline == parameters.SplineSwingFoot)
-    {
-      part.swing_trajectory = std::shared_ptr<FootTrajectory>(new SwingFoot::Trajectory(
-          SwingFoot::make_trajectory(old_part.t_start, old_part.t_end, parameters.walk_foot_height,
-                                     old_trajectory->T * old_part.swing_trajectory->pos(old_part.t_start),
-                                     old_trajectory->T * old_part.swing_trajectory->pos(old_part.t_end))));
-    }
-    else
-    {
-      part.swing_trajectory =
-          std::shared_ptr<FootTrajectory>(new SwingFootCubic::Trajectory(SwingFootCubic::make_trajectory(
-              old_part.t_start, old_part.t_end, parameters.walk_foot_height, parameters.walk_foot_rise_ratio,
-              old_trajectory->T * old_part.swing_trajectory->pos(old_part.t_start),
-              old_trajectory->T * old_part.swing_trajectory->pos(old_part.t_end))));
-    }
+    part.swing_trajectory = SwingFootCubic::make_trajectory(
+        old_part.t_start, old_part.t_end, parameters.walk_foot_height, parameters.walk_foot_rise_ratio,
+        old_trajectory->T * old_part.swing_trajectory.pos(old_part.t_start),
+        old_trajectory->T * old_part.swing_trajectory.pos(old_part.t_end));
   }
 
   // Complete steps case
@@ -474,19 +483,9 @@ void WalkPatternGenerator::planSingleSupportTrajectory(TrajectoryPart& part, Tra
     Eigen::Affine3d T_world_startTarget = trajectory.supports[step - 1].footstep_frame(flying_side);
 
     // Flying foot reaching its position
-    if (parameters.swing_foot_spline == parameters.SplineSwingFoot)
-    {
-      part.swing_trajectory = std::shared_ptr<FootTrajectory>(new SwingFoot::Trajectory(
-          SwingFoot::make_trajectory(t - parameters.single_support_duration, t, parameters.walk_foot_height,
-                                     T_world_startTarget.translation(), T_world_flyingTarget.translation())));
-    }
-    else
-    {
-      part.swing_trajectory =
-          std::shared_ptr<FootTrajectory>(new SwingFootCubic::Trajectory(SwingFootCubic::make_trajectory(
-              t - parameters.single_support_duration, t, parameters.walk_foot_height, parameters.walk_foot_rise_ratio,
-              T_world_startTarget.translation(), T_world_flyingTarget.translation())));
-    }
+    part.swing_trajectory = SwingFootCubic::make_trajectory(
+        t - parameters.single_support_duration, t, parameters.walk_foot_height, parameters.walk_foot_rise_ratio,
+        T_world_startTarget.translation(), T_world_flyingTarget.translation());
   }
 
   trajectory.yaw(flying_side).add_point(t, frame_yaw(T_world_flyingTarget.rotation()), 0);
@@ -554,7 +553,7 @@ void WalkPatternGenerator::planFeetTrajectories(Trajectory& trajectory, Trajecto
 }
 
 WalkPatternGenerator::Trajectory WalkPatternGenerator::plan(std::vector<FootstepsPlanner::Support>& supports,
-                                                            double t_start)
+                                                            Eigen::Vector3d initial_com_world, double t_start)
 {
   if (supports.size() == 0)
   {
@@ -569,8 +568,7 @@ WalkPatternGenerator::Trajectory WalkPatternGenerator::plan(std::vector<Footstep
   trajectory.supports = supports;
 
   // Planning the center of mass trajectory
-  auto com_world = robot.com_world();
-  planCoM(trajectory, Eigen::Vector2d(com_world.x(), com_world.y()));
+  planCoM(trajectory, Eigen::Vector2d(initial_com_world.x(), initial_com_world.y()));
 
   // Planning the footsteps trajectories
   planFeetTrajectories(trajectory);
@@ -650,7 +648,7 @@ std::vector<FootstepsPlanner::Support> WalkPatternGenerator::replan_supports(Foo
     T_world_left = next_support.footstep_frame(placo::HumanoidRobot::Left);
     T_world_right = current_support.footstep_frame(placo::HumanoidRobot::Right);
   }
-  auto footsteps = planner.plan(flying_side, T_world_left, T_world_right, true);
+  auto footsteps = planner.plan(flying_side, T_world_left, T_world_right);
 
   std::vector<FootstepsPlanner::Support> supports;
   supports = placo::FootstepsPlanner::make_supports(footsteps, false, parameters.has_double_support(), true);

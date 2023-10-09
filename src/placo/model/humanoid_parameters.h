@@ -101,11 +101,6 @@ public:
   double walk_trunk_pitch = 0.0;
 
   /**
-   * @brief How much the foot tilts during the walk [rad]
-   */
-  double walk_foot_tilt = 0.2;
-
-  /**
    * @brief Maximum step (forward)
    */
   double walk_max_dx_forward = 0.08;
@@ -124,6 +119,11 @@ public:
    * @brief Maximum step (yaw)
    */
   double walk_max_dtheta = 0.35;
+
+  /**
+   * @brief How much we need to space the feet per dtheta [m/rad]
+   */
+  double walk_dtheta_spacing = 0.05;
 
   /**
    * @brief Robot center of mass height for LIPM model. This is used to compute the pendulum constant
@@ -158,6 +158,11 @@ public:
    */
   double foot_zmp_target_y = 0.0;
 
+  /**
+   * @brief Weight for ZMP reference in the solver
+   */
+  double zmp_reference_weight = 1e-1;
+
   // Kick parameters
   double kicking_foot_height = 0.05;
   double kick_zmp_target_x = -0.01;
@@ -191,29 +196,9 @@ public:
   int kick_support_timesteps();
 
   /**
-   * @brief Kick tolerance distance [m]
-   */
-  double kick_tolerance_distance = 0.03;
-
-  /**
-   * @brief Kick tolerance orientation [rad]
-   */
-  double kick_tolerance_orientation = 0.06;
-
-  /**
    * Natural frequency of the Linear Inverted Pendulum (LIP) model used in the walk
    */
   double omega();
-
-  /**
-   * @brief Defines which swing foot class should be used
-   */
-  enum SwingFootSpline
-  {
-    SplineSwingFoot = 0,
-    SplineSwingFootCubic = 1
-  };
-  SwingFootSpline swing_foot_spline = SplineSwingFoot;
 
   /**
    * @brief Applies the ellipsoid clipping to a given step size (dx, dy, dtheta)
@@ -225,7 +210,7 @@ public:
    */
   Eigen::Affine3d opposite_frame(HumanoidRobot::Side side, Eigen::Affine3d T_world_foot, double d_x = 0.,
                                  double d_y = 0., double d_theta = 0.);
-  Eigen::Affine3d neutral_frame(HumanoidRobot::Side side, Eigen::Affine3d T_world_footdouble, double d_x = 0.,
+  Eigen::Affine3d neutral_frame(HumanoidRobot::Side side, Eigen::Affine3d T_world_foot, double d_x = 0.,
                                 double d_y = 0., double d_theta = 0.);
 
 protected:

@@ -12,7 +12,7 @@ using namespace boost::python;
 using namespace placo;
 
 #ifdef HAVE_RHOBAN_UTILS
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(read_from_histories_overloads, read_from_histories, 2, 3);
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(read_from_histories_overloads, read_from_histories, 2, 4);
 #endif
 
 template <class RobotType, class W1>
@@ -33,6 +33,7 @@ void exposeRobotType(class_<RobotType, W1>& type)
       .def("get_joint_velocity", &RobotType::get_joint_velocity)
       .def("set_velocity_limit", &RobotType::set_velocity_limit)
       .def("set_velocity_limits", &RobotType::set_velocity_limits)
+      .def("set_joint_limits", &RobotType::set_joint_limits)
       .def("update_kinematics", &RobotType::update_kinematics)
       .def("get_T_world_fbase", &RobotType::get_T_world_fbase)
       .def("set_T_world_fbase", &RobotType::set_T_world_fbase)
@@ -59,6 +60,22 @@ void exposeRobotType(class_<RobotType, W1>& type)
             for (auto& dof : robot.actuated_joint_names())
             {
               dict[dof] = torques[robot.get_joint_v_offset(dof)];
+            }
+
+            return dict;
+          })
+      .def(
+          "torques_from_acceleration_with_fixed_frame",
+          +[](RobotType& robot, Eigen::VectorXd qdd_a, const std::string& frame) { return robot.torques_from_acceleration_with_fixed_frame(qdd_a, frame); })
+      .def(
+          "torques_from_acceleration_with_fixed_frame_dict",
+          +[](RobotType& robot, Eigen::VectorXd qdd_a, const std::string& frame) {
+            auto torques = robot.torques_from_acceleration_with_fixed_frame(qdd_a, frame);
+            boost::python::dict dict;
+
+            for (auto& dof : robot.actuated_joint_names())
+            {
+              dict[dof] = torques[robot.get_joint_v_offset(dof) - 6];
             }
 
             return dict;
@@ -139,8 +156,8 @@ void exposeRobotWrapper()
 #ifdef HAVE_RHOBAN_UTILS
       .def("read_from_histories", &HumanoidRobot::read_from_histories, read_from_histories_overloads())
 #endif
-      .def(
-          "get_support_side", +[](const HumanoidRobot& robot) { return robot.support_side; })
+      .def("get_support_side", +[](const HumanoidRobot& robot) { return robot.support_side; })
+      .add_property("support_is_both", &HumanoidRobot::support_is_both, &HumanoidRobot::support_is_both)
       .add_property(
           "T_world_support", +[](HumanoidRobot& robot) { return robot.T_world_support; },
           +[](HumanoidRobot& robot, Eigen::Affine3d T_world_support_) { robot.T_world_support = T_world_support_; });

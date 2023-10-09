@@ -124,13 +124,18 @@ void exposeKinematics()
 
           .def("solve", &KinematicsSolver::solve);
 
+  class_<AxisesMask>("AxisesMask", init<>())
+      .def("set_axises", &AxisesMask::set_axises)
+      .add_property("indices", &AxisesMask::indices);
+
   solver_class_ptr = &solver_class;
 
-  registerTaskMethods(class_<PositionTask>("PositionTask", init<RobotWrapper::FrameIndex, Eigen::Vector3d>())
-                          .add_property("frame_index", &PositionTask::frame_index)
-                          .add_property(
-                              "target_world", +[](const PositionTask& task) { return task.target_world; },
-                              &PositionTask::target_world));
+  registerTaskMethods(
+      class_<PositionTask>("PositionTask", init<RobotWrapper::FrameIndex, Eigen::Vector3d>())
+          .add_property("frame_index", &PositionTask::frame_index)
+          .add_property(
+              "target_world", +[](const PositionTask& task) { return task.target_world; }, &PositionTask::target_world)
+          .add_property("mask", &PositionTask::mask, &PositionTask::mask));
 
   registerTaskMethods(
       class_<RelativePositionTask>("RelativePositionTask",
@@ -138,10 +143,12 @@ void exposeKinematics()
           .add_property("frame_a", &RelativePositionTask::frame_a)
           .add_property("frame_b", &RelativePositionTask::frame_b)
           .add_property(
-              "target", +[](const RelativePositionTask& task) { return task.target; }, &RelativePositionTask::target));
+              "target", +[](const RelativePositionTask& task) { return task.target; }, &RelativePositionTask::target)
+          .add_property("mask", &RelativePositionTask::mask, &RelativePositionTask::mask));
 
   registerTaskMethods(class_<CoMTask>("CoMTask", init<Eigen::Vector3d>())
-                          .add_property("target_world", &CoMTask::target_world, &CoMTask::target_world));
+                          .add_property("target_world", &CoMTask::target_world, &CoMTask::target_world)
+                          .add_property("mask", &CoMTask::mask, &CoMTask::mask));
 
   registerTaskMethods(class_<OrientationTask>("OrientationTask", init<RobotWrapper::FrameIndex, Eigen::Matrix3d>())
                           .add_property("frame_index", &OrientationTask::frame_index)

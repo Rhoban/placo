@@ -313,13 +313,23 @@ FootstepsPlanner::Footstep FootstepsPlanner::clipped_opposite_footstep(Footstep 
                                                                        double d_theta)
 {
   Eigen::Vector3d step(d_x, d_y, d_theta);
+
+  if (footstep.side == placo::HumanoidRobot::Side::Left)
+  {
+    step.y() -= parameters.walk_dtheta_spacing * fabs(step.z());
+  }
+  else
+  {
+    step.y() += parameters.walk_dtheta_spacing * fabs(step.z());
+  }
+
   step = parameters.ellipsoid_clip(step);
 
   for (int k = 0; k < 32; k++)
   {
     Footstep new_footstep = opposite_footstep(footstep, step.x(), step.y(), step.z());
 
-    if (new_footstep.overlap(footstep, 5e-3))
+    if (new_footstep.overlap(footstep, 1e-2))
     {
       step *= 0.9;
     }
@@ -334,7 +344,7 @@ FootstepsPlanner::Footstep FootstepsPlanner::clipped_opposite_footstep(Footstep 
 
 std::vector<FootstepsPlanner::Footstep> FootstepsPlanner::plan(HumanoidRobot::Side flying_side,
                                                                Eigen::Affine3d T_world_left,
-                                                               Eigen::Affine3d T_world_right, bool replan)
+                                                               Eigen::Affine3d T_world_right)
 {
   std::vector<Footstep> footsteps;
 
@@ -348,7 +358,7 @@ std::vector<FootstepsPlanner::Footstep> FootstepsPlanner::plan(HumanoidRobot::Si
   footsteps.push_back(create_footstep(current_side, T_world_current_frame));
 
   // Calling specific implementation
-  plan_impl(footsteps, flying_side, T_world_left, T_world_right, replan);
+  plan_impl(footsteps, flying_side, T_world_left, T_world_right);
 
   return footsteps;
 }

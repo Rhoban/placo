@@ -2,6 +2,7 @@
 #include "eiquadprog/eiquadprog.hpp"
 #include "pinocchio/algorithm/geometry.hpp"
 #include "placo/model/robot_wrapper.h"
+#include "placo/model/humanoid_robot.h"
 #include "placo/problem/problem.h"
 #include "placo/utils.h"
 
@@ -330,7 +331,7 @@ void KinematicsSolver::compute_limits_inequalities()
       }
 
       if (velocity_limits)
-      {
+      {        
         e.A(constraint, k + 6) = 1;
         e.b[constraint] = -(dt * robot->model.velocityLimit(k + 6));
 
@@ -372,11 +373,9 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
   for (auto task : tasks)
   {
     task->update();
-  }
 
-  // Adding equality constraints
-  for (auto task : tasks)
-  {
+    // This could be written (task->A * qd->expr() == task->b), but would come with the
+    // significant cost of multiplying A with identity matrix for each task
     Expression e;
     e.A = task->A;
     e.b = -task->b;
@@ -421,10 +420,14 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
 
     qd_sol = qd_sol * ratio;
   }
-
+  
   if (apply)
   {
     robot->state.q = pinocchio::integrate(robot->model, robot->state.q, qd_sol);
+    if (dt > 0)
+    {
+      robot->state.qd = pinocchio::difference(robot->model, q_save, robot->state.q) / dt;
+    }
   }
   else
   {

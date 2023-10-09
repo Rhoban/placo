@@ -12,8 +12,16 @@ HumanoidRobot::HumanoidRobot(std::string model_directory, int flags, std::string
 
   // Measuring some distances
   dist_y_trunk_foot = fabs(get_T_a_b("trunk", "left_hip_yaw").translation().y());
-  dist_z_pan_tilt = get_T_a_b("head_base", "head_pitch").translation().z();
-  dist_z_pan_camera = get_T_a_b("head_base", "camera").translation().z();
+
+  if (model.existFrame("head_base") && model.existFrame("head_pitch") && model.existFrame("camera"))
+  {
+    dist_z_pan_tilt = get_T_a_b("head_base", "head_pitch").translation().z();
+    dist_z_pan_camera = get_T_a_b("head_base", "camera").translation().z();
+  }
+  else
+  {
+    std::cerr << "WARNING: Can't find head frames in the model, camera_look_at won't work" << std::endl;
+  }
 }
 
 void HumanoidRobot::initialize()
@@ -58,11 +66,6 @@ Eigen::Affine3d HumanoidRobot::get_T_world_right()
 Eigen::Affine3d HumanoidRobot::get_T_world_trunk()
 {
   return get_T_world_frame(trunk);
-}
-
-Eigen::Affine3d HumanoidRobot::get_T_world_self()
-{
-  return flatten_on_floor(placo::interpolate_frames(get_T_world_right(), get_T_world_left(), 0.5));
 }
 
 void HumanoidRobot::update_support_side(HumanoidRobot::Side new_side)
@@ -179,12 +182,13 @@ bool HumanoidRobot::camera_look_at(double& pan, double& tilt, const Eigen::Vecto
 }
 
 #ifdef HAVE_RHOBAN_UTILS
-void HumanoidRobot::read_from_histories(rhoban_utils::HistoryCollection& histories, double timestamp, bool use_imu)
+void HumanoidRobot::read_from_histories(rhoban_utils::HistoryCollection& histories, double timestamp,
+                                        std::string source, bool use_imu)
 {
   // Updating DOFs from replay
   for (const std::string& name : actuated_joint_names())
   {
-    set_joint(name, histories.number("read:" + name)->interpolate(timestamp));
+    set_joint(name, histories.number(source + ":" + name)->interpolate(timestamp));
   }
 
   // Set the support

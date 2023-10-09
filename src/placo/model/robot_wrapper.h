@@ -98,6 +98,11 @@ public:
   void set_joint_limits(const std::string& name, double lower, double upper);
 
   /**
+   * @brief Get the joint limits
+   */
+  std::pair<double, double> get_joint_limits(const std::string& name);
+
+  /**
    * @brief Sets the velocity limit for all DoFs (overrides the ones from URDF)
    */
   void set_velocity_limits(double limit);
@@ -124,8 +129,8 @@ public:
   // Robot state
   struct State
   {
-    Eigen::VectorXd q;
-    Eigen::VectorXd qd;
+    Eigen::VectorXd q;  // [rad]
+    Eigen::VectorXd qd; // [rad/s]
   };
 
   /**
@@ -278,6 +283,15 @@ public:
    */
   Eigen::VectorXd static_gravity_compensation_torques(FrameIndex frame);
   Eigen::VectorXd static_gravity_compensation_torques(std::string frame);
+
+  /**
+   * @brief Computes torques in the robot DOFs for a given acceleration of the actuated DOFs, assuming that the 
+   * given frame is fixed
+   *
+   * Dimension of the output is q_a
+   */
+  Eigen::VectorXd torques_from_acceleration_with_fixed_frame(Eigen::VectorXd qdd_a, FrameIndex fixed_frame);
+  Eigen::VectorXd torques_from_acceleration_with_fixed_frame(Eigen::VectorXd qdd_a, std::string fixed_frame);
 
   /**
    * @brief Return all the joint names

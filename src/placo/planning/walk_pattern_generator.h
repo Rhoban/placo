@@ -26,7 +26,7 @@ public:
     double t_end;
 
     bool kick_part = false;
-    std::shared_ptr<FootTrajectory> swing_trajectory = nullptr;
+    SwingFootCubic::Trajectory swing_trajectory;
     Kick::KickTrajectory kick_trajectory;
 
     FootstepsPlanner::Support support;
@@ -37,7 +37,8 @@ public:
     Trajectory();
 
     double com_height;
-    double trunk_pitch;
+    double trunk_pitch = 0.;
+    double trunk_roll = 0.;
 
     Eigen::Affine3d get_T_world_left(double t);
     Eigen::Affine3d get_T_world_right(double t);
@@ -64,6 +65,7 @@ public:
     FootstepsPlanner::Support get_prev_support(double t);
 
     std::vector<FootstepsPlanner::Support> get_supports();
+    int remaining_supports(double t);
 
     /**
      * @brief Applies a given transformation to the left of all values issued by the trajectory
@@ -78,6 +80,11 @@ public:
      * @brief Returns the trajectory time start for the support corresponding to the given time
      */
     double get_part_t_start(double t);
+
+    /**
+     * @brief Returns the trajectory time end for the support corresponding to the given time
+     */
+    double get_part_t_end(double t);
 
     // Number of dt planned by the jerk planner
     int jerk_planner_timesteps = 0;
@@ -122,7 +129,8 @@ public:
    * @param supports Supports generated from the foosteps to follow
    * @return Planned trajectory
    */
-  Trajectory plan(std::vector<FootstepsPlanner::Support>& supports, double t_start = 0.);
+  Trajectory plan(std::vector<FootstepsPlanner::Support>& supports, Eigen::Vector3d initial_com_world,
+                  double t_start = 0.);
 
   /**
    * @brief Update the walk trajectory to follow given footsteps based on the parameters of the WPG.

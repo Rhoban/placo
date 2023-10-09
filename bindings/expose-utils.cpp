@@ -24,6 +24,7 @@ void exposeUtils()
   def("frame_yaw", &placo::frame_yaw);
   def("frame", &placo::frame);
   def("flatten_on_floor", &placo::flatten_on_floor);
+  def("velocity_limit", &placo::velocity_limit);
 
   exposeStdVector<int>("vector_int");
   exposeStdVector<double>("vector_double");
@@ -52,6 +53,8 @@ void exposeUtils()
       .def("loadReplays", &HistoryCollection::loadReplays, loadReplays_overloads())
       .def("smallestTimestamp", &HistoryCollection::smallestTimestamp)
       .def("biggestTimestamp", &HistoryCollection::biggestTimestamp)
+      .def("startNamedLog", &HistoryCollection::startNamedLog)
+      .def("stopNamedLog", &HistoryCollection::stopNamedLog)
       .def(
           "number", +[](HistoryCollection& collection, std::string name,
                         double t) { return collection.number(name)->interpolate(t); })
@@ -62,8 +65,37 @@ void exposeUtils()
           "pose", +[](HistoryCollection& collection, std::string name,
                       double t) { return collection.pose(name)->interpolate(t); })
       .def(
-          "bool", +[](HistoryCollection& collection, std::string name, double t) {
-            return collection.boolean(name)->interpolate(t);
-          });
+          "bool", +[](HistoryCollection& collection, std::string name,
+                      double t) { return collection.boolean(name)->interpolate(t); })
+      .def(
+          "push_number", +[](HistoryCollection& collection, std::string name, double t,
+                             double value) { collection.number(name)->pushValue(t, value); })
+      .def(
+          "push_angle", +[](HistoryCollection& collection, std::string name, double t,
+                            double value) { collection.angle(name)->pushValue(t, value); })
+      .def(
+          "push_pose", +[](HistoryCollection& collection, std::string name, double t,
+                           Eigen::Affine3d value) { collection.pose(name)->pushValue(t, value); })
+      .def(
+          "push_bool", +[](HistoryCollection& collection, std::string name, double t,
+                           bool value) { collection.boolean(name)->pushValue(t, value); })
+      .def(
+          "get_sequence",
+          +[](HistoryCollection& collection, std::vector<std::string> entries, double start_t, double dt, int length) {
+            Eigen::MatrixXd result(length, entries.size());
+
+            for (int i = 0; i < length; i++)
+            {
+              double t = start_t + i * dt;
+              for (int j = 0; j < entries.size(); j++)
+              {
+                result(i, j) = collection.number(entries[j])->interpolate(t);
+              }
+            }
+
+            return result;
+          })
+
+      ;
 #endif
 }

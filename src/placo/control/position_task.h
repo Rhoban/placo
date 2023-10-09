@@ -1,6 +1,7 @@
 #pragma once
 
 #include "placo/control/task.h"
+#include "placo/control/axises_mask.h"
 
 namespace placo
 {
@@ -15,5 +16,7 @@ struct PositionTask : public Task
   virtual void update();
   virtual std::string type_name();
   virtual std::string error_unit();
+
+  AxisesMask mask;
 };
 }  // namespace placo

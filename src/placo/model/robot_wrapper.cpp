@@ -218,6 +218,12 @@ void RobotWrapper::set_joint_limits(const std::string& name, double lower, doubl
   model.upperPositionLimit[k] = upper;
 }
 
+std::pair<double, double> RobotWrapper::get_joint_limits(const std::string& name)
+{
+  int k = get_joint_offset(name);
+  return std::make_pair(model.lowerPositionLimit[k], model.upperPositionLimit[k]);
+}
+
 Eigen::Affine3d RobotWrapper::get_T_world_fbase()
 {
   Eigen::Affine3d transformation = Eigen::Affine3d::Identity();
@@ -512,8 +518,13 @@ Eigen::MatrixXd RobotWrapper::mass_matrix()
 {
   pinocchio::crba(model, *data, state.q);
   data->M.triangularView<Eigen::StrictlyLower>() = data->M.transpose().triangularView<Eigen::StrictlyLower>();
+  Eigen::MatrixXd M = data->M;
 
-  return data->M;
+  // We account for inertia by adding the rotor inertia times the squared gear ratio to
+  // the diagonal (see Featherstone, Rigid Body Dynamics Algorithm, 2008, end of chapter 9.6)
+  M.diagonal() += model.rotorGearRatio * model.rotorGearRatio * model.rotorInertia;
+
+  return M;
 }
 
 void RobotWrapper::integrate(double dt)
@@ -540,6 +551,27 @@ Eigen::VectorXd RobotWrapper::static_gravity_compensation_torques(RobotWrapper::
 Eigen::VectorXd RobotWrapper::static_gravity_compensation_torques(std::string frame)
 {
   return static_gravity_compensation_torques(get_frame_index(frame));
+}
+
+Eigen::VectorXd RobotWrapper::torques_from_acceleration_with_fixed_frame(Eigen::VectorXd qdd_a, RobotWrapper::FrameIndex frameIndex)
+{
+  auto h = non_linear_effects();
+  auto M = mass_matrix();
+
+  // Compute f the forces fixing the frame
+  Eigen::MatrixXd J = frame_jacobian(frameIndex);
+  Eigen::VectorXd f = J.transpose().block(0, 0, 6, 6).inverse() * h.block(0, 0, 6, 1);
+
+  auto h_a = h.bottomRows(model.nv - 6);
+  auto M_a = M.bottomRightCorner(model.nv - 6, model.nv - 6);
+  
+  // Compute the torques
+  return M_a * qdd_a + h_a - (J.transpose() * f).bottomRows(model.nv - 6);
+}
+
+Eigen::VectorXd RobotWrapper::torques_from_acceleration_with_fixed_frame(Eigen::VectorXd qdd_a, std::string frame)
+{
+  return torques_from_acceleration_with_fixed_frame(qdd_a, get_frame_index(frame));
 }
 
 std::vector<std::string> RobotWrapper::joint_names()

@@ -42,6 +42,6 @@ protected:
    * @param T_world_right frame of the initial right foot
    */
   void plan_impl(std::vector<Footstep>& foosteps, HumanoidRobot::Side flying_side, Eigen::Affine3d T_world_left,
-                 Eigen::Affine3d T_world_right, bool replan);
+                 Eigen::Affine3d T_world_right);
 };
 }  // namespace placo
