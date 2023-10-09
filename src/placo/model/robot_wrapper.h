@@ -129,8 +129,8 @@ public:
   // Robot state
   struct State
   {
-    Eigen::VectorXd q;  // [rad]
-    Eigen::VectorXd qd; // [rad/s]
+    Eigen::VectorXd q;   // [rad]
+    Eigen::VectorXd qd;  // [rad/s]
   };
 
   /**
@@ -244,6 +244,12 @@ public:
                                  pinocchio::ReferenceFrame ref = pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED);
 
   /**
+   * @brief Computes the jacobian of the relative position of the origin of frame b expressed in frame a
+   */
+  Eigen::MatrixXd relative_position_jacobian(const std::string& frame_a, const std::string& frame_b);
+  Eigen::MatrixXd relative_position_jacobian(FrameIndex frame_a, FrameIndex frame_b);
+
+  /**
    * @brief Computes the CoM jacobian
    * @return jacobian (3xn matrix)
    */
@@ -285,7 +291,7 @@ public:
   Eigen::VectorXd static_gravity_compensation_torques(std::string frame);
 
   /**
-   * @brief Computes torques in the robot DOFs for a given acceleration of the actuated DOFs, assuming that the 
+   * @brief Computes torques in the robot DOFs for a given acceleration of the actuated DOFs, assuming that the
    * given frame is fixed
    *
    * Dimension of the output is q_a

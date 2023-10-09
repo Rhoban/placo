@@ -15,17 +15,7 @@ void RelativePositionTask::update()
   auto T_world_b = solver->robot->get_T_world_frame(frame_b);
   auto T_a_b = T_world_a.inverse() * T_world_b;
 
-  Eigen::MatrixXd R_world_a = T_world_a.linear();
-
-  Eigen::MatrixXd J_a_pos =
-      solver->robot->frame_jacobian(frame_a, pinocchio::LOCAL_WORLD_ALIGNED).block(0, 0, 3, solver->N);
-  Eigen::MatrixXd J_a_rot =
-      solver->robot->frame_jacobian(frame_a, pinocchio::LOCAL_WORLD_ALIGNED).block(3, 0, 3, solver->N);
-  Eigen::MatrixXd J_b_pos =
-      solver->robot->frame_jacobian(frame_b, pinocchio::LOCAL_WORLD_ALIGNED).block(0, 0, 3, solver->N);
-
-  A = (R_world_a.transpose() * (J_b_pos - J_a_pos) +
-       pinocchio::skew(T_a_b.translation()) * R_world_a.transpose() * J_a_rot)(mask.indices, Eigen::placeholders::all);
+  A = solver->robot->relative_position_jacobian(frame_a, frame_b)(mask.indices, Eigen::placeholders::all);
   b = (target - T_a_b.translation())(mask.indices, Eigen::placeholders::all);
 }
 

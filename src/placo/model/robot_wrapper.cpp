@@ -492,6 +492,27 @@ Eigen::MatrixXd RobotWrapper::joint_jacobian(pinocchio::JointIndex joint, pinocc
   return jacobian;
 }
 
+Eigen::MatrixXd RobotWrapper::relative_position_jacobian(pinocchio::FrameIndex frame_a, pinocchio::FrameIndex frame_b)
+{
+  auto T_world_a = get_T_world_frame(frame_a);
+  auto T_world_b = get_T_world_frame(frame_b);
+  auto T_a_b = T_world_a.inverse() * T_world_b;
+
+  Eigen::MatrixXd R_world_a = T_world_a.linear();
+
+  Eigen::MatrixXd J_a_pos = frame_jacobian(frame_a, pinocchio::LOCAL_WORLD_ALIGNED).block(0, 0, 3, model.nv);
+  Eigen::MatrixXd J_a_rot = frame_jacobian(frame_a, pinocchio::LOCAL_WORLD_ALIGNED).block(3, 0, 3, model.nv);
+  Eigen::MatrixXd J_b_pos = frame_jacobian(frame_b, pinocchio::LOCAL_WORLD_ALIGNED).block(0, 0, 3, model.nv);
+
+  return (R_world_a.transpose() * (J_b_pos - J_a_pos) +
+          pinocchio::skew(T_a_b.translation()) * R_world_a.transpose() * J_a_rot);
+}
+
+Eigen::MatrixXd RobotWrapper::relative_position_jacobian(const std::string& frame_a, const std::string& frame_b)
+{
+  return relative_position_jacobian(get_frame_index(frame_a), get_frame_index(frame_b));
+}
+
 Eigen::Matrix3Xd RobotWrapper::com_jacobian()
 {
   return pinocchio::jacobianCenterOfMass(model, *data, state.q);
@@ -553,7 +574,8 @@ Eigen::VectorXd RobotWrapper::static_gravity_compensation_torques(std::string fr
   return static_gravity_compensation_torques(get_frame_index(frame));
 }
 
-Eigen::VectorXd RobotWrapper::torques_from_acceleration_with_fixed_frame(Eigen::VectorXd qdd_a, RobotWrapper::FrameIndex frameIndex)
+Eigen::VectorXd RobotWrapper::torques_from_acceleration_with_fixed_frame(Eigen::VectorXd qdd_a,
+                                                                         RobotWrapper::FrameIndex frameIndex)
 {
   auto h = non_linear_effects();
   auto M = mass_matrix();
@@ -564,7 +586,7 @@ Eigen::VectorXd RobotWrapper::torques_from_acceleration_with_fixed_frame(Eigen::
 
   auto h_a = h.bottomRows(model.nv - 6);
   auto M_a = M.bottomRightCorner(model.nv - 6, model.nv - 6);
-  
+
   // Compute the torques
   return M_a * qdd_a + h_a - (J.transpose() * f).bottomRows(model.nv - 6);
 }
