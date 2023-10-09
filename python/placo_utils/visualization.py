@@ -115,3 +115,46 @@ def footsteps_viz(footsteps: placo.Footsteps, T: np.ndarray = np.eye(4)) -> None
             color = 0xFF3333 if str(footstep.side) == "left" else 0x33FF33
 
         vis["footsteps"][str(k)].set_object(g.LineLoop(g.PointsGeometry(polygon.T), g.MeshBasicMaterial(color=color)))
+
+
+def line_viz(name: str, points: np.ndarray, color: float = 0xFF0000) -> None:
+    """
+    Prints a line
+    """
+    vis = get_viewer()
+    vis["lines"][name].set_object(g.LineSegments(g.PointsGeometry(points.T), g.LineBasicMaterial(color=color)))
+
+
+def arrow_viz(
+    name: str,
+    point_from: np.ndarray,
+    point_to: np.ndarray,
+    color: float = 0xFF0000,
+    radius: float = 0.003,
+    head_length: float = 0.01,
+) -> None:
+    """
+    Prints an arrow
+    """
+    vis = get_viewer()
+    length = np.linalg.norm(point_to - point_from)
+    length -= head_length
+
+    cylinder = g.Cylinder(length, radius)
+    head = g.Cylinder(head_length, 2 * radius, 0.0, 2 * radius)
+
+    T = tf.translation_matrix(point_from)
+    new_y = (point_to - point_from) / length
+    new_z = np.cross(np.array([0, 0, 1]), new_y)
+    new_z /= np.linalg.norm(new_z)
+    new_x = np.cross(new_y, new_z)
+    new_x /= np.linalg.norm(new_x)
+    T[:3, :3] = np.vstack([new_x, new_y, new_z]).T
+
+    T_cylinder = T @ tf.translation_matrix(np.array([0, length / 2.0, 0.0]))
+    T_head = T @ tf.translation_matrix(np.array([0, length + head_length / 2.0, 0.0]))
+
+    vis["arrows"][name]["cylinder"].set_object(cylinder, g.MeshBasicMaterial(color=color))
+    vis["arrows"][name]["cylinder"].set_transform(T_cylinder)
+    vis["arrows"][name]["head"].set_object(head, g.MeshBasicMaterial(color=color))
+    vis["arrows"][name]["head"].set_transform(T_head)
