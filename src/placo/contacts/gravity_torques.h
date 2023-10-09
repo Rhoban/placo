@@ -2,6 +2,7 @@
 
 #include <Eigen/Dense>
 #include "placo/model/robot_wrapper.h"
+#include "placo/problem/problem.h"
 
 namespace placo
 {
@@ -15,15 +16,11 @@ public:
 
     // Torques computed by the solver
     Eigen::VectorXd tau;
-
-    // Contact forces (expressed in body), each row is a 6 dimensionnal wrench
-    // appearing in the same order as contacts during solving.
-    Eigen::MatrixXd contact_wrenches;
   };
 
   struct Contact
   {
-    std::string frame_name;
+    std::string frame_name = "";
 
     enum Type
     {
@@ -31,27 +28,59 @@ public:
       Point = 1
     };
 
-    Type type;
+    Type type = Point;
+
+    // Configures the contact
+    void configure(const std::string& frame_name, Type type, double mu = 1., double length = 0., double width = 0.);
 
     // For planar contacts, the length and width of the contact rectangle
-    double length;
-    double width;
+    // Length is along x axis in local frame, and width along y axis
+    double length = 0.;
+    double width = 0.;
 
     // Friction coefficient
     double mu = 1.;
 
-    Contact(const std::string& frame_name, Type type, double mu = 1., double length = 0.0, double width = 0.0);
+    // Weights for optimization
+    double weight_forces = 1.0;
+    double weight_moments = 1.0;
+
+    // Adds the wrench to the problem
+    Expression add_wrench(RobotWrapper& robot, Problem& problem);
+
+    // Wrench computed by the solver
+    Eigen::MatrixXd wrench;
+    Variable* variable;
   };
 
+  GravityTorques(RobotWrapper& robot);
+  virtual ~GravityTorques();
+
   // Contacts
-  std::vector<Contact> contacts;
+  std::vector<Contact*> contacts;
 
   // Passive joints
   std::set<std::string> passive_joints;
 
-  void add_contact(Contact contact);
+  /**
+   * @brief Adds a contact to the solver
+   * @param contact the contact to add
+   */
+  Contact& add_contact();
 
+  /**
+   * @brief Sets a DoF as passive
+   * @param joint_name the DoF name
+   * @param is_passive true if the DoF should be passive
+   */
   void set_passive(const std::string& joint_name, bool is_passive = true);
+
+  /**
+   * @brief Adds a loop closing constraint (xy should be zero)
+   * @param frame_a
+   * @param frame_b
+   */
+  void add_loop_closing_constraint(const std::string& frame_a, const std::string& frame_b);
 
   /**
    * @brief Computes the torques required to compensate gravity given a set of unilateral contacts. This
@@ -76,6 +105,10 @@ public:
    * @param mu friction coefficient
    * @return
    */
-  Result compute_gravity_torques(RobotWrapper& robot);
+  Result compute();
+
+protected:
+  RobotWrapper& robot;
+  std::vector<std::pair<std::string, std::string>> loop_closing_constraints;
 };
 }  // namespace placo
