@@ -5,7 +5,7 @@
 
 namespace placo
 {
-class GravityTorques
+struct GravityTorques
 {
 public:
   struct Result
@@ -20,6 +20,38 @@ public:
     // appearing in the same order as contacts during solving.
     Eigen::MatrixXd contact_wrenches;
   };
+
+  struct Contact
+  {
+    std::string frame_name;
+
+    enum Type
+    {
+      Planar = 0,
+      Point = 1
+    };
+
+    Type type;
+
+    // For planar contacts, the length and width of the contact rectangle
+    double length;
+    double width;
+
+    // Friction coefficient
+    double mu = 1.;
+
+    Contact(const std::string& frame_name, Type type, double mu = 1., double length = 0.0, double width = 0.0);
+  };
+
+  // Contacts
+  std::vector<Contact> contacts;
+
+  // Passive joints
+  std::set<std::string> passive_joints;
+
+  void add_contact(Contact contact);
+
+  void set_passive(const std::string& joint_name, bool is_passive = true);
 
   /**
    * @brief Computes the torques required to compensate gravity given a set of unilateral contacts. This
@@ -38,13 +70,12 @@ public:
    * (In the future, this API might change in favour of more versatile contacts representation)
    *
    * @param robot robot wrapper
-   * @param unilateral_contacts list of frames which are unitaleral contacts
+   * @param contacts list of frames which are unitaleral contacts
    * @param contact_length contact rectangles length (you might consider some margin)
    * @param contact_width contact rectangles width (you might consider some margin)
    * @param mu friction coefficient
    * @return
    */
-  static Result compute_gravity_torques(RobotWrapper& robot, std::vector<std::string> unilateral_contacts,
-                                        double contact_length, double contact_width, double mu = 1.);
+  Result compute_gravity_torques(RobotWrapper& robot);
 };
 }  // namespace placo
