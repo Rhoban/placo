@@ -138,18 +138,21 @@ def arrow_viz(
     """
     vis = get_viewer()
     length = np.linalg.norm(point_to - point_from)
-    length -= head_length
+    length = max(1e-3, length - head_length)
 
     cylinder = g.Cylinder(length, radius)
     head = g.Cylinder(head_length, 2 * radius, 0.0, 2 * radius)
 
     T = tf.translation_matrix(point_from)
-    new_y = (point_to - point_from) / length
-    new_z = np.cross(np.array([0, 0, 1]), new_y)
-    new_z /= np.linalg.norm(new_z)
-    new_x = np.cross(new_y, new_z)
-    new_x /= np.linalg.norm(new_x)
-    T[:3, :3] = np.vstack([new_x, new_y, new_z]).T
+    if np.linalg.norm(point_to - point_from) > 1e-6:
+        new_y = (point_to - point_from) / np.linalg.norm(point_to - point_from)
+        new_z = np.cross(np.array([0, 0, 1]), new_y)
+        new_z /= np.linalg.norm(new_z)
+        new_x = np.cross(new_y, new_z)
+        new_x /= np.linalg.norm(new_x)
+        new_z = np.cross(new_x, new_y)
+        new_z /= np.linalg.norm(new_z)
+        T[:3, :3] = np.vstack([new_x, new_y, new_z]).T
 
     T_cylinder = T @ tf.translation_matrix(np.array([0, length / 2.0, 0.0]))
     T_head = T @ tf.translation_matrix(np.array([0, length + head_length / 2.0, 0.0]))
