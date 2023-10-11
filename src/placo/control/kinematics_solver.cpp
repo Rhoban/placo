@@ -539,6 +539,10 @@ void KinematicsSolver::dump_status_stream(std::ostream& stream)
     {
       stream << "hard";
     }
+    else if (task->priority == Task::Priority::Scaled)
+    {
+      stream << "scaled";
+    }
     else
     {
       stream << "soft (weight:" << task->weight << ")";
