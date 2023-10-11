@@ -48,6 +48,16 @@ CoMTask& KinematicsSolver::add_com_task(Eigen::Vector3d targetCom_world)
   return add_task(new CoMTask(targetCom_world));
 }
 
+CoMBoundTask& KinematicsSolver::add_com_lb_task(double z_min)
+{
+  return add_task(new CoMBoundTask(z_min, -1));
+}
+
+CoMBoundTask& KinematicsSolver::add_com_ub_task(double z_max)
+{
+  return add_task(new CoMBoundTask(z_max, 1));
+}
+
 OrientationTask& KinematicsSolver::add_orientation_task(RobotWrapper::FrameIndex frame, Eigen::Matrix3d R_world_frame)
 {
   return add_task(new OrientationTask(frame, R_world_frame));
@@ -380,8 +390,16 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
     e.A = task->A;
     e.b = -task->b;
 
-    problem.add_constraint(e == 0).configure(
+    if (task->equality_task)
+    {
+      problem.add_constraint(e == 0).configure(
         task->priority == Task::Priority::Hard ? ProblemConstraint::Hard : ProblemConstraint::Soft, task->weight);
+    }
+    else
+    {
+      problem.add_constraint(e <= 0).configure(
+        task->priority == Task::Priority::Hard ? ProblemConstraint::Hard : ProblemConstraint::Soft, task->weight);
+    }
   }
 
   // Masked DoFs are hard equality constraints enforcing no deltas
@@ -486,7 +504,7 @@ void KinematicsSolver::dump_status_stream(std::ostream& stream)
     }
     stream << std::endl;
     char buffer[128];
-    sprintf(buffer, "    - Error: %.06f [%s]\n", task->error(), task->error_unit().c_str());
+    sprintf(buffer, "    - Error: %.06f [%s]\n", task->normalized_error(), task->error_unit().c_str());
     stream << buffer << std::endl;
   }
 }
