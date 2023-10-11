@@ -298,12 +298,23 @@ public:
   double dt = 0.;
 
   /**
+   * @brief scale obtained when using tasks scaling
+   */
+  double scale = 0.;
+
+  /**
+   * @brief whether the optimisation requires scaling
+   */
+  bool has_scaling = false;
+
+  /**
    * @brief The underlying QP problem
    */
   placo::Problem problem;
 
 protected:
   placo::Variable* qd = nullptr;
+  placo::Variable* scale_variable = nullptr;
 
   std::set<int> masked_dof;
   bool masked_fbase;

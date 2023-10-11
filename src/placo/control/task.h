@@ -14,7 +14,8 @@ public:
   enum Priority
   {
     Hard = 0,
-    Soft = 1
+    Soft = 1,
+    Scaled = 2
   };
 
   Task();
@@ -33,6 +34,7 @@ public:
 
   // Task priority (hard: equality constraint, soft: objective function)
   Priority priority;
+  std::string priority_name();
 
   // If the task is "soft", this is its weight
   double weight;

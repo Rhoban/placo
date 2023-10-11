@@ -379,6 +379,8 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
         (q_random.block(7, 0, robot->model.nq - 7, 1) - robot->state.q.block(7, 0, robot->model.nq - 7, 1)) * noise;
   }
 
+  has_scaling = false;
+
   // Updating all the task matrices
   for (auto task : tasks)
   {
@@ -388,17 +390,47 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
     // significant cost of multiplying A with identity matrix for each task
     Expression e;
     e.A = task->A;
-    e.b = -task->b;
 
-    if (task->equality_task)
+    ProblemConstraint::Priority task_priority = ProblemConstraint::Hard;
+
+    if (task->priority == Task::Priority::Scaled)
     {
-      problem.add_constraint(e == 0).configure(
-          task->priority == Task::Priority::Hard ? ProblemConstraint::Hard : ProblemConstraint::Soft, task->weight);
+      if (!has_scaling)
+      {
+        has_scaling = true;
+
+        // We introduce a scale factor 0 <= s <= 1 that we want to take as close as possible to 1.0
+        if (scale_variable == nullptr)
+        {
+          scale_variable = &problem.add_variable(1);
+        }
+        problem.add_constraint(scale_variable->expr() >= 0);
+        problem.add_constraint(scale_variable->expr() <= 1);
+        problem.add_constraint(scale_variable->expr() == 1).configure(ProblemConstraint::Soft, 1.0);
+      }
+      Expression scaled_error_minus_A = task->b * scale_variable->expr();
+      scaled_error_minus_A.A.block(0, 0, e.A.rows(), e.A.cols()) -= e.A;
+      e.A = -scaled_error_minus_A.A;
+
+      e.b = Eigen::VectorXd::Zero(task->b.rows());
+    }
+    else if (task->priority == Task::Priority::Soft)
+    {
+      task_priority = ProblemConstraint::Soft;
+      e.b = -task->b;
     }
     else
     {
-      problem.add_constraint(e <= 0).configure(
-          task->priority == Task::Priority::Hard ? ProblemConstraint::Hard : ProblemConstraint::Soft, task->weight);
+      e.b = -task->b;
+    }
+
+    if (task->equality_task)
+    {
+      problem.add_constraint(e == 0).configure(task_priority, task->weight);
+    }
+    else
+    {
+      problem.add_constraint(e <= 0).configure(task_priority, task->weight);
     }
   }
 
@@ -420,6 +452,11 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
 
   // Retrieving qd (ignoring slack variables)
   Eigen::VectorXd qd_sol = qd->value;
+
+  if (has_scaling)
+  {
+    scale = scale_variable->value(0, 0);
+  }
 
   if (velocity_post_limits)
   {
@@ -489,6 +526,10 @@ void KinematicsSolver::remove_task(FrameTask& task)
 void KinematicsSolver::dump_status_stream(std::ostream& stream)
 {
   stream << "* Kinematics Tasks:" << std::endl;
+  if (has_scaling)
+  {
+    stream << "  * Scaling: " << scale << std::endl;
+  }
   for (auto task : tasks)
   {
     task->update();
