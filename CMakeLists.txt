@@ -56,6 +56,7 @@ add_library(libplaco
     src/placo/control/relative_frame_task.cpp
     src/placo/control/relative_pose_task.cpp
     src/placo/control/com_task.cpp
+    src/placo/control/com_bound_task.cpp
     src/placo/control/axis_align_task.cpp
     src/placo/control/axis_plane_task.cpp
     src/placo/control/distance_task.cpp

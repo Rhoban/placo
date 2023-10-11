@@ -37,13 +37,15 @@ public:
   // If the task is "soft", this is its weight
   double weight;
 
-  // The task is of type Ax = b
+  // The task is of type Ax = b if equality_task is true, and Ax <= b if equality_task is false
+  bool equality_task = true;
   Eigen::MatrixXd A;
   Eigen::MatrixXd b;
 
   virtual void update() = 0;
   virtual std::string type_name() = 0;
   virtual std::string error_unit() = 0;
-  virtual double error();
+  virtual Eigen::MatrixXd error();
+  virtual double normalized_error();
 };
 }  // namespace placo

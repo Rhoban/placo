@@ -59,6 +59,10 @@ void exposeKinematics()
               return_internal_reference<>())
           .def<CoMTask& (KinematicsSolver::*)(Eigen::Vector3d)>("add_com_task", &KinematicsSolver::add_com_task,
                                                                 return_internal_reference<>())
+          .def<CoMBoundTask& (KinematicsSolver::*)(double)>("add_com_lb_task", &KinematicsSolver::add_com_lb_task,
+                                                                return_internal_reference<>())
+          .def<CoMBoundTask& (KinematicsSolver::*)(double)>("add_com_ub_task", &KinematicsSolver::add_com_ub_task,
+                                                                return_internal_reference<>())
 
           // Orientation task
           .def<OrientationTask& (KinematicsSolver::*)(std::string, Eigen::Matrix3d)>(
@@ -149,6 +153,10 @@ void exposeKinematics()
   registerTaskMethods(class_<CoMTask>("CoMTask", init<Eigen::Vector3d>())
                           .add_property("target_world", &CoMTask::target_world, &CoMTask::target_world)
                           .add_property("mask", &CoMTask::mask, &CoMTask::mask));
+
+  registerTaskMethods(class_<CoMBoundTask>("CoMBoundTask", init<double, double>())
+                          .add_property("bound", &CoMBoundTask::bound, &CoMBoundTask::bound)
+                          .add_property("dir", &CoMBoundTask::dir, &CoMBoundTask::dir));
 
   registerTaskMethods(class_<OrientationTask>("OrientationTask", init<RobotWrapper::FrameIndex, Eigen::Matrix3d>())
                           .add_property("frame_index", &OrientationTask::frame_index)

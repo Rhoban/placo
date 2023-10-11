@@ -63,7 +63,12 @@ void Task::configure(std::string name_, Priority priority_, double weight_)
   weight = weight_;
 }
 
-double Task::error()
+Eigen::MatrixXd Task::error()
+{
+  return b;
+}
+
+double Task::normalized_error()
 {
   return b.norm();
 }
