@@ -68,7 +68,7 @@ Eigen::MatrixXd Task::error()
   return b;
 }
 
-double Task::normalized_error()
+double Task::error_norm()
 {
   return b.norm();
 }

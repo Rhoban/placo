@@ -341,7 +341,7 @@ void KinematicsSolver::compute_limits_inequalities()
       }
 
       if (velocity_limits)
-      {        
+      {
         e.A(constraint, k + 6) = 1;
         e.b[constraint] = -(dt * robot->model.velocityLimit(k + 6));
 
@@ -393,12 +393,12 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
     if (task->equality_task)
     {
       problem.add_constraint(e == 0).configure(
-        task->priority == Task::Priority::Hard ? ProblemConstraint::Hard : ProblemConstraint::Soft, task->weight);
+          task->priority == Task::Priority::Hard ? ProblemConstraint::Hard : ProblemConstraint::Soft, task->weight);
     }
     else
     {
       problem.add_constraint(e <= 0).configure(
-        task->priority == Task::Priority::Hard ? ProblemConstraint::Hard : ProblemConstraint::Soft, task->weight);
+          task->priority == Task::Priority::Hard ? ProblemConstraint::Hard : ProblemConstraint::Soft, task->weight);
     }
   }
 
@@ -438,7 +438,7 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
 
     qd_sol = qd_sol * ratio;
   }
-  
+
   if (apply)
   {
     robot->state.q = pinocchio::integrate(robot->model, robot->state.q, qd_sol);
@@ -504,7 +504,7 @@ void KinematicsSolver::dump_status_stream(std::ostream& stream)
     }
     stream << std::endl;
     char buffer[128];
-    sprintf(buffer, "    - Error: %.06f [%s]\n", task->normalized_error(), task->error_unit().c_str());
+    sprintf(buffer, "    - Error: %.06f [%s]\n", task->error_norm(), task->error_unit().c_str());
     stream << buffer << std::endl;
   }
 }
