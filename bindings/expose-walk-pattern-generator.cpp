@@ -51,10 +51,10 @@ void exposeWalkPatternGenerator()
       .def("remake_trajectory", &SwingFoot::remake_trajectory);
 
   class_<SwingFootCubic::Trajectory>("SwingFootCubicTrajectory", init<>())
-      .def("pos", &SwingFoot::Trajectory::pos)
-      .def("vel", &SwingFoot::Trajectory::vel);
+      .def("pos", &SwingFootCubic::Trajectory::pos)
+      .def("vel", &SwingFootCubic::Trajectory::vel);
 
-  class_<SwingFootCubic>("SwingFootCubic", init<>()).def("make_trajectory", &SwingFoot::make_trajectory);
+  class_<SwingFootCubic>("SwingFootCubic", init<>()).def("make_trajectory", &SwingFootCubic::make_trajectory);
 
   class_<SwingFoot::Trajectory>("SwingFootTrajectory", init<>())
       .def("pos", &SwingFoot::Trajectory::pos)
