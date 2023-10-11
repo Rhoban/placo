@@ -30,8 +30,8 @@ public:
     double omega_2;
   };
 
-  LIPM(Problem& problem, int timesteps, double omega, double dt, Eigen::Vector2d initial_pos,
-       Eigen::Vector2d initial_vel, Eigen::Vector2d initial_acc);
+  LIPM(Problem& problem, int timesteps, double com_height, double dt, Eigen::Vector2d initial_pos,
+       Eigen::Vector2d initial_vel = Eigen::Vector2d(0., 0.), Eigen::Vector2d initial_acc = Eigen::Vector2d(0., 0.));
 
   Trajectory get_trajectory();
 
@@ -42,6 +42,11 @@ public:
   Expression dcm(int timestep);
   Expression dzmp(int timestep);
   Expression jerk(int timestep);
+
+  /**
+   * @brief Compute the natural frequency of a LIPM given its height (omega = sqrt(g / h))
+  */
+  static double compute_omega(double com_height);
 
   // x and y integrators
   Integrator x;

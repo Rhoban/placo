@@ -38,9 +38,9 @@ Eigen::VectorXd LIPM::Trajectory::dcm(double t)
   return pos(t) + (1 / omega) * vel(t);
 }
 
-LIPM::LIPM(Problem& problem, int timesteps, double omega, double dt, Eigen::Vector2d initial_pos,
+LIPM::LIPM(Problem& problem, int timesteps, double com_height, double dt, Eigen::Vector2d initial_pos,
            Eigen::Vector2d initial_vel, Eigen::Vector2d initial_acc)
-  : timesteps(timesteps), omega(omega), dt(dt)
+  : timesteps(timesteps), omega(compute_omega(com_height)), dt(dt)
 {
   omega_2 = omega * omega;
 
@@ -87,6 +87,11 @@ Expression LIPM::dcm(int timestep)
 {
   return (x.expr(timestep, 0) + (1 / omega) * x.expr(timestep, 1)) /
          (y.expr(timestep, 0) + (1 / omega) * y.expr(timestep, 1));
+}
+
+double LIPM::compute_omega(double com_height)
+{
+  return sqrt(9.80665 / com_height);
 }
 
 LIPM::Trajectory LIPM::get_trajectory()

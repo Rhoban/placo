@@ -25,12 +25,18 @@ void exposeWalkPatternGenerator()
       .def("get_T_world_left", &WalkPatternGenerator::Trajectory::get_T_world_left)
       .def("get_supports", &WalkPatternGenerator::Trajectory::get_supports)
       .def("get_T_world_right", &WalkPatternGenerator::Trajectory::get_T_world_right)
-      .def("get_p_world_CoM", &WalkPatternGenerator::Trajectory::get_p_world_CoM)
-      .def("get_v_world_CoM", &WalkPatternGenerator::Trajectory::get_v_world_CoM)
-      .def("get_a_world_CoM", &WalkPatternGenerator::Trajectory::get_a_world_CoM)
-      .def("get_j_world_CoM", &WalkPatternGenerator::Trajectory::get_j_world_CoM)
-      .def("get_p_world_ZMP", &WalkPatternGenerator::Trajectory::get_p_world_ZMP)
-      .def("get_p_world_DCM", &WalkPatternGenerator::Trajectory::get_p_world_DCM)
+      .def("get_p_world_CoM_min", &WalkPatternGenerator::Trajectory::get_p_world_CoM_min)
+      .def("get_v_world_CoM_min", &WalkPatternGenerator::Trajectory::get_v_world_CoM_min)
+      .def("get_a_world_CoM_min", &WalkPatternGenerator::Trajectory::get_a_world_CoM_min)
+      .def("get_j_world_CoM_min", &WalkPatternGenerator::Trajectory::get_j_world_CoM_min)
+      .def("get_p_world_ZMP_min", &WalkPatternGenerator::Trajectory::get_p_world_ZMP_min)
+      .def("get_p_world_DCM_min", &WalkPatternGenerator::Trajectory::get_p_world_DCM_min)
+      .def("get_p_world_CoM_max", &WalkPatternGenerator::Trajectory::get_p_world_CoM_max)
+      .def("get_v_world_CoM_max", &WalkPatternGenerator::Trajectory::get_v_world_CoM_max)
+      .def("get_a_world_CoM_max", &WalkPatternGenerator::Trajectory::get_a_world_CoM_max)
+      .def("get_j_world_CoM_max", &WalkPatternGenerator::Trajectory::get_j_world_CoM_max)
+      .def("get_p_world_ZMP_max", &WalkPatternGenerator::Trajectory::get_p_world_ZMP_max)
+      .def("get_p_world_DCM_max", &WalkPatternGenerator::Trajectory::get_p_world_DCM_max)
       .def("get_R_world_trunk", &WalkPatternGenerator::Trajectory::get_R_world_trunk)
       .def("support_side", &WalkPatternGenerator::Trajectory::support_side)
       .def("support_is_both", &WalkPatternGenerator::Trajectory::support_is_both)
@@ -41,6 +47,7 @@ void exposeWalkPatternGenerator()
       .def("apply_transform", &WalkPatternGenerator::Trajectory::apply_transform);
 
   class_<WalkPatternGenerator>("WalkPatternGenerator", init<HumanoidRobot&, HumanoidParameters&>())
+      .def("reach_initial_pose", &WalkPatternGenerator::reach_initial_pose)
       .def("plan", &WalkPatternGenerator::plan)
       .def("replan", &WalkPatternGenerator::replan)
       .def("can_replan_supports", &WalkPatternGenerator::can_replan_supports)
@@ -62,7 +69,7 @@ void exposeWalkPatternGenerator()
 
   class_<WalkTasks>("WalkTasks", init<>())
       .def(
-          "initialize_tasks", +[](WalkTasks& tasks, KinematicsSolver& solver, HumanoidRobot& robot) { tasks.initialize_tasks(&solver, &robot); })
+          "initialize_tasks", +[](WalkTasks& tasks, KinematicsSolver& solver, HumanoidRobot& robot, HumanoidParameters& parameters) { tasks.initialize_tasks(&solver, &robot, &parameters); })
       .def(
           "update_tasks_from_trajectory", +[](WalkTasks& tasks, WalkPatternGenerator::Trajectory& trajectory,
                                               double t) { return tasks.update_tasks(trajectory, t); })
@@ -73,7 +80,17 @@ void exposeWalkPatternGenerator()
             return tasks.update_tasks(T_world_left, T_world_right, com_world, R_world_trunk);
           })
       .def("remove_tasks", &WalkTasks::remove_tasks)
-      .def("get_tasks_error", &WalkTasks::get_tasks_error)
+      .def("get_tasks_error", +[](WalkTasks& tasks) {
+            auto errors = tasks.get_tasks_error();
+            boost::python::dict dict;
+            for (auto key : errors)
+            {
+                dict[key.first + "_x"] = key.second[0];
+                dict[key.first + "_y"] = key.second[1];
+                dict[key.first + "_z"] = key.second[2];
+            }
+            return dict;
+          })
       .add_property(
           "solver", +[](WalkTasks& tasks) { return *tasks.solver; })
       .add_property("left_foot_task", &WalkTasks::left_foot_task)

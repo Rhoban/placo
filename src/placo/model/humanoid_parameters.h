@@ -91,9 +91,19 @@ public:
   double walk_foot_rise_ratio = 0.2;
 
   /**
-   * @brief CoM height while walking [m]
+   * @brief Target CoM height while walking [m]
    */
-  double walk_com_height = 0.4;
+  double walk_target_com_height = 0.35;
+
+  /**
+   * @brief Maximum CoM height while walking [m], should be higher than walk_target_com_height
+   */
+  double walk_max_com_height = 0.4;
+
+  /**
+   * @brief Minimum CoM height while walking [m], should be lower than walk_target_com_height
+   */
+  double walk_min_com_height = 0.3;
 
   /**
    * @brief Trunk pitch while walking [rad]
@@ -131,7 +141,7 @@ public:
    *
    * A higher pendulum height results in less left/right body swinging during the walk.
    */
-  double pendulum_height = 0.4;
+  double pendulum_height = 0.4; // XXX : Pourquoi ne pas utiliser walk_target_com_height ? Y a-t-il du sens à modéliser un pendule différent de notre robot réel ?
 
   /**
    * @brief Lateral spacing between feet [m]
@@ -194,11 +204,6 @@ public:
    * @brief Duration [timesteps] of a kick support
    */
   int kick_support_timesteps();
-
-  /**
-   * Natural frequency of the Linear Inverted Pendulum (LIP) model used in the walk
-   */
-  double omega();
 
   /**
    * @brief Applies the ellipsoid clipping to a given step size (dx, dy, dtheta)

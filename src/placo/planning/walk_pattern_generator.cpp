@@ -143,38 +143,72 @@ Eigen::Vector3d WalkPatternGenerator::Trajectory::get_v_world_right(double t)
   return Eigen::Vector3d::Zero();
 }
 
-Eigen::Vector3d WalkPatternGenerator::Trajectory::get_p_world_CoM(double t)
+Eigen::Vector3d WalkPatternGenerator::Trajectory::get_p_world_CoM_min(double t)
 {
-  auto pos = com.pos(t);
-  return T * Eigen::Vector3d(pos.x(), pos.y(), com_height);
+  Eigen::Vector3d pos = Eigen::Vector3d(com_min.pos(t).x(), com_min.pos(t).y(), min_com_height);
+  return T * pos;
 }
 
-Eigen::Vector3d WalkPatternGenerator::Trajectory::get_v_world_CoM(double t)
+Eigen::Vector3d WalkPatternGenerator::Trajectory::get_v_world_CoM_min(double t)
 {
-  auto vel = com.vel(t);
+  auto vel = com_min.vel(t);
   return T.linear() * Eigen::Vector3d(vel.x(), vel.y(), 0);
 }
 
-Eigen::Vector3d WalkPatternGenerator::Trajectory::get_a_world_CoM(double t)
+Eigen::Vector3d WalkPatternGenerator::Trajectory::get_a_world_CoM_min(double t)
 {
-  auto acc = com.acc(t);
+  auto acc = com_min.acc(t);
   return T.linear() * Eigen::Vector3d(acc.x(), acc.y(), 0);
 }
 
-Eigen::Vector3d WalkPatternGenerator::Trajectory::get_j_world_CoM(double t)
+Eigen::Vector3d WalkPatternGenerator::Trajectory::get_j_world_CoM_min(double t)
 {
-  auto jerk = com.jerk(t);
+  auto jerk = com_min.jerk(t);
   return T.linear() * Eigen::Vector3d(jerk.x(), jerk.y(), 0);
 }
 
-Eigen::Vector3d WalkPatternGenerator::Trajectory::get_p_world_DCM(double t, double omega)
+Eigen::Vector3d WalkPatternGenerator::Trajectory::get_p_world_CoM_max(double t)
 {
-  return get_p_world_CoM(t) + (1 / omega) * get_v_world_CoM(t);
+  Eigen::Vector3d pos = Eigen::Vector3d(com_max.pos(t).x(), com_max.pos(t).y(), max_com_height);
+  return T * pos;
 }
 
-Eigen::Vector3d WalkPatternGenerator::Trajectory::get_p_world_ZMP(double t, double omega)
+Eigen::Vector3d WalkPatternGenerator::Trajectory::get_v_world_CoM_max(double t)
 {
-  return get_p_world_CoM(t) - (1 / pow(omega, 2)) * get_a_world_CoM(t);
+  auto vel = com_max.vel(t);
+  return T.linear() * Eigen::Vector3d(vel.x(), vel.y(), 0);
+}
+
+Eigen::Vector3d WalkPatternGenerator::Trajectory::get_a_world_CoM_max(double t)
+{
+  auto acc = com_max.acc(t);
+  return T.linear() * Eigen::Vector3d(acc.x(), acc.y(), 0);
+}
+
+Eigen::Vector3d WalkPatternGenerator::Trajectory::get_j_world_CoM_max(double t)
+{
+  auto jerk = com_max.jerk(t);
+  return T.linear() * Eigen::Vector3d(jerk.x(), jerk.y(), 0);
+}
+
+Eigen::Vector2d WalkPatternGenerator::Trajectory::get_p_world_DCM_min(double t)
+{
+  return get_p_world_CoM_min(t).head(2) + (1 / LIPM::compute_omega(min_com_height)) * get_v_world_CoM_min(t).head(2);
+}
+
+Eigen::Vector2d WalkPatternGenerator::Trajectory::get_p_world_ZMP_min(double t)
+{
+  return get_p_world_CoM_min(t).head(2) - (1 / pow(LIPM::compute_omega(min_com_height), 2)) * get_a_world_CoM_min(t).head(2);
+}
+
+Eigen::Vector2d WalkPatternGenerator::Trajectory::get_p_world_DCM_max(double t)
+{
+  return get_p_world_CoM_max(t).head(2) + (1 / LIPM::compute_omega(max_com_height)) * get_v_world_CoM_max(t).head(2);
+}
+
+Eigen::Vector2d WalkPatternGenerator::Trajectory::get_p_world_ZMP_max(double t)
+{
+  return get_p_world_CoM_max(t).head(2) - (1 / pow(LIPM::compute_omega(max_com_height), 2)) * get_a_world_CoM_max(t).head(2);
 }
 
 Eigen::Matrix3d WalkPatternGenerator::Trajectory::get_R_world_trunk(double t)
@@ -263,6 +297,16 @@ double WalkPatternGenerator::Trajectory::get_part_t_end(double t)
   return part.t_end;
 }
 
+void WalkPatternGenerator::Trajectory::set_com_min_trajectory(LIPM::Trajectory trajectory)
+{
+  com_min = trajectory;
+}
+
+void WalkPatternGenerator::Trajectory::set_com_max_trajectory(LIPM::Trajectory trajectory)
+{
+  com_max = trajectory;
+}
+
 int WalkPatternGenerator::support_timesteps(FootstepsPlanner::Support& support)
 {
   if (support.kick())
@@ -286,7 +330,7 @@ int WalkPatternGenerator::support_timesteps(FootstepsPlanner::Support& support)
 }
 
 // XXX : No more management of the CoM height while kicking
-void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initial_pos, Eigen::Vector2d initial_vel,
+LIPM::Trajectory WalkPatternGenerator::planCoM(Trajectory& trajectory, double com_height, Eigen::Vector2d initial_pos, Eigen::Vector2d initial_vel,
                                    Eigen::Vector2d initial_acc, Trajectory* old_trajectory, double t_replan)
 {
   // Computing how many steps are required
@@ -317,7 +361,7 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
 
   // Creating the planner
   Problem problem = Problem();
-  LIPM lipm = LIPM(problem, timesteps, parameters.omega(), parameters.dt(), initial_pos, initial_vel, initial_acc);
+  LIPM lipm = LIPM(problem, timesteps, com_height, parameters.dt(), initial_pos, initial_vel, initial_acc);
   lipm.t_start = trajectory.t_start;
 
   // We ensure that the first tile of the old trajectory starts with the same jerks as initially planned
@@ -325,8 +369,12 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
   {
     for (int timestep = 0; timestep < kept_timesteps; timestep++)
     {
-      Eigen::Vector3d jerk = old_trajectory->get_j_world_CoM(trajectory.t_start + timestep * parameters.dt() + 1e-6);
-      problem.add_constraint(lipm.jerk(timestep) == Eigen::Vector2d(jerk.x(), jerk.y()));
+      Eigen::Vector2d jerk = old_trajectory->get_j_world_CoM_min(trajectory.t_start + timestep * parameters.dt() + 1e-6).head(2);
+      if (com_height == old_trajectory->max_com_height)
+      {
+        jerk = old_trajectory->get_j_world_CoM_max(trajectory.t_start + timestep * parameters.dt() + 1e-6).head(2);
+      }
+      problem.add_constraint(lipm.jerk(timestep) == jerk);
     }
   }
 
@@ -387,9 +435,7 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
       }
 
       Eigen::Vector3d zmp_target = current_support.frame() * Eigen::Vector3d(x_offset, y_offset, 0);
-
-      problem.add_constraint(lipm.zmp(timestep) == Eigen::Vector2d(zmp_target.x(), zmp_target.y()))
-          .configure(ProblemConstraint::Soft, parameters.zmp_reference_weight);
+      problem.add_constraint(lipm.zmp(timestep) == zmp_target.head(2)).configure(ProblemConstraint::Soft, parameters.zmp_reference_weight);
     }
 
     constrained_timesteps += step_timesteps;
@@ -411,7 +457,7 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
   }
 
   problem.solve();
-  trajectory.com = lipm.get_trajectory();
+  return lipm.get_trajectory();
 }
 
 void WalkPatternGenerator::Trajectory::add_supports(double t, FootstepsPlanner::Support& support)
@@ -552,6 +598,55 @@ void WalkPatternGenerator::planFeetTrajectories(Trajectory& trajectory, Trajecto
   trajectory.t_end = t;
 }
 
+WalkPatternGenerator::Trajectory WalkPatternGenerator::reach_initial_pose(int nb_timesteps)
+{
+  // Initialization of the trajectory
+  Trajectory trajectory;
+  trajectory.t_start = 0;
+  trajectory.t_end = parameters.dt() * nb_timesteps;
+  trajectory.trunk_pitch = parameters.walk_trunk_pitch;
+
+  // Placing feet
+  Eigen::Affine3d T_world_right = Eigen::Affine3d::Identity();
+  Eigen::Affine3d T_world_left = Eigen::Affine3d::Identity();
+  T_world_left.translation() = Eigen::Vector3d(0., parameters.feet_spacing, 0.);
+  robot.set_T_world_frame("right_foot", T_world_right);
+  robot.set_T_world_frame("left_foot", T_world_left);
+  robot.update_kinematics();
+
+  // CoM Trajectory
+  Problem problem = Problem();
+  LIPM lipm = LIPM(problem, nb_timesteps, parameters.walk_target_com_height, parameters.dt(), robot.com_world().head(2));
+  lipm.t_start = trajectory.t_start;
+
+  Eigen::Vector3d target_com_world = Eigen::Vector3d(0, parameters.feet_spacing/2, parameters.walk_target_com_height);
+  problem.add_constraint(lipm.pos(nb_timesteps) == target_com_world);
+  problem.add_constraint(lipm.vel(nb_timesteps) == Eigen::Vector3d(0., 0., 0.));
+  problem.add_constraint(lipm.acc(nb_timesteps) == Eigen::Vector3d(0., 0., 0.));
+
+  problem.solve();
+  trajectory.set_com_min_trajectory(lipm.get_trajectory());
+
+  // Support
+  FootstepsPlanner::Footstep left_footstep(parameters.foot_width, parameters.foot_length);
+  left_footstep.side = HumanoidRobot::Left;
+  left_footstep.frame = T_world_left;
+
+  FootstepsPlanner::Footstep right_footstep(parameters.foot_width, parameters.foot_length);
+  right_footstep.side = HumanoidRobot::Right;
+  right_footstep.frame = T_world_right;
+
+  FootstepsPlanner::Support support;
+  support.footsteps.push_back(left_footstep);
+  support.footsteps.push_back(right_footstep);
+
+  TrajectoryPart part;
+  part.support = support;
+  trajectory.parts.push_back(part);
+
+  return trajectory;
+}
+
 WalkPatternGenerator::Trajectory WalkPatternGenerator::plan(std::vector<FootstepsPlanner::Support>& supports,
                                                             Eigen::Vector3d initial_com_world, double t_start)
 {
@@ -560,15 +655,17 @@ WalkPatternGenerator::Trajectory WalkPatternGenerator::plan(std::vector<Footstep
     throw std::runtime_error("Trying to plan() with 0 supports");
   }
 
-  // Initialization of the trajectory
+  // Initialization of the trajectory using the minimum walking height
   Trajectory trajectory;
   trajectory.t_start = t_start;
-  trajectory.com_height = parameters.walk_com_height;
   trajectory.trunk_pitch = parameters.walk_trunk_pitch;
   trajectory.supports = supports;
+  trajectory.min_com_height = parameters.walk_min_com_height;
+  trajectory.max_com_height = parameters.walk_max_com_height;
 
   // Planning the center of mass trajectory
-  planCoM(trajectory, Eigen::Vector2d(initial_com_world.x(), initial_com_world.y()));
+  trajectory.set_com_min_trajectory(planCoM(trajectory, parameters.walk_max_com_height, initial_com_world.head(2)));
+  trajectory.set_com_max_trajectory(planCoM(trajectory, parameters.walk_min_com_height, initial_com_world.head(2)));
 
   // Planning the footsteps trajectories
   planFeetTrajectories(trajectory);
@@ -587,18 +684,20 @@ WalkPatternGenerator::Trajectory WalkPatternGenerator::replan(std::vector<Footst
 
   // Initialization of the new trajectory
   Trajectory trajectory;
-  trajectory.com_height = parameters.walk_com_height;
   trajectory.trunk_pitch = parameters.walk_trunk_pitch;
   trajectory.supports = supports;
   trajectory.t_start = old_trajectory.get_part_t_start(t_replan);
 
   // Planning the center of mass trajectory
-  Eigen::Vector3d com_pos = old_trajectory.get_p_world_CoM(trajectory.t_start);
-  Eigen::Vector3d com_vel = old_trajectory.get_v_world_CoM(trajectory.t_start);
-  Eigen::Vector3d com_acc = old_trajectory.get_a_world_CoM(trajectory.t_start);
+  Eigen::Vector2d com_min_pos = old_trajectory.get_p_world_CoM_min(trajectory.t_start).head(2);
+  Eigen::Vector2d com_min_vel = old_trajectory.get_v_world_CoM_min(trajectory.t_start).head(2);
+  Eigen::Vector2d com_min_acc = old_trajectory.get_a_world_CoM_min(trajectory.t_start).head(2);
+  trajectory.set_com_min_trajectory(planCoM(trajectory, parameters.walk_min_com_height, com_min_pos, com_min_vel, com_min_acc, &old_trajectory, t_replan));
 
-  planCoM(trajectory, Eigen::Vector2d(com_pos.x(), com_pos.y()), Eigen::Vector2d(com_vel.x(), com_vel.y()),
-          Eigen::Vector2d(com_acc.x(), com_acc.y()), &old_trajectory, t_replan);
+  Eigen::Vector2d com_max_pos = old_trajectory.get_p_world_CoM_max(trajectory.t_start).head(2);
+  Eigen::Vector2d com_max_vel = old_trajectory.get_v_world_CoM_max(trajectory.t_start).head(2);
+  Eigen::Vector2d com_max_acc = old_trajectory.get_a_world_CoM_max(trajectory.t_start).head(2);
+  trajectory.set_com_max_trajectory(planCoM(trajectory, parameters.walk_max_com_height, com_max_pos, com_max_vel, com_max_acc, &old_trajectory, t_replan));
 
   // Planning the footsteps trajectories
   planFeetTrajectories(trajectory, &old_trajectory, t_replan);

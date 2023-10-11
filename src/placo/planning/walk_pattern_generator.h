@@ -36,9 +36,11 @@ public:
   {
     Trajectory();
 
-    double com_height;
     double trunk_pitch = 0.;
     double trunk_roll = 0.;
+
+    double min_com_height;
+    double max_com_height;
 
     Eigen::Affine3d get_T_world_left(double t);
     Eigen::Affine3d get_T_world_right(double t);
@@ -46,13 +48,21 @@ public:
     Eigen::Vector3d get_v_world_right(double t);
     Eigen::Affine3d get_T_world_foot(HumanoidRobot::Side side, double t);
 
-    Eigen::Vector3d get_p_world_CoM(double t);
-    Eigen::Vector3d get_v_world_CoM(double t);
-    Eigen::Vector3d get_a_world_CoM(double t);
-    Eigen::Vector3d get_j_world_CoM(double t);
+    Eigen::Vector3d get_p_world_CoM_min(double t);
+    Eigen::Vector3d get_v_world_CoM_min(double t);
+    Eigen::Vector3d get_a_world_CoM_min(double t);
+    Eigen::Vector3d get_j_world_CoM_min(double t);
 
-    Eigen::Vector3d get_p_world_DCM(double t, double omega);
-    Eigen::Vector3d get_p_world_ZMP(double t, double omega);
+    Eigen::Vector3d get_p_world_CoM_max(double t);
+    Eigen::Vector3d get_v_world_CoM_max(double t);
+    Eigen::Vector3d get_a_world_CoM_max(double t);
+    Eigen::Vector3d get_j_world_CoM_max(double t);
+
+    Eigen::Vector2d get_p_world_DCM_min(double t);
+    Eigen::Vector2d get_p_world_ZMP_min(double t);
+
+    Eigen::Vector2d get_p_world_DCM_max(double t);
+    Eigen::Vector2d get_p_world_ZMP_max(double t);
 
     Eigen::Matrix3d get_R_world_trunk(double t);
 
@@ -89,6 +99,9 @@ public:
     // Number of dt planned by the jerk planner
     int jerk_planner_timesteps = 0;
 
+    void set_com_min_trajectory(LIPM::Trajectory trajectory);
+    void set_com_max_trajectory(LIPM::Trajectory trajectory);
+
   protected:
     /**
      * @brief Retrieves the yaw value
@@ -101,8 +114,9 @@ public:
     // A part is the support and the swing trajectory
     std::vector<TrajectoryPart> parts;
 
-    // CoM trajectory
-    LIPM::Trajectory com;
+    // CoM trajectories
+    LIPM::Trajectory com_min;
+    LIPM::Trajectory com_max;
 
     // Feet trajectory
     placo::CubicSpline left_foot_yaw;
@@ -123,6 +137,12 @@ public:
   };
 
   WalkPatternGenerator(HumanoidRobot& robot, HumanoidParameters& parameters);
+
+  /**
+   * @brief Plan a trajectory to reach the initial pose based on the parameters of the WPG
+   * @return Planned trajectory
+   */
+  Trajectory reach_initial_pose(int nb_timesteps = 100);
 
   /**
    * @brief Plan a walk trajectory following given footsteps based on the parameters of the WPG
@@ -165,10 +185,10 @@ protected:
   // The parameters to use for planning. The values are forwarded to the relevant solvers when needed.
   HumanoidParameters& parameters;
 
-  void planCoM(Trajectory& trajectory, Eigen::Vector2d initial_pos = Eigen::Vector2d::Zero(),
-               Eigen::Vector2d initial_vel = Eigen::Vector2d::Zero(),
-               Eigen::Vector2d initial_acc = Eigen::Vector2d::Zero(), Trajectory* old_trajectory = nullptr,
-               double t_replan = 0.);
+  LIPM::Trajectory planCoM(Trajectory& trajectory, double com_height, Eigen::Vector2d initial_pos, 
+                           Eigen::Vector2d initial_vel = Eigen::Vector2d::Zero(),
+                           Eigen::Vector2d initial_acc = Eigen::Vector2d::Zero(), Trajectory* old_trajectory = nullptr,
+                           double t_replan = 0.);
 
   void planFeetTrajectories(Trajectory& trajectory, Trajectory* old_trajectory = nullptr, double t_replan = 0.);
 

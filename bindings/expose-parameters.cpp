@@ -30,7 +30,9 @@ void exposeParameters()
       .add_property("walk_foot_height", &HumanoidParameters::walk_foot_height, &HumanoidParameters::walk_foot_height)
       .add_property("walk_foot_rise_ratio", &HumanoidParameters::walk_foot_rise_ratio,
                     &HumanoidParameters::walk_foot_rise_ratio)
-      .add_property("walk_com_height", &HumanoidParameters::walk_com_height, &HumanoidParameters::walk_com_height)
+      .add_property("walk_target_com_height", &HumanoidParameters::walk_target_com_height, &HumanoidParameters::walk_target_com_height)
+      .add_property("walk_max_com_height", &HumanoidParameters::walk_max_com_height, &HumanoidParameters::walk_max_com_height)
+      .add_property("walk_min_com_height", &HumanoidParameters::walk_min_com_height, &HumanoidParameters::walk_min_com_height)
       .add_property("walk_trunk_pitch", &HumanoidParameters::walk_trunk_pitch, &HumanoidParameters::walk_trunk_pitch)
       .add_property("pendulum_height", &HumanoidParameters::pendulum_height, &HumanoidParameters::pendulum_height)
       .add_property("feet_spacing", &HumanoidParameters::feet_spacing, &HumanoidParameters::feet_spacing)
@@ -56,6 +58,5 @@ void exposeParameters()
       .def("startend_double_support_timesteps", &HumanoidParameters::startend_double_support_timesteps)
       .def("kick_support_timesteps", &HumanoidParameters::kick_support_timesteps)
       .def("has_double_support", &HumanoidParameters::has_double_support)
-      .def("omega", &HumanoidParameters::omega)
       .def("ellipsoid_clip", &HumanoidParameters::ellipsoid_clip);
 }
