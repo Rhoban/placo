@@ -98,8 +98,7 @@ void WalkTasks::update_tasks(Eigen::Affine3d T_world_left, Eigen::Affine3d T_wor
     {
       solver->enable_velocity_limits(true);
       double expected_torque = std::abs(torques[robot->get_joint_v_offset(dof)]); // + 0.1; // 0.1 is a safety margin
-      double limit = velocity_limit(expected_torque, dof, use_doc_limits); // * solver->dt;
-      // double limit = .1;
+      double limit = velocity_limit(expected_torque, dof, use_doc_limits);
       robot->set_velocity_limit(dof, limit); 
     }
   }
@@ -129,18 +128,18 @@ void WalkTasks::remove_tasks()
 std::map<std::string, double> WalkTasks::get_tasks_error()
 {
   std::map<std::string, double> error;
-  error["left_foot_orientation"] = left_foot_task.orientation->error();
-  error["right_foot_orientation"] = right_foot_task.orientation->error();
-  error["left_foot_orientation"] = left_foot_task.position->error();
-  error["right_foot_orientation"] = right_foot_task.position->error();
-  error["trunk"] = trunk_orientation_task->error();
+  error["left_foot_orientation"] = left_foot_task.orientation->normalized_error();
+  error["right_foot_orientation"] = right_foot_task.orientation->normalized_error();
+  error["left_foot_orientation"] = left_foot_task.position->normalized_error();
+  error["right_foot_orientation"] = right_foot_task.position->normalized_error();
+  error["trunk"] = trunk_orientation_task->normalized_error();
   if (trunk_mode)
   {
-    error["trunk"] = trunk_task->error();
+    error["trunk"] = trunk_task->normalized_error();
   }
   else
   {
-    error["com"] = com_task->error();
+    error["com"] = com_task->normalized_error();
   }
   return error;
 }
