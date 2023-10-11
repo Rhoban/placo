@@ -8,7 +8,7 @@ namespace placo
 class WalkTasks
 {
 public:
-  void initialize_tasks(KinematicsSolver* solver, HumanoidRobot* robot, HumanoidParameters* params);
+  void initialize_tasks(KinematicsSolver* solver, HumanoidRobot* robot, double com_z_min = -1, double com_z_max = -1);
   void remove_tasks();
   virtual ~WalkTasks();
 
@@ -19,7 +19,6 @@ public:
 
   KinematicsSolver* solver = nullptr;
   HumanoidRobot* robot = nullptr;
-  HumanoidParameters* parameters = nullptr;
 
   placo::FrameTask left_foot_task;
   placo::FrameTask right_foot_task;
@@ -32,6 +31,8 @@ public:
   placo::PositionTask* trunk_task = nullptr;
 
   void update_com_task();
+
+  void reach_pose(Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right, Eigen::Vector3d com_world, double trunk_pitch);
 
   bool adaptative_velocity_limits = false;
   bool use_doc_limits = false;

@@ -63,13 +63,16 @@ void exposeWalkPatternGenerator()
 
   class_<WalkTasks>("WalkTasks", init<>())
       .def(
-          "initialize_tasks", +[](WalkTasks& tasks, KinematicsSolver& solver, HumanoidRobot& robot, HumanoidParameters& parameters) { tasks.initialize_tasks(&solver, &robot, &parameters); })
+          "initialize_tasks", +[](WalkTasks& tasks, KinematicsSolver& solver, HumanoidRobot& robot, double com_z_min, double com_z_max) { tasks.initialize_tasks(&solver, &robot, com_z_min, com_z_max); })
       .def(
           "update_tasks_from_trajectory", +[](WalkTasks& tasks, WalkPatternGenerator::Trajectory& trajectory,
                                               double t) { return tasks.update_tasks(trajectory, t); })
       .def(
           "update_tasks", +[](WalkTasks& tasks, Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right, Eigen::Vector3d com_world, 
                               Eigen::Matrix3d R_world_trunk) { return tasks.update_tasks(T_world_left, T_world_right, com_world, R_world_trunk); })
+      .def(
+          "reach_pose", +[](WalkTasks& tasks, Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right, Eigen::Vector3d com_world, 
+                            double trunk_pitch) { return tasks.reach_pose(T_world_left, T_world_right, com_world, trunk_pitch); })
       .def(
           "remove_tasks", &WalkTasks::remove_tasks)
       .def(

@@ -4,8 +4,11 @@
 
 namespace placo
 {
-void WalkTasks::initialize_tasks(KinematicsSolver* solver_, HumanoidRobot* robot_, HumanoidParameters* params_)
+void WalkTasks::initialize_tasks(KinematicsSolver* solver_, HumanoidRobot* robot_, double com_z_min, double com_z_max)
 {
+  robot = robot_;
+  solver = solver_;
+
   left_foot_task = solver->add_frame_task("left_foot", robot->get_T_world_left());
   left_foot_task.configure("left_foot", "soft", 1., 1.);
 
@@ -14,6 +17,17 @@ void WalkTasks::initialize_tasks(KinematicsSolver* solver_, HumanoidRobot* robot
 
   trunk_orientation_task = &solver->add_orientation_task("trunk", robot->get_T_world_trunk().rotation());
   trunk_orientation_task->configure("trunk", "soft", 1.);
+
+  if (com_z_min != -1)
+  {
+    com_lb_task = &solver->add_com_lb_task(com_z_min);
+    com_lb_task->configure("com_lb", "hard", 0);
+  }
+  if (com_z_max != -1)
+  {
+    com_ub_task = &solver->add_com_ub_task(com_z_max);
+    com_ub_task->configure("com_ub", "hard", 0);
+  }
 
   update_com_task();
 
@@ -49,12 +63,35 @@ void WalkTasks::update_com_task()
     {
       com_task = &solver->add_com_task(robot->com_world());
       com_task->configure("com", "soft", 1.);
-
-      com_lb_task = &solver->add_com_lb_task(parameters->walk_min_com_height);
-      com_lb_task->configure("com_lb", "hard", 0);
-      com_ub_task = &solver->add_com_ub_task(parameters->walk_max_com_height);
-      com_ub_task->configure("com_ub", "hard", 0);
     }
+  }
+}
+
+void WalkTasks::reach_pose(Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right, Eigen::Vector3d com_world, double trunk_pitch)
+{
+  update_com_task();
+
+  left_foot_task.set_T_world_frame(T_world_left);
+  right_foot_task.set_T_world_frame(T_world_right);
+
+  Eigen::MatrixXd R_world_trunk = interpolate_frames(T_world_left, T_world_right, .5) 
+                                  * Eigen::AngleAxisd(trunk_pitch, Eigen::Vector3d::UnitY()).matrix();
+  trunk_orientation_task->R_world_frame = R_world_trunk;
+
+  if (trunk_mode)
+  {
+    trunk_task->target_world = com_world;
+  }
+  else
+  {
+    com_task->target_world = com_world;
+  }
+
+  for (int i=0; i<100; i++)
+  {
+    robot->update_kinematics();
+    solver->solve(true);
+    robot->ensure_on_floor();
   }
 }
 
