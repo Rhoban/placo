@@ -136,14 +136,6 @@ public:
   double walk_dtheta_spacing = 0.05;
 
   /**
-   * @brief Robot center of mass height for LIPM model. This is used to compute the pendulum constant
-   * omega, which is sqrt(g/h)
-   *
-   * A higher pendulum height results in less left/right body swinging during the walk.
-   */
-  double pendulum_height = 0.4; // XXX : Pourquoi ne pas utiliser walk_target_com_height ? Y a-t-il du sens à modéliser un pendule différent de notre robot réel ?
-
-  /**
    * @brief Lateral spacing between feet [m]
    */
   double feet_spacing = 0.15;

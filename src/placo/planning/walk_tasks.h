@@ -13,8 +13,7 @@ public:
   virtual ~WalkTasks();
 
   void update_tasks(WalkPatternGenerator::Trajectory& trajectory, double t);
-  void update_tasks(Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right, Eigen::Vector3d com_world,
-                    Eigen::Matrix3d R_world_trunk);
+  void update_tasks(Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right, Eigen::Vector3d com_world, Eigen::Matrix3d R_world_trunk);
 
   std::map<std::string, Eigen::Vector3d> get_tasks_error();
 

@@ -25,18 +25,12 @@ void exposeWalkPatternGenerator()
       .def("get_T_world_left", &WalkPatternGenerator::Trajectory::get_T_world_left)
       .def("get_supports", &WalkPatternGenerator::Trajectory::get_supports)
       .def("get_T_world_right", &WalkPatternGenerator::Trajectory::get_T_world_right)
-      .def("get_p_world_CoM_min", &WalkPatternGenerator::Trajectory::get_p_world_CoM_min)
-      .def("get_v_world_CoM_min", &WalkPatternGenerator::Trajectory::get_v_world_CoM_min)
-      .def("get_a_world_CoM_min", &WalkPatternGenerator::Trajectory::get_a_world_CoM_min)
-      .def("get_j_world_CoM_min", &WalkPatternGenerator::Trajectory::get_j_world_CoM_min)
-      .def("get_p_world_ZMP_min", &WalkPatternGenerator::Trajectory::get_p_world_ZMP_min)
-      .def("get_p_world_DCM_min", &WalkPatternGenerator::Trajectory::get_p_world_DCM_min)
-      .def("get_p_world_CoM_max", &WalkPatternGenerator::Trajectory::get_p_world_CoM_max)
-      .def("get_v_world_CoM_max", &WalkPatternGenerator::Trajectory::get_v_world_CoM_max)
-      .def("get_a_world_CoM_max", &WalkPatternGenerator::Trajectory::get_a_world_CoM_max)
-      .def("get_j_world_CoM_max", &WalkPatternGenerator::Trajectory::get_j_world_CoM_max)
-      .def("get_p_world_ZMP_max", &WalkPatternGenerator::Trajectory::get_p_world_ZMP_max)
-      .def("get_p_world_DCM_max", &WalkPatternGenerator::Trajectory::get_p_world_DCM_max)
+      .def("get_p_world_CoM", &WalkPatternGenerator::Trajectory::get_p_world_CoM)
+      .def("get_v_world_CoM", &WalkPatternGenerator::Trajectory::get_v_world_CoM)
+      .def("get_a_world_CoM", &WalkPatternGenerator::Trajectory::get_a_world_CoM)
+      .def("get_j_world_CoM", &WalkPatternGenerator::Trajectory::get_j_world_CoM)
+      .def("get_p_world_ZMP", &WalkPatternGenerator::Trajectory::get_p_world_ZMP)
+      .def("get_p_world_DCM", &WalkPatternGenerator::Trajectory::get_p_world_DCM)
       .def("get_R_world_trunk", &WalkPatternGenerator::Trajectory::get_R_world_trunk)
       .def("support_side", &WalkPatternGenerator::Trajectory::support_side)
       .def("support_is_both", &WalkPatternGenerator::Trajectory::support_is_both)
@@ -74,13 +68,12 @@ void exposeWalkPatternGenerator()
           "update_tasks_from_trajectory", +[](WalkTasks& tasks, WalkPatternGenerator::Trajectory& trajectory,
                                               double t) { return tasks.update_tasks(trajectory, t); })
       .def(
-          "update_tasks",
-          +[](WalkTasks& tasks, Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right, Eigen::Vector3d com_world,
-              Eigen::Matrix3d R_world_trunk) {
-            return tasks.update_tasks(T_world_left, T_world_right, com_world, R_world_trunk);
-          })
-      .def("remove_tasks", &WalkTasks::remove_tasks)
-      .def("get_tasks_error", +[](WalkTasks& tasks) {
+          "update_tasks", +[](WalkTasks& tasks, Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right, Eigen::Vector3d com_world, 
+                              Eigen::Matrix3d R_world_trunk) { return tasks.update_tasks(T_world_left, T_world_right, com_world, R_world_trunk); })
+      .def(
+          "remove_tasks", &WalkTasks::remove_tasks)
+      .def(
+          "get_tasks_error", +[](WalkTasks& tasks) {
             auto errors = tasks.get_tasks_error();
             boost::python::dict dict;
             for (auto key : errors)
@@ -112,7 +105,7 @@ void exposeWalkPatternGenerator()
       .def("dzmp", &LIPM::Trajectory::dzmp)
       .def("dcm", &LIPM::Trajectory::dcm);
 
-  class_<LIPM>("LIPM", init<Problem&, int, double, double, Eigen::Vector2d, Eigen::Vector2d, Eigen::Vector2d>())
+  class_<LIPM>("LIPM", init<Problem&, int, double, Eigen::Vector2d, Eigen::Vector2d, Eigen::Vector2d>())
       .def("pos", &LIPM::pos)
       .def("vel", &LIPM::vel)
       .def("acc", &LIPM::acc)

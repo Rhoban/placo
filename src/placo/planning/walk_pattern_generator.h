@@ -39,8 +39,7 @@ public:
     double trunk_pitch = 0.;
     double trunk_roll = 0.;
 
-    double min_com_height;
-    double max_com_height;
+    double com_target_z;
 
     Eigen::Affine3d get_T_world_left(double t);
     Eigen::Affine3d get_T_world_right(double t);
@@ -48,21 +47,13 @@ public:
     Eigen::Vector3d get_v_world_right(double t);
     Eigen::Affine3d get_T_world_foot(HumanoidRobot::Side side, double t);
 
-    Eigen::Vector3d get_p_world_CoM_min(double t);
-    Eigen::Vector3d get_v_world_CoM_min(double t);
-    Eigen::Vector3d get_a_world_CoM_min(double t);
-    Eigen::Vector3d get_j_world_CoM_min(double t);
+    Eigen::Vector3d get_p_world_CoM(double t);
+    Eigen::Vector3d get_v_world_CoM(double t);
+    Eigen::Vector3d get_a_world_CoM(double t);
+    Eigen::Vector3d get_j_world_CoM(double t);
 
-    Eigen::Vector3d get_p_world_CoM_max(double t);
-    Eigen::Vector3d get_v_world_CoM_max(double t);
-    Eigen::Vector3d get_a_world_CoM_max(double t);
-    Eigen::Vector3d get_j_world_CoM_max(double t);
-
-    Eigen::Vector2d get_p_world_DCM_min(double t);
-    Eigen::Vector2d get_p_world_ZMP_min(double t);
-
-    Eigen::Vector2d get_p_world_DCM_max(double t);
-    Eigen::Vector2d get_p_world_ZMP_max(double t);
+    Eigen::Vector2d get_p_world_DCM(double t, double omega);
+    Eigen::Vector2d get_p_world_ZMP(double t, double omega);
 
     Eigen::Matrix3d get_R_world_trunk(double t);
 
@@ -99,9 +90,6 @@ public:
     // Number of dt planned by the jerk planner
     int jerk_planner_timesteps = 0;
 
-    void set_com_min_trajectory(LIPM::Trajectory trajectory);
-    void set_com_max_trajectory(LIPM::Trajectory trajectory);
-
   protected:
     /**
      * @brief Retrieves the yaw value
@@ -115,8 +103,7 @@ public:
     std::vector<TrajectoryPart> parts;
 
     // CoM trajectories
-    LIPM::Trajectory com_min;
-    LIPM::Trajectory com_max;
+    LIPM::Trajectory com;
 
     // Feet trajectory
     placo::CubicSpline left_foot_yaw;
@@ -185,10 +172,16 @@ protected:
   // The parameters to use for planning. The values are forwarded to the relevant solvers when needed.
   HumanoidParameters& parameters;
 
-  LIPM::Trajectory planCoM(Trajectory& trajectory, double com_height, Eigen::Vector2d initial_pos, 
-                           Eigen::Vector2d initial_vel = Eigen::Vector2d::Zero(),
-                           Eigen::Vector2d initial_acc = Eigen::Vector2d::Zero(), Trajectory* old_trajectory = nullptr,
-                           double t_replan = 0.);
+  double omega_target;
+  double omega_min;
+  double omega_max;
+
+  double omega_2_target;
+  double omega_2_min;
+  double omega_2_max;
+
+  void planCoM(Trajectory& trajectory, Eigen::Vector2d initial_pos, Eigen::Vector2d initial_vel = Eigen::Vector2d::Zero(),
+               Eigen::Vector2d initial_acc = Eigen::Vector2d::Zero(), Trajectory* old_trajectory = nullptr, double t_replan = 0.);
 
   void planFeetTrajectories(Trajectory& trajectory, Trajectory* old_trajectory = nullptr, double t_replan = 0.);
 

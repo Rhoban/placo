@@ -50,22 +50,23 @@ void WalkTasks::update_com_task()
       com_task = &solver->add_com_task(robot->com_world());
       com_task->configure("com", "soft", 1.);
 
-      com_ub_task = &solver->add_com_ub_task(parameters->walk_max_com_height);
-      com_ub_task->configure("com_ub", "hard", 0);
       com_lb_task = &solver->add_com_lb_task(parameters->walk_min_com_height);
       com_lb_task->configure("com_lb", "hard", 0);
+      com_ub_task = &solver->add_com_ub_task(parameters->walk_max_com_height);
+      com_ub_task->configure("com_ub", "hard", 0);
     }
   }
 }
 
 void WalkTasks::update_tasks(WalkPatternGenerator::Trajectory& trajectory, double t)
 {
-  // update_tasks(trajectory.get_T_world_left(t), trajectory.get_T_world_right(t),
-  //              trajectory.get_p_world_CoM(t + com_delay), trajectory.get_R_world_trunk(t));
+  update_tasks(trajectory.get_T_world_left(t), 
+               trajectory.get_T_world_right(t),
+               trajectory.get_p_world_CoM(t + com_delay),
+               trajectory.get_R_world_trunk(t));
 }
 
-void WalkTasks::update_tasks(Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right, Eigen::Vector3d com_world,
-                             Eigen::Matrix3d R_world_trunk)
+void WalkTasks::update_tasks(Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right, Eigen::Vector3d com_world, Eigen::Matrix3d R_world_trunk)
 {
   update_com_task();
   Eigen::Vector3d offset = robot->get_T_world_frame("trunk").linear() * Eigen::Vector3d(com_x, com_y, 0);
@@ -78,6 +79,7 @@ void WalkTasks::update_tasks(Eigen::Affine3d T_world_left, Eigen::Affine3d T_wor
   {
     com_task->target_world = com_world + offset;
   }
+
 
   left_foot_task.set_T_world_frame(T_world_left);
   right_foot_task.set_T_world_frame(T_world_right);
@@ -96,7 +98,6 @@ void WalkTasks::update_tasks(Eigen::Affine3d T_world_left, Eigen::Affine3d T_wor
       solver->enable_velocity_limits(true);
       double expected_torque = std::abs(torques[robot->get_joint_v_offset(dof)]) + 0.1; // 0.1 is a safety margin
       double limit = velocity_limit(expected_torque, dof, use_doc_limits);
-      // double limit = .1;
       robot->set_velocity_limit(dof, limit); 
     }
   }
