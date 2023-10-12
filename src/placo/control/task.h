@@ -48,6 +48,6 @@ public:
   virtual std::string type_name() = 0;
   virtual std::string error_unit() = 0;
   virtual Eigen::MatrixXd error();
-  virtual double error_norm();
+  virtual double normalized_error();
 };
 }  // namespace placo

@@ -62,18 +62,30 @@ void exposeWalkPatternGenerator()
 
   class_<WalkTasks>("WalkTasks", init<>())
       .def(
-          "initialize_tasks", +[](WalkTasks& tasks, KinematicsSolver& solver, HumanoidRobot& robot) { tasks.initialize_tasks(&solver, &robot); })
+          "initialize_tasks", +[](WalkTasks& tasks, KinematicsSolver& solver, HumanoidRobot& robot, double com_z_min, double com_z_max) { tasks.initialize_tasks(&solver, &robot, com_z_min, com_z_max); })
       .def(
           "update_tasks_from_trajectory", +[](WalkTasks& tasks, WalkPatternGenerator::Trajectory& trajectory,
                                               double t) { return tasks.update_tasks(trajectory, t); })
       .def(
-          "update_tasks",
-          +[](WalkTasks& tasks, Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right, Eigen::Vector3d com_world,
-              Eigen::Matrix3d R_world_trunk) {
-            return tasks.update_tasks(T_world_left, T_world_right, com_world, R_world_trunk);
+          "update_tasks", +[](WalkTasks& tasks, Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right, Eigen::Vector3d com_world, 
+                              Eigen::Matrix3d R_world_trunk) { return tasks.update_tasks(T_world_left, T_world_right, com_world, R_world_trunk); })
+      .def(
+          "reach_initial_pose", +[](WalkTasks& tasks, Eigen::Affine3d T_world_left, double feet_spacing, double com_height, 
+                            double trunk_pitch) { return tasks.reach_initial_pose(T_world_left, feet_spacing, com_height, trunk_pitch); })
+      .def(
+          "remove_tasks", &WalkTasks::remove_tasks)
+      .def(
+          "get_tasks_error", +[](WalkTasks& tasks) {
+            auto errors = tasks.get_tasks_error();
+            boost::python::dict dict;
+            for (auto key : errors)
+            {
+                dict[key.first + "_x"] = key.second[0];
+                dict[key.first + "_y"] = key.second[1];
+                dict[key.first + "_z"] = key.second[2];
+            }
+            return dict;
           })
-      .def("remove_tasks", &WalkTasks::remove_tasks)
-      .def("get_tasks_error", &WalkTasks::get_tasks_error)
       .add_property(
           "solver", +[](WalkTasks& tasks) { return *tasks.solver; })
       .add_property("left_foot_task", &WalkTasks::left_foot_task)
@@ -95,7 +107,7 @@ void exposeWalkPatternGenerator()
       .def("dzmp", &LIPM::Trajectory::dzmp)
       .def("dcm", &LIPM::Trajectory::dcm);
 
-  class_<LIPM>("LIPM", init<Problem&, int, double, double, Eigen::Vector2d, Eigen::Vector2d, Eigen::Vector2d>())
+  class_<LIPM>("LIPM", init<Problem&, int, double, Eigen::Vector2d, Eigen::Vector2d, Eigen::Vector2d>())
       .def("pos", &LIPM::pos)
       .def("vel", &LIPM::vel)
       .def("acc", &LIPM::acc)
