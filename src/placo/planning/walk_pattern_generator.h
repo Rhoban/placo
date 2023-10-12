@@ -31,7 +31,7 @@ public:
 
     FootstepsPlanner::Support support;
   };
-
+ 
   struct Trajectory
   {
     Trajectory();
@@ -124,12 +124,6 @@ public:
   };
 
   WalkPatternGenerator(HumanoidRobot& robot, HumanoidParameters& parameters);
-
-  /**
-   * @brief Plan a trajectory to reach the initial pose based on the parameters of the WPG
-   * @return Planned trajectory
-   */
-  Trajectory reach_initial_pose(int nb_timesteps = 100);
 
   /**
    * @brief Plan a walk trajectory following given footsteps based on the parameters of the WPG

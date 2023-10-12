@@ -41,7 +41,6 @@ void exposeWalkPatternGenerator()
       .def("apply_transform", &WalkPatternGenerator::Trajectory::apply_transform);
 
   class_<WalkPatternGenerator>("WalkPatternGenerator", init<HumanoidRobot&, HumanoidParameters&>())
-      .def("reach_initial_pose", &WalkPatternGenerator::reach_initial_pose)
       .def("plan", &WalkPatternGenerator::plan)
       .def("replan", &WalkPatternGenerator::replan)
       .def("can_replan_supports", &WalkPatternGenerator::can_replan_supports)

@@ -79,7 +79,7 @@ bool WalkPatternGenerator::Trajectory::is_flying(HumanoidRobot::Side side, doubl
 }
 
 Eigen::Affine3d WalkPatternGenerator::Trajectory::get_T_world_left(double t)
-{
+{  
   TrajectoryPart& part = _findPart(parts, t);
 
   if (is_flying(HumanoidRobot::Left, t))
@@ -557,55 +557,6 @@ void WalkPatternGenerator::planFeetTrajectories(Trajectory& trajectory, Trajecto
   }
 
   trajectory.t_end = t;
-}
-
-WalkPatternGenerator::Trajectory WalkPatternGenerator::reach_initial_pose(int nb_timesteps)
-{
-  // Initialization of the trajectory
-  Trajectory trajectory;
-  // trajectory.t_start = 0;
-  // trajectory.t_end = parameters.dt() * nb_timesteps;
-  // trajectory.trunk_pitch = parameters.walk_trunk_pitch;
-  // trajectory.com_target_z = parameters.walk_target_com_height;
-
-  // // Placing feet
-  // Eigen::Affine3d T_world_right = Eigen::Affine3d::Identity();
-  // Eigen::Affine3d T_world_left = Eigen::Affine3d::Identity();
-  // T_world_left.translation() = Eigen::Vector3d(0., parameters.feet_spacing, 0.);
-  // robot.set_T_world_frame("right_foot", T_world_right);
-  // robot.set_T_world_frame("left_foot", T_world_left);
-  // robot.update_kinematics();
-
-  // // CoM Trajectory
-  // Problem problem = Problem();
-  // LIPM lipm = LIPM(problem, nb_timesteps, parameters.dt(), robot.com_world().head(2));
-  // lipm.t_start = trajectory.t_start;
-
-  // Eigen::Vector3d target_com_world = Eigen::Vector3d(0, parameters.feet_spacing/2);
-  // problem.add_constraint(lipm.pos(nb_timesteps) == target_com_world);
-  // problem.add_constraint(lipm.vel(nb_timesteps) == Eigen::Vector3d(0., 0., 0.));
-  // problem.add_constraint(lipm.acc(nb_timesteps) == Eigen::Vector3d(0., 0., 0.));
-
-  // problem.solve();
-
-  // // Support
-  // FootstepsPlanner::Footstep left_footstep(parameters.foot_width, parameters.foot_length);
-  // left_footstep.side = HumanoidRobot::Left;
-  // left_footstep.frame = T_world_left;
-
-  // FootstepsPlanner::Footstep right_footstep(parameters.foot_width, parameters.foot_length);
-  // right_footstep.side = HumanoidRobot::Right;
-  // right_footstep.frame = T_world_right;
-
-  // FootstepsPlanner::Support support;
-  // support.footsteps.push_back(left_footstep);
-  // support.footsteps.push_back(right_footstep);
-
-  // TrajectoryPart part;
-  // part.support = support;
-  // trajectory.parts.push_back(part);
-
-  return trajectory;
 }
 
 WalkPatternGenerator::Trajectory WalkPatternGenerator::plan(std::vector<FootstepsPlanner::Support>& supports,
