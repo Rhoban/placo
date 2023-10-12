@@ -32,7 +32,7 @@ public:
 
   void update_com_task();
 
-  void reach_pose(Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right, Eigen::Vector3d com_world, double trunk_pitch);
+  void reach_initial_pose(Eigen::Affine3d T_world_left, double feet_spacing, double com_height, double trunk_pitch);
 
   bool adaptative_velocity_limits = false;
   bool use_doc_limits = false;

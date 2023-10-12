@@ -67,31 +67,31 @@ void WalkTasks::update_com_task()
   }
 }
 
-void WalkTasks::reach_pose(Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right, Eigen::Vector3d com_world, double trunk_pitch)
+void WalkTasks::reach_initial_pose(Eigen::Affine3d T_world_left, double feet_spacing, double com_height, double trunk_pitch)
 {
-  update_com_task();
+  Eigen::Affine3d T_world_right = T_world_left;
+  T_world_right.translation().y() = - feet_spacing;
 
-  left_foot_task.set_T_world_frame(T_world_left);
-  right_foot_task.set_T_world_frame(T_world_right);
-
+  Eigen::Vector3d com_world = interpolate_frames(T_world_left, T_world_right, .5).translation();
+  com_world.z() = com_height;
+  
   Eigen::MatrixXd R_world_trunk = interpolate_frames(T_world_left, T_world_right, .5) 
                                   * Eigen::AngleAxisd(trunk_pitch, Eigen::Vector3d::UnitY()).matrix();
   trunk_orientation_task->R_world_frame = R_world_trunk;
 
-  if (trunk_mode)
-  {
-    trunk_task->target_world = com_world;
-  }
-  else
-  {
-    com_task->target_world = com_world;
-  }
-
+  update_tasks(T_world_left, T_world_right, com_world, R_world_trunk);
+  
+  // Adding strong noise to avoid singularities
+  solver->noise = 0.1;
   for (int i=0; i<100; i++)
   {
+    if (i == 10)
+    {
+      solver->noise = 1e-4;
+    }
+
     robot->update_kinematics();
     solver->solve(true);
-    robot->ensure_on_floor();
   }
 }
 
@@ -116,7 +116,6 @@ void WalkTasks::update_tasks(Eigen::Affine3d T_world_left, Eigen::Affine3d T_wor
   {
     com_task->target_world = com_world + offset;
   }
-
 
   left_foot_task.set_T_world_frame(T_world_left);
   right_foot_task.set_T_world_frame(T_world_right);

@@ -71,8 +71,8 @@ void exposeWalkPatternGenerator()
           "update_tasks", +[](WalkTasks& tasks, Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right, Eigen::Vector3d com_world, 
                               Eigen::Matrix3d R_world_trunk) { return tasks.update_tasks(T_world_left, T_world_right, com_world, R_world_trunk); })
       .def(
-          "reach_pose", +[](WalkTasks& tasks, Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right, Eigen::Vector3d com_world, 
-                            double trunk_pitch) { return tasks.reach_pose(T_world_left, T_world_right, com_world, trunk_pitch); })
+          "reach_initial_pose", +[](WalkTasks& tasks, Eigen::Affine3d T_world_left, double feet_spacing, double com_height, 
+                            double trunk_pitch) { return tasks.reach_initial_pose(T_world_left, feet_spacing, com_height, trunk_pitch); })
       .def(
           "remove_tasks", &WalkTasks::remove_tasks)
       .def(
