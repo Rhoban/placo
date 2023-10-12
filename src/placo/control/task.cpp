@@ -12,6 +12,10 @@ Task::Priority priority_from_string(std::string priority)
   {
     return Task::Priority::Hard;
   }
+  else if (priority == "scaled")
+  {
+    return Task::Priority::Scaled;
+  }
   else
   {
     throw std::runtime_error(std::string("KinematicsSolver: Invalid priority: ") + priority);
@@ -63,12 +67,27 @@ void Task::configure(std::string name_, Priority priority_, double weight_)
   weight = weight_;
 }
 
+std::string Task::priority_name()
+{
+  switch (priority)
+  {
+    case Hard:
+      return "hard";
+    case Soft:
+      return "soft";
+    case Scaled:
+      return "scaled";
+    default:
+      throw std::runtime_error("Task::priority_name: Invalid priority");
+  }
+}
+
 Eigen::MatrixXd Task::error()
 {
   return b;
 }
 
-double Task::normalized_error()
+double Task::error_norm()
 {
   return b.norm();
 }

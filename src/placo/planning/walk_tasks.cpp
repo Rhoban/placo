@@ -134,7 +134,7 @@ void WalkTasks::update_tasks(Eigen::Affine3d T_world_left, Eigen::Affine3d T_wor
       solver->enable_velocity_limits(true);
       double expected_torque = std::abs(torques[robot->get_joint_v_offset(dof)]) + 0.1; // 0.1 is a safety margin
       double limit = velocity_limit(expected_torque, dof, use_doc_limits);
-      robot->set_velocity_limit(dof, limit); 
+      robot->set_velocity_limit(dof, limit);
     }
   }
 }
