@@ -36,9 +36,10 @@ public:
   {
     Trajectory();
 
-    double com_height;
     double trunk_pitch = 0.;
     double trunk_roll = 0.;
+
+    double com_target_z;
 
     Eigen::Affine3d get_T_world_left(double t);
     Eigen::Affine3d get_T_world_right(double t);
@@ -51,8 +52,8 @@ public:
     Eigen::Vector3d get_a_world_CoM(double t);
     Eigen::Vector3d get_j_world_CoM(double t);
 
-    Eigen::Vector3d get_p_world_DCM(double t, double omega);
-    Eigen::Vector3d get_p_world_ZMP(double t, double omega);
+    Eigen::Vector2d get_p_world_DCM(double t, double omega);
+    Eigen::Vector2d get_p_world_ZMP(double t, double omega);
 
     Eigen::Matrix3d get_R_world_trunk(double t);
 
@@ -101,7 +102,7 @@ public:
     // A part is the support and the swing trajectory
     std::vector<TrajectoryPart> parts;
 
-    // CoM trajectory
+    // CoM trajectories
     LIPM::Trajectory com;
 
     // Feet trajectory
@@ -123,6 +124,12 @@ public:
   };
 
   WalkPatternGenerator(HumanoidRobot& robot, HumanoidParameters& parameters);
+
+  /**
+   * @brief Plan a trajectory to reach the initial pose based on the parameters of the WPG
+   * @return Planned trajectory
+   */
+  Trajectory reach_initial_pose(int nb_timesteps = 100);
 
   /**
    * @brief Plan a walk trajectory following given footsteps based on the parameters of the WPG
@@ -165,10 +172,16 @@ protected:
   // The parameters to use for planning. The values are forwarded to the relevant solvers when needed.
   HumanoidParameters& parameters;
 
-  void planCoM(Trajectory& trajectory, Eigen::Vector2d initial_pos = Eigen::Vector2d::Zero(),
-               Eigen::Vector2d initial_vel = Eigen::Vector2d::Zero(),
-               Eigen::Vector2d initial_acc = Eigen::Vector2d::Zero(), Trajectory* old_trajectory = nullptr,
-               double t_replan = 0.);
+  double omega_target;
+  double omega_min;
+  double omega_max;
+
+  double omega_2_target;
+  double omega_2_min;
+  double omega_2_max;
+
+  void planCoM(Trajectory& trajectory, Eigen::Vector2d initial_pos, Eigen::Vector2d initial_vel = Eigen::Vector2d::Zero(),
+               Eigen::Vector2d initial_acc = Eigen::Vector2d::Zero(), Trajectory* old_trajectory = nullptr, double t_replan = 0.);
 
   void planFeetTrajectories(Trajectory& trajectory, Trajectory* old_trajectory = nullptr, double t_replan = 0.);
 
