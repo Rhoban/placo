@@ -549,7 +549,7 @@ void KinematicsSolver::dump_status_stream(std::ostream& stream)
     }
     stream << std::endl;
     char buffer[128];
-    sprintf(buffer, "    - Error: %.06f [%s]\n", task->error_norm(), task->error_unit().c_str());
+    sprintf(buffer, "    - Error: %.06f [%s]\n", task->normalized_error(), task->error_unit().c_str());
     stream << buffer << std::endl;
   }
 }
