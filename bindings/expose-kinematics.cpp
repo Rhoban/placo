@@ -19,10 +19,11 @@ void registerTaskMethods(class_<T>& class__)
       .add_property("solver", &T::solver)
       .add_property("weight", &T::weight)
       .add_property(
-          "priority", +[](const T& task) { return (task.priority == Task::Soft) ? "soft" : "hard"; })
+          "priority", +[](T& task) { return task.priority_name(); })
       .add_property("A", &T::A)
       .add_property("b", &T::b)
       .def("error", &T::error)
+      .def("error_norm", &T::error_norm)
       .def("update", &T::update)
       .def("set_priority", &T::set_priority)
       .def("set_weight", &T::set_weight)
@@ -44,6 +45,7 @@ void exposeKinematics()
           .add_property("noise", &KinematicsSolver::noise, &KinematicsSolver::noise)
           .add_property("dt", &KinematicsSolver::dt, &KinematicsSolver::dt)
           .add_property("N", &KinematicsSolver::N)
+          .add_property("scale", &KinematicsSolver::scale)
           .add_property(
               "robot",
               +[](const KinematicsSolver& solver) {
@@ -59,6 +61,10 @@ void exposeKinematics()
               return_internal_reference<>())
           .def<CoMTask& (KinematicsSolver::*)(Eigen::Vector3d)>("add_com_task", &KinematicsSolver::add_com_task,
                                                                 return_internal_reference<>())
+          .def<CoMBoundTask& (KinematicsSolver::*)(double)>("add_com_lb_task", &KinematicsSolver::add_com_lb_task,
+                                                            return_internal_reference<>())
+          .def<CoMBoundTask& (KinematicsSolver::*)(double)>("add_com_ub_task", &KinematicsSolver::add_com_ub_task,
+                                                            return_internal_reference<>())
 
           // Orientation task
           .def<OrientationTask& (KinematicsSolver::*)(std::string, Eigen::Matrix3d)>(
@@ -149,6 +155,10 @@ void exposeKinematics()
   registerTaskMethods(class_<CoMTask>("CoMTask", init<Eigen::Vector3d>())
                           .add_property("target_world", &CoMTask::target_world, &CoMTask::target_world)
                           .add_property("mask", &CoMTask::mask, &CoMTask::mask));
+
+  registerTaskMethods(class_<CoMBoundTask>("CoMBoundTask", init<double, double>())
+                          .add_property("bound", &CoMBoundTask::bound, &CoMBoundTask::bound)
+                          .add_property("dir", &CoMBoundTask::dir, &CoMBoundTask::dir));
 
   registerTaskMethods(class_<OrientationTask>("OrientationTask", init<RobotWrapper::FrameIndex, Eigen::Matrix3d>())
                           .add_property("frame_index", &OrientationTask::frame_index)

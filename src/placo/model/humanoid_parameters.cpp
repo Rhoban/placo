@@ -3,18 +3,6 @@
 
 namespace placo
 {
-double HumanoidParameters::omega()
-{
-  if (pendulum_height > 0.)
-  {
-    return sqrt(9.80665 / pendulum_height);
-  }
-  else
-  {
-    return 0.;
-  }
-}
-
 double HumanoidParameters::dt()
 {
   return single_support_duration / ((double)single_support_timesteps);

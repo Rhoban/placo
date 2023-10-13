@@ -16,6 +16,7 @@
 #include "placo/control/relative_frame_task.h"
 #include "placo/control/relative_pose_task.h"
 #include "placo/control/com_task.h"
+#include "placo/control/com_bound_task.h"
 #include "placo/control/axis_align_task.h"
 #include "placo/control/axis_plane_task.h"
 #include "placo/control/distance_task.h"
@@ -58,6 +59,18 @@ public:
    * @param targetCom_world the target position, expressed in the world (as T_world_frame)
    */
   CoMTask& add_com_task(Eigen::Vector3d targetCom_world);
+
+  /**
+   * @brief Adds a com lower bound task
+   * @param z_min lower bound for CoM z in th world
+   */
+  CoMBoundTask& add_com_lb_task(double z_min);
+
+  /**
+   * @brief Adds a com upper bound task
+   * @param z_max upper bound for CoM z in th world
+   */
+  CoMBoundTask& add_com_ub_task(double z_max);
 
   /**
    * @brief Adds an orientation task
@@ -285,12 +298,23 @@ public:
   double dt = 0.;
 
   /**
+   * @brief scale obtained when using tasks scaling
+   */
+  double scale = 0.;
+
+  /**
+   * @brief whether the optimisation requires scaling
+   */
+  bool has_scaling = false;
+
+  /**
    * @brief The underlying QP problem
    */
   placo::Problem problem;
 
 protected:
   placo::Variable* qd = nullptr;
+  placo::Variable* scale_variable = nullptr;
 
   std::set<int> masked_dof;
   bool masked_fbase;

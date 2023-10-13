@@ -124,6 +124,19 @@ void Problem::solve()
   // Scanning the constraints (counting inequalities and equalities, building objectif function)
   for (auto constraint : constraints)
   {
+    if (constraint->expression.cols() > n_variables)
+    {
+      throw QPError("Problem: Inconsistent problem size");
+    }
+    if (constraint->expression.A.rows() == 0 || constraint->expression.b.rows() == 0)
+    {
+      throw QPError("Problem: A or b is empty");
+    }
+    if (constraint->expression.A.rows() != constraint->expression.b.rows())
+    {
+      throw QPError("Problem: A.rows() != b.rows()");
+    }
+
     if (constraint->inequality)
     {
       // If the constraint is hard, this will be the true inequality, else, this will be the inequality
@@ -159,8 +172,11 @@ void Problem::solve()
         }
         else
         {
-          P.noalias() += constraint->weight * (constraint->expression.A.transpose() * constraint->expression.A);
-          q.noalias() += constraint->weight * (constraint->expression.A.transpose() * constraint->expression.b);
+          int n = constraint->expression.A.cols();
+          P.block(0, 0, n, n).noalias() +=
+              constraint->weight * (constraint->expression.A.transpose() * constraint->expression.A);
+          q.block(0, 0, n, 1).noalias() +=
+              constraint->weight * (constraint->expression.A.transpose() * constraint->expression.b);
         }
       }
     }
