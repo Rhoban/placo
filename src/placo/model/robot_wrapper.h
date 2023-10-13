@@ -129,8 +129,9 @@ public:
   // Robot state
   struct State
   {
-    Eigen::VectorXd q;   // [rad]
-    Eigen::VectorXd qd;  // [rad/s]
+    Eigen::VectorXd q;
+    Eigen::VectorXd qd;
+    Eigen::VectorXd qdd;
   };
 
   /**

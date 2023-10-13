@@ -66,7 +66,9 @@ void exposeRobotType(class_<RobotType, W1>& type)
           })
       .def(
           "torques_from_acceleration_with_fixed_frame",
-          +[](RobotType& robot, Eigen::VectorXd qdd_a, const std::string& frame) { return robot.torques_from_acceleration_with_fixed_frame(qdd_a, frame); })
+          +[](RobotType& robot, Eigen::VectorXd qdd_a, const std::string& frame) {
+            return robot.torques_from_acceleration_with_fixed_frame(qdd_a, frame);
+          })
       .def(
           "torques_from_acceleration_with_fixed_frame_dict",
           +[](RobotType& robot, Eigen::VectorXd qdd_a, const std::string& frame) {
@@ -111,7 +113,11 @@ void exposeRobotWrapper()
           +[](RobotWrapper::State& state, const Eigen::VectorXd& q) { state.q = q; })
       .add_property(
           "qd", +[](const RobotWrapper::State& state) { return state.qd; },
-          +[](RobotWrapper::State& state, const Eigen::VectorXd& qd) { state.qd = qd; });
+          +[](RobotWrapper::State& state, const Eigen::VectorXd& qd) { state.qd = qd; })
+      .add_property(
+          "qdd", +[](const RobotWrapper::State& state) { return state.qdd; },
+          +[](RobotWrapper::State& state, const Eigen::VectorXd& qdd) { state.qdd = qdd; });
+  ;
 
   class_<RobotWrapper::Collision>("Collision")
       .add_property("objA", &RobotWrapper::Collision::objA)
@@ -156,7 +162,8 @@ void exposeRobotWrapper()
 #ifdef HAVE_RHOBAN_UTILS
       .def("read_from_histories", &HumanoidRobot::read_from_histories, read_from_histories_overloads())
 #endif
-      .def("get_support_side", +[](const HumanoidRobot& robot) { return robot.support_side; })
+      .def(
+          "get_support_side", +[](const HumanoidRobot& robot) { return robot.support_side; })
       .add_property("support_is_both", &HumanoidRobot::support_is_both, &HumanoidRobot::support_is_both)
       .add_property(
           "T_world_support", +[](HumanoidRobot& robot) { return robot.T_world_support; },

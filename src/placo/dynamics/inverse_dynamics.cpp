@@ -1,4 +1,4 @@
-#include "placo/contacts/gravity_torques.h"
+#include "placo/dynamics/inverse_dynamics.h"
 #include "placo/problem/problem.h"
 
 // Some helpers for readability
@@ -11,8 +11,8 @@
 
 namespace placo
 {
-void GravityTorques::Contact::configure(const std::string& frame_name, GravityTorques::Contact::Type type, double mu,
-                                        double length, double width)
+void InverseDynamics::Contact::configure(const std::string& frame_name, InverseDynamics::Contact::Type type, double mu,
+                                         double length, double width)
 {
   this->frame_name = frame_name;
   this->type = type;
@@ -21,14 +21,21 @@ void GravityTorques::Contact::configure(const std::string& frame_name, GravityTo
   this->width = width;
 }
 
-Expression GravityTorques::Contact::add_wrench(RobotWrapper& robot, Problem& problem)
+Expression InverseDynamics::Contact::add_wrench(RobotWrapper& robot, Problem& problem)
 {
   if (frame_name == "")
   {
     throw std::runtime_error("Contact frame name is not set (did you call configure?)");
   }
 
-  if (type == Planar)
+  if (type == Fixed)
+  {
+    Eigen::MatrixXd J = robot.frame_jacobian(frame_name, "local");
+    variable = &problem.add_variable(6);
+
+    return J.transpose() * variable->expr();
+  }
+  else if (type == Planar)
   {
     Eigen::MatrixXd J = robot.frame_jacobian(frame_name, "local");
 
@@ -86,13 +93,13 @@ Expression GravityTorques::Contact::add_wrench(RobotWrapper& robot, Problem& pro
   }
 }
 
-GravityTorques::Contact& GravityTorques::add_contact()
+InverseDynamics::Contact& InverseDynamics::add_contact()
 {
   contacts.push_back(new Contact());
   return *contacts.back();
 }
 
-void GravityTorques::set_passive(const std::string& joint_name, bool is_passive)
+void InverseDynamics::set_passive(const std::string& joint_name, bool is_passive)
 {
   if (!is_passive)
   {
@@ -104,8 +111,8 @@ void GravityTorques::set_passive(const std::string& joint_name, bool is_passive)
   }
 }
 
-void GravityTorques::add_loop_closing_constraint(const std::string& frame_a, const std::string& frame_b,
-                                                 const std::string& mask)
+void InverseDynamics::add_loop_closing_constraint(const std::string& frame_a, const std::string& frame_b,
+                                                  const std::string& mask)
 {
   LoopClosure constraint;
   constraint.frame_a = frame_a;
@@ -115,11 +122,11 @@ void GravityTorques::add_loop_closing_constraint(const std::string& frame_a, con
   loop_closing_constraints.push_back(constraint);
 }
 
-GravityTorques::GravityTorques(RobotWrapper& robot) : robot(robot)
+InverseDynamics::InverseDynamics(RobotWrapper& robot) : robot(robot)
 {
 }
 
-GravityTorques::~GravityTorques()
+InverseDynamics::~InverseDynamics()
 {
   for (auto& contact : contacts)
   {
@@ -127,9 +134,9 @@ GravityTorques::~GravityTorques()
   }
 }
 
-GravityTorques::Result GravityTorques::compute()
+InverseDynamics::Result InverseDynamics::compute()
 {
-  GravityTorques::Result result;
+  InverseDynamics::Result result;
   std::vector<Variable*> contact_wrenches;
 
   Problem problem;
@@ -166,7 +173,14 @@ GravityTorques::Result GravityTorques::compute()
   }
 
   // Equation of motion
-  problem.add_constraint(torque_forces == robot.generalized_gravity());
+  Eigen::VectorXd h = robot.generalized_gravity();
+
+  if (qdd_desired.size() > 0)
+  {
+    h += robot.mass_matrix() * qdd_desired;
+  }
+
+  problem.add_constraint(torque_forces == h);
 
   // We want to minimize torques
   problem.add_constraint(tau.expr() == 0).configure(ProblemConstraint::Soft, 1.0);

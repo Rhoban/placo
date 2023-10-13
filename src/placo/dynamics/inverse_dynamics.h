@@ -7,7 +7,7 @@
 
 namespace placo
 {
-struct GravityTorques
+class InverseDynamics
 {
 public:
   struct Result
@@ -25,8 +25,9 @@ public:
 
     enum Type
     {
-      Planar = 0,
-      Point = 1
+      Fixed = 0,
+      Planar = 1,
+      Point = 2
     };
 
     Type type = Point;
@@ -44,7 +45,7 @@ public:
 
     // Weights for optimization
     double weight_forces = 1.0;
-    double weight_moments = 1.0;
+    double weight_moments = 1e2;
 
     // Adds the wrench to the problem
     Expression add_wrench(RobotWrapper& robot, Problem& problem);
@@ -61,14 +62,17 @@ public:
     AxisesMask mask;
   };
 
-  GravityTorques(RobotWrapper& robot);
-  virtual ~GravityTorques();
+  InverseDynamics(RobotWrapper& robot);
+  virtual ~InverseDynamics();
 
   // Contacts
   std::vector<Contact*> contacts;
 
   // Passive joints
   std::set<std::string> passive_joints;
+
+  // Desired accelerations
+  Eigen::VectorXd qdd_desired = Eigen::VectorXd();
 
   /**
    * @brief Adds a contact to the solver
