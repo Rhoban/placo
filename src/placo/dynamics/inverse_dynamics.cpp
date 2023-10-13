@@ -62,8 +62,14 @@ Expression InverseDynamics::Contact::add_wrench(RobotWrapper& robot, Problem& pr
     problem.add_constraint(-mu * variable->expr(F_Z, 1) <= variable->expr(F_Y, 1));
 
     // Objective
-    problem.add_constraint(variable->expr(F_X, 3) == 0).configure(ProblemConstraint::Soft, weight_forces);
-    problem.add_constraint(variable->expr(M_X, 3) == 0).configure(ProblemConstraint::Soft, weight_moments);
+    if (weight_forces > 0)
+    {
+      problem.add_constraint(variable->expr(F_X, 3) == 0).configure(ProblemConstraint::Soft, weight_forces);
+    }
+    if (weight_moments > 0)
+    {
+      problem.add_constraint(variable->expr(M_X, 3) == 0).configure(ProblemConstraint::Soft, weight_moments);
+    }
 
     return J.transpose() * variable->expr();
   }
@@ -83,9 +89,32 @@ Expression InverseDynamics::Contact::add_wrench(RobotWrapper& robot, Problem& pr
     problem.add_constraint(-mu * variable->expr(F_Z, 1) <= variable->expr(F_Y, 1));
 
     // Objective
-    problem.add_constraint(variable->expr(F_X, 3) == 0).configure(ProblemConstraint::Soft, weight_forces);
+    if (weight_forces > 0)
+    {
+      problem.add_constraint(variable->expr(F_X, 3) == 0).configure(ProblemConstraint::Soft, weight_forces);
+    }
 
     return J.transpose() * variable->expr();
+  }
+  else
+  {
+    throw std::runtime_error("Unknown contact type");
+  }
+}
+
+Eigen::Vector3d InverseDynamics::Contact::zmp()
+{
+  if (type == Fixed)
+  {
+    return Eigen::Vector3d::Zero();
+  }
+  else if (type == Planar)
+  {
+    return Eigen::Vector3d(-wrench(M_Y, 0) / wrench(F_Z, 0), wrench(M_X, 0) / wrench(F_Z, 0), 0);
+  }
+  else if (type == Point)
+  {
+    return Eigen::Vector3d::Zero();
   }
   else
   {

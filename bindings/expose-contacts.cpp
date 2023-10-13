@@ -62,6 +62,7 @@ void exposeContacts()
       .def_readwrite("mu", &InverseDynamics::Contact::mu)
       .def_readwrite("weight_forces", &InverseDynamics::Contact::weight_forces)
       .def_readwrite("weight_moments", &InverseDynamics::Contact::weight_moments)
+      .def("zmp", &InverseDynamics::Contact::zmp)
       .add_property(
           "wrench", +[](InverseDynamics::Contact& contact) { return contact.wrench; });
 

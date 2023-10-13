@@ -45,10 +45,13 @@ public:
 
     // Weights for optimization
     double weight_forces = 1.0;
-    double weight_moments = 1e2;
+    double weight_moments = 1e3;
 
     // Adds the wrench to the problem
     Expression add_wrench(RobotWrapper& robot, Problem& problem);
+
+    // Returns the ZMP of the contact
+    Eigen::Vector3d zmp();
 
     // Wrench computed by the solver
     Eigen::MatrixXd wrench;
