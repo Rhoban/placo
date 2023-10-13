@@ -71,5 +71,7 @@ void exposeContacts()
       .def("set_passive", &InverseDynamics::set_passive)
       .def("add_loop_closing_constraint", &InverseDynamics::add_loop_closing_constraint)
       .def("compute", &InverseDynamics::compute)
-      .def_readwrite("qdd_desired", &InverseDynamics::qdd_desired);
+      .add_property(
+          "qdd_desired", +[](InverseDynamics& id) { return id.qdd_desired; },
+          +[](InverseDynamics& id, const Eigen::VectorXd& qdd_desired) { id.qdd_desired = qdd_desired; });
 }
