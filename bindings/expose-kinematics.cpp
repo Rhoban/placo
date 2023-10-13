@@ -155,7 +155,7 @@ void exposeKinematics()
   registerTaskMethods(
       class_<CoMTask>("CoMTask", init<Eigen::Vector3d>())
           .add_property(
-              "target_world", +[](const PositionTask& task) { return task.target_world; }, &CoMTask::target_world)
+              "target_world", +[](const CoMTask& task) { return task.target_world; }, &CoMTask::target_world)
           .add_property("mask", &CoMTask::mask, &CoMTask::mask));
 
   registerTaskMethods(class_<CoMBoundTask>("CoMBoundTask", init<double, double>())

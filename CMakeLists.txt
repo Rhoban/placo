@@ -74,7 +74,7 @@ add_library(libplaco
     src/placo/planning/lipm.cpp
 
     # Contacts
-    src/placo/contacts/gravity_torques.cpp
+    src/placo/dynamics/inverse_dynamics.cpp
 
     ${PROTO_SRCS}
     ${PROTO_HDRS}  
