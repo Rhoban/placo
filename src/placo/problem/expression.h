@@ -12,6 +12,8 @@ public:
   Expression();
   Expression(const Expression& other);
 
+  Eigen::VectorXd value(Eigen::VectorXd x) const;
+
   static Expression from_vector(const Eigen::VectorXd& v);
   static Expression from_double(const double& value);
 

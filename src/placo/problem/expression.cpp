@@ -260,6 +260,11 @@ ProblemConstraint Expression::operator<=(const Expression& other) const
   return constraint;
 }
 
+Eigen::VectorXd Expression::value(Eigen::VectorXd x) const
+{
+  return A * x.block(0, 0, A.rows(), 1) + b;
+}
+
 ProblemConstraint Expression::operator>=(double f) const
 {
   return (*this) >= Expression::from_double(f);

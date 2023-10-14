@@ -260,7 +260,7 @@ void Problem::solve()
   Eigen::VectorXi active_set;
   size_t active_set_size;
 
-  Eigen::VectorXd x(n_variables + slack_variables);
+  x = Eigen::VectorXd(n_variables + slack_variables);
   x.setZero();
   double result =
       eiquadprog::solvers::solve_quadprog(P, q, A.transpose(), b, G.transpose(), h, x, active_set, active_set_size);

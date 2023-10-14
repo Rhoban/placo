@@ -15,7 +15,8 @@ void exposeContacts()
       .add_property("success", &InverseDynamics::Result::success)
       .add_property(
           "tau", +[](const InverseDynamics::Result& result) { return result.tau; })
-
+      .add_property(
+          "qdd", +[](const InverseDynamics::Result& result) { return result.qdd; })
       .def(
           "tau_dict", +[](const InverseDynamics::Result& result, RobotWrapper& robot) {
             boost::python::dict dict;

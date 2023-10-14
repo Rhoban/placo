@@ -56,6 +56,7 @@ public:
   std::vector<Variable*> variables;
   int n_variables = 0;
 
+  Eigen::VectorXd x;
   Eigen::VectorXd slacks;
 
   bool use_sparsity = true;

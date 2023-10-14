@@ -169,26 +169,31 @@ InverseDynamics::Result InverseDynamics::compute()
   std::vector<Variable*> contact_wrenches;
 
   Problem problem;
-  Variable& tau = problem.add_variable(robot.model.nv);
+  Variable& qdd = problem.add_variable(robot.model.nv);
 
-  // Floating base has no torque
-  problem.add_constraint(tau.expr(0, 6) == 0);
-
-  // Passive joints have no torque
-  for (auto& joint_name : passive_joints)
+  if (qdd_desired.rows() == 0)
   {
-    problem.add_constraint(tau.expr(robot.get_joint_v_offset(joint_name), 1) == 0);
+    qdd_desired = Eigen::VectorXd::Zero(robot.model.nv);
   }
 
-  // We must satisfy the equation of motion with contact unilateral forces
-  // tau + sum(J^T forces) = g
-  Expression torque_forces = tau.expr();
-  std::map<Contact*, Variable*> contact_wrenches_map;
+  // We impose the decision variable to be qdd_desired.
+  // Later we can replace this with acceleration tasks.
+  problem.add_constraint(qdd.expr() == qdd_desired);
 
+  // We build the expression for tau, given the equation of motion
+  // tau = M qdd + b - J^T F
+
+  // M qdd
+  Expression tau = robot.mass_matrix() * qdd.expr();
+
+  // b
+  tau = tau + robot.non_linear_effects();
+
+  // J^T F
   // Computing body jacobians
   for (auto& contact : contacts)
   {
-    torque_forces = torque_forces + contact->add_wrench(robot, problem);
+    tau = tau - contact->add_wrench(robot, problem);
   }
 
   // Loop closing constraints
@@ -198,21 +203,20 @@ InverseDynamics::Result InverseDynamics::compute()
         constraint.mask.indices, Eigen::placeholders::all);
     Variable constraint_wrench = problem.add_variable(constraint.mask.indices.size());
 
-    torque_forces = torque_forces + J.transpose() * constraint_wrench.expr();
+    tau = tau - J.transpose() * constraint_wrench.expr();
   }
 
-  // Equation of motion
-  Eigen::VectorXd h = robot.generalized_gravity();
+  // Floating base has no torque
+  problem.add_constraint(tau.slice(0, 6) == 0);
 
-  if (qdd_desired.size() > 0)
+  // Passive joints have no torque
+  for (auto& joint_name : passive_joints)
   {
-    h += robot.mass_matrix() * qdd_desired;
+    problem.add_constraint(tau.slice(robot.get_joint_v_offset(joint_name), 1) == 0);
   }
-
-  problem.add_constraint(torque_forces == h);
 
   // We want to minimize torques
-  problem.add_constraint(tau.expr() == 0).configure(ProblemConstraint::Soft, 1.0);
+  problem.add_constraint(tau == 0).configure(ProblemConstraint::Soft, 1.0);
 
   try
   {
@@ -221,7 +225,8 @@ InverseDynamics::Result InverseDynamics::compute()
     result.success = true;
 
     // Exporting result values
-    result.tau = tau.value;
+    result.tau = tau.value(problem.x);
+    result.qdd = qdd.value;
 
     // Updating wrenches
     for (auto& contact : contacts)

@@ -17,6 +17,9 @@ public:
 
     // Torques computed by the solver
     Eigen::VectorXd tau;
+
+    // Accelerations computed by the solver
+    Eigen::VectorXd qdd;
   };
 
   struct Contact
