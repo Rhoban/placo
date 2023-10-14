@@ -21,19 +21,22 @@ void InverseDynamics::Contact::configure(const std::string& frame_name, InverseD
   this->width = width;
 }
 
-Expression InverseDynamics::Contact::add_wrench(RobotWrapper& robot, Problem& problem)
+InverseDynamics::Contact::Wrench InverseDynamics::Contact::add_wrench(RobotWrapper& robot, Problem& problem)
 {
   if (frame_name == "")
   {
     throw std::runtime_error("Contact frame name is not set (did you call configure?)");
   }
 
+  Wrench wrench;
+
   if (type == Fixed)
   {
     Eigen::MatrixXd J = robot.frame_jacobian(frame_name, "local");
     variable = &problem.add_variable(6);
 
-    return J.transpose() * variable->expr();
+    wrench.J = J;
+    wrench.f = variable->expr();
   }
   else if (type == Planar)
   {
@@ -71,7 +74,8 @@ Expression InverseDynamics::Contact::add_wrench(RobotWrapper& robot, Problem& pr
       problem.add_constraint(variable->expr(M_X, 3) == 0).configure(ProblemConstraint::Soft, weight_moments);
     }
 
-    return J.transpose() * variable->expr();
+    wrench.J = J;
+    wrench.f = variable->expr();
   }
   else if (type == Point)
   {
@@ -94,12 +98,15 @@ Expression InverseDynamics::Contact::add_wrench(RobotWrapper& robot, Problem& pr
       problem.add_constraint(variable->expr(F_X, 3) == 0).configure(ProblemConstraint::Soft, weight_forces);
     }
 
-    return J.transpose() * variable->expr();
+    wrench.J = J;
+    wrench.f = variable->expr();
   }
   else
   {
     throw std::runtime_error("Unknown contact type");
   }
+
+  return wrench;
 }
 
 Eigen::Vector3d InverseDynamics::Contact::zmp()
@@ -163,7 +170,7 @@ InverseDynamics::~InverseDynamics()
   }
 }
 
-InverseDynamics::Result InverseDynamics::compute()
+InverseDynamics::Result InverseDynamics::solve()
 {
   InverseDynamics::Result result;
   std::vector<Variable*> contact_wrenches;
@@ -193,7 +200,9 @@ InverseDynamics::Result InverseDynamics::compute()
   // Computing body jacobians
   for (auto& contact : contacts)
   {
-    tau = tau - contact->add_wrench(robot, problem);
+    Contact::Wrench wrench = contact->add_wrench(robot, problem);
+    // problem.add_constraint(wrench.J * qdd.expr() == 0);
+    tau = tau - wrench.J.transpose() * wrench.f;
   }
 
   // Loop closing constraints

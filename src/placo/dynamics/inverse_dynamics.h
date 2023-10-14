@@ -24,6 +24,12 @@ public:
 
   struct Contact
   {
+    struct Wrench
+    {
+      Eigen::MatrixXd J;
+      Expression f;
+    };
+
     std::string frame_name = "";
 
     enum Type
@@ -51,7 +57,7 @@ public:
     double weight_moments = 1e3;
 
     // Adds the wrench to the problem
-    Expression add_wrench(RobotWrapper& robot, Problem& problem);
+    Wrench add_wrench(RobotWrapper& robot, Problem& problem);
 
     // Returns the ZMP of the contact
     Eigen::Vector3d zmp();
@@ -123,7 +129,7 @@ public:
    * @param mu friction coefficient
    * @return
    */
-  Result compute();
+  Result solve();
 
 protected:
   RobotWrapper& robot;

@@ -550,7 +550,20 @@ Eigen::MatrixXd RobotWrapper::mass_matrix()
 
 void RobotWrapper::integrate(double dt)
 {
-  state.q = pinocchio::integrate(model, state.q, state.qd);
+  // If qd is not set, initialize to 0
+  if (state.qd.rows() == 0)
+  {
+    state.qd = Eigen::VectorXd::Zero(model.nv);
+  }
+
+  if (state.qdd.rows() != 0)
+  {
+    // Integrate acceleration
+    state.qd = state.qd + dt * state.qdd;
+  }
+
+  // Integrate velocity
+  state.q = pinocchio::integrate(model, state.q, state.qd * dt);
 }
 
 Eigen::VectorXd RobotWrapper::static_gravity_compensation_torques(RobotWrapper::FrameIndex frameIndex)
