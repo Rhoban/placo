@@ -40,6 +40,16 @@ bool Expression::is_scalar() const
   return rows() == 1 && cols() == 0;
 }
 
+Expression Expression::slice(int start, int rows) const
+{
+  Expression e;
+
+  e.A = A.block(start, 0, rows, cols());
+  e.b = b.block(start, 0, rows, 1);
+
+  return e;
+}
+
 int Expression::cols() const
 {
   return A.cols();

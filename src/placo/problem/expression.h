@@ -19,6 +19,8 @@ public:
   Eigen::MatrixXd A = Eigen::MatrixXd(0, 0);
   Eigen::VectorXd b = Eigen::VectorXd(0);
 
+  Expression slice(int start, int rows) const;
+
   bool is_scalar() const;
 
   int cols() const;
