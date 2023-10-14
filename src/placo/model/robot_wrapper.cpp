@@ -536,7 +536,8 @@ Eigen::Matrix3Xd RobotWrapper::com_jacobian()
 
 Eigen::Matrix3Xd RobotWrapper::com_jacobian_time_variation()
 {
-  return pinocchio::computeCentroidalMapTimeVariation(model, *data, state.q, state.qd).topRows(3);
+  // See https://github.com/stack-of-tasks/pinocchio/issues/1297
+  return pinocchio::computeCentroidalMapTimeVariation(model, *data, state.q, state.qd).topRows(3) / total_mass();
 }
 
 Eigen::MatrixXd RobotWrapper::centroidal_map()
@@ -651,6 +652,18 @@ std::vector<std::string> RobotWrapper::frame_names()
     result.push_back(frame.name);
   }
   return result;
+}
+
+double RobotWrapper::total_mass()
+{
+  double mass = 0.0;
+
+  for (auto& body : model.inertias)
+  {
+    mass += body.mass();
+  }
+
+  return mass;
 }
 
 std::vector<std::string> RobotWrapper::expected_dofs()

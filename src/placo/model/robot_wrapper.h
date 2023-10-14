@@ -321,6 +321,11 @@ public:
    */
   std::vector<std::string> frame_names();
 
+  /**
+   * @brief Robot total mass
+   */
+  double total_mass();
+
   // Pinocchio model
   std::string model_directory;
   pinocchio::Model model;
