@@ -534,6 +534,11 @@ Eigen::Matrix3Xd RobotWrapper::com_jacobian()
   return pinocchio::jacobianCenterOfMass(model, *data, state.q);
 }
 
+Eigen::Matrix3Xd RobotWrapper::com_jacobian_time_variation()
+{
+  return pinocchio::computeCentroidalMapTimeVariation(model, *data, state.q, state.qd).topRows(3);
+}
+
 Eigen::MatrixXd RobotWrapper::centroidal_map()
 {
   return pinocchio::computeCentroidalMap(model, *data, state.q);

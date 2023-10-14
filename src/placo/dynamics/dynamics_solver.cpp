@@ -236,8 +236,7 @@ DynamicsSolver::Result DynamicsSolver::solve()
   // tau = M qdd + b - J^T F
 
   // We add some friction, this might be reworked and parametrized
-  Eigen::VectorXd friction = robot.state.qd * 1e-3;
-  friction.block(0, 0, 6, 1) = Eigen::VectorXd::Zero(6);
+  Eigen::VectorXd friction = robot.state.qd * 1e-2;
 
   // M qdd
   Expression tau = robot.mass_matrix() * qdd.expr() + friction;

@@ -260,6 +260,7 @@ public:
    * @return jacobian (3xn matrix)
    */
   Eigen::Matrix3Xd com_jacobian();
+  Eigen::Matrix3Xd com_jacobian_time_variation();
 
   /**
    * @brief Computes the centroidal map
