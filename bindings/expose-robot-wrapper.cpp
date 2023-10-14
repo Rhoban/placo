@@ -44,9 +44,11 @@ void exposeRobotType(class_<RobotType, W1>& type)
       .def("self_collisions", &RobotType::self_collisions)
       .def("distances", &RobotType::distances)
       .def("com_jacobian", &RobotType::com_jacobian)
+      .def("com_jacobian_time_variation", &RobotType::com_jacobian_time_variation)
       .def("generalized_gravity", &RobotType::generalized_gravity)
       .def("non_linear_effects", &RobotType::non_linear_effects)
       .def("mass_matrix", &RobotType::mass_matrix)
+      .def("total_mass", &RobotType::total_mass)
       .def("integrate", &RobotType::integrate)
       .def(
           "static_gravity_compensation_torques",
