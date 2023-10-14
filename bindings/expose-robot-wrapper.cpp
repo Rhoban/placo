@@ -95,6 +95,11 @@ void exposeRobotType(class_<RobotType, W1>& type)
           "frame_jacobian", +[](RobotType& robot, const std::string& frame,
                                 const std::string& reference) { return robot.frame_jacobian(frame, reference); })
       .def(
+          "frame_jacobian_time_variation",
+          +[](RobotType& robot, const std::string& frame, const std::string& reference) {
+            return robot.frame_jacobian_time_variation(frame, reference);
+          })
+      .def(
           "joint_jacobian", +[](RobotType& robot, const std::string& joint,
                                 const std::string& reference) { return robot.joint_jacobian(joint, reference); })
       .def(

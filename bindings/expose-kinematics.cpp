@@ -10,7 +10,7 @@
 using namespace boost::python;
 using namespace placo;
 
-class_<KinematicsSolver>* solver_class_ptr = nullptr;
+static class_<KinematicsSolver>* solver_class_ptr = nullptr;
 
 template <typename T>
 void registerTaskMethods(class_<T>& class__)

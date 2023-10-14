@@ -260,6 +260,7 @@ void RobotWrapper::update_kinematics()
 {
   pinocchio::framesForwardKinematics(model, *data, state.q);
   pinocchio::computeJointJacobians(model, *data, state.q);
+  pinocchio::computeJointJacobiansTimeVariation(model, *data, state.q, state.qd);
 }
 
 RobotWrapper::State RobotWrapper::neutral_state()
@@ -474,6 +475,21 @@ Eigen::MatrixXd RobotWrapper::frame_jacobian(pinocchio::FrameIndex frame, pinocc
   Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> jacobian(6, model.nv);
   jacobian.setZero();
   pinocchio::computeFrameJacobian(model, *data, state.q, frame, ref, jacobian);
+
+  return jacobian;
+}
+
+Eigen::MatrixXd RobotWrapper::frame_jacobian_time_variation(const std::string& frame, const std::string& reference)
+{
+  return frame_jacobian_time_variation(get_frame_index(frame), string_to_reference(reference));
+}
+
+Eigen::MatrixXd RobotWrapper::frame_jacobian_time_variation(pinocchio::FrameIndex frame, pinocchio::ReferenceFrame ref)
+{
+  Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> jacobian(6, model.nv);
+  jacobian.setZero();
+
+  pinocchio::getFrameJacobianTimeVariation(model, *data, frame, ref, jacobian);
 
   return jacobian;
 }

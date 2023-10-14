@@ -1,4 +1,4 @@
-#include "placo/dynamics/inverse_dynamics.h"
+#include "placo/dynamics/dynamics_solver.h"
 #include "placo/problem/problem.h"
 
 // Some helpers for readability
@@ -11,8 +11,10 @@
 
 namespace placo
 {
-void InverseDynamics::Contact::configure(const std::string& frame_name, InverseDynamics::Contact::Type type, double mu,
-                                         double length, double width)
+namespace dynamics
+{
+void DynamicsSolver::Contact::configure(const std::string& frame_name, DynamicsSolver::Contact::Type type, double mu,
+                                        double length, double width)
 {
   this->frame_name = frame_name;
   this->type = type;
@@ -21,7 +23,7 @@ void InverseDynamics::Contact::configure(const std::string& frame_name, InverseD
   this->width = width;
 }
 
-InverseDynamics::Contact::Wrench InverseDynamics::Contact::add_wrench(RobotWrapper& robot, Problem& problem)
+DynamicsSolver::Contact::Wrench DynamicsSolver::Contact::add_wrench(RobotWrapper& robot, Problem& problem)
 {
   if (frame_name == "")
   {
@@ -82,15 +84,15 @@ InverseDynamics::Contact::Wrench InverseDynamics::Contact::add_wrench(RobotWrapp
     Eigen::MatrixXd J = robot.frame_jacobian(frame_name, "local_world_aligned").block(0, 0, 3, robot.model.nv);
     variable = &problem.add_variable(3);
 
-    // The contact is unilateral
-    problem.add_constraint(variable->expr(F_Z, 1) >= 0);
+    // // The contact is unilateral
+    // problem.add_constraint(variable->expr(F_Z, 1) >= 0);
 
-    // We don't slip
-    problem.add_constraint(variable->expr(F_X, 1) <= mu * variable->expr(F_Z, 1));
-    problem.add_constraint(-mu * variable->expr(F_Z, 1) <= variable->expr(F_X, 1));
+    // // We don't slip
+    // problem.add_constraint(variable->expr(F_X, 1) <= mu * variable->expr(F_Z, 1));
+    // problem.add_constraint(-mu * variable->expr(F_Z, 1) <= variable->expr(F_X, 1));
 
-    problem.add_constraint(variable->expr(F_Y, 1) <= mu * variable->expr(F_Z, 1));
-    problem.add_constraint(-mu * variable->expr(F_Z, 1) <= variable->expr(F_Y, 1));
+    // problem.add_constraint(variable->expr(F_Y, 1) <= mu * variable->expr(F_Z, 1));
+    // problem.add_constraint(-mu * variable->expr(F_Z, 1) <= variable->expr(F_Y, 1));
 
     // Objective
     if (weight_forces > 0)
@@ -109,7 +111,7 @@ InverseDynamics::Contact::Wrench InverseDynamics::Contact::add_wrench(RobotWrapp
   return wrench;
 }
 
-Eigen::Vector3d InverseDynamics::Contact::zmp()
+Eigen::Vector3d DynamicsSolver::Contact::zmp()
 {
   if (type == Fixed)
   {
@@ -129,13 +131,13 @@ Eigen::Vector3d InverseDynamics::Contact::zmp()
   }
 }
 
-InverseDynamics::Contact& InverseDynamics::add_contact()
+DynamicsSolver::Contact& DynamicsSolver::add_contact()
 {
   contacts.push_back(new Contact());
   return *contacts.back();
 }
 
-void InverseDynamics::set_passive(const std::string& joint_name, bool is_passive)
+void DynamicsSolver::set_passive(const std::string& joint_name, bool is_passive)
 {
   if (!is_passive)
   {
@@ -147,8 +149,8 @@ void InverseDynamics::set_passive(const std::string& joint_name, bool is_passive
   }
 }
 
-void InverseDynamics::add_loop_closing_constraint(const std::string& frame_a, const std::string& frame_b,
-                                                  const std::string& mask)
+void DynamicsSolver::add_loop_closing_constraint(const std::string& frame_a, const std::string& frame_b,
+                                                 const std::string& mask)
 {
   LoopClosure constraint;
   constraint.frame_a = frame_a;
@@ -158,21 +160,46 @@ void InverseDynamics::add_loop_closing_constraint(const std::string& frame_a, co
   loop_closing_constraints.push_back(constraint);
 }
 
-InverseDynamics::InverseDynamics(RobotWrapper& robot) : robot(robot)
+PositionTask& DynamicsSolver::add_position_task(pinocchio::FrameIndex frame_index, Eigen::Vector3d target_world)
 {
+  return add_task(new PositionTask(frame_index, target_world));
 }
 
-InverseDynamics::~InverseDynamics()
+PositionTask& DynamicsSolver::add_position_task(std::string frame_name, Eigen::Vector3d target_world)
+{
+  return add_position_task(robot.get_frame_index(frame_name), target_world);
+}
+
+OrientationTask& DynamicsSolver::add_orientation_task(pinocchio::FrameIndex frame_index, Eigen::Matrix3d R_world_frame)
+{
+  return add_task(new OrientationTask(frame_index, R_world_frame));
+}
+
+OrientationTask& DynamicsSolver::add_orientation_task(std::string frame_name, Eigen::Matrix3d R_world_frame)
+{
+  return add_orientation_task(robot.get_frame_index(frame_name), R_world_frame);
+}
+
+DynamicsSolver::DynamicsSolver(RobotWrapper& robot) : robot(robot)
+{
+  N = robot.model.nv;
+}
+
+DynamicsSolver::~DynamicsSolver()
 {
   for (auto& contact : contacts)
   {
     delete contact;
   }
+  for (auto& task : tasks)
+  {
+    delete task;
+  }
 }
 
-InverseDynamics::Result InverseDynamics::solve()
+DynamicsSolver::Result DynamicsSolver::solve()
 {
-  InverseDynamics::Result result;
+  DynamicsSolver::Result result;
   std::vector<Variable*> contact_wrenches;
 
   Problem problem;
@@ -185,7 +212,25 @@ InverseDynamics::Result InverseDynamics::solve()
 
   // We impose the decision variable to be qdd_desired.
   // Later we can replace this with acceleration tasks.
-  problem.add_constraint(qdd.expr() == qdd_desired);
+  // problem.add_constraint(qdd.expr() == qdd_desired);
+
+  for (auto& task : tasks)
+  {
+    task->update();
+
+    ProblemConstraint::Priority task_priority = ProblemConstraint::Hard;
+    if (task->priority == Task::Priority::Soft)
+    {
+      task_priority = ProblemConstraint::Soft;
+    }
+
+    std::cout << "Adding task " << task->type_name() << " with priority " << task_priority << std::endl;
+
+    Expression e;
+    e.A = task->A;
+    e.b = -task->b;
+    problem.add_constraint(e == 0).configure(task_priority, task->weight);
+  }
 
   // We build the expression for tau, given the equation of motion
   // tau = M qdd + b - J^T F
@@ -250,4 +295,11 @@ InverseDynamics::Result InverseDynamics::solve()
 
   return result;
 }
+
+void DynamicsSolver::remove_task(Task* task)
+{
+  tasks.erase(task);
+  delete &task;
+}
+}  // namespace dynamics
 }  // namespace placo

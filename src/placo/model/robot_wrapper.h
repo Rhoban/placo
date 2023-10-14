@@ -235,6 +235,11 @@ public:
   Eigen::MatrixXd frame_jacobian(FrameIndex frame,
                                  pinocchio::ReferenceFrame ref = pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED);
 
+  Eigen::MatrixXd frame_jacobian_time_variation(const std::string& frame, const std::string& reference = "local_world_"
+                                                                                                         "aligned");
+  Eigen::MatrixXd frame_jacobian_time_variation(
+      FrameIndex frame, pinocchio::ReferenceFrame ref = pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED);
+
   /**
    * @brief Computes joint jacobian, default reference is LOCAL_WORLD_ALIGNED
    * @param frame given frame

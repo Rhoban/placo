@@ -1,13 +1,19 @@
 #pragma once
 
 #include <Eigen/Dense>
+#include <set>
 #include "placo/model/robot_wrapper.h"
 #include "placo/problem/problem.h"
 #include "placo/control/axises_mask.h"
+#include "placo/dynamics/task.h"
+#include "placo/dynamics/position_task.h"
+#include "placo/dynamics/orientation_task.h"
 
 namespace placo
 {
-class InverseDynamics
+namespace dynamics
+{
+class DynamicsSolver
 {
 public:
   struct Result
@@ -53,8 +59,8 @@ public:
     double mu = 1.;
 
     // Weights for optimization
-    double weight_forces = 1.0;
-    double weight_moments = 1e3;
+    double weight_forces = 1e-6;
+    double weight_moments = 1e-3;
 
     // Adds the wrench to the problem
     Wrench add_wrench(RobotWrapper& robot, Problem& problem);
@@ -74,8 +80,8 @@ public:
     AxisesMask mask;
   };
 
-  InverseDynamics(RobotWrapper& robot);
-  virtual ~InverseDynamics();
+  DynamicsSolver(RobotWrapper& robot);
+  virtual ~DynamicsSolver();
 
   // Contacts
   std::vector<Contact*> contacts;
@@ -106,6 +112,11 @@ public:
    */
   void add_loop_closing_constraint(const std::string& frame_a, const std::string& frame_b, const std::string& axises);
 
+  PositionTask& add_position_task(pinocchio::FrameIndex frame_index, Eigen::Vector3d target_world);
+  PositionTask& add_position_task(std::string frame_name, Eigen::Vector3d target_world);
+  OrientationTask& add_orientation_task(pinocchio::FrameIndex frame_index, Eigen::Matrix3d R_world_frame);
+  OrientationTask& add_orientation_task(std::string frame_name, Eigen::Matrix3d R_world_frame);
+
   /**
    * @brief Computes the torques required to compensate gravity given a set of unilateral contacts. This
    * formulates and try to solve a QP problem with the following properties:
@@ -131,8 +142,32 @@ public:
    */
   Result solve();
 
-protected:
   RobotWrapper& robot;
+
+  void remove_task(Task* task);
+
+  int N;
+
+protected:
   std::vector<LoopClosure> loop_closing_constraints;
+
+  std::set<Task*> tasks;
+
+  // Task id (this is only useful when task names are not specified, each task will have an unique ID)
+  int task_id = 0;
+
+  template <typename T>
+  T& add_task(T* task)
+  {
+    task_id += 1;
+    task->solver = this;
+    std::ostringstream oss;
+    oss << "Task_" << task_id;
+    task->name = oss.str();
+    tasks.insert(task);
+
+    return *task;
+  }
 };
+}  // namespace dynamics
 }  // namespace placo
