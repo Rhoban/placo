@@ -58,24 +58,28 @@ void exposeContacts()
             return dict;
           });
 
-  class_<DynamicsSolver::Contact>("DynamicsSolverContact")
+  class_<Contact>("DynamicsSolverContact", init<RobotWrapper&>())
       .def(
           "configure",
-          +[](DynamicsSolver::Contact& contact, const std::string& frame_name, std::string type, double mu = 1.0,
-              double length = 1.0, double width = 1.0) {
-            DynamicsSolver::Contact::Type contact_type;
+          +[](Contact& contact, const std::string& frame_name, std::string type, double mu = 1.0, double length = 1.0,
+              double width = 1.0) {
+            Contact::Type contact_type;
 
             if (type == "fixed")
             {
-              contact_type = DynamicsSolver::Contact::Fixed;
+              contact_type = Contact::Fixed;
+            }
+            else if (type == "fixed_point")
+            {
+              contact_type = Contact::FixedPoint;
             }
             else if (type == "planar")
             {
-              contact_type = DynamicsSolver::Contact::Planar;
+              contact_type = Contact::Planar;
             }
             else if (type == "point")
             {
-              contact_type = DynamicsSolver::Contact::Point;
+              contact_type = Contact::Point;
             }
             else
             {
@@ -85,16 +89,16 @@ void exposeContacts()
           },
           (boost::python::arg("frame_name"), boost::python::arg("type"), boost::python::arg("mu") = 1.0,
            boost::python::arg("length") = 1.0, boost::python::arg("width") = 1.0))
-      .def_readwrite("frame_name", &DynamicsSolver::Contact::frame_name)
-      .def_readwrite("type", &DynamicsSolver::Contact::type)
-      .def_readwrite("length", &DynamicsSolver::Contact::length)
-      .def_readwrite("width", &DynamicsSolver::Contact::width)
-      .def_readwrite("mu", &DynamicsSolver::Contact::mu)
-      .def_readwrite("weight_forces", &DynamicsSolver::Contact::weight_forces)
-      .def_readwrite("weight_moments", &DynamicsSolver::Contact::weight_moments)
-      .def("zmp", &DynamicsSolver::Contact::zmp)
+      .def_readwrite("frame_name", &Contact::frame_name)
+      .def_readwrite("type", &Contact::type)
+      .def_readwrite("length", &Contact::length)
+      .def_readwrite("width", &Contact::width)
+      .def_readwrite("mu", &Contact::mu)
+      .def_readwrite("weight_forces", &Contact::weight_forces)
+      .def_readwrite("weight_moments", &Contact::weight_moments)
+      .def("zmp", &Contact::zmp)
       .add_property(
-          "wrench", +[](DynamicsSolver::Contact& contact) { return contact.wrench; });
+          "wrench", +[](Contact& contact) { return contact.wrench; });
 
   class_<DynamicsSolver> solver_class =
       class_<DynamicsSolver>("DynamicsSolver", init<RobotWrapper&>())

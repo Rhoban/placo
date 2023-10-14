@@ -73,7 +73,8 @@ add_library(libplaco
     src/placo/model/humanoid_parameters.cpp
     src/placo/planning/lipm.cpp
 
-    # Contacts
+    # Dynamics
+    src/placo/dynamics/contact.cpp
     src/placo/dynamics/dynamics_solver.cpp
     src/placo/dynamics/task.cpp
     src/placo/dynamics/position_task.cpp

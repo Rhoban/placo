@@ -1,139 +1,14 @@
 #include "placo/dynamics/dynamics_solver.h"
 #include "placo/problem/problem.h"
 
-// Some helpers for readability
-#define F_X 0
-#define F_Y 1
-#define F_Z 2
-#define M_X 3
-#define M_Y 4
-#define M_Z 5
-
 namespace placo
 {
 namespace dynamics
 {
-void DynamicsSolver::Contact::configure(const std::string& frame_name, DynamicsSolver::Contact::Type type, double mu,
-                                        double length, double width)
+
+Contact& DynamicsSolver::add_contact()
 {
-  this->frame_name = frame_name;
-  this->type = type;
-  this->mu = mu;
-  this->length = length;
-  this->width = width;
-}
-
-DynamicsSolver::Contact::Wrench DynamicsSolver::Contact::add_wrench(RobotWrapper& robot, Problem& problem)
-{
-  if (frame_name == "")
-  {
-    throw std::runtime_error("Contact frame name is not set (did you call configure?)");
-  }
-
-  Wrench wrench;
-
-  if (type == Fixed)
-  {
-    Eigen::MatrixXd J = robot.frame_jacobian(frame_name, "local");
-    variable = &problem.add_variable(6);
-
-    wrench.J = J;
-    wrench.f = variable->expr();
-  }
-  else if (type == Planar)
-  {
-    Eigen::MatrixXd J = robot.frame_jacobian(frame_name, "local");
-
-    // Wrench is: [ fx fy fz mx my mz ] with f the force and m the moment
-    variable = &problem.add_variable(6);
-
-    // The contact is unilateral
-    problem.add_constraint(variable->expr(F_Z, 1) >= 0);
-
-    // We want the ZMPs to remain in the contacts
-    // We add constraints in the form of:
-    // -l_1 f_x <= m_y <= l_1 f_x
-    problem.add_constraint(variable->expr(M_Y, 1) <= ((length / 2) * variable->expr(F_Z, 1)));
-    problem.add_constraint((-(length / 2) * variable->expr(F_Z, 1)) <= variable->expr(M_Y, 1));
-
-    problem.add_constraint(variable->expr(M_X, 1) <= ((width / 2) * variable->expr(F_Z, 1)));
-    problem.add_constraint((-(width / 2) * variable->expr(F_Z, 1)) <= variable->expr(M_X, 1));
-
-    // We don't slip
-    problem.add_constraint(variable->expr(F_X, 1) <= mu * variable->expr(F_Z, 1));
-    problem.add_constraint(-mu * variable->expr(F_Z, 1) <= variable->expr(F_X, 1));
-
-    problem.add_constraint(variable->expr(F_Y, 1) <= mu * variable->expr(F_Z, 1));
-    problem.add_constraint(-mu * variable->expr(F_Z, 1) <= variable->expr(F_Y, 1));
-
-    // Objective
-    if (weight_forces > 0)
-    {
-      problem.add_constraint(variable->expr(F_X, 3) == 0).configure(ProblemConstraint::Soft, weight_forces);
-    }
-    if (weight_moments > 0)
-    {
-      problem.add_constraint(variable->expr(M_X, 3) == 0).configure(ProblemConstraint::Soft, weight_moments);
-    }
-
-    wrench.J = J;
-    wrench.f = variable->expr();
-  }
-  else if (type == Point)
-  {
-    Eigen::MatrixXd J = robot.frame_jacobian(frame_name, "local_world_aligned").block(0, 0, 3, robot.model.nv);
-    variable = &problem.add_variable(3);
-
-    // // The contact is unilateral
-    // problem.add_constraint(variable->expr(F_Z, 1) >= 0);
-
-    // // We don't slip
-    // problem.add_constraint(variable->expr(F_X, 1) <= mu * variable->expr(F_Z, 1));
-    // problem.add_constraint(-mu * variable->expr(F_Z, 1) <= variable->expr(F_X, 1));
-
-    // problem.add_constraint(variable->expr(F_Y, 1) <= mu * variable->expr(F_Z, 1));
-    // problem.add_constraint(-mu * variable->expr(F_Z, 1) <= variable->expr(F_Y, 1));
-
-    // Objective
-    if (weight_forces > 0)
-    {
-      problem.add_constraint(variable->expr(F_X, 3) == 0).configure(ProblemConstraint::Soft, weight_forces);
-    }
-
-    wrench.J = J;
-    wrench.f = variable->expr();
-  }
-  else
-  {
-    throw std::runtime_error("Unknown contact type");
-  }
-
-  return wrench;
-}
-
-Eigen::Vector3d DynamicsSolver::Contact::zmp()
-{
-  if (type == Fixed)
-  {
-    return Eigen::Vector3d::Zero();
-  }
-  else if (type == Planar)
-  {
-    return Eigen::Vector3d(-wrench(M_Y, 0) / wrench(F_Z, 0), wrench(M_X, 0) / wrench(F_Z, 0), 0);
-  }
-  else if (type == Point)
-  {
-    return Eigen::Vector3d::Zero();
-  }
-  else
-  {
-    throw std::runtime_error("Unknown contact type");
-  }
-}
-
-DynamicsSolver::Contact& DynamicsSolver::add_contact()
-{
-  contacts.push_back(new Contact());
+  contacts.push_back(new Contact(robot));
   return *contacts.back();
 }
 
