@@ -50,6 +50,9 @@ public:
   virtual std::string error_unit() = 0;
   virtual Eigen::MatrixXd error();
   virtual double error_norm();
+
+  double kp = 1e3;
+  double kd = 250.;
 };
 }  // namespace dynamics
 }  // namespace placo

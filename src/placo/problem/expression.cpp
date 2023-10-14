@@ -262,7 +262,7 @@ ProblemConstraint Expression::operator<=(const Expression& other) const
 
 Eigen::VectorXd Expression::value(Eigen::VectorXd x) const
 {
-  return A * x.block(0, 0, A.rows(), 1) + b;
+  return A * x.block(0, 0, A.cols(), 1) + b;
 }
 
 ProblemConstraint Expression::operator>=(double f) const

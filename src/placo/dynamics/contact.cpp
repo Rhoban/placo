@@ -1,4 +1,7 @@
 #include "placo/dynamics/contact.h"
+#include "placo/dynamics/dynamics_solver.h"
+#include "placo/dynamics/position_task.h"
+#include "placo/dynamics/orientation_task.h"
 
 // Some helpers for readability
 #define F_X 0
@@ -12,7 +15,7 @@ namespace placo
 {
 namespace dynamics
 {
-Contact::Contact(RobotWrapper& robot) : robot(robot)
+Contact::Contact()
 {
 }
 

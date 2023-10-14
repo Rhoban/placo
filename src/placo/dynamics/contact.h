@@ -7,10 +7,12 @@ namespace placo
 {
 namespace dynamics
 {
-
+class PositionTask;
+class OrientationTask;
+class DynamicsSolver;
 struct Contact
 {
-  Contact(RobotWrapper& robot);
+  Contact();
 
   struct Wrench
   {
@@ -55,7 +57,7 @@ struct Contact
   Eigen::MatrixXd wrench;
   Variable* variable;
 
-  RobotWrapper& robot;
+  DynamicsSolver* solver = nullptr;
 };
 }  // namespace dynamics
 }  // namespace placo

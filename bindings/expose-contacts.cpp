@@ -23,6 +23,8 @@ void registerTaskMethods(class_<T>& class__)
           "priority", +[](T& task) { return task.priority_name(); })
       .add_property("A", &T::A)
       .add_property("b", &T::b)
+      .add_property("kp", &T::kp, &T::kp)
+      .add_property("kd", &T::kd, &T::kd)
       .def("error", &T::error)
       .def("error_norm", &T::error_norm)
       .def("update", &T::update)
@@ -58,7 +60,7 @@ void exposeContacts()
             return dict;
           });
 
-  class_<Contact>("DynamicsSolverContact", init<RobotWrapper&>())
+  class_<Contact>("DynamicsSolverContact")
       .def(
           "configure",
           +[](Contact& contact, const std::string& frame_name, std::string type, double mu = 1.0, double length = 1.0,

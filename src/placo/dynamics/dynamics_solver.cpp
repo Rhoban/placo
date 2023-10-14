@@ -8,8 +8,11 @@ namespace dynamics
 
 Contact& DynamicsSolver::add_contact()
 {
-  contacts.push_back(new Contact(robot));
-  return *contacts.back();
+  Contact* contact = new Contact();
+  contact->solver = this;
+
+  contacts.push_back(contact);
+  return *contact;
 }
 
 void DynamicsSolver::set_passive(const std::string& joint_name, bool is_passive)
@@ -99,8 +102,6 @@ DynamicsSolver::Result DynamicsSolver::solve()
       task_priority = ProblemConstraint::Soft;
     }
 
-    std::cout << "Adding task " << task->type_name() << " with priority " << task_priority << std::endl;
-
     Expression e;
     e.A = task->A;
     e.b = -task->b;
@@ -111,10 +112,10 @@ DynamicsSolver::Result DynamicsSolver::solve()
   // tau = M qdd + b - J^T F
 
   // We add some friction, this might be reworked and parametrized
-  Eigen::VectorXd friction = robot.state.qd * 1e-2;
+  // Eigen::VectorXd friction = robot.state.qd * 1e-2;
 
   // M qdd
-  Expression tau = robot.mass_matrix() * qdd.expr() + friction;
+  Expression tau = robot.mass_matrix() * qdd.expr();
 
   // b
   tau = tau + robot.non_linear_effects();
@@ -148,7 +149,7 @@ DynamicsSolver::Result DynamicsSolver::solve()
   }
 
   // We want to minimize torques
-  problem.add_constraint(tau == 0).configure(ProblemConstraint::Soft, 1.0);
+  problem.add_constraint(tau == 0).configure(ProblemConstraint::Soft, 1e-3);
 
   try
   {
@@ -177,7 +178,7 @@ DynamicsSolver::Result DynamicsSolver::solve()
 void DynamicsSolver::remove_task(Task* task)
 {
   tasks.erase(task);
-  delete &task;
+  delete task;
 }
 }  // namespace dynamics
 }  // namespace placo

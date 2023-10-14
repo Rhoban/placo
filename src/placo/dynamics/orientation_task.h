@@ -21,8 +21,6 @@ public:
   std::string error_unit() override;
 
   AxisesMask mask;
-
-  double kp = 1e3;
 };
 }  // namespace dynamics
 }  // namespace placo
