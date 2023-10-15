@@ -51,8 +51,7 @@ public:
   virtual Eigen::MatrixXd error();
   virtual double error_norm();
 
-  double kp = 10e3;
-  double kd = 1e3;
+  double kp = 1e3;
 };
 }  // namespace dynamics
 }  // namespace placo
