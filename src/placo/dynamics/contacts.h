@@ -11,6 +11,7 @@ class PositionTask;
 class RelativePositionTask;
 class OrientationTask;
 class DynamicsSolver;
+class FrameTask;
 
 class Contact
 {
@@ -53,7 +54,7 @@ public:
 class PlanarContact : public Contact
 {
 public:
-  PlanarContact(PositionTask& position_task, OrientationTask& orientation_task, bool unilateral);
+  PlanarContact(FrameTask& frame_task, bool unilateral);
 
   PositionTask* position_task;
   OrientationTask* orientation_task;

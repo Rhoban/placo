@@ -2,6 +2,7 @@
 #include "placo/dynamics/dynamics_solver.h"
 #include "placo/dynamics/position_task.h"
 #include "placo/dynamics/orientation_task.h"
+#include "placo/dynamics/frame_task.h"
 
 // Some helpers for readability
 #define F_X 0
@@ -83,10 +84,10 @@ Contact::Wrench RelativePointContact::add_wrench(RobotWrapper& robot, Problem& p
   return wrench;
 }
 
-PlanarContact::PlanarContact(PositionTask& position_task, OrientationTask& orientation_task, bool unilateral)
+PlanarContact::PlanarContact(FrameTask& frame_task, bool unilateral)
 {
-  this->position_task = &position_task;
-  this->orientation_task = &orientation_task;
+  this->position_task = frame_task.position;
+  this->orientation_task = frame_task.orientation;
   this->unilateral = unilateral;
 }
 

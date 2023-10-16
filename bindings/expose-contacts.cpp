@@ -65,7 +65,7 @@ void exposeContacts()
           "wrench", +[](PointContact& contact) { return contact.variable->value; })
       .def_readwrite("unilateral", &PointContact::unilateral);
 
-  class_<PlanarContact>("DynamicsSolverPlanarContact", init<PositionTask&, OrientationTask&, bool>())
+  class_<PlanarContact>("DynamicsSolverPlanarContact", init<FrameTask&, bool>())
       .def_readwrite("mu", &PlanarContact::mu)
       .def_readwrite("weight_forces", &PlanarContact::weight_forces)
       .def_readwrite("weight_moments", &PlanarContact::weight_moments)

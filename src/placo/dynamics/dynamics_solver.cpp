@@ -43,14 +43,14 @@ RelativePointContact& DynamicsSolver::add_relative_point_contact(RelativePositio
   return add_contact(new RelativePointContact(position_task));
 }
 
-PlanarContact& DynamicsSolver::add_planar_contact(PositionTask& position_task, OrientationTask& orientation_task)
+PlanarContact& DynamicsSolver::add_planar_contact(FrameTask& frame_task)
 {
-  return add_contact(new PlanarContact(position_task, orientation_task, true));
+  return add_contact(new PlanarContact(frame_task, true));
 }
 
-PlanarContact& DynamicsSolver::add_fixed_contact(PositionTask& position_task, OrientationTask& orientation_task)
+PlanarContact& DynamicsSolver::add_fixed_contact(FrameTask& frame_task)
 {
-  return add_contact(new PlanarContact(position_task, orientation_task, false));
+  return add_contact(new PlanarContact(frame_task, false));
 }
 
 PositionTask& DynamicsSolver::add_position_task(pinocchio::FrameIndex frame_index, Eigen::Vector3d target_world)
