@@ -61,7 +61,6 @@ void exposeContacts()
   class_<PointContact>("DynamicsSolverPointContact", init<PositionTask&, bool>())
       .def_readwrite("mu", &PointContact::mu)
       .def_readwrite("weight_forces", &PointContact::weight_forces)
-      .def_readwrite("weight_moments", &PointContact::weight_moments)
       .add_property(
           "wrench", +[](PointContact& contact) { return contact.variable->value; })
       .def_readwrite("unilateral", &PointContact::unilateral);
@@ -77,14 +76,19 @@ void exposeContacts()
       .def_readwrite("width", &PlanarContact::width)
       .def("zmp", &PlanarContact::zmp);
 
+  class_<RelativePointContact>("DynamicsSolverRelativePointContact", init<RelativePositionTask&>())
+      .def_readwrite("weight_forces", &RelativePointContact::weight_forces)
+      .add_property(
+          "wrench", +[](RelativePointContact& contact) { return contact.variable->value; });
+
   class_<DynamicsSolver> solver_class =
       class_<DynamicsSolver>("DynamicsSolver", init<RobotWrapper&>())
           .def("add_point_contact", &DynamicsSolver::add_point_contact, return_internal_reference<>())
           .def("add_unilateral_point_contact", &DynamicsSolver::add_unilateral_point_contact,
                return_internal_reference<>())
+          .def("add_relative_point_contact", &DynamicsSolver::add_relative_point_contact, return_internal_reference<>())
           .def("add_planar_contact", &DynamicsSolver::add_planar_contact, return_internal_reference<>())
-          .def("add_unilateral_planar_contact", &DynamicsSolver::add_unilateral_planar_contact,
-               return_internal_reference<>())
+          .def("add_fixed_contact", &DynamicsSolver::add_fixed_contact, return_internal_reference<>())
           .def("set_passive", &DynamicsSolver::set_passive)
           .def("add_loop_closing_constraint", &DynamicsSolver::add_loop_closing_constraint)
           .def("solve", &DynamicsSolver::solve)
@@ -94,6 +98,8 @@ void exposeContacts()
               "add_relative_position_task", &DynamicsSolver::add_relative_position_task, return_internal_reference<>())
           .def<OrientationTask& (DynamicsSolver::*)(std::string, Eigen::Matrix3d)>(
               "add_orientation_task", &DynamicsSolver::add_orientation_task, return_internal_reference<>())
+          .def<JointsTask& (DynamicsSolver::*)()>("add_joints_task", &DynamicsSolver::add_joints_task,
+                                                  return_internal_reference<>())
           .add_property(
               "qdd_desired", +[](DynamicsSolver& id) { return id.qdd_desired; },
               +[](DynamicsSolver& id, const Eigen::VectorXd& qdd_desired) { id.qdd_desired = qdd_desired; });

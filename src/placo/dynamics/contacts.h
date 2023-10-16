@@ -2,13 +2,13 @@
 
 #include "placo/model/robot_wrapper.h"
 #include "placo/problem/problem.h"
-#include "placo/dynamics/relative_position_task.h"
 
 namespace placo
 {
 namespace dynamics
 {
 class PositionTask;
+class RelativePositionTask;
 class OrientationTask;
 class DynamicsSolver;
 
@@ -65,6 +65,16 @@ public:
 
   // Returns the ZMP of the contact
   Eigen::Vector3d zmp();
+
+  virtual Wrench add_wrench(RobotWrapper& robot, Problem& problem);
+};
+
+class RelativePointContact : public Contact
+{
+public:
+  RelativePointContact(RelativePositionTask& position_task);
+
+  RelativePositionTask* relative_position_task;
 
   virtual Wrench add_wrench(RobotWrapper& robot, Problem& problem);
 };

@@ -61,6 +61,28 @@ Contact::Wrench PointContact::add_wrench(RobotWrapper& robot, Problem& problem)
   return wrench;
 }
 
+RelativePointContact::RelativePointContact(RelativePositionTask& relative_position_task)
+{
+  this->relative_position_task = &relative_position_task;
+}
+
+Contact::Wrench RelativePointContact::add_wrench(RobotWrapper& robot, Problem& problem)
+{
+  variable = &problem.add_variable(relative_position_task->A.rows());
+
+  // Objective
+  if (weight_forces > 0)
+  {
+    problem.add_constraint(variable->expr() == 0).configure(ProblemConstraint::Soft, weight_forces);
+  }
+
+  Contact::Wrench wrench;
+  wrench.J = relative_position_task->A;
+  wrench.f = variable->expr();
+
+  return wrench;
+}
+
 PlanarContact::PlanarContact(PositionTask& position_task, OrientationTask& orientation_task, bool unilateral)
 {
   this->position_task = &position_task;

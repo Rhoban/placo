@@ -22,7 +22,7 @@ void RelativePositionTask::update()
   Eigen::Matrix3d a_R_w = w_T_a.rotation().transpose();
 
   // AB vector expressed in world and in a
-  Eigen::Vector3d w_AB = w_T_a.translation() - w_T_b.translation();
+  Eigen::Vector3d w_AB = w_T_b.translation() - w_T_a.translation();
   Eigen::Vector3d a_AB = a_R_w * w_AB;
 
   // Computing J and dJ for frame_a and frame_b
@@ -39,7 +39,7 @@ void RelativePositionTask::update()
   Eigen::Vector3d a_omega_w = -a_R_w * w_omega_a;
 
   // Velocity of the error expressed in a
-  Eigen::Vector3d w_dAB = (Ja.block(0, 0, 3, solver->N) - (Jb.block(0, 0, 3, solver->N))) * solver->robot.state.qd;
+  Eigen::Vector3d w_dAB = (Jb.block(0, 0, 3, solver->N) - (Ja.block(0, 0, 3, solver->N))) * solver->robot.state.qd;
   Eigen::Vector3d a_dAB = a_omega_w.cross(a_AB) + w_dAB;
 
   // Computing error
@@ -49,15 +49,15 @@ void RelativePositionTask::update()
 
   // The acceleration of AB in a is expressed as: J * ddq + e
   Eigen::MatrixXd J = pinocchio::skew(a_AB) * a_R_w * Ja.block(3, 0, 3, solver->N);
-  J += a_R_w * (dJb.block(0, 0, 3, solver->N) - dJa.block(0, 0, 3, solver->N));
+  J += a_R_w * (Jb.block(0, 0, 3, solver->N) - Ja.block(0, 0, 3, solver->N));
 
   Eigen::Vector3d e = 2 * pinocchio::skew(a_omega_w) * a_R_w * w_dAB;
   e += pinocchio::skew(a_omega_w) * pinocchio::skew(a_omega_w) * a_AB;
-  e += a_R_w * (Jb.block(3, 0, 3, solver->N) - Ja.block(3, 0, 3, solver->N)) * solver->robot.state.qd;
-  e += pinocchio::skew(a_omega_w) * a_R_w * Ja.block(3, 0, 3, solver->N) * solver->robot.state.qd;
+  e += a_R_w * (dJb.block(3, 0, 3, solver->N) - dJa.block(3, 0, 3, solver->N)) * solver->robot.state.qd;
+  e += pinocchio::skew(a_omega_w) * a_R_w * dJa.block(3, 0, 3, solver->N) * solver->robot.state.qd;
 
-  A = J;
-  b = -e + desired_acceleration;
+  A = (J)(mask.indices, Eigen::placeholders::all);
+  b = (-e + desired_acceleration)(mask.indices, Eigen::placeholders::all);
 }
 
 std::string RelativePositionTask::type_name()

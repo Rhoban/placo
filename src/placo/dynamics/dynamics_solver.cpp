@@ -38,15 +38,19 @@ PointContact& DynamicsSolver::add_unilateral_point_contact(PositionTask& positio
   return add_contact(new PointContact(position_task, true));
 }
 
-PlanarContact& DynamicsSolver::add_planar_contact(PositionTask& position_task, OrientationTask& orientation_task)
+RelativePointContact& DynamicsSolver::add_relative_point_contact(RelativePositionTask& position_task)
 {
-  return add_contact(new PlanarContact(position_task, orientation_task, false));
+  return add_contact(new RelativePointContact(position_task));
 }
 
-PlanarContact& DynamicsSolver::add_unilateral_planar_contact(PositionTask& position_task,
-                                                             OrientationTask& orientation_task)
+PlanarContact& DynamicsSolver::add_planar_contact(PositionTask& position_task, OrientationTask& orientation_task)
 {
   return add_contact(new PlanarContact(position_task, orientation_task, true));
+}
+
+PlanarContact& DynamicsSolver::add_fixed_contact(PositionTask& position_task, OrientationTask& orientation_task)
+{
+  return add_contact(new PlanarContact(position_task, orientation_task, false));
 }
 
 PositionTask& DynamicsSolver::add_position_task(pinocchio::FrameIndex frame_index, Eigen::Vector3d target_world)

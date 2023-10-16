@@ -56,8 +56,9 @@ public:
    */
   PointContact& add_point_contact(PositionTask& position_task);
   PointContact& add_unilateral_point_contact(PositionTask& position_task);
+  RelativePointContact& add_relative_point_contact(RelativePositionTask& position_task);
+  PlanarContact& add_fixed_contact(PositionTask& position_task, OrientationTask& orientation_task);
   PlanarContact& add_planar_contact(PositionTask& position_task, OrientationTask& orientation_task);
-  PlanarContact& add_unilateral_planar_contact(PositionTask& position_task, OrientationTask& orientation_task);
 
   /**
    * @brief Sets a DoF as passive
