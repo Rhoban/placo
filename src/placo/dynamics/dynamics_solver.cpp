@@ -77,6 +77,11 @@ RelativePositionTask& DynamicsSolver::add_relative_position_task(std::string fra
                                     target_world);
 }
 
+CoMTask& DynamicsSolver::add_com_task(Eigen::Vector3d target_world)
+{
+  return add_task(new CoMTask(target_world));
+}
+
 StaticTask& DynamicsSolver::add_static_task()
 {
   return add_task(new StaticTask());

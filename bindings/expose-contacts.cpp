@@ -102,6 +102,8 @@ void exposeContacts()
                                                   return_internal_reference<>())
           .def<StaticTask& (DynamicsSolver::*)()>("add_static_task", &DynamicsSolver::add_static_task,
                                                   return_internal_reference<>())
+          .def<CoMTask& (DynamicsSolver::*)(Eigen::Vector3d)>("add_com_task", &DynamicsSolver::add_com_task,
+                                                              return_internal_reference<>())
           .def<FrameTask (DynamicsSolver::*)(std::string, Eigen::Affine3d)>("add_frame_task",
                                                                             &DynamicsSolver::add_frame_task)
           .add_property(
@@ -118,6 +120,14 @@ void exposeContacts()
               "dtarget_world", +[](const PositionTask& task) { return task.dtarget_world; },
               &PositionTask::dtarget_world)
           .add_property("mask", &PositionTask::mask, &PositionTask::mask));
+
+  registerTaskMethods(
+      class_<CoMTask>("DynamicsCoMTask", init<Eigen::Vector3d>())
+          .add_property(
+              "target_world", +[](const CoMTask& task) { return task.target_world; }, &CoMTask::target_world)
+          .add_property(
+              "dtarget_world", +[](const CoMTask& task) { return task.dtarget_world; }, &CoMTask::dtarget_world)
+          .add_property("mask", &CoMTask::mask, &CoMTask::mask));
 
   registerTaskMethods(
       class_<RelativePositionTask>("DynamicsRelativePositionTask",
@@ -138,7 +148,7 @@ void exposeContacts()
               &OrientationTask::omega_world)
           .add_property("mask", &OrientationTask::mask, &OrientationTask::mask));
 
-  class_<FrameTask>("FrameTask", init<>())
+  class_<FrameTask>("DynamicsFrameTask", init<>())
       .def(
           "position", +[](const FrameTask& task) -> PositionTask& { return *task.position; },
           return_internal_reference<>())
@@ -149,7 +159,7 @@ void exposeContacts()
       .def("configure", &FrameTask::configure)
       .add_property("T_world_frame", &FrameTask::get_T_world_frame, &FrameTask::set_T_world_frame);
 
-  registerTaskMethods(class_<JointsTask>("JointsTask", init<>())
+  registerTaskMethods(class_<JointsTask>("DynamicsJointsTask", init<>())
                           .def("set_joint", &JointsTask::set_joint)
                           .def(
                               "set_joints",
@@ -161,6 +171,6 @@ void exposeContacts()
                                 update_map<std::string, double>(task.djoints, py_dict);
                               }));
 
-  auto static_task = class_<StaticTask>("StaticTask", init<>());
+  auto static_task = class_<StaticTask>("DynamicsStaticTask", init<>());
   registerTaskMethods(static_task);
 }
