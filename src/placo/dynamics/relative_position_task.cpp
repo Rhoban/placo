@@ -40,11 +40,11 @@ void RelativePositionTask::update()
 
   // Velocity of the error expressed in a
   Eigen::Vector3d w_dAB = (Jb.block(0, 0, 3, solver->N) - (Ja.block(0, 0, 3, solver->N))) * solver->robot.state.qd;
-  Eigen::Vector3d a_dAB = a_omega_w.cross(a_AB) + w_dAB;
+  Eigen::Vector3d a_dAB = a_omega_w.cross(a_AB) + a_R_w * w_dAB;
 
   // Computing error
   Eigen::Vector3d error = target - a_AB;
-  Eigen::Vector3d derror = Eigen::Vector3d::Zero() - a_dAB;
+  Eigen::Vector3d derror = dtarget - a_dAB;
   Eigen::Vector3d desired_acceleration = kp * error + 2 * sqrt(kp) * derror;
 
   // The acceleration of AB in a is expressed as: J * ddq + e
@@ -52,9 +52,9 @@ void RelativePositionTask::update()
   J += a_R_w * (Jb.block(0, 0, 3, solver->N) - Ja.block(0, 0, 3, solver->N));
 
   Eigen::Vector3d e = 2 * pinocchio::skew(a_omega_w) * a_R_w * w_dAB;
-  e += pinocchio::skew(a_omega_w) * pinocchio::skew(a_omega_w) * a_AB;
+  e += 2 * pinocchio::skew(a_omega_w) * pinocchio::skew(a_omega_w) * a_AB;
   e += a_R_w * (dJb.block(3, 0, 3, solver->N) - dJa.block(3, 0, 3, solver->N)) * solver->robot.state.qd;
-  e += pinocchio::skew(a_omega_w) * a_R_w * dJa.block(3, 0, 3, solver->N) * solver->robot.state.qd;
+  e += pinocchio::skew(a_AB) * a_R_w * dJa.block(3, 0, 3, solver->N) * solver->robot.state.qd;
 
   A = (J)(mask.indices, Eigen::placeholders::all);
   b = (-e + desired_acceleration)(mask.indices, Eigen::placeholders::all);

@@ -92,6 +92,19 @@ OrientationTask& DynamicsSolver::add_orientation_task(std::string frame_name, Ei
   return add_orientation_task(robot.get_frame_index(frame_name), R_world_frame);
 }
 
+FrameTask DynamicsSolver::add_frame_task(pinocchio::FrameIndex frame_index, Eigen::Affine3d T_world_frame)
+{
+  PositionTask& position = add_position_task(frame_index, T_world_frame.translation());
+  OrientationTask& orientation = add_orientation_task(frame_index, T_world_frame.rotation());
+
+  return FrameTask(&position, &orientation);
+}
+
+FrameTask DynamicsSolver::add_frame_task(std::string frame_name, Eigen::Affine3d T_world_frame)
+{
+  return add_frame_task(robot.get_frame_index(frame_name), T_world_frame);
+}
+
 DynamicsSolver::DynamicsSolver(RobotWrapper& robot) : robot(robot)
 {
   N = robot.model.nv;

@@ -15,6 +15,7 @@ public:
 
   RobotWrapper::FrameIndex frame_index;
   Eigen::Vector3d target_world;
+  Eigen::Vector3d dtarget_world = Eigen::Vector3d::Zero();
 
   void update() override;
   std::string type_name() override;

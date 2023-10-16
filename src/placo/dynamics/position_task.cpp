@@ -27,7 +27,7 @@ void PositionTask::update()
 
   // Computing A and b
   Eigen::Vector3d velocity_world = J * solver->robot.state.qd;
-  Eigen::Vector3d velocity_error = Eigen::Vector3d::Zero() - velocity_world;
+  Eigen::Vector3d velocity_error = dtarget_world - velocity_world;
 
   Eigen::Vector3d desired_acceleration = kp * position_error + 2 * sqrt(kp) * velocity_error;
 

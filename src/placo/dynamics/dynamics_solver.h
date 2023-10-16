@@ -8,9 +8,10 @@
 #include "placo/dynamics/contacts.h"
 #include "placo/dynamics/task.h"
 #include "placo/dynamics/position_task.h"
+#include "placo/dynamics/orientation_task.h"
+#include "placo/dynamics/frame_task.h"
 #include "placo/dynamics/relative_position_task.h"
 #include "placo/dynamics/joints_task.h"
-#include "placo/dynamics/orientation_task.h"
 
 namespace placo
 {
@@ -78,35 +79,14 @@ public:
   PositionTask& add_position_task(std::string frame_name, Eigen::Vector3d target_world);
   OrientationTask& add_orientation_task(pinocchio::FrameIndex frame_index, Eigen::Matrix3d R_world_frame);
   OrientationTask& add_orientation_task(std::string frame_name, Eigen::Matrix3d R_world_frame);
+  FrameTask add_frame_task(pinocchio::FrameIndex frame_index, Eigen::Affine3d T_world_frame);
+  FrameTask add_frame_task(std::string frame_name, Eigen::Affine3d T_world_frame);
   RelativePositionTask& add_relative_position_task(pinocchio::FrameIndex frame_a_index,
                                                    pinocchio::FrameIndex frame_b_index, Eigen::Vector3d target_world);
   RelativePositionTask& add_relative_position_task(std::string frame_a_name, std::string frame_b_name,
                                                    Eigen::Vector3d target_world);
   JointsTask& add_joints_task();
 
-  /**
-   * @brief Computes the torques required to compensate gravity given a set of unilateral contacts. This
-   * formulates and try to solve a QP problem with the following properties:
-   *
-   * - Objective function:
-   *   - Trying to minimize the moments at contact (as a result, ZMP is tried to be kept as much as
-   *     possible at the center of the contact)
-   *   - Trying to minimize the required torques
-   * - Constraints:
-   *   - Equation of motion: tau + sum(J^T f) = g
-   *   - The contact fz are positive (contacts are unilaterals)
-   *   - The ZMP is kept in the admissible rectangles (using foot_length and foot_width)
-   *   - Friction cones using the given mu ratio
-   *
-   * (In the future, this API might change in favour of more versatile contacts representation)
-   *
-   * @param robot robot wrapper
-   * @param contacts list of frames which are unitaleral contacts
-   * @param contact_length contact rectangles length (you might consider some margin)
-   * @param contact_width contact rectangles width (you might consider some margin)
-   * @param mu friction coefficient
-   * @return
-   */
   Result solve();
 
   RobotWrapper& robot;

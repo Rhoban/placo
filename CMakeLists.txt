@@ -71,13 +71,14 @@ add_library(libplaco
     src/placo/planning/lipm.cpp
 
     # Dynamics
-    src/placo/dynamics/contacts.cpp
-    src/placo/dynamics/dynamics_solver.cpp
     src/placo/dynamics/task.cpp
     src/placo/dynamics/position_task.cpp
     src/placo/dynamics/relative_position_task.cpp
+    src/placo/dynamics/frame_task.cpp
     src/placo/dynamics/orientation_task.cpp
     src/placo/dynamics/joints_task.cpp
+    src/placo/dynamics/contacts.cpp
+    src/placo/dynamics/dynamics_solver.cpp
 
     ${PROTO_SRCS}
     ${PROTO_HDRS}  

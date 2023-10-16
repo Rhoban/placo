@@ -100,6 +100,8 @@ void exposeContacts()
               "add_orientation_task", &DynamicsSolver::add_orientation_task, return_internal_reference<>())
           .def<JointsTask& (DynamicsSolver::*)()>("add_joints_task", &DynamicsSolver::add_joints_task,
                                                   return_internal_reference<>())
+          .def<FrameTask (DynamicsSolver::*)(std::string, Eigen::Affine3d)>("add_frame_task",
+                                                                            &DynamicsSolver::add_frame_task)
           .add_property(
               "qdd_desired", +[](DynamicsSolver& id) { return id.qdd_desired; },
               +[](DynamicsSolver& id, const Eigen::VectorXd& qdd_desired) { id.qdd_desired = qdd_desired; });
@@ -110,6 +112,9 @@ void exposeContacts()
       class_<PositionTask>("DynamicsPositionTask", init<RobotWrapper::FrameIndex, Eigen::Vector3d>())
           .add_property(
               "target_world", +[](const PositionTask& task) { return task.target_world; }, &PositionTask::target_world)
+          .add_property(
+              "dtarget_world", +[](const PositionTask& task) { return task.dtarget_world; },
+              &PositionTask::dtarget_world)
           .add_property("mask", &PositionTask::mask, &PositionTask::mask));
 
   registerTaskMethods(
@@ -117,6 +122,8 @@ void exposeContacts()
                                    init<RobotWrapper::FrameIndex, RobotWrapper::FrameIndex, Eigen::Vector3d>())
           .add_property(
               "target", +[](const RelativePositionTask& task) { return task.target; }, &RelativePositionTask::target)
+          .add_property(
+              "dtarget", +[](const RelativePositionTask& task) { return task.dtarget; }, &RelativePositionTask::dtarget)
           .add_property("mask", &RelativePositionTask::mask, &RelativePositionTask::mask));
 
   registerTaskMethods(
@@ -124,12 +131,31 @@ void exposeContacts()
           .add_property(
               "R_world_frame", +[](const OrientationTask& task) { return task.R_world_frame; },
               &OrientationTask::R_world_frame)
+          .add_property(
+              "omega_world", +[](const OrientationTask& task) { return task.omega_world; },
+              &OrientationTask::omega_world)
           .add_property("mask", &OrientationTask::mask, &OrientationTask::mask));
+
+  class_<FrameTask>("FrameTask", init<>())
+      .def(
+          "position", +[](const FrameTask& task) -> PositionTask& { return *task.position; },
+          return_internal_reference<>())
+
+      .def(
+          "orientation", +[](const FrameTask& task) -> OrientationTask& { return *task.orientation; },
+          return_internal_reference<>())
+      .def("configure", &FrameTask::configure)
+      .add_property("T_world_frame", &FrameTask::get_T_world_frame, &FrameTask::set_T_world_frame);
 
   registerTaskMethods(class_<JointsTask>("JointsTask", init<>())
                           .def("set_joint", &JointsTask::set_joint)
                           .def(
-                              "set_joints", +[](JointsTask& task, boost::python::dict& py_dict) {
+                              "set_joints",
+                              +[](JointsTask& task, boost::python::dict& py_dict) {
                                 update_map<std::string, double>(task.joints, py_dict);
+                              })
+                          .def(
+                              "set_joints_velocities", +[](JointsTask& task, boost::python::dict& py_dict) {
+                                update_map<std::string, double>(task.djoints, py_dict);
                               }));
 }

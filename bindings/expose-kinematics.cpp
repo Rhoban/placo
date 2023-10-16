@@ -85,15 +85,7 @@ void exposeKinematics()
           .def<RelativeFrameTask (KinematicsSolver::*)(std::string, std::string, Eigen::Affine3d)>(
               "add_relative_frame_task", &KinematicsSolver::add_relative_frame_task)
 
-          // Pose task
-          .def<PoseTask& (KinematicsSolver::*)(std::string, Eigen::Affine3d)>(
-              "add_pose_task", &KinematicsSolver::add_pose_task, return_internal_reference<>())
-          .def<RelativePoseTask& (KinematicsSolver::*)(std::string, std::string, Eigen::Affine3d)>(
-              "add_relative_pose_task", &KinematicsSolver::add_relative_pose_task, return_internal_reference<>())
-
           // Joint task
-          .def<JointTask& (KinematicsSolver::*)(std::string, double)>(
-              "add_joint_task", &KinematicsSolver::add_joint_task, return_internal_reference<>())
           .def<JointsTask& (KinematicsSolver::*)(void)>("add_joints_task", &KinematicsSolver::add_joints_task,
                                                         return_internal_reference<>())
 
@@ -216,24 +208,6 @@ void exposeKinematics()
           .add_property(
               "normal_world", +[](const AxisPlaneTask& task) { return task.normal_world; },
               &AxisPlaneTask::normal_world));
-
-  registerTaskMethods(
-      class_<PoseTask>("PoseTask", init<RobotWrapper::FrameIndex, Eigen::Affine3d>())
-          .add_property("frame_index", &PoseTask::frame_index)
-          .add_property(
-              "T_world_frame", +[](const PoseTask& task) { return task.T_world_frame; }, &PoseTask::T_world_frame));
-
-  registerTaskMethods(
-      class_<RelativePoseTask>("RelativePoseTask",
-                               init<RobotWrapper::FrameIndex, RobotWrapper::FrameIndex, Eigen::Affine3d>())
-          .add_property("frame_a", &RelativePoseTask::frame_a)
-          .add_property("frame_b", &RelativePoseTask::frame_b)
-          .add_property(
-              "T_a_b", +[](const RelativePoseTask& task) { return task.T_a_b; }, &RelativePoseTask::T_a_b));
-
-  registerTaskMethods(class_<JointTask>("JointTask", init<std::string, double>())
-                          .add_property("joint", &JointTask::joint)
-                          .add_property("target", &JointTask::target, &JointTask::target));
 
   registerTaskMethods(class_<JointsTask>("JointsTask", init<>())
                           .def("set_joint", &JointsTask::set_joint)

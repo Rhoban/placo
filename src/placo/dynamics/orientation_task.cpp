@@ -28,7 +28,7 @@ void OrientationTask::update()
 
   // Computing A and b
   Eigen::Vector3d velocity_world = J * solver->robot.state.qd;
-  Eigen::Vector3d velocity_error = Eigen::Vector3d::Zero() - velocity_world;
+  Eigen::Vector3d velocity_error = omega_world - velocity_world;
 
   Eigen::Vector3d desired_acceleration = kp * orientation_error + 2 * sqrt(kp) * velocity_error;
 
