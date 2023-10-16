@@ -61,6 +61,17 @@ add_library(libplaco
     src/placo/control/joints_task.cpp
     src/placo/control/regularization_task.cpp
 
+    # Dynamics QP solver
+    src/placo/dynamics/task.cpp
+    src/placo/dynamics/position_task.cpp
+    src/placo/dynamics/relative_position_task.cpp
+    src/placo/dynamics/frame_task.cpp
+    src/placo/dynamics/orientation_task.cpp
+    src/placo/dynamics/joints_task.cpp
+    src/placo/dynamics/static_task.cpp
+    src/placo/dynamics/contacts.cpp
+    src/placo/dynamics/dynamics_solver.cpp
+
     # Walking
     src/placo/footsteps/footsteps_planner.cpp
     src/placo/footsteps/footsteps_planner_naive.cpp
@@ -69,16 +80,6 @@ add_library(libplaco
     src/placo/planning/walk_tasks.cpp
     src/placo/model/humanoid_parameters.cpp
     src/placo/planning/lipm.cpp
-
-    # Dynamics
-    src/placo/dynamics/task.cpp
-    src/placo/dynamics/position_task.cpp
-    src/placo/dynamics/relative_position_task.cpp
-    src/placo/dynamics/frame_task.cpp
-    src/placo/dynamics/orientation_task.cpp
-    src/placo/dynamics/joints_task.cpp
-    src/placo/dynamics/contacts.cpp
-    src/placo/dynamics/dynamics_solver.cpp
 
     ${PROTO_SRCS}
     ${PROTO_HDRS}  

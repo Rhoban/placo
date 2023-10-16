@@ -27,8 +27,8 @@ public:
   double mu = 1.;
 
   // Weights for optimization
-  double weight_forces = 1e-6;
-  double weight_moments = 1e-3;
+  double weight_forces = 0.;
+  double weight_moments = 0.;
 
   // Adds the wrench to the problem
   virtual Wrench add_wrench(RobotWrapper& robot, Problem& problem) = 0;
@@ -63,7 +63,7 @@ public:
   double length = 0.;
   double width = 0.;
 
-  // Returns the ZMP of the contact
+  // Returns the ZMP of the contact expressed in the local frame
   Eigen::Vector3d zmp();
 
   virtual Wrench add_wrench(RobotWrapper& robot, Problem& problem);

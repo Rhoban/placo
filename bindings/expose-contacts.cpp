@@ -100,6 +100,8 @@ void exposeContacts()
               "add_orientation_task", &DynamicsSolver::add_orientation_task, return_internal_reference<>())
           .def<JointsTask& (DynamicsSolver::*)()>("add_joints_task", &DynamicsSolver::add_joints_task,
                                                   return_internal_reference<>())
+          .def<StaticTask& (DynamicsSolver::*)()>("add_static_task", &DynamicsSolver::add_static_task,
+                                                  return_internal_reference<>())
           .def<FrameTask (DynamicsSolver::*)(std::string, Eigen::Affine3d)>("add_frame_task",
                                                                             &DynamicsSolver::add_frame_task)
           .add_property(
@@ -158,4 +160,7 @@ void exposeContacts()
                               "set_joints_velocities", +[](JointsTask& task, boost::python::dict& py_dict) {
                                 update_map<std::string, double>(task.djoints, py_dict);
                               }));
+
+  auto static_task = class_<StaticTask>("StaticTask", init<>());
+  registerTaskMethods(static_task);
 }

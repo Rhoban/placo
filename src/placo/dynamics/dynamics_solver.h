@@ -12,6 +12,7 @@
 #include "placo/dynamics/frame_task.h"
 #include "placo/dynamics/relative_position_task.h"
 #include "placo/dynamics/joints_task.h"
+#include "placo/dynamics/static_task.h"
 
 namespace placo
 {
@@ -85,6 +86,7 @@ public:
                                                    pinocchio::FrameIndex frame_b_index, Eigen::Vector3d target_world);
   RelativePositionTask& add_relative_position_task(std::string frame_a_name, std::string frame_b_name,
                                                    Eigen::Vector3d target_world);
+  StaticTask& add_static_task();
   JointsTask& add_joints_task();
 
   Result solve();

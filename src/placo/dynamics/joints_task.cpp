@@ -38,7 +38,7 @@ void JointsTask::update()
 
 std::string JointsTask::type_name()
 {
-  return "position";
+  return "joints";
 }
 
 std::string JointsTask::error_unit()

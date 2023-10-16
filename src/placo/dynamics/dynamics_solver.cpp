@@ -77,6 +77,11 @@ RelativePositionTask& DynamicsSolver::add_relative_position_task(std::string fra
                                     target_world);
 }
 
+StaticTask& DynamicsSolver::add_static_task()
+{
+  return add_task(new StaticTask());
+}
+
 JointsTask& DynamicsSolver::add_joints_task()
 {
   return add_task(new JointsTask());
@@ -208,7 +213,7 @@ DynamicsSolver::Result DynamicsSolver::solve()
   }
 
   // We want to minimize torques
-  problem.add_constraint(tau == 0).configure(ProblemConstraint::Soft, 1e-6);
+  problem.add_constraint(tau == 0).configure(ProblemConstraint::Soft, 1.0);
 
   try
   {
