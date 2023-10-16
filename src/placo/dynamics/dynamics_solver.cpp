@@ -199,13 +199,13 @@ void DynamicsSolver::compute_limits_inequalities(Expression& tau)
 
       if (joint_limits)
       {
-        double qdd_max = 10.;  // XXX: This should be specified somewhere else
-        double qd_max = sqrt((2 / 3.) * fmax(0., robot.model.upperPositionLimit[k + 7] - q) * qdd_max);
+        double qdd_safe = 1.;  // XXX: This should be specified somewhere else
+        double qd_max = sqrt(2. * fmax(0., robot.model.upperPositionLimit[k + 7] - q) * qdd_safe);
         e.A(constraint, k + 6) = dt;
         e.b(constraint) = qd - qd_max;
         constraint++;
 
-        qd_max = sqrt((2 / 3.) * fabs(fmin(0., robot.model.lowerPositionLimit[k + 7] - q)) * qdd_max);
+        qd_max = sqrt(2. * fabs(fmin(0., robot.model.lowerPositionLimit[k + 7] - q)) * qdd_safe);
         e.A(constraint, k + 6) = -dt;
         e.b(constraint) = -qd - qd_max;
         constraint++;
