@@ -5,16 +5,6 @@ namespace placo
 {
 namespace dynamics
 {
-
-Contact& DynamicsSolver::add_contact()
-{
-  Contact* contact = new Contact();
-  contact->solver = this;
-
-  contacts.push_back(contact);
-  return *contact;
-}
-
 void DynamicsSolver::set_passive(const std::string& joint_name, bool is_passive)
 {
   if (!is_passive)
@@ -38,6 +28,27 @@ void DynamicsSolver::add_loop_closing_constraint(const std::string& frame_a, con
   loop_closing_constraints.push_back(constraint);
 }
 
+PointContact& DynamicsSolver::add_point_contact(PositionTask& position_task)
+{
+  return add_contact(new PointContact(position_task, false));
+}
+
+PointContact& DynamicsSolver::add_unilateral_point_contact(PositionTask& position_task)
+{
+  return add_contact(new PointContact(position_task, true));
+}
+
+PlanarContact& DynamicsSolver::add_planar_contact(PositionTask& position_task, OrientationTask& orientation_task)
+{
+  return add_contact(new PlanarContact(position_task, orientation_task, false));
+}
+
+PlanarContact& DynamicsSolver::add_unilateral_planar_contact(PositionTask& position_task,
+                                                             OrientationTask& orientation_task)
+{
+  return add_contact(new PlanarContact(position_task, orientation_task, true));
+}
+
 PositionTask& DynamicsSolver::add_position_task(pinocchio::FrameIndex frame_index, Eigen::Vector3d target_world)
 {
   return add_task(new PositionTask(frame_index, target_world));
@@ -46,6 +57,25 @@ PositionTask& DynamicsSolver::add_position_task(pinocchio::FrameIndex frame_inde
 PositionTask& DynamicsSolver::add_position_task(std::string frame_name, Eigen::Vector3d target_world)
 {
   return add_position_task(robot.get_frame_index(frame_name), target_world);
+}
+
+RelativePositionTask& DynamicsSolver::add_relative_position_task(pinocchio::FrameIndex frame_a_index,
+                                                                 pinocchio::FrameIndex frame_b_index,
+                                                                 Eigen::Vector3d target_world)
+{
+  return add_task(new RelativePositionTask(frame_a_index, frame_b_index, target_world));
+}
+
+RelativePositionTask& DynamicsSolver::add_relative_position_task(std::string frame_a_name, std::string frame_b_name,
+                                                                 Eigen::Vector3d target_world)
+{
+  return add_relative_position_task(robot.get_frame_index(frame_a_name), robot.get_frame_index(frame_b_name),
+                                    target_world);
+}
+
+JointsTask& DynamicsSolver::add_joints_task()
+{
+  return add_task(new JointsTask());
 }
 
 OrientationTask& DynamicsSolver::add_orientation_task(pinocchio::FrameIndex frame_index, Eigen::Matrix3d R_world_frame)
@@ -80,7 +110,9 @@ DynamicsSolver::Result DynamicsSolver::solve()
   DynamicsSolver::Result result;
   std::vector<Variable*> contact_wrenches;
 
-  Problem problem;
+  problem.clear_constraints();
+  problem.clear_variables();
+
   Variable& qdd = problem.add_variable(robot.model.nv);
 
   if (qdd_desired.rows() == 0)
@@ -143,13 +175,23 @@ DynamicsSolver::Result DynamicsSolver::solve()
   problem.add_constraint(tau.slice(0, 6) == 0);
 
   // Passive joints have no torque
-  for (auto& joint_name : passive_joints)
+  for (auto& joint : robot.actuated_joint_names())
   {
-    problem.add_constraint(tau.slice(robot.get_joint_v_offset(joint_name), 1) == 0);
+    {
+      if (passive_joints.count(joint) > 0)
+      {
+        problem.add_constraint(tau.slice(robot.get_joint_v_offset(joint), 1) == 0);
+      }
+      else
+      {
+        problem.add_constraint(tau.slice(robot.get_joint_v_offset(joint), 1) >= -1);
+        problem.add_constraint(tau.slice(robot.get_joint_v_offset(joint), 1) <= 1);
+      }
+    }
   }
 
   // We want to minimize torques
-  problem.add_constraint(tau == 0).configure(ProblemConstraint::Soft, 1e-3);
+  problem.add_constraint(tau == 0).configure(ProblemConstraint::Soft, 1e-6);
 
   try
   {
@@ -160,12 +202,6 @@ DynamicsSolver::Result DynamicsSolver::solve()
     // Exporting result values
     result.tau = tau.value(problem.x);
     result.qdd = qdd.value;
-
-    // Updating wrenches
-    for (auto& contact : contacts)
-    {
-      contact->wrench = contact->variable->value;
-    }
   }
   catch (QPError& e)
   {

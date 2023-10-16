@@ -5,9 +5,11 @@
 #include "placo/model/robot_wrapper.h"
 #include "placo/problem/problem.h"
 #include "placo/control/axises_mask.h"
-#include "placo/dynamics/contact.h"
+#include "placo/dynamics/contacts.h"
 #include "placo/dynamics/task.h"
 #include "placo/dynamics/position_task.h"
+#include "placo/dynamics/relative_position_task.h"
+#include "placo/dynamics/joints_task.h"
 #include "placo/dynamics/orientation_task.h"
 
 namespace placo
@@ -52,7 +54,10 @@ public:
    * @brief Adds a contact to the solver
    * @param contact the contact to add
    */
-  Contact& add_contact();
+  PointContact& add_point_contact(PositionTask& position_task);
+  PointContact& add_unilateral_point_contact(PositionTask& position_task);
+  PlanarContact& add_planar_contact(PositionTask& position_task, OrientationTask& orientation_task);
+  PlanarContact& add_unilateral_planar_contact(PositionTask& position_task, OrientationTask& orientation_task);
 
   /**
    * @brief Sets a DoF as passive
@@ -72,6 +77,11 @@ public:
   PositionTask& add_position_task(std::string frame_name, Eigen::Vector3d target_world);
   OrientationTask& add_orientation_task(pinocchio::FrameIndex frame_index, Eigen::Matrix3d R_world_frame);
   OrientationTask& add_orientation_task(std::string frame_name, Eigen::Matrix3d R_world_frame);
+  RelativePositionTask& add_relative_position_task(pinocchio::FrameIndex frame_a_index,
+                                                   pinocchio::FrameIndex frame_b_index, Eigen::Vector3d target_world);
+  RelativePositionTask& add_relative_position_task(std::string frame_a_name, std::string frame_b_name,
+                                                   Eigen::Vector3d target_world);
+  JointsTask& add_joints_task();
 
   /**
    * @brief Computes the torques required to compensate gravity given a set of unilateral contacts. This
@@ -105,6 +115,7 @@ public:
   int N;
 
 protected:
+  Problem problem;
   std::vector<LoopClosure> loop_closing_constraints;
 
   std::set<Task*> tasks;
@@ -123,6 +134,15 @@ protected:
     tasks.insert(task);
 
     return *task;
+  }
+
+  template <typename T>
+  T& add_contact(T* contact)
+  {
+    contact->solver = this;
+    contacts.push_back(contact);
+
+    return *contact;
   }
 };
 }  // namespace dynamics

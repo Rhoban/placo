@@ -4,7 +4,6 @@
 #include "module.h"
 #include "placo/model/robot_wrapper.h"
 #include "placo/dynamics/dynamics_solver.h"
-#include "placo/dynamics/position_task.h"
 #include <Eigen/Dense>
 #include <boost/python.hpp>
 
@@ -24,7 +23,6 @@ void registerTaskMethods(class_<T>& class__)
       .add_property("A", &T::A)
       .add_property("b", &T::b)
       .add_property("kp", &T::kp, &T::kp)
-      .add_property("kd", &T::kd, &T::kd)
       .def("error", &T::error)
       .def("error_norm", &T::error_norm)
       .def("update", &T::update)
@@ -60,56 +58,40 @@ void exposeContacts()
             return dict;
           });
 
-  class_<Contact>("DynamicsSolverContact")
-      .def(
-          "configure",
-          +[](Contact& contact, const std::string& frame_name, std::string type, double mu = 1.0, double length = 1.0,
-              double width = 1.0) {
-            Contact::Type contact_type;
-
-            if (type == "fixed")
-            {
-              contact_type = Contact::Fixed;
-            }
-            else if (type == "fixed_point")
-            {
-              contact_type = Contact::FixedPoint;
-            }
-            else if (type == "planar")
-            {
-              contact_type = Contact::Planar;
-            }
-            else if (type == "point")
-            {
-              contact_type = Contact::Point;
-            }
-            else
-            {
-              throw std::runtime_error("Unknown contact type");
-            }
-            contact.configure(frame_name, contact_type, mu, length, width);
-          },
-          (boost::python::arg("frame_name"), boost::python::arg("type"), boost::python::arg("mu") = 1.0,
-           boost::python::arg("length") = 1.0, boost::python::arg("width") = 1.0))
-      .def_readwrite("frame_name", &Contact::frame_name)
-      .def_readwrite("type", &Contact::type)
-      .def_readwrite("length", &Contact::length)
-      .def_readwrite("width", &Contact::width)
-      .def_readwrite("mu", &Contact::mu)
-      .def_readwrite("weight_forces", &Contact::weight_forces)
-      .def_readwrite("weight_moments", &Contact::weight_moments)
-      .def("zmp", &Contact::zmp)
+  class_<PointContact>("DynamicsSolverPointContact", init<PositionTask&, bool>())
+      .def_readwrite("mu", &PointContact::mu)
+      .def_readwrite("weight_forces", &PointContact::weight_forces)
+      .def_readwrite("weight_moments", &PointContact::weight_moments)
       .add_property(
-          "wrench", +[](Contact& contact) { return contact.wrench; });
+          "wrench", +[](PointContact& contact) { return contact.variable->value; })
+      .def_readwrite("unilateral", &PointContact::unilateral);
+
+  class_<PlanarContact>("DynamicsSolverPlanarContact", init<PositionTask&, OrientationTask&, bool>())
+      .def_readwrite("mu", &PlanarContact::mu)
+      .def_readwrite("weight_forces", &PlanarContact::weight_forces)
+      .def_readwrite("weight_moments", &PlanarContact::weight_moments)
+      .add_property(
+          "wrench", +[](PlanarContact& contact) { return contact.variable->value; })
+      .def_readwrite("unilateral", &PlanarContact::unilateral)
+      .def_readwrite("length", &PlanarContact::length)
+      .def_readwrite("width", &PlanarContact::width)
+      .def("zmp", &PlanarContact::zmp);
 
   class_<DynamicsSolver> solver_class =
       class_<DynamicsSolver>("DynamicsSolver", init<RobotWrapper&>())
-          .def("add_contact", &DynamicsSolver::add_contact, return_internal_reference<>())
+          .def("add_point_contact", &DynamicsSolver::add_point_contact, return_internal_reference<>())
+          .def("add_unilateral_point_contact", &DynamicsSolver::add_unilateral_point_contact,
+               return_internal_reference<>())
+          .def("add_planar_contact", &DynamicsSolver::add_planar_contact, return_internal_reference<>())
+          .def("add_unilateral_planar_contact", &DynamicsSolver::add_unilateral_planar_contact,
+               return_internal_reference<>())
           .def("set_passive", &DynamicsSolver::set_passive)
           .def("add_loop_closing_constraint", &DynamicsSolver::add_loop_closing_constraint)
           .def("solve", &DynamicsSolver::solve)
           .def<PositionTask& (DynamicsSolver::*)(std::string, Eigen::Vector3d)>(
               "add_position_task", &DynamicsSolver::add_position_task, return_internal_reference<>())
+          .def<RelativePositionTask& (DynamicsSolver::*)(std::string, std::string, Eigen::Vector3d)>(
+              "add_relative_position_task", &DynamicsSolver::add_relative_position_task, return_internal_reference<>())
           .def<OrientationTask& (DynamicsSolver::*)(std::string, Eigen::Matrix3d)>(
               "add_orientation_task", &DynamicsSolver::add_orientation_task, return_internal_reference<>())
           .add_property(
@@ -125,9 +107,23 @@ void exposeContacts()
           .add_property("mask", &PositionTask::mask, &PositionTask::mask));
 
   registerTaskMethods(
+      class_<RelativePositionTask>("DynamicsRelativePositionTask",
+                                   init<RobotWrapper::FrameIndex, RobotWrapper::FrameIndex, Eigen::Vector3d>())
+          .add_property(
+              "target", +[](const RelativePositionTask& task) { return task.target; }, &RelativePositionTask::target)
+          .add_property("mask", &RelativePositionTask::mask, &RelativePositionTask::mask));
+
+  registerTaskMethods(
       class_<OrientationTask>("DynamicsOrientationTask", init<RobotWrapper::FrameIndex, Eigen::Matrix3d>())
           .add_property(
               "R_world_frame", +[](const OrientationTask& task) { return task.R_world_frame; },
               &OrientationTask::R_world_frame)
           .add_property("mask", &OrientationTask::mask, &OrientationTask::mask));
+
+  registerTaskMethods(class_<JointsTask>("JointsTask", init<>())
+                          .def("set_joint", &JointsTask::set_joint)
+                          .def(
+                              "set_joints", +[](JointsTask& task, boost::python::dict& py_dict) {
+                                update_map<std::string, double>(task.joints, py_dict);
+                              }));
 }
