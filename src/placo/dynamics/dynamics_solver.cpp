@@ -17,17 +17,6 @@ void DynamicsSolver::set_passive(const std::string& joint_name, bool is_passive)
   }
 }
 
-void DynamicsSolver::add_loop_closing_constraint(const std::string& frame_a, const std::string& frame_b,
-                                                 const std::string& mask)
-{
-  LoopClosure constraint;
-  constraint.frame_a = frame_a;
-  constraint.frame_b = frame_b;
-  constraint.mask.set_axises(mask);
-
-  loop_closing_constraints.push_back(constraint);
-}
-
 PointContact& DynamicsSolver::add_point_contact(PositionTask& position_task)
 {
   return add_contact(new PointContact(position_task, false));
@@ -142,15 +131,6 @@ DynamicsSolver::Result DynamicsSolver::solve()
 
   Variable& qdd = problem.add_variable(robot.model.nv);
 
-  if (qdd_desired.rows() == 0)
-  {
-    qdd_desired = Eigen::VectorXd::Zero(robot.model.nv);
-  }
-
-  // We impose the decision variable to be qdd_desired.
-  // Later we can replace this with acceleration tasks.
-  // problem.add_constraint(qdd.expr() == qdd_desired);
-
   for (auto& task : tasks)
   {
     task->update();
@@ -188,16 +168,6 @@ DynamicsSolver::Result DynamicsSolver::solve()
     tau = tau - wrench.J.transpose() * wrench.f;
   }
 
-  // Loop closing constraints
-  for (auto& constraint : loop_closing_constraints)
-  {
-    Eigen::MatrixXd J = robot.relative_position_jacobian(constraint.frame_a, constraint.frame_b)(
-        constraint.mask.indices, Eigen::placeholders::all);
-    Variable constraint_wrench = problem.add_variable(constraint.mask.indices.size());
-
-    tau = tau - J.transpose() * constraint_wrench.expr();
-  }
-
   // Floating base has no torque
   problem.add_constraint(tau.slice(0, 6) == 0);
 
@@ -211,6 +181,7 @@ DynamicsSolver::Result DynamicsSolver::solve()
       }
       else
       {
+        // TODO: Use true limits
         problem.add_constraint(tau.slice(robot.get_joint_v_offset(joint), 1) >= -1);
         problem.add_constraint(tau.slice(robot.get_joint_v_offset(joint), 1) <= 1);
       }

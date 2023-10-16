@@ -90,7 +90,6 @@ void exposeContacts()
           .def("add_planar_contact", &DynamicsSolver::add_planar_contact, return_internal_reference<>())
           .def("add_fixed_contact", &DynamicsSolver::add_fixed_contact, return_internal_reference<>())
           .def("set_passive", &DynamicsSolver::set_passive)
-          .def("add_loop_closing_constraint", &DynamicsSolver::add_loop_closing_constraint)
           .def("solve", &DynamicsSolver::solve)
           .def<PositionTask& (DynamicsSolver::*)(std::string, Eigen::Vector3d)>(
               "add_position_task", &DynamicsSolver::add_position_task, return_internal_reference<>())
@@ -105,10 +104,7 @@ void exposeContacts()
           .def<CoMTask& (DynamicsSolver::*)(Eigen::Vector3d)>("add_com_task", &DynamicsSolver::add_com_task,
                                                               return_internal_reference<>())
           .def<FrameTask (DynamicsSolver::*)(std::string, Eigen::Affine3d)>("add_frame_task",
-                                                                            &DynamicsSolver::add_frame_task)
-          .add_property(
-              "qdd_desired", +[](DynamicsSolver& id) { return id.qdd_desired; },
-              +[](DynamicsSolver& id, const Eigen::VectorXd& qdd_desired) { id.qdd_desired = qdd_desired; });
+                                                                            &DynamicsSolver::add_frame_task);
 
   solver_class_ptr = &solver_class;
 

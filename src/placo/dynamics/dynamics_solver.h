@@ -34,13 +34,6 @@ public:
     Eigen::VectorXd qdd;
   };
 
-  struct LoopClosure
-  {
-    std::string frame_a;
-    std::string frame_b;
-    AxisesMask mask;
-  };
-
   DynamicsSolver(RobotWrapper& robot);
   virtual ~DynamicsSolver();
 
@@ -49,9 +42,6 @@ public:
 
   // Passive joints
   std::set<std::string> passive_joints;
-
-  // Desired accelerations
-  Eigen::VectorXd qdd_desired = Eigen::VectorXd();
 
   /**
    * @brief Adds a contact to the solver
@@ -69,13 +59,6 @@ public:
    * @param is_passive true if the DoF should be passive
    */
   void set_passive(const std::string& joint_name, bool is_passive = true);
-
-  /**
-   * @brief Adds a loop closing constraint (xy should be zero)
-   * @param frame_a
-   * @param frame_b
-   */
-  void add_loop_closing_constraint(const std::string& frame_a, const std::string& frame_b, const std::string& axises);
 
   PositionTask& add_position_task(pinocchio::FrameIndex frame_index, Eigen::Vector3d target_world);
   PositionTask& add_position_task(std::string frame_name, Eigen::Vector3d target_world);
@@ -101,7 +84,6 @@ public:
 
 protected:
   Problem problem;
-  std::vector<LoopClosure> loop_closing_constraints;
 
   std::set<Task*> tasks;
 
