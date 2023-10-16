@@ -83,6 +83,7 @@ void exposeContacts()
 
   class_<DynamicsSolver> solver_class =
       class_<DynamicsSolver>("DynamicsSolver", init<RobotWrapper&>())
+          .def_readwrite("dt", &DynamicsSolver::dt)
           .def("add_point_contact", &DynamicsSolver::add_point_contact, return_internal_reference<>())
           .def("add_unilateral_point_contact", &DynamicsSolver::add_unilateral_point_contact,
                return_internal_reference<>())
@@ -90,6 +91,9 @@ void exposeContacts()
           .def("add_planar_contact", &DynamicsSolver::add_planar_contact, return_internal_reference<>())
           .def("add_fixed_contact", &DynamicsSolver::add_fixed_contact, return_internal_reference<>())
           .def("set_passive", &DynamicsSolver::set_passive)
+          .def("enable_velocity_limits", &DynamicsSolver::enable_velocity_limits)
+          .def("enable_joint_limits", &DynamicsSolver::enable_joint_limits)
+          .def("enable_torque_limits", &DynamicsSolver::enable_torque_limits)
           .def("solve", &DynamicsSolver::solve)
           .def<PositionTask& (DynamicsSolver::*)(std::string, Eigen::Vector3d)>(
               "add_position_task", &DynamicsSolver::add_position_task, return_internal_reference<>())

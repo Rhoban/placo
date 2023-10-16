@@ -203,6 +203,11 @@ void RobotWrapper::set_velocity_limit(const std::string& name, double limit)
   model.velocityLimit[get_joint_v_offset(name)] = limit;
 }
 
+void RobotWrapper::set_torque_limit(const std::string& name, double limit)
+{
+  model.effortLimit[get_joint_v_offset(name)] = limit;
+}
+
 void RobotWrapper::set_velocity_limits(double limit)
 {
   for (auto& name : actuated_joint_names())

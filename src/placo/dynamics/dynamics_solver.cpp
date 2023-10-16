@@ -121,6 +121,100 @@ DynamicsSolver::~DynamicsSolver()
   }
 }
 
+void DynamicsSolver::enable_joint_limits(bool enable)
+{
+  joint_limits = enable;
+}
+
+void DynamicsSolver::enable_velocity_limits(bool enable)
+{
+  velocity_limits = enable;
+}
+
+void DynamicsSolver::enable_torque_limits(bool enable)
+{
+  torque_limits = enable;
+}
+
+void DynamicsSolver::compute_limits_inequalities(Expression& tau)
+{
+  if ((joint_limits || velocity_limits) && dt == 0.)
+  {
+    throw std::runtime_error("DynamicsSolver::compute_limits_inequalities: dt is not set");
+  }
+
+  std::set<int> passive_ids;
+  for (auto& passive_joint : passive_joints)
+  {
+    passive_ids.insert(robot.get_joint_v_offset(passive_joint));
+  }
+
+  if (torque_limits)
+  {
+    for (int k = 0; k < N - 6; k++)
+    {
+      problem.add_constraint(tau.slice(k + 6, 1) <= robot.model.effortLimit[k + 6]);
+      problem.add_constraint(tau.slice(k + 6, 1) >= -robot.model.effortLimit[k + 6]);
+    }
+  }
+
+  int constraints = 0;
+  if (joint_limits)
+  {
+    constraints += 2 * (N - 6 - passive_joints.size());
+  }
+  if (velocity_limits)
+  {
+    constraints += 2 * (N - 6 - passive_joints.size());
+  }
+
+  if (constraints > 0)
+  {
+    Expression e;
+    e.A = Eigen::MatrixXd(constraints, N);
+    e.A.setZero();
+    e.b = Eigen::VectorXd(constraints);
+    int constraint = 0;
+
+    // Iterating for each actuated joints
+    for (int k = 0; k < N - 6; k++)
+    {
+      if (passive_ids.count(k + 6) > 0)
+      {
+        continue;
+      }
+      double q = robot.state.q[k + 7];
+      double qd = robot.state.qd[k + 6];
+
+      if (velocity_limits)
+      {
+        e.A(constraint, k + 6) = dt;
+        e.b(constraint) = -robot.model.velocityLimit[k + 6] + qd;
+        constraint++;
+
+        e.A(constraint, k + 6) = -dt;
+        e.b(constraint) = -robot.model.velocityLimit[k + 6] - qd;
+        constraint++;
+      }
+
+      if (joint_limits)
+      {
+        double joints_limits_dt = 0.05;
+
+        e.A(constraint, k + 6) = .25 * joints_limits_dt * joints_limits_dt;
+        e.b(constraint) = q + joints_limits_dt * qd - robot.model.upperPositionLimit[k + 7];
+        constraint++;
+
+        e.A(constraint, k + 6) = -.25 * joints_limits_dt * joints_limits_dt;
+        e.b(constraint) = robot.model.lowerPositionLimit[k + 7] - q - joints_limits_dt * qd;
+        constraint++;
+      }
+    }
+
+    problem.add_constraint(e <= 0);
+  }
+}
+
 DynamicsSolver::Result DynamicsSolver::solve()
 {
   DynamicsSolver::Result result;
@@ -179,14 +273,10 @@ DynamicsSolver::Result DynamicsSolver::solve()
       {
         problem.add_constraint(tau.slice(robot.get_joint_v_offset(joint), 1) == 0);
       }
-      else
-      {
-        // TODO: Use true limits
-        problem.add_constraint(tau.slice(robot.get_joint_v_offset(joint), 1) >= -1);
-        problem.add_constraint(tau.slice(robot.get_joint_v_offset(joint), 1) <= 1);
-      }
     }
   }
+
+  compute_limits_inequalities(tau);
 
   // We want to minimize torques
   problem.add_constraint(tau == 0).configure(ProblemConstraint::Soft, 1.0);

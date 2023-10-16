@@ -74,21 +74,46 @@ public:
   StaticTask& add_static_task();
   JointsTask& add_joints_task();
 
+  /**
+   * @brief Enables/disables joint limits inequalities
+   */
+  void enable_joint_limits(bool enable);
+
+  /**
+   * @brief Enables/disables joint velocity inequalities
+   */
+  void enable_velocity_limits(bool enable);
+
+  /**
+   * @brief Enables/disables torque limits inequalities
+   */
+  void enable_torque_limits(bool enable);
+
+  void compute_limits_inequalities(Expression& tau);
+
   Result solve();
 
   RobotWrapper& robot;
 
   void remove_task(Task* task);
 
+  double dt = 0.;
   int N;
 
 protected:
+  // The problem instance is kept alive by the solver (so that variables etc. are available)
   Problem problem;
 
+  // Tasks
   std::set<Task*> tasks;
 
   // Task id (this is only useful when task names are not specified, each task will have an unique ID)
   int task_id = 0;
+
+  // Limits
+  bool torque_limits = true;
+  bool joint_limits = false;
+  bool velocity_limits = false;
 
   template <typename T>
   T& add_task(T* task)

@@ -108,6 +108,11 @@ public:
   void set_velocity_limits(double limit);
 
   /**
+   * @brief Sets the torque limit for a given joint
+   */
+  void set_torque_limit(const std::string& name, double limit);
+
+  /**
    * @brief Check that expected DOFs and frames are present (see expected_dofs() and expected_frames())
    */
   void check_expected();
