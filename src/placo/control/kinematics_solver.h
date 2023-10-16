@@ -10,17 +10,14 @@
 #include "placo/control/position_task.h"
 #include "placo/control/orientation_task.h"
 #include "placo/control/frame_task.h"
-#include "placo/control/pose_task.h"
 #include "placo/control/relative_position_task.h"
 #include "placo/control/relative_orientation_task.h"
 #include "placo/control/relative_frame_task.h"
-#include "placo/control/relative_pose_task.h"
 #include "placo/control/com_task.h"
 #include "placo/control/com_bound_task.h"
 #include "placo/control/axis_align_task.h"
 #include "placo/control/axis_plane_task.h"
 #include "placo/control/distance_task.h"
-#include "placo/control/joint_task.h"
 #include "placo/control/joints_task.h"
 #include "placo/control/regularization_task.h"
 #include "placo/control/centroidal_momentum_task.h"
@@ -131,35 +128,6 @@ public:
   RelativeFrameTask add_relative_frame_task(RobotWrapper::FrameIndex frame_a, RobotWrapper::FrameIndex frame_b,
                                             Eigen::Affine3d T_a_b);
   RelativeFrameTask add_relative_frame_task(std::string frame_a, std::string frame_b, Eigen::Affine3d T_a_b);
-
-  /**
-   * @brief Adds a pose task. The difference with the frame task is that the error will be computed in a coupled way
-   * (using the log of the matrix error), resulting in a "screw" target motion. This should be used instead of
-   * add_frame_task when the frame is not attached to a particular point we want to control, but to a body. As a result,
-   * the position and orientation tasks can't be weighted independently when this task is soft.
-   * @param frame the robot frame we want to control
-   * @param T_world_frame the target for the frame we want to control, expressed in the world (as T_world_frame)
-   */
-  PoseTask& add_pose_task(RobotWrapper::FrameIndex frame, Eigen::Affine3d T_world_frame);
-  PoseTask& add_pose_task(std::string frame, Eigen::Affine3d T_world_frame);
-
-  /**
-   * @brief Adds a relative pose task, this is similar to add_pose_task, but it ensures a relative pose between two
-   * given frames.
-   * @param frame_a frame A
-   * @param frame_b frame B
-   * @param T_a_b relative desired pose to enforce
-   */
-  RelativePoseTask& add_relative_pose_task(RobotWrapper::FrameIndex frame_a, RobotWrapper::FrameIndex frame_b,
-                                           Eigen::Affine3d T_a_b);
-  RelativePoseTask& add_relative_pose_task(std::string frame_a, std::string frame_b, Eigen::Affine3d T_a_b);
-
-  /**
-   * @brief Adds a joint task, meaning that we want to bring a joint to a given target position
-   * @param joint robot joint
-   * @param target its target value
-   */
-  JointTask& add_joint_task(std::string joint, double target);
 
   /**
    * @brief Adding joints task

@@ -133,33 +133,6 @@ RelativeFrameTask KinematicsSolver::add_relative_frame_task(std::string frame_a,
   return add_relative_frame_task(robot->get_frame_index(frame_a), robot->get_frame_index(frame_b), T_a_b);
 }
 
-PoseTask& KinematicsSolver::add_pose_task(RobotWrapper::FrameIndex frame, Eigen::Affine3d T_world_frame)
-{
-  return add_task(new PoseTask(frame, T_world_frame));
-}
-
-PoseTask& KinematicsSolver::add_pose_task(std::string frame, Eigen::Affine3d T_world_frame)
-{
-  return add_pose_task(robot->get_frame_index(frame), T_world_frame);
-}
-
-RelativePoseTask& KinematicsSolver::add_relative_pose_task(RobotWrapper::FrameIndex frame_a,
-                                                           RobotWrapper::FrameIndex frame_b, Eigen::Affine3d T_a_b)
-{
-  return add_task(new RelativePoseTask(frame_a, frame_b, T_a_b));
-}
-
-RelativePoseTask& KinematicsSolver::add_relative_pose_task(std::string frame_a, std::string frame_b,
-                                                           Eigen::Affine3d T_a_b)
-{
-  return add_relative_pose_task(robot->get_frame_index(frame_a), robot->get_frame_index(frame_b), T_a_b);
-}
-
-JointTask& KinematicsSolver::add_joint_task(std::string joint, double target)
-{
-  return add_task(new JointTask(joint, target));
-}
-
 JointsTask& KinematicsSolver::add_joints_task(std::map<std::string, double>& joints)
 {
   JointsTask& task = add_task(new JointsTask());
