@@ -170,7 +170,7 @@ void DynamicsSolver::compute_limits_inequalities(Expression& tau)
     {
       double q = robot.state.q[k + 7];
       double qd = robot.state.qd[k + 6];
-      if (q > robot.model.upperPositionLimit[k + 7])
+      if (q < robot.model.lowerPositionLimit[k + 7] || q > robot.model.upperPositionLimit[k + 7])
       {
         Expression e;
         e.A = Eigen::MatrixXd(1, N);
@@ -179,23 +179,15 @@ void DynamicsSolver::compute_limits_inequalities(Expression& tau)
 
         e.A(0, k + 6) = 1;
         e.b(0) = -(kp * (robot.model.upperPositionLimit[k + 7] - q) - sqrt(2) * kp * qd);
-        problem.add_constraint(e <= 0);
 
-        Variable& f = problem.add_variable(1);
-        Eigen::MatrixXd J = Eigen::MatrixXd::Zero(1, N);
-        J(0, k + 6) = 1;
-        tau = tau - J.transpose() * f.expr();
-      }
-      if (q < robot.model.lowerPositionLimit[k + 7])
-      {
-        Expression e;
-        e.A = Eigen::MatrixXd(1, N);
-        e.A.setZero();
-        e.b = Eigen::VectorXd(1);
-
-        e.A(0, k + 6) = -1;
-        e.b(0) = (kp * (robot.model.lowerPositionLimit[k + 7] - q) - sqrt(2) * kp * qd);
-        problem.add_constraint(e <= 0);
+        if (q > robot.model.upperPositionLimit[k + 7])
+        {
+          problem.add_constraint(e <= 0);
+        }
+        else
+        {
+          problem.add_constraint(e >= 0);
+        }
 
         Variable& f = problem.add_variable(1);
         Eigen::MatrixXd J = Eigen::MatrixXd::Zero(1, N);
