@@ -52,6 +52,11 @@ ExternalWrenchContact& DynamicsSolver::add_external_wrench_contact(std::string f
   return add_external_wrench_contact(robot.get_frame_index(frame_name));
 }
 
+PuppetContact& DynamicsSolver::add_puppet_contact()
+{
+  return add_contact(new PuppetContact());
+}
+
 PositionTask& DynamicsSolver::add_position_task(pinocchio::FrameIndex frame_index, Eigen::Vector3d target_world)
 {
   return add_task(new PositionTask(frame_index, target_world));
@@ -285,7 +290,7 @@ DynamicsSolver::Result DynamicsSolver::solve()
   // Computing body jacobians
   for (auto& contact : contacts)
   {
-    Contact::Wrench wrench = contact->add_wrench(robot, problem);
+    Contact::Wrench wrench = contact->add_wrench(problem);
     tau = tau - wrench.J.transpose() * wrench.f;
   }
 

@@ -32,7 +32,7 @@ public:
   double weight_moments = 0.;
 
   // Adds the wrench to the problem
-  virtual Wrench add_wrench(RobotWrapper& robot, Problem& problem) = 0;
+  virtual Wrench add_wrench(Problem& problem) = 0;
 
   // Wrench variable for the solver
   Variable* variable;
@@ -48,7 +48,7 @@ public:
   PositionTask* position_task;
   bool unilateral;
 
-  virtual Wrench add_wrench(RobotWrapper& robot, Problem& problem);
+  virtual Wrench add_wrench(Problem& problem);
 };
 
 class PlanarContact : public Contact
@@ -67,7 +67,7 @@ public:
   // Returns the ZMP of the contact expressed in the local frame
   Eigen::Vector3d zmp();
 
-  virtual Wrench add_wrench(RobotWrapper& robot, Problem& problem);
+  virtual Wrench add_wrench(Problem& problem);
 };
 
 class RelativePointContact : public Contact
@@ -77,7 +77,7 @@ public:
 
   RelativePositionTask* relative_position_task;
 
-  virtual Wrench add_wrench(RobotWrapper& robot, Problem& problem);
+  virtual Wrench add_wrench(Problem& problem);
 };
 
 class ExternalWrenchContact : public Contact
@@ -88,7 +88,15 @@ public:
   RobotWrapper::FrameIndex frame_index;
   Eigen::VectorXd w_ext = Eigen::VectorXd::Zero(6);
 
-  virtual Wrench add_wrench(RobotWrapper& robot, Problem& problem);
+  virtual Wrench add_wrench(Problem& problem);
+};
+
+class PuppetContact : public Contact
+{
+public:
+  PuppetContact();
+
+  virtual Wrench add_wrench(Problem& problem);
 };
 
 }  // namespace dynamics

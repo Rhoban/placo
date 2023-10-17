@@ -32,7 +32,7 @@ PointContact::PointContact(PositionTask& position_task, bool unilateral)
   this->unilateral = unilateral;
 }
 
-Contact::Wrench PointContact::add_wrench(RobotWrapper& robot, Problem& problem)
+Contact::Wrench PointContact::add_wrench(Problem& problem)
 {
   variable = &problem.add_variable(3);
 
@@ -67,7 +67,7 @@ RelativePointContact::RelativePointContact(RelativePositionTask& relative_positi
   this->relative_position_task = &relative_position_task;
 }
 
-Contact::Wrench RelativePointContact::add_wrench(RobotWrapper& robot, Problem& problem)
+Contact::Wrench RelativePointContact::add_wrench(Problem& problem)
 {
   variable = &problem.add_variable(relative_position_task->A.rows());
 
@@ -91,7 +91,7 @@ PlanarContact::PlanarContact(FrameTask& frame_task, bool unilateral)
   this->unilateral = unilateral;
 }
 
-Contact::Wrench PlanarContact::add_wrench(RobotWrapper& robot, Problem& problem)
+Contact::Wrench PlanarContact::add_wrench(Problem& problem)
 {
   // Wrench is: [ fx fy fz mx my mz ] with f the force and m the moment
   variable = &problem.add_variable(6);
@@ -129,9 +129,9 @@ Contact::Wrench PlanarContact::add_wrench(RobotWrapper& robot, Problem& problem)
   }
 
   Contact::Wrench wrench;
-  Eigen::MatrixXd J = Eigen::MatrixXd::Zero(6, robot.model.nv);
-  J.block(0, 0, 3, robot.model.nv) = position_task->A;
-  J.block(3, 0, 3, robot.model.nv) = orientation_task->A;
+  Eigen::MatrixXd J = Eigen::MatrixXd::Zero(6, solver->N);
+  J.block(0, 0, 3, solver->N) = position_task->A;
+  J.block(3, 0, 3, solver->N) = orientation_task->A;
 
   wrench.J = J;
   wrench.f = variable->expr();
@@ -143,13 +143,25 @@ ExternalWrenchContact::ExternalWrenchContact(RobotWrapper::FrameIndex frame_inde
 {
 }
 
-Contact::Wrench ExternalWrenchContact::add_wrench(RobotWrapper& robot, Problem& problem)
+Contact::Wrench ExternalWrenchContact::add_wrench(Problem& problem)
 {
   Contact::Wrench wrench;
-  wrench.J = robot.frame_jacobian(frame_index, pinocchio::LOCAL_WORLD_ALIGNED);
+  wrench.J = solver->robot.frame_jacobian(frame_index, pinocchio::LOCAL_WORLD_ALIGNED);
   wrench.f = Expression::from_vector(w_ext);
   return wrench;
 }
 
+PuppetContact::PuppetContact()
+{
+}
+
+Contact::Wrench PuppetContact::add_wrench(Problem& problem)
+{
+  Contact::Wrench wrench;
+  wrench.J = Eigen::MatrixXd(solver->N, solver->N);
+  wrench.J.setIdentity();
+  wrench.f = problem.add_variable(solver->N).expr();
+  return wrench;
+}
 }  // namespace dynamics
 }  // namespace placo

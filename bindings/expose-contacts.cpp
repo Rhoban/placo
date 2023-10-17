@@ -84,6 +84,8 @@ void exposeContacts()
   class_<ExternalWrenchContact>("DynamicsSolverExternalWrenchContact", init<RobotWrapper::FrameIndex>())
       .def_readwrite("w_ext", &ExternalWrenchContact::w_ext);
 
+  class_<PuppetContact>("DynamicsSolverPuppetContact", init<>());
+
   class_<DynamicsSolver> solver_class =
       class_<DynamicsSolver>("DynamicsSolver", init<RobotWrapper&>())
           .def_readwrite("dt", &DynamicsSolver::dt)
@@ -96,6 +98,7 @@ void exposeContacts()
           .def<ExternalWrenchContact& (DynamicsSolver::*)(std::string)>("add_external_wrench_contact",
                                                                         &DynamicsSolver::add_external_wrench_contact,
                                                                         return_internal_reference<>())
+          .def("add_puppet_contact", &DynamicsSolver::add_puppet_contact, return_internal_reference<>())
           .def("set_passive", &DynamicsSolver::set_passive)
           .def("enable_velocity_limits", &DynamicsSolver::enable_velocity_limits)
           .def("enable_joint_limits", &DynamicsSolver::enable_joint_limits)

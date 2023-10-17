@@ -53,6 +53,7 @@ public:
   PlanarContact& add_planar_contact(FrameTask& frame_task);
   ExternalWrenchContact& add_external_wrench_contact(RobotWrapper::FrameIndex frame_index);
   ExternalWrenchContact& add_external_wrench_contact(std::string frame_name);
+  PuppetContact& add_puppet_contact();
 
   /**
    * @brief Sets a DoF as passive
