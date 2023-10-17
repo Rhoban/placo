@@ -88,11 +88,25 @@ public:
   void enable_velocity_limits(bool enable);
 
   /**
+   * @brief Enables or disable the self collision inequalities
+   * @param enable whether to enable the self collision inequalities
+   * @param margin margin that will be used [m]
+   * @param trigger the trigger distance at which the inequalities are enabled [m]
+   */
+  void enable_self_collision_avoidance(bool enable, double margin = 0.005, double trigger = 0.01);
+
+  /**
+   * @brief Changes the self collision configuration
+   */
+  void configure_self_collision_avoidance(bool soft, double weight);
+
+  /**
    * @brief Enables/disables torque limits inequalities
    */
   void enable_torque_limits(bool enable);
 
   void compute_limits_inequalities(Expression& tau);
+  void compute_self_collision_inequalities();
 
   Result solve();
 
@@ -117,6 +131,15 @@ protected:
   bool torque_limits = true;
   bool joint_limits = false;
   bool velocity_limits = false;
+
+  // Self collision prevention
+  bool avoid_self_collisions = false;
+  double self_collisions_margin = 0.005;  // [m]
+  double self_collisions_trigger = 0.01;  // [m]
+
+  // Self collisions configuration
+  bool self_collisions_soft = true;
+  double self_collisions_weight = 1.;
 
   // If true, the solver will assume qdd = 0
   bool is_static = false;
