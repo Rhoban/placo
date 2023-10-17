@@ -138,7 +138,7 @@ protected:
   double self_collisions_trigger = 0.01;  // [m]
 
   // Self collisions configuration
-  bool self_collisions_soft = true;
+  bool self_collisions_soft = false;
   double self_collisions_weight = 1.;
 
   // If true, the solver will assume qdd = 0

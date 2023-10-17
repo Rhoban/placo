@@ -237,6 +237,11 @@ void KinematicsSolver::compute_self_collision_inequalities()
       }
     }
 
+    if (constraints == 0)
+    {
+      return;
+    }
+
     Expression e;
     e.A = Eigen::MatrixXd(constraints, N);
     e.b = Eigen::VectorXd(constraints);

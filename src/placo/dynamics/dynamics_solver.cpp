@@ -282,7 +282,7 @@ void DynamicsSolver::compute_self_collision_inequalities()
 
     for (auto& distance : distances)
     {
-      if (distance.min_distance < self_collisions_margin)
+      if (distance.min_distance < self_collisions_trigger)
       {
         constraints += 1;
       }
@@ -298,11 +298,11 @@ void DynamicsSolver::compute_self_collision_inequalities()
     e.b = Eigen::VectorXd(constraints);
     int constraint = 0;
 
-    double xdd_safe = 1.;  // XXX: How to estimate this ?
+    double xdd_safe = .1;  // XXX: How to estimate this ?
 
     for (auto& distance : distances)
     {
-      if (distance.min_distance < self_collisions_margin)
+      if (distance.min_distance < self_collisions_trigger)
       {
         Eigen::Vector3d v = distance.pointB - distance.pointA;
         Eigen::Vector3d n = v.normalized();
@@ -322,28 +322,26 @@ void DynamicsSolver::compute_self_collision_inequalities()
         // We want: current_distance + J dq >= margin
         Eigen::MatrixXd J = n.transpose() * (JB - JA).block(0, 0, 3, N);
 
-        // if (distance.min_distance > self_collisions_margin)
-        // {
-        //   // We prevent excessive velocity towards the collision
-        //   double error = distance.min_distance - self_collisions_margin;
-        //   double xd_max = sqrt(2. * error * xdd_safe);
-        //   double xd = (J * robot.state.qd)(0, 0);
+        if (distance.min_distance >= self_collisions_margin)
+        {
+          // We prevent excessive velocity towards the collision
+          double error = distance.min_distance - self_collisions_margin;
+          double xd_max = sqrt(2. * error * xdd_safe);
+          double xd = (J * robot.state.qd)(0, 0);
 
-        //   e.A.block(constraint, 0, 1, N) = J * dt;
-        //   e.b[constraint] = xd + xd_max;
-        // }
-        // else
-        // {
-        // We push outward the collision
-        e.A.block(constraint, 0, 1, N) = J;
-        e.b[constraint] = -xdd_safe;
-        // }
+          e.A.block(constraint, 0, 1, N) = dt * J;
+          e.b[constraint] = xd + xd_max;
+        }
+        else
+        {
+          // We push outward the collision
+          e.A.block(constraint, 0, 1, N) = J;
+          e.b[constraint] = -xdd_safe * 10;
+        }
 
         constraint += 1;
       }
     }
-
-    std::cout << "Constraints: " << constraints << std::endl;
 
     problem.add_constraint(e >= 0).configure(self_collisions_soft ? ProblemConstraint::Soft : ProblemConstraint::Hard,
                                              self_collisions_weight);
