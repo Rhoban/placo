@@ -80,5 +80,16 @@ public:
   virtual Wrench add_wrench(RobotWrapper& robot, Problem& problem);
 };
 
+class ExternalWrenchContact : public Contact
+{
+public:
+  ExternalWrenchContact(RobotWrapper::FrameIndex frame_index);
+
+  RobotWrapper::FrameIndex frame_index;
+  Eigen::VectorXd w_ext = Eigen::VectorXd::Zero(6);
+
+  virtual Wrench add_wrench(RobotWrapper& robot, Problem& problem);
+};
+
 }  // namespace dynamics
 }  // namespace placo

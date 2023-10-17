@@ -139,5 +139,17 @@ Contact::Wrench PlanarContact::add_wrench(RobotWrapper& robot, Problem& problem)
   return wrench;
 }
 
+ExternalWrenchContact::ExternalWrenchContact(RobotWrapper::FrameIndex frame_index) : frame_index(frame_index)
+{
+}
+
+Contact::Wrench ExternalWrenchContact::add_wrench(RobotWrapper& robot, Problem& problem)
+{
+  Contact::Wrench wrench;
+  wrench.J = robot.frame_jacobian(frame_index, pinocchio::LOCAL_WORLD_ALIGNED);
+  wrench.f = Expression::from_vector(w_ext);
+  return wrench;
+}
+
 }  // namespace dynamics
 }  // namespace placo

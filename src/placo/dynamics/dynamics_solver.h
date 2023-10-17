@@ -51,6 +51,8 @@ public:
   RelativePointContact& add_relative_point_contact(RelativePositionTask& position_task);
   PlanarContact& add_fixed_contact(FrameTask& frame_task);
   PlanarContact& add_planar_contact(FrameTask& frame_task);
+  ExternalWrenchContact& add_external_wrench_contact(RobotWrapper::FrameIndex frame_index);
+  ExternalWrenchContact& add_external_wrench_contact(std::string frame_name);
 
   /**
    * @brief Sets a DoF as passive

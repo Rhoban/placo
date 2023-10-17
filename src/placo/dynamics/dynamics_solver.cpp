@@ -42,6 +42,16 @@ PlanarContact& DynamicsSolver::add_fixed_contact(FrameTask& frame_task)
   return add_contact(new PlanarContact(frame_task, false));
 }
 
+ExternalWrenchContact& DynamicsSolver::add_external_wrench_contact(pinocchio::FrameIndex frame_index)
+{
+  return add_contact(new ExternalWrenchContact(frame_index));
+}
+
+ExternalWrenchContact& DynamicsSolver::add_external_wrench_contact(std::string frame_name)
+{
+  return add_external_wrench_contact(robot.get_frame_index(frame_name));
+}
+
 PositionTask& DynamicsSolver::add_position_task(pinocchio::FrameIndex frame_index, Eigen::Vector3d target_world)
 {
   return add_task(new PositionTask(frame_index, target_world));
