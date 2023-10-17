@@ -221,22 +221,36 @@ void DynamicsSolver::compute_limits_inequalities(Expression& tau)
       {
         double qdd_safe = 1.;  // XXX: This should be specified somewhere else
 
-        double qd_max = sqrt(2. * fmax(0., robot.model.upperPositionLimit[k + 7] - q) * qdd_safe);
         if (q > robot.model.upperPositionLimit[k + 7])
         {
-          qd_max = -qd_max;
+          // We are in the contact, ensuring at least
+          // qdd <= -qdd_safe
+          e.A(constraint, k + 6) = 1;
+          e.b(constraint) = qdd_safe;
         }
-        e.A(constraint, k + 6) = dt;
-        e.b(constraint) = qd - qd_max;
+        else
+        {
+          // qdd*dt + qd <= qd_max
+          double qd_max = sqrt(2. * (robot.model.upperPositionLimit[k + 7] - q) * qdd_safe);
+          e.A(constraint, k + 6) = dt;
+          e.b(constraint) = qd - qd_max;
+        }
         constraint++;
 
-        qd_max = sqrt(2. * fabs(fmin(0., robot.model.lowerPositionLimit[k + 7] - q)) * qdd_safe);
         if (q < robot.model.lowerPositionLimit[k + 7])
         {
-          qd_max = -qd_max;
+          // We are in the contact, ensuring at least
+          // qdd >= qdd_safe
+          e.A(constraint, k + 6) = -1;
+          e.b(constraint) = qdd_safe;
         }
-        e.A(constraint, k + 6) = -dt;
-        e.b(constraint) = -qd - qd_max;
+        else
+        {
+          // qdd*dt + qd >= -qd_max
+          double qd_max = sqrt(2. * fabs(robot.model.lowerPositionLimit[k + 7] - q) * qdd_safe);
+          e.A(constraint, k + 6) = -dt;
+          e.b(constraint) = -qd - qd_max;
+        }
         constraint++;
       }
     }
