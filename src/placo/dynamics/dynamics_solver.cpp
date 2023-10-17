@@ -232,8 +232,7 @@ DynamicsSolver::Result DynamicsSolver::solve()
   Expression qdd;
   if (is_static)
   {
-    qdd.A = Eigen::MatrixXd::Zero(robot.model.nv, 0);
-    qdd.b = Eigen::VectorXd::Zero(robot.model.nv);
+    qdd = Expression::from_vector(Eigen::VectorXd::Zero(robot.model.nv));
   }
   else
   {
