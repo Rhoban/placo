@@ -83,6 +83,11 @@ public:
   void enable_joint_limits(bool enable);
 
   /**
+   * @brief  Enables/disables joint endstops inequalities and contact forces
+   */
+  void enable_joint_endstops(bool enable);
+
+  /**
    * @brief Enables/disables joint velocity inequalities
    */
   void enable_velocity_limits(bool enable);
@@ -116,6 +121,7 @@ protected:
   // Limits
   bool torque_limits = true;
   bool joint_limits = false;
+  bool joint_endstops = false;
   bool velocity_limits = false;
 
   // If true, the solver will assume qdd = 0

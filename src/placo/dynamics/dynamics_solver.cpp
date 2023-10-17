@@ -141,6 +141,11 @@ void DynamicsSolver::enable_joint_limits(bool enable)
   joint_limits = enable;
 }
 
+void DynamicsSolver::enable_joint_endstops(bool enable)
+{
+  joint_endstops = enable;
+}
+
 void DynamicsSolver::enable_velocity_limits(bool enable)
 {
   velocity_limits = enable;
@@ -156,6 +161,48 @@ void DynamicsSolver::compute_limits_inequalities(Expression& tau)
   if ((joint_limits || velocity_limits) && dt == 0.)
   {
     throw std::runtime_error("DynamicsSolver::compute_limits_inequalities: dt is not set");
+  }
+
+  if (joint_endstops)
+  {
+    double kp = 1e3;
+    for (int k = 0; k < N - 6; k++)
+    {
+      double q = robot.state.q[k + 7];
+      double qd = robot.state.qd[k + 6];
+      if (q > robot.model.upperPositionLimit[k + 7])
+      {
+        Expression e;
+        e.A = Eigen::MatrixXd(1, N);
+        e.A.setZero();
+        e.b = Eigen::VectorXd(1);
+
+        e.A(0, k + 6) = 1;
+        e.b(0) = -(kp * (robot.model.upperPositionLimit[k + 7] - q) - sqrt(2) * kp * qd);
+        problem.add_constraint(e <= 0);
+
+        Variable& f = problem.add_variable(1);
+        Eigen::MatrixXd J = Eigen::MatrixXd::Zero(1, N);
+        J(0, k + 6) = 1;
+        tau = tau - J.transpose() * f.expr();
+      }
+      if (q < robot.model.lowerPositionLimit[k + 7])
+      {
+        Expression e;
+        e.A = Eigen::MatrixXd(1, N);
+        e.A.setZero();
+        e.b = Eigen::VectorXd(1);
+
+        e.A(0, k + 6) = -1;
+        e.b(0) = (kp * (robot.model.lowerPositionLimit[k + 7] - q) - sqrt(2) * kp * qd);
+        problem.add_constraint(e <= 0);
+
+        Variable& f = problem.add_variable(1);
+        Eigen::MatrixXd J = Eigen::MatrixXd::Zero(1, N);
+        J(0, k + 6) = 1;
+        tau = tau - J.transpose() * f.expr();
+      }
+    }
   }
 
   std::set<int> passive_ids;
@@ -294,6 +341,8 @@ DynamicsSolver::Result DynamicsSolver::solve()
     tau = tau - wrench.J.transpose() * wrench.f;
   }
 
+  compute_limits_inequalities(tau);
+
   // Floating base has no torque
   problem.add_constraint(tau.slice(0, 6) == 0);
 
@@ -305,8 +354,6 @@ DynamicsSolver::Result DynamicsSolver::solve()
       problem.add_constraint(tau.slice(robot.get_joint_v_offset(joint), 1) == 0);
     }
   }
-
-  compute_limits_inequalities(tau);
 
   // We want to minimize torques
   problem.add_constraint(tau == 0).configure(ProblemConstraint::Soft, 1.0);
