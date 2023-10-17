@@ -71,9 +71,9 @@ CoMTask& DynamicsSolver::add_com_task(Eigen::Vector3d target_world)
   return add_task(new CoMTask(target_world));
 }
 
-StaticTask& DynamicsSolver::add_static_task()
+void DynamicsSolver::set_static(bool is_static_)
 {
-  return add_task(new StaticTask());
+  is_static = is_static_;
 }
 
 JointsTask& DynamicsSolver::add_joints_task()
@@ -158,6 +158,11 @@ void DynamicsSolver::compute_limits_inequalities(Expression& tau)
     }
   }
 
+  if (is_static)
+  {
+    return;
+  }
+
   int constraints = 0;
   if (joint_limits)
   {
@@ -224,22 +229,35 @@ DynamicsSolver::Result DynamicsSolver::solve()
   problem.clear_constraints();
   problem.clear_variables();
 
-  Variable& qdd = problem.add_variable(robot.model.nv);
+  Expression qdd;
+  if (is_static)
+  {
+    qdd.A = Eigen::MatrixXd::Zero(robot.model.nv, 0);
+    qdd.b = Eigen::VectorXd::Zero(robot.model.nv);
+  }
+  else
+  {
+    Variable& qdd_varaible = problem.add_variable(robot.model.nv);
+    qdd = qdd_varaible.expr();
+  }
 
   for (auto& task : tasks)
   {
     task->update();
 
-    ProblemConstraint::Priority task_priority = ProblemConstraint::Hard;
-    if (task->priority == Task::Priority::Soft)
+    if (!is_static)
     {
-      task_priority = ProblemConstraint::Soft;
-    }
+      ProblemConstraint::Priority task_priority = ProblemConstraint::Hard;
+      if (task->priority == Task::Priority::Soft)
+      {
+        task_priority = ProblemConstraint::Soft;
+      }
 
-    Expression e;
-    e.A = task->A;
-    e.b = -task->b;
-    problem.add_constraint(e == 0).configure(task_priority, task->weight);
+      Expression e;
+      e.A = task->A;
+      e.b = -task->b;
+      problem.add_constraint(e == 0).configure(task_priority, task->weight);
+    }
   }
 
   // We build the expression for tau, given the equation of motion
@@ -249,7 +267,7 @@ DynamicsSolver::Result DynamicsSolver::solve()
   Eigen::VectorXd friction = robot.state.qd * 1e-3;
 
   // M qdd
-  Expression tau = robot.mass_matrix() * qdd.expr() + friction;
+  Expression tau = robot.mass_matrix() * qdd + friction;
 
   // b
   tau = tau + robot.non_linear_effects();
@@ -259,7 +277,6 @@ DynamicsSolver::Result DynamicsSolver::solve()
   for (auto& contact : contacts)
   {
     Contact::Wrench wrench = contact->add_wrench(robot, problem);
-    // problem.add_constraint(wrench.J * qdd.expr() == 0);
     tau = tau - wrench.J.transpose() * wrench.f;
   }
 
@@ -269,11 +286,9 @@ DynamicsSolver::Result DynamicsSolver::solve()
   // Passive joints have no torque
   for (auto& joint : robot.actuated_joint_names())
   {
+    if (passive_joints.count(joint) > 0)
     {
-      if (passive_joints.count(joint) > 0)
-      {
-        problem.add_constraint(tau.slice(robot.get_joint_v_offset(joint), 1) == 0);
-      }
+      problem.add_constraint(tau.slice(robot.get_joint_v_offset(joint), 1) == 0);
     }
   }
 
@@ -290,7 +305,7 @@ DynamicsSolver::Result DynamicsSolver::solve()
 
     // Exporting result values
     result.tau = tau.value(problem.x);
-    result.qdd = qdd.value;
+    result.qdd = qdd.value(problem.x);
   }
   catch (QPError& e)
   {

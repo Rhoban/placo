@@ -68,7 +68,6 @@ add_library(libplaco
     src/placo/dynamics/frame_task.cpp
     src/placo/dynamics/orientation_task.cpp
     src/placo/dynamics/joints_task.cpp
-    src/placo/dynamics/static_task.cpp
     src/placo/dynamics/com_task.cpp
     src/placo/dynamics/contacts.cpp
     src/placo/dynamics/dynamics_solver.cpp

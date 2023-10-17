@@ -12,7 +12,6 @@
 #include "placo/dynamics/frame_task.h"
 #include "placo/dynamics/relative_position_task.h"
 #include "placo/dynamics/joints_task.h"
-#include "placo/dynamics/static_task.h"
 #include "placo/dynamics/com_task.h"
 
 namespace placo
@@ -71,8 +70,9 @@ public:
   RelativePositionTask& add_relative_position_task(std::string frame_a_name, std::string frame_b_name,
                                                    Eigen::Vector3d target_world);
   CoMTask& add_com_task(Eigen::Vector3d target_world);
-  StaticTask& add_static_task();
   JointsTask& add_joints_task();
+
+  void set_static(bool is_static);
 
   /**
    * @brief Enables/disables joint limits inequalities
@@ -114,6 +114,9 @@ protected:
   bool torque_limits = true;
   bool joint_limits = false;
   bool velocity_limits = false;
+
+  // If true, the solver will assume qdd = 0
+  bool is_static = false;
 
   template <typename T>
   T& add_task(T* task)

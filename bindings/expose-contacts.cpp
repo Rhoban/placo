@@ -94,6 +94,7 @@ void exposeContacts()
           .def("enable_velocity_limits", &DynamicsSolver::enable_velocity_limits)
           .def("enable_joint_limits", &DynamicsSolver::enable_joint_limits)
           .def("enable_torque_limits", &DynamicsSolver::enable_torque_limits)
+          .def("set_static", &DynamicsSolver::set_static)
           .def("solve", &DynamicsSolver::solve)
           .def<PositionTask& (DynamicsSolver::*)(std::string, Eigen::Vector3d)>(
               "add_position_task", &DynamicsSolver::add_position_task, return_internal_reference<>())
@@ -102,8 +103,6 @@ void exposeContacts()
           .def<OrientationTask& (DynamicsSolver::*)(std::string, Eigen::Matrix3d)>(
               "add_orientation_task", &DynamicsSolver::add_orientation_task, return_internal_reference<>())
           .def<JointsTask& (DynamicsSolver::*)()>("add_joints_task", &DynamicsSolver::add_joints_task,
-                                                  return_internal_reference<>())
-          .def<StaticTask& (DynamicsSolver::*)()>("add_static_task", &DynamicsSolver::add_static_task,
                                                   return_internal_reference<>())
           .def<CoMTask& (DynamicsSolver::*)(Eigen::Vector3d)>("add_com_task", &DynamicsSolver::add_com_task,
                                                               return_internal_reference<>())
@@ -170,7 +169,4 @@ void exposeContacts()
                               "set_joints_velocities", +[](JointsTask& task, boost::python::dict& py_dict) {
                                 update_map<std::string, double>(task.djoints, py_dict);
                               }));
-
-  auto static_task = class_<StaticTask>("DynamicsStaticTask", init<>());
-  registerTaskMethods(static_task);
 }
