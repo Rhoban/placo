@@ -103,7 +103,6 @@ void exposeContacts()
           .def("enable_velocity_limits", &DynamicsSolver::enable_velocity_limits)
           .def("enable_joint_limits", &DynamicsSolver::enable_joint_limits)
           .def("enable_torque_limits", &DynamicsSolver::enable_torque_limits)
-          .def("enable_joint_endstops", &DynamicsSolver::enable_joint_endstops)
           .def("set_static", &DynamicsSolver::set_static)
           .def("solve", &DynamicsSolver::solve)
           .def<PositionTask& (DynamicsSolver::*)(std::string, Eigen::Vector3d)>(

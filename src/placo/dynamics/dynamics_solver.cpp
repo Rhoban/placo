@@ -141,11 +141,6 @@ void DynamicsSolver::enable_joint_limits(bool enable)
   joint_limits = enable;
 }
 
-void DynamicsSolver::enable_joint_endstops(bool enable)
-{
-  joint_endstops = enable;
-}
-
 void DynamicsSolver::enable_velocity_limits(bool enable)
 {
   velocity_limits = enable;
@@ -161,40 +156,6 @@ void DynamicsSolver::compute_limits_inequalities(Expression& tau)
   if ((joint_limits || velocity_limits) && dt == 0.)
   {
     throw std::runtime_error("DynamicsSolver::compute_limits_inequalities: dt is not set");
-  }
-
-  if (joint_endstops)
-  {
-    double kp = 1e3;
-    for (int k = 0; k < N - 6; k++)
-    {
-      double q = robot.state.q[k + 7];
-      double qd = robot.state.qd[k + 6];
-      if (q < robot.model.lowerPositionLimit[k + 7] || q > robot.model.upperPositionLimit[k + 7])
-      {
-        Expression e;
-        e.A = Eigen::MatrixXd(1, N);
-        e.A.setZero();
-        e.b = Eigen::VectorXd(1);
-
-        e.A(0, k + 6) = 1;
-        e.b(0) = -(kp * (robot.model.upperPositionLimit[k + 7] - q) - sqrt(2) * kp * qd);
-
-        if (q > robot.model.upperPositionLimit[k + 7])
-        {
-          problem.add_constraint(e <= 0);
-        }
-        else
-        {
-          problem.add_constraint(e >= 0);
-        }
-
-        Variable& f = problem.add_variable(1);
-        Eigen::MatrixXd J = Eigen::MatrixXd::Zero(1, N);
-        J(0, k + 6) = 1;
-        tau = tau - J.transpose() * f.expr();
-      }
-    }
   }
 
   std::set<int> passive_ids;
@@ -259,12 +220,21 @@ void DynamicsSolver::compute_limits_inequalities(Expression& tau)
       if (joint_limits)
       {
         double qdd_safe = 1.;  // XXX: This should be specified somewhere else
+
         double qd_max = sqrt(2. * fmax(0., robot.model.upperPositionLimit[k + 7] - q) * qdd_safe);
+        if (q > robot.model.upperPositionLimit[k + 7])
+        {
+          qd_max = -qd_max;
+        }
         e.A(constraint, k + 6) = dt;
         e.b(constraint) = qd - qd_max;
         constraint++;
 
         qd_max = sqrt(2. * fabs(fmin(0., robot.model.lowerPositionLimit[k + 7] - q)) * qdd_safe);
+        if (q < robot.model.lowerPositionLimit[k + 7])
+        {
+          qd_max = -qd_max;
+        }
         e.A(constraint, k + 6) = -dt;
         e.b(constraint) = -qd - qd_max;
         constraint++;
