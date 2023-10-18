@@ -286,51 +286,19 @@ void KinematicsSolver::compute_limits_inequalities()
     throw std::runtime_error("You enabled velocity limits but didn't set solver.dt");
   }
 
-  int constraints = 0;
   if (joint_limits)
   {
-    constraints += 2 * (N - 6);
+    problem.add_constraint(robot->state.q.bottomRows(N - 6) + qd->expr(6) <=
+                           robot->model.upperPositionLimit.bottomRows(N - 6));
+
+    problem.add_constraint(robot->model.lowerPositionLimit.bottomRows(N - 6) <=
+                           robot->state.q.bottomRows(N - 6) + qd->expr(6));
   }
+
   if (velocity_limits)
   {
-    constraints += 2 * (N - 6);
-  }
-
-  if (constraints > 0)
-  {
-    Expression e;
-    e.A = Eigen::MatrixXd(constraints, N);
-    e.A.setZero();
-    e.b = Eigen::VectorXd(constraints);
-    int constraint = 0;
-
-    // Iterating for each actuated joints
-    for (int k = 0; k < N - 6; k++)
-    {
-      if (joint_limits)
-      {
-        e.A(constraint, k + 6) = 1;
-        e.b[constraint] = robot->state.q[k + 7] - robot->model.upperPositionLimit[k + 7];
-
-        e.A(constraint + 1, k + 6) = -1;
-        e.b[constraint + 1] = -robot->state.q[k + 7] + robot->model.lowerPositionLimit[k + 7];
-
-        constraint += 2;
-      }
-
-      if (velocity_limits)
-      {
-        e.A(constraint, k + 6) = 1;
-        e.b[constraint] = -(dt * robot->model.velocityLimit(k + 6));
-
-        e.A(constraint + 1, k + 6) = -1;
-        e.b[constraint + 1] = -(dt * robot->model.velocityLimit(k + 6));
-
-        constraint += 2;
-      }
-    }
-
-    problem.add_constraint(e <= 0);
+    problem.add_constraint(qd->expr(6) <= dt * robot->model.velocityLimit.bottomRows(N - 6));
+    problem.add_constraint(-dt * robot->model.velocityLimit.bottomRows(N - 6) <= qd->expr(6));
   }
 }
 
