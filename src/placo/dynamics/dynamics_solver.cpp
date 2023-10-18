@@ -366,6 +366,45 @@ void DynamicsSolver::compute_self_collision_inequalities()
   }
 }
 
+void DynamicsSolver::clear_tasks()
+{
+  for (auto& task : tasks)
+  {
+    delete task;
+  }
+  tasks.clear();
+}
+
+void DynamicsSolver::dump_status_stream(std::ostream& stream)
+{
+  stream << "* Dynamics Tasks:" << std::endl;
+  for (auto task : tasks)
+  {
+    task->update();
+    stream << "  * " << task->name << " [" << task->type_name() << "]" << std::endl;
+    stream << "    - Priority: ";
+    if (task->priority == Task::Priority::Hard)
+    {
+      stream << "hard";
+    }
+    else
+    {
+      stream << "soft (weight:" << task->weight << ")";
+    }
+    stream << std::endl;
+    char buffer[128];
+    sprintf(buffer, "    - Error: %.06f [%s]\n", task->error.norm(), task->error_unit().c_str());
+    stream << buffer << std::endl;
+    sprintf(buffer, "    - DError: %.06f [%s]\n", task->derror.norm(), task->error_unit().c_str());
+    stream << buffer << std::endl;
+  }
+}
+
+void DynamicsSolver::dump_status()
+{
+  dump_status_stream(std::cout);
+}
+
 DynamicsSolver::Result DynamicsSolver::solve()
 {
   DynamicsSolver::Result result;

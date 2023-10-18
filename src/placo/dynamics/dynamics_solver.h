@@ -110,6 +110,21 @@ public:
   void compute_limits_inequalities(Expression& tau);
   void compute_self_collision_inequalities();
 
+  /**
+   * @brief Clears the internal tasks
+   */
+  void clear_tasks();
+
+  /**
+   * @brief Dumps the status to a given stream
+   */
+  void dump_status_stream(std::ostream& stream);
+
+  /**
+   * @brief Shows the tasks status
+   */
+  void dump_status();
+
   Result solve();
 
   RobotWrapper& robot;

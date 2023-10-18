@@ -17,6 +17,8 @@ void JointsTask::update()
 {
   A = Eigen::MatrixXd(joints.size(), solver->N);
   b = Eigen::MatrixXd(joints.size(), 1);
+  error = Eigen::MatrixXd(joints.size(), 1);
+  derror = Eigen::MatrixXd(joints.size(), 1);
   A.setZero();
 
   int k = 0;
