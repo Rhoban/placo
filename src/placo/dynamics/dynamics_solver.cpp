@@ -298,7 +298,7 @@ void DynamicsSolver::compute_self_collision_inequalities()
     e.b = Eigen::VectorXd(constraints);
     int constraint = 0;
 
-    double xdd_safe = .1;  // XXX: How to estimate this ?
+    double xdd_safe = 1.;  // XXX: How to estimate this ?
 
     for (auto& distance : distances)
     {
@@ -336,7 +336,7 @@ void DynamicsSolver::compute_self_collision_inequalities()
         {
           // We push outward the collision
           e.A.block(constraint, 0, 1, N) = J;
-          e.b[constraint] = -xdd_safe * 10;
+          e.b[constraint] = -xdd_safe;
         }
 
         constraint += 1;
