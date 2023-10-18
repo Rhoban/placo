@@ -31,6 +31,8 @@ void PositionTask::update()
   // Acceleration is: J * qdd + dJ * qd
   A = J(mask.indices, Eigen::placeholders::all);
   b = (desired_acceleration - dJ * solver->robot.state.qd)(mask.indices, Eigen::placeholders::all);
+  error = position_error(mask.indices, Eigen::placeholders::all);
+  derror = velocity_error(mask.indices, Eigen::placeholders::all);
 }
 
 std::string PositionTask::type_name()

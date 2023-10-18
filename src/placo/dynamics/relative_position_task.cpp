@@ -41,9 +41,9 @@ void RelativePositionTask::update()
   Eigen::Vector3d a_dAB = a_omega_w.cross(a_AB) + a_R_w * w_dAB;
 
   // Computing error
-  Eigen::Vector3d error = target - a_AB;
-  Eigen::Vector3d derror = dtarget - a_dAB;
-  Eigen::Vector3d desired_acceleration = kp * error + get_kd() * derror;
+  Eigen::Vector3d position_error = target - a_AB;
+  Eigen::Vector3d velocity_error = dtarget - a_dAB;
+  Eigen::Vector3d desired_acceleration = kp * position_error + get_kd() * velocity_error;
 
   // The acceleration of AB in a is expressed as: J * ddq + e
   Eigen::MatrixXd J = pinocchio::skew(a_AB) * a_R_w * Ja.block(3, 0, 3, solver->N);
@@ -56,6 +56,8 @@ void RelativePositionTask::update()
 
   A = (J)(mask.indices, Eigen::placeholders::all);
   b = (-e + desired_acceleration)(mask.indices, Eigen::placeholders::all);
+  error = position_error(mask.indices, Eigen::placeholders::all);
+  derror = velocity_error(mask.indices, Eigen::placeholders::all);
 }
 
 std::string RelativePositionTask::type_name()

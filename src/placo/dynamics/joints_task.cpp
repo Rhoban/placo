@@ -29,6 +29,8 @@ void JointsTask::update()
 
     A(k, solver->robot.get_joint_v_offset(entry.first)) = 1;
     b(k, 0) = desired_ddq;
+    error(k, 0) = entry.second - q;
+    derror(k, 0) = target_dq - dq;
 
     k += 1;
   }

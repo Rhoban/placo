@@ -42,12 +42,12 @@ public:
   bool equality_task = true;
   Eigen::MatrixXd A;
   Eigen::MatrixXd b;
+  Eigen::MatrixXd error;
+  Eigen::MatrixXd derror;
 
   virtual void update() = 0;
   virtual std::string type_name() = 0;
   virtual std::string error_unit() = 0;
-  virtual Eigen::MatrixXd error();
-  virtual double error_norm();
 
   // Gains for PD control
   double kp = 1e3;

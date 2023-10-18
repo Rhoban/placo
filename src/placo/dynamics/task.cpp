@@ -76,16 +76,6 @@ std::string Task::priority_name()
   }
 }
 
-Eigen::MatrixXd Task::error()
-{
-  return b;
-}
-
-double Task::error_norm()
-{
-  return b.norm();
-}
-
 double Task::get_kd()
 {
   if (kd < 0)
