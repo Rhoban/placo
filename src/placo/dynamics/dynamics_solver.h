@@ -114,6 +114,7 @@ public:
 
   void remove_task(Task* task);
 
+  double friction = 1e-3;
   double dt = 0.;
   int N;
 

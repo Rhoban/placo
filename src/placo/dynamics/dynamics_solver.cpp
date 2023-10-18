@@ -326,8 +326,8 @@ void DynamicsSolver::compute_self_collision_inequalities()
         {
           // We prevent excessive velocity towards the collision
           double error = distance.min_distance - self_collisions_margin;
-          double xd_max = sqrt(2. * error * xdd_safe);
           double xd = (J * robot.state.qd)(0, 0);
+          double xd_max = sqrt(2. * error * xdd_safe);
 
           e.A.block(constraint, 0, 1, N) = dt * J;
           e.b[constraint] = xd + xd_max;
@@ -389,11 +389,8 @@ DynamicsSolver::Result DynamicsSolver::solve()
   // We build the expression for tau, given the equation of motion
   // tau = M qdd + b - J^T F
 
-  // We add some friction, this might be reworked and parametrized
-  Eigen::VectorXd friction = robot.state.qd * 1e-3;
-
   // M qdd
-  Expression tau = robot.mass_matrix() * qdd + friction;
+  Expression tau = robot.mass_matrix() * qdd + robot.state.qd * friction;
 
   // b
   tau = tau + robot.non_linear_effects();
