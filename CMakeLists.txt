@@ -122,13 +122,13 @@ ADD_CUSTOM_TARGET(native_python_files ALL
 add_library(placo MODULE 
     bindings/expose-eigen.cpp
     bindings/expose-utils.cpp
+    bindings/expose-problem.cpp
     bindings/expose-footsteps.cpp
     bindings/expose-robot-wrapper.cpp
     bindings/expose-parameters.cpp
     bindings/expose-kinematics.cpp
     bindings/expose-walk-pattern-generator.cpp
-    bindings/expose-problem.cpp
-    bindings/expose-contacts.cpp
+    bindings/expose-dynamics.cpp
     bindings/module.cpp
 )
 target_link_libraries(placo ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} libplaco)

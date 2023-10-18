@@ -39,7 +39,7 @@ void registerTaskMethods(class_<T>& class__)
       "remove_task", +[](DynamicsSolver& solver, T& task) { solver.remove_task(&task); });
 }
 
-void exposeContacts()
+void exposeDynamics()
 {
   class_<DynamicsSolver::Result>("DynamicsSolverResult")
       .add_property("success", &DynamicsSolver::Result::success)
