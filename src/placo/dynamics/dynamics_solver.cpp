@@ -201,7 +201,7 @@ void DynamicsSolver::compute_limits_inequalities(Expression& tau)
   if (constraints > 0)
   {
     Expression e;
-    e.A = Eigen::MatrixXd(constraints, N);
+    e.A = Eigen::MatrixXd(constraints, problem.n_variables);
     e.A.setZero();
     e.b = Eigen::VectorXd(constraints);
     int constraint = 0;
@@ -224,7 +224,7 @@ void DynamicsSolver::compute_limits_inequalities(Expression& tau)
 
           // qd + dt*qdd <= qd_max - ratio * tau
           // ratio * tau + dt*qdd + qd - qd_max <= 0
-          e.A.block(constraint, 0, 1, N) = ratio * tau.A.block(k + 6, 0, 1, N);
+          e.A.block(constraint, 0, 1, problem.n_variables) = ratio * tau.A.block(k + 6, 0, 1, problem.n_variables);
           e.b[constraint] = ratio * tau.b[k + 6];
           e.A(constraint, k + 6) += dt;
           e.b[constraint] += qd - robot.model.velocityLimit[k + 6];
@@ -232,7 +232,7 @@ void DynamicsSolver::compute_limits_inequalities(Expression& tau)
 
           // qd + dt*qdd >= -qd_max - ratio * tau
           // -ratio*tau - dt*qdd - qd - qd_max <= 0
-          e.A.block(constraint, 0, 1, N) = -ratio * tau.A.block(k + 6, 0, 1, N);
+          e.A.block(constraint, 0, 1, problem.n_variables) = -ratio * tau.A.block(k + 6, 0, 1, problem.n_variables);
           e.b[constraint] = -ratio * tau.b[k + 6];
           e.A(constraint, k + 6) -= dt;
           e.b[constraint] -= qd + robot.model.velocityLimit[k + 6];
