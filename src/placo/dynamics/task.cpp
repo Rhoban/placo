@@ -87,5 +87,17 @@ double Task::error_norm()
 {
   return b.norm();
 }
+
+double Task::get_kd()
+{
+  if (kd < 0)
+  {
+    return 2. * sqrt(kp);
+  }
+  else
+  {
+    return kd;
+  }
+}
 }  // namespace dynamics
 }  // namespace placo

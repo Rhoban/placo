@@ -45,7 +45,7 @@ void RelativePositionTask::update()
   // Computing error
   Eigen::Vector3d error = target - a_AB;
   Eigen::Vector3d derror = dtarget - a_dAB;
-  Eigen::Vector3d desired_acceleration = kp * error + 2 * sqrt(kp) * derror;
+  Eigen::Vector3d desired_acceleration = kp * error + get_kd() * derror;
 
   // The acceleration of AB in a is expressed as: J * ddq + e
   Eigen::MatrixXd J = pinocchio::skew(a_AB) * a_R_w * Ja.block(3, 0, 3, solver->N);

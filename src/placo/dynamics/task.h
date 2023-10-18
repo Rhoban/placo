@@ -51,7 +51,11 @@ public:
   virtual Eigen::MatrixXd error();
   virtual double error_norm();
 
+  // Gains for PD control
   double kp = 1e3;
+  double kd = -1.;
+
+  virtual double get_kd();
 };
 }  // namespace dynamics
 }  // namespace placo
