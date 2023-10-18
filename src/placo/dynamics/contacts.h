@@ -3,9 +3,7 @@
 #include "placo/model/robot_wrapper.h"
 #include "placo/problem/problem.h"
 
-namespace placo
-{
-namespace dynamics
+namespace placo::dynamics
 {
 class PositionTask;
 class RelativePositionTask;
@@ -99,5 +97,4 @@ public:
   virtual Wrench add_wrench(Problem& problem);
 };
 
-}  // namespace dynamics
-}  // namespace placo
+}  // namespace placo::dynamics

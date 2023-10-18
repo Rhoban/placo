@@ -2,13 +2,14 @@
 
 #include "expose-utils.hpp"
 #include "module.h"
-#include "placo/control/kinematics_solver.h"
+#include "placo/kinematics/kinematics_solver.h"
 #include <boost/python/return_internal_reference.hpp>
 #include <Eigen/Dense>
 #include <boost/python.hpp>
 
 using namespace boost::python;
 using namespace placo;
+using namespace placo::kinematics;
 
 static class_<KinematicsSolver>* solver_class_ptr = nullptr;
 
@@ -47,11 +48,7 @@ void exposeKinematics()
           .add_property("N", &KinematicsSolver::N)
           .add_property("scale", &KinematicsSolver::scale)
           .add_property(
-              "robot",
-              +[](const KinematicsSolver& solver) {
-                RobotWrapper& wrapper = *solver.robot;
-                return wrapper;
-              })
+              "robot", +[](const KinematicsSolver& solver) { return solver.robot; })
 
           // Position and CoM task
           .def<PositionTask& (KinematicsSolver::*)(std::string, Eigen::Vector3d)>(
@@ -121,10 +118,6 @@ void exposeKinematics()
               "remove_task", +[](KinematicsSolver& solver, FrameTask& task) { solver.remove_task(task); })
 
           .def("solve", &KinematicsSolver::solve);
-
-  class_<AxisesMask>("AxisesMask", init<>())
-      .def("set_axises", &AxisesMask::set_axises)
-      .add_property("indices", &AxisesMask::indices);
 
   solver_class_ptr = &solver_class;
 

@@ -20,6 +20,7 @@ add_library(libplaco
     # Wrappers and basic utils
     src/placo/model/robot_wrapper.cpp
     src/placo/model/humanoid_robot.cpp
+    src/placo/tools/axises_mask.cpp
     src/placo/utils.cpp
 
     # Trajectories
@@ -43,23 +44,22 @@ add_library(libplaco
     src/placo/problem/sparsity.cpp
 
     # Kinematics QP solver
-    src/placo/control/kinematics_solver.cpp
-    src/placo/control/task.cpp
-    src/placo/control/position_task.cpp
-    src/placo/control/axises_mask.cpp
-    src/placo/control/orientation_task.cpp
-    src/placo/control/centroidal_momentum_task.cpp
-    src/placo/control/frame_task.cpp
-    src/placo/control/relative_position_task.cpp
-    src/placo/control/relative_orientation_task.cpp
-    src/placo/control/relative_frame_task.cpp
-    src/placo/control/com_task.cpp
-    src/placo/control/com_bound_task.cpp
-    src/placo/control/axis_align_task.cpp
-    src/placo/control/axis_plane_task.cpp
-    src/placo/control/distance_task.cpp
-    src/placo/control/joints_task.cpp
-    src/placo/control/regularization_task.cpp
+    src/placo/kinematics/kinematics_solver.cpp
+    src/placo/kinematics/task.cpp
+    src/placo/kinematics/position_task.cpp
+    src/placo/kinematics/orientation_task.cpp
+    src/placo/kinematics/centroidal_momentum_task.cpp
+    src/placo/kinematics/frame_task.cpp
+    src/placo/kinematics/relative_position_task.cpp
+    src/placo/kinematics/relative_orientation_task.cpp
+    src/placo/kinematics/relative_frame_task.cpp
+    src/placo/kinematics/com_task.cpp
+    src/placo/kinematics/com_bound_task.cpp
+    src/placo/kinematics/axis_align_task.cpp
+    src/placo/kinematics/axis_plane_task.cpp
+    src/placo/kinematics/distance_task.cpp
+    src/placo/kinematics/joints_task.cpp
+    src/placo/kinematics/regularization_task.cpp
 
     # Dynamics QP solver
     src/placo/dynamics/task.cpp

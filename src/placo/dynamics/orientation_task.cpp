@@ -1,11 +1,8 @@
 #include "placo/dynamics/position_task.h"
 #include "placo/dynamics/dynamics_solver.h"
 
-namespace placo
+namespace placo::dynamics
 {
-namespace dynamics
-{
-
 OrientationTask::OrientationTask(RobotWrapper::FrameIndex frame_index, Eigen::Matrix3d R_world_frame)
 {
   this->frame_index = frame_index;
@@ -46,5 +43,4 @@ std::string OrientationTask::error_unit()
 {
   return "rad";
 }
-}  // namespace dynamics
-}  // namespace placo
+}  // namespace placo::dynamics

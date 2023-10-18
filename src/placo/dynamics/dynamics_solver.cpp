@@ -1,9 +1,7 @@
 #include "placo/dynamics/dynamics_solver.h"
 #include "placo/problem/problem.h"
 
-namespace placo
-{
-namespace dynamics
+namespace placo::dynamics
 {
 void DynamicsSolver::set_passive(const std::string& joint_name, bool is_passive)
 {
@@ -464,5 +462,4 @@ void DynamicsSolver::remove_task(Task* task)
   tasks.erase(task);
   delete task;
 }
-}  // namespace dynamics
-}  // namespace placo
+}  // namespace placo::dynamics

@@ -1,6 +1,6 @@
-#include "placo/dynamics/task.h"
+#include "placo/kinematics/task.h"
 
-namespace placo::dynamics
+namespace placo::kinematics
 {
 Task::Priority priority_from_string(std::string priority)
 {
@@ -12,9 +12,13 @@ Task::Priority priority_from_string(std::string priority)
   {
     return Task::Priority::Hard;
   }
+  else if (priority == "scaled")
+  {
+    return Task::Priority::Scaled;
+  }
   else
   {
-    throw std::runtime_error(std::string("DynamicsSolver: Invalid priority: ") + priority);
+    throw std::runtime_error(std::string("KinematicsSolver: Invalid priority: ") + priority);
   }
 }
 
@@ -71,6 +75,8 @@ std::string Task::priority_name()
       return "hard";
     case Soft:
       return "soft";
+    case Scaled:
+      return "scaled";
     default:
       throw std::runtime_error("Task::priority_name: Invalid priority");
   }
@@ -85,16 +91,4 @@ double Task::error_norm()
 {
   return b.norm();
 }
-
-double Task::get_kd()
-{
-  if (kd < 0)
-  {
-    return 2. * sqrt(kp);
-  }
-  else
-  {
-    return kd;
-  }
-}
-}  // namespace placo::dynamics
+}  // namespace placo::kinematics

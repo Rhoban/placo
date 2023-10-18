@@ -4,11 +4,9 @@
 #include <string>
 #include "placo/dynamics/task.h"
 #include "placo/model/robot_wrapper.h"
-#include "placo/control/axises_mask.h"
+#include "placo/tools/axises_mask.h"
 
-namespace placo
-{
-namespace dynamics
+namespace placo::dynamics
 {
 class JointsTask : public Task
 {
@@ -24,5 +22,4 @@ public:
   std::string type_name() override;
   std::string error_unit() override;
 };
-}  // namespace dynamics
-}  // namespace placo
+}  // namespace placo::dynamics

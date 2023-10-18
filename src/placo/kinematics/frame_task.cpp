@@ -1,6 +1,6 @@
-#include "placo/dynamics/frame_task.h"
+#include "placo/kinematics/frame_task.h"
 
-namespace placo::dynamics
+namespace placo::kinematics
 {
 FrameTask::FrameTask() : position(nullptr), orientation(nullptr)
 {
@@ -30,4 +30,4 @@ void FrameTask::set_T_world_frame(Eigen::Affine3d T_world_frame)
   position->target_world = T_world_frame.translation();
   orientation->R_world_frame = T_world_frame.linear();
 }
-}  // namespace placo::dynamics
+}  // namespace placo::kinematics

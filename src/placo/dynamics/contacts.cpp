@@ -12,9 +12,7 @@
 #define M_Y 4
 #define M_Z 5
 
-namespace placo
-{
-namespace dynamics
+namespace placo::dynamics
 {
 Contact::Contact()
 {
@@ -163,5 +161,4 @@ Contact::Wrench PuppetContact::add_wrench(Problem& problem)
   wrench.f = problem.add_variable(solver->N).expr();
   return wrench;
 }
-}  // namespace dynamics
-}  // namespace placo
+}  // namespace placo::dynamics

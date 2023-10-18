@@ -1,11 +1,8 @@
 #include "placo/dynamics/com_task.h"
 #include "placo/dynamics/dynamics_solver.h"
 
-namespace placo
+namespace placo::dynamics
 {
-namespace dynamics
-{
-
 CoMTask::CoMTask(Eigen::Vector3d target_world)
 {
   this->target_world = target_world;
@@ -41,5 +38,4 @@ std::string CoMTask::error_unit()
 {
   return "m";
 }
-}  // namespace dynamics
-}  // namespace placo
+}  // namespace placo::dynamics

@@ -2,11 +2,9 @@
 
 #include "placo/dynamics/task.h"
 #include "placo/model/robot_wrapper.h"
-#include "placo/control/axises_mask.h"
+#include "placo/tools/axises_mask.h"
 
-namespace placo
-{
-namespace dynamics
+namespace placo::dynamics
 {
 class CoMTask : public Task
 {
@@ -22,5 +20,4 @@ public:
 
   AxisesMask mask;
 };
-}  // namespace dynamics
-}  // namespace placo
+}  // namespace placo::dynamics

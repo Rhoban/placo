@@ -1,9 +1,9 @@
 #pragma once
 
-#include "placo/dynamics/position_task.h"
-#include "placo/dynamics/orientation_task.h"
+#include "placo/kinematics/position_task.h"
+#include "placo/kinematics/orientation_task.h"
 
-namespace placo::dynamics
+namespace placo::kinematics
 {
 struct FrameTask
 {
@@ -19,4 +19,4 @@ struct FrameTask
   Eigen::Affine3d get_T_world_frame() const;
   void set_T_world_frame(Eigen::Affine3d T_world_frame);
 };
-}  // namespace placo::dynamics
+}  // namespace placo::kinematics

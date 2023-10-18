@@ -1,9 +1,7 @@
 #include "placo/dynamics/joints_task.h"
 #include "placo/dynamics/dynamics_solver.h"
 
-namespace placo
-{
-namespace dynamics
+namespace placo::dynamics
 {
 JointsTask::JointsTask()
 {
@@ -45,5 +43,4 @@ std::string JointsTask::error_unit()
 {
   return "dof";
 }
-}  // namespace dynamics
-}  // namespace placo
+}  // namespace placo::dynamics

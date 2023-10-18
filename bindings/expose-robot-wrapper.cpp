@@ -4,7 +4,7 @@
 #include "module.h"
 #include "placo/model/robot_wrapper.h"
 #include "placo/model/humanoid_robot.h"
-#include "placo/control/kinematics_solver.h"
+#include "placo/kinematics/kinematics_solver.h"
 #include <Eigen/Dense>
 #include <boost/python.hpp>
 
@@ -106,7 +106,7 @@ void exposeRobotType(class_<RobotType, W1>& type)
           "joint_jacobian", +[](RobotType& robot, const std::string& joint,
                                 const std::string& reference) { return robot.joint_jacobian(joint, reference); })
       .def(
-          "make_solver", +[](RobotType& robot) { return KinematicsSolver(&robot); });
+          "make_solver", +[](RobotType& robot) { return placo::kinematics::KinematicsSolver(robot); });
 }
 
 void exposeRobotWrapper()

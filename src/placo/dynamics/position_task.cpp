@@ -1,11 +1,8 @@
 #include "placo/dynamics/position_task.h"
 #include "placo/dynamics/dynamics_solver.h"
 
-namespace placo
+namespace placo::dynamics
 {
-namespace dynamics
-{
-
 PositionTask::PositionTask(RobotWrapper::FrameIndex frame_index, Eigen::Vector3d target_world)
 {
   this->frame_index = frame_index;
@@ -45,5 +42,4 @@ std::string PositionTask::error_unit()
 {
   return "m";
 }
-}  // namespace dynamics
-}  // namespace placo
+}  // namespace placo::dynamics

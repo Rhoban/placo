@@ -2,9 +2,10 @@
 
 #include <Eigen/Dense>
 #include <set>
+
+// Tasks
 #include "placo/model/robot_wrapper.h"
-#include "placo/problem/problem.h"
-#include "placo/control/axises_mask.h"
+#include "placo/tools/axises_mask.h"
 #include "placo/dynamics/contacts.h"
 #include "placo/dynamics/task.h"
 #include "placo/dynamics/position_task.h"
@@ -14,9 +15,10 @@
 #include "placo/dynamics/joints_task.h"
 #include "placo/dynamics/com_task.h"
 
-namespace placo
-{
-namespace dynamics
+// Problem formulation
+#include "placo/problem/problem.h"
+
+namespace placo::dynamics
 {
 class DynamicsSolver
 {
@@ -167,5 +169,4 @@ protected:
     return *contact;
   }
 };
-}  // namespace dynamics
-}  // namespace placo
+}  // namespace placo::dynamics

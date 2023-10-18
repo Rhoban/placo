@@ -5,22 +5,23 @@
 #include "placo/model/robot_wrapper.h"
 #include "placo/utils.h"
 
-namespace placo::dynamics
+namespace placo::kinematics
 {
-class DynamicsSolver;
+class KinematicsSolver;
 class Task
 {
 public:
   enum Priority
   {
     Hard = 0,
-    Soft = 1
+    Soft = 1,
+    Scaled = 2
   };
 
   Task();
   virtual ~Task();
 
-  DynamicsSolver* solver;
+  KinematicsSolver* solver;
   std::string name;
 
   void set_priority_value(Priority priority);
@@ -48,11 +49,5 @@ public:
   virtual std::string error_unit() = 0;
   virtual Eigen::MatrixXd error();
   virtual double error_norm();
-
-  // Gains for PD control
-  double kp = 1e3;
-  double kd = -1.;
-
-  virtual double get_kd();
 };
-}  // namespace placo::dynamics
+}  // namespace placo::kinematics

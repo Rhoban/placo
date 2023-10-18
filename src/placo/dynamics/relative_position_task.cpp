@@ -1,9 +1,7 @@
 #include "placo/dynamics/relative_position_task.h"
 #include "placo/dynamics/dynamics_solver.h"
 
-namespace placo
-{
-namespace dynamics
+namespace placo::dynamics
 {
 
 RelativePositionTask::RelativePositionTask(RobotWrapper::FrameIndex frame_a_index,
@@ -69,5 +67,4 @@ std::string RelativePositionTask::error_unit()
 {
   return "m";
 }
-}  // namespace dynamics
-}  // namespace placo
+}  // namespace placo::dynamics

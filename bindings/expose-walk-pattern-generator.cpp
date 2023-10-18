@@ -3,7 +3,7 @@
 #include "expose-utils.hpp"
 #include "module.h"
 #include "placo/planning/walk_pattern_generator.h"
-#include "placo/control/kinematics_solver.h"
+#include "placo/kinematics/kinematics_solver.h"
 #include "placo/footsteps/footsteps_planner.h"
 #include "placo/trajectory/swing_foot.h"
 #include "placo/trajectory/swing_foot_quintic.h"
@@ -15,6 +15,7 @@
 
 using namespace boost::python;
 using namespace placo;
+using namespace placo::kinematics;
 
 void exposeWalkPatternGenerator()
 {
