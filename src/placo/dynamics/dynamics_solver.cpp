@@ -378,6 +378,10 @@ void DynamicsSolver::clear_tasks()
 void DynamicsSolver::dump_status_stream(std::ostream& stream)
 {
   stream << "* Dynamics Tasks:" << std::endl;
+  if (is_static)
+  {
+    std::cout << "  * Solver is static (qdd is 0)" << std::endl;
+  }
   for (auto task : tasks)
   {
     task->update();
