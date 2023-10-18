@@ -144,6 +144,12 @@ void DynamicsSolver::enable_velocity_limits(bool enable)
   velocity_limits = enable;
 }
 
+void DynamicsSolver::enable_velocity_vs_torque_limits(bool enable)
+{
+  velocity_limits = enable;
+  velocity_vs_torque_limits = enable;
+}
+
 void DynamicsSolver::enable_torque_limits(bool enable)
 {
   torque_limits = enable;
@@ -216,7 +222,7 @@ void DynamicsSolver::compute_limits_inequalities(Expression& tau)
 
       if (velocity_limits)
       {
-        if (torque_limits)
+        if (torque_limits && velocity_vs_torque_limits)
         {
           double ratio = robot.model.velocityLimit[k + 6] / robot.model.effortLimit[k + 6];
 

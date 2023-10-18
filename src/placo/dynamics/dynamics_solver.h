@@ -90,6 +90,11 @@ public:
   void enable_velocity_limits(bool enable);
 
   /**
+   * @brief Enables the velocity vs torque inequalities
+   */
+  void enable_velocity_vs_torque_limits(bool enable);
+
+  /**
    * @brief Enables or disable the self collision inequalities
    * @param enable whether to enable the self collision inequalities
    * @param margin margin that will be used [m]
@@ -148,6 +153,7 @@ protected:
   // Limits
   bool torque_limits = true;
   bool joint_limits = false;
+  bool velocity_vs_torque_limits = false;
   bool velocity_limits = false;
 
   // Self collision prevention
