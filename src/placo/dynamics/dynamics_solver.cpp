@@ -179,11 +179,8 @@ void DynamicsSolver::compute_limits_inequalities(Expression& tau)
 
   if (torque_limits)
   {
-    for (int k = 0; k < N - 6; k++)
-    {
-      problem.add_constraint(tau.slice(k + 6, 1) <= robot.model.effortLimit[k + 6]);
-      problem.add_constraint(tau.slice(k + 6, 1) >= -robot.model.effortLimit[k + 6]);
-    }
+    problem.add_constraint(tau.slice(6) <= robot.model.effortLimit.bottomRows(N - 6));
+    problem.add_constraint(tau.slice(6) >= -robot.model.effortLimit.bottomRows(N - 6));
   }
 
   if (is_static)
@@ -221,13 +218,36 @@ void DynamicsSolver::compute_limits_inequalities(Expression& tau)
 
       if (velocity_limits)
       {
-        e.A(constraint, k + 6) = dt;
-        e.b(constraint) = -robot.model.velocityLimit[k + 6] + qd;
-        constraint++;
+        if (torque_limits)
+        {
+          double ratio = robot.model.velocityLimit[k + 6] / robot.model.effortLimit[k + 6];
 
-        e.A(constraint, k + 6) = -dt;
-        e.b(constraint) = -robot.model.velocityLimit[k + 6] - qd;
-        constraint++;
+          // qd + dt*qdd <= qd_max - ratio * tau
+          // ratio * tau + dt*qdd + qd - qd_max <= 0
+          e.A.block(constraint, 0, 1, N) = ratio * tau.A.block(k + 6, 0, 1, N);
+          e.b[constraint] = ratio * tau.b[k + 6];
+          e.A(constraint, k + 6) += dt;
+          e.b[constraint] += qd - robot.model.velocityLimit[k + 6];
+          constraint++;
+
+          // qd + dt*qdd >= -qd_max - ratio * tau
+          // -ratio*tau - dt*qdd - qd - qd_max <= 0
+          e.A.block(constraint, 0, 1, N) = -ratio * tau.A.block(k + 6, 0, 1, N);
+          e.b[constraint] = -ratio * tau.b[k + 6];
+          e.A(constraint, k + 6) -= dt;
+          e.b[constraint] -= qd + robot.model.velocityLimit[k + 6];
+          constraint++;
+        }
+        else
+        {
+          e.A(constraint, k + 6) = dt;
+          e.b(constraint) = -robot.model.velocityLimit[k + 6] + qd;
+          constraint++;
+
+          e.A(constraint, k + 6) = -dt;
+          e.b(constraint) = -robot.model.velocityLimit[k + 6] - qd;
+          constraint++;
+        }
       }
 
       if (joint_limits)

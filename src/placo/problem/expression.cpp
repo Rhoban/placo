@@ -44,6 +44,11 @@ Expression Expression::slice(int start, int rows) const
 {
   Expression e;
 
+  if (rows < 0)
+  {
+    rows = this->rows() - start;
+  }
+
   e.A = A.block(start, 0, rows, cols());
   e.b = b.block(start, 0, rows, 1);
 
