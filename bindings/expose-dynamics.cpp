@@ -30,35 +30,41 @@ void exposeDynamics()
             return dict;
           });
 
-  class_<PointContact>("DynamicsSolverPointContact", init<PositionTask&, bool>())
-      .def_readwrite("mu", &PointContact::mu)
-      .def_readwrite("weight_forces", &PointContact::weight_forces)
+  class_<Contact, boost::noncopyable>("Contact", no_init)
+      .add_property("mu", &Contact::mu)
+      .add_property("weight_forces", &Contact::weight_forces)
+      .add_property("weight_moments", &Contact::weight_moments)
       .add_property(
-          "wrench", +[](PointContact& contact) { return contact.variable->value; })
+          "wrench", +[](Contact& contact) { return contact.variable->value; });
+
+  class_<PointContact, bases<Contact>>("PointContact", init<PositionTask&, bool>())
+      .def(
+          "position_task", +[](PointContact& contact) -> PositionTask& { return *contact.position_task; },
+          return_internal_reference<>())
       .def_readwrite("unilateral", &PointContact::unilateral);
 
-  class_<PlanarContact>("DynamicsSolverPlanarContact", init<FrameTask&, bool>())
-      .def_readwrite("mu", &PlanarContact::mu)
-      .def_readwrite("weight_forces", &PlanarContact::weight_forces)
-      .def_readwrite("weight_moments", &PlanarContact::weight_moments)
-      .add_property(
-          "wrench", +[](PlanarContact& contact) { return contact.variable->value; })
+  class_<PlanarContact, bases<Contact>>("PlanarContact", init<FrameTask&, bool>())
+      .def(
+          "position_task", +[](PlanarContact& contact) -> PositionTask& { return *contact.position_task; },
+          return_internal_reference<>())
+      .def(
+          "orientation_task", +[](PlanarContact& contact) -> OrientationTask& { return *contact.orientation_task; },
+          return_internal_reference<>())
       .def_readwrite("unilateral", &PlanarContact::unilateral)
       .def_readwrite("length", &PlanarContact::length)
       .def_readwrite("width", &PlanarContact::width)
       .def("zmp", &PlanarContact::zmp);
 
-  class_<RelativePointContact>("DynamicsSolverRelativePointContact", init<RelativePositionTask&>())
-      .def_readwrite("weight_forces", &RelativePointContact::weight_forces)
+  class_<RelativePointContact, bases<Contact>>("RelativePointContact", init<RelativePositionTask&>());
+
+  class_<ExternalWrenchContact, bases<Contact>>("ExternalWrenchContact", init<RobotWrapper::FrameIndex>())
+      .add_property("frame_index", &ExternalWrenchContact::frame_index)
       .add_property(
-          "wrench", +[](RelativePointContact& contact) { return contact.variable->value; });
+          "w_ext", +[](ExternalWrenchContact& contact) { return contact.w_ext; }, &ExternalWrenchContact::w_ext);
 
-  class_<ExternalWrenchContact>("DynamicsSolverExternalWrenchContact", init<RobotWrapper::FrameIndex>())
-      .def_readwrite("w_ext", &ExternalWrenchContact::w_ext);
+  class_<PuppetContact, bases<Contact>>("PuppetContact", init<>());
 
-  class_<PuppetContact>("DynamicsSolverPuppetContact", init<>());
-
-  class_<TaskContact>("DynamicsSolverTaskContact", init<Task&>());
+  class_<TaskContact, bases<Contact>>("TaskContact", init<Task&>());
 
   class_<DynamicsSolver> solver_class =
       class_<DynamicsSolver>("DynamicsSolver", init<RobotWrapper&>())
@@ -86,6 +92,14 @@ void exposeDynamics()
           .def("set_static", &DynamicsSolver::set_static)
           .def("solve", &DynamicsSolver::solve)
           .def("remove_task", &DynamicsSolver::remove_task)
+          .def(
+              "robot", +[](DynamicsSolver& solver) -> RobotWrapper& { return solver.robot; },
+              return_internal_reference<>())
+          .def(
+              "count_contacts", +[](DynamicsSolver& solver) { return solver.contacts.size(); })
+          .def(
+              "get_contact", +[](DynamicsSolver& solver, int i) -> Contact& { return *solver.contacts[i]; },
+              return_internal_reference<>())
           .def<PositionTask& (DynamicsSolver::*)(std::string, Eigen::Vector3d)>(
               "add_position_task", &DynamicsSolver::add_position_task, return_internal_reference<>())
           .def<RelativePositionTask& (DynamicsSolver::*)(std::string, std::string, Eigen::Vector3d)>(
@@ -123,6 +137,7 @@ void exposeDynamics()
           });
 
   class_<PositionTask, bases<Task>>("DynamicsPositionTask", init<RobotWrapper::FrameIndex, Eigen::Vector3d>())
+      .add_property("frame_index", &PositionTask::frame_index)
       .add_property(
           "target_world", +[](const PositionTask& task) { return task.target_world; }, &PositionTask::target_world)
       .add_property(
