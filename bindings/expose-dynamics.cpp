@@ -101,6 +101,7 @@ void exposeDynamics()
                                                                         &DynamicsSolver::add_external_wrench_contact,
                                                                         return_internal_reference<>())
           .def("add_puppet_contact", &DynamicsSolver::add_puppet_contact, return_internal_reference<>())
+          .def("add_task_contact", &DynamicsSolver::add_task_contact, return_internal_reference<>())
           .def("set_passive", &DynamicsSolver::set_passive)
           .def("enable_velocity_limits", &DynamicsSolver::enable_velocity_limits)
           .def("enable_velocity_vs_torque_limits", &DynamicsSolver::enable_velocity_vs_torque_limits)
@@ -119,6 +120,8 @@ void exposeDynamics()
               "add_orientation_task", &DynamicsSolver::add_orientation_task, return_internal_reference<>())
           .def<JointsTask& (DynamicsSolver::*)()>("add_joints_task", &DynamicsSolver::add_joints_task,
                                                   return_internal_reference<>())
+          .def<MimicTask& (DynamicsSolver::*)()>("add_mimic_task", &DynamicsSolver::add_mimic_task,
+                                                 return_internal_reference<>())
           .def<CoMTask& (DynamicsSolver::*)(Eigen::Vector3d)>("add_com_task", &DynamicsSolver::add_com_task,
                                                               return_internal_reference<>())
           .def<FrameTask (DynamicsSolver::*)(std::string, Eigen::Affine3d)>("add_frame_task",
@@ -184,4 +187,6 @@ void exposeDynamics()
                               "set_joints_velocities", +[](JointsTask& task, boost::python::dict& py_dict) {
                                 update_map<std::string, double>(task.djoints, py_dict);
                               }));
+
+  registerTaskMethods(class_<MimicTask>("DynamicsMimicTask", init<>()).def("set_mimic", &MimicTask::set_mimic));
 }

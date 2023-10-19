@@ -35,6 +35,6 @@ std::string JointsTask::type_name()
 
 std::string JointsTask::error_unit()
 {
-  return "dof-rads";
+  return "dof";
 }
 }  // namespace placo::kinematics

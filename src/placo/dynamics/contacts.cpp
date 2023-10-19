@@ -161,4 +161,18 @@ Contact::Wrench PuppetContact::add_wrench(Problem& problem)
   wrench.f = problem.add_variable(solver->N).expr();
   return wrench;
 }
+
+TaskContact::TaskContact(Task& task)
+{
+  this->task = &task;
+}
+
+Contact::Wrench TaskContact::add_wrench(Problem& problem)
+{
+  Contact::Wrench wrench;
+  wrench.J = task->A;
+  wrench.f = problem.add_variable(task->A.rows()).expr();
+  return wrench;
+}
+
 }  // namespace placo::dynamics

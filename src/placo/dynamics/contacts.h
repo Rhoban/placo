@@ -10,6 +10,7 @@ class RelativePositionTask;
 class OrientationTask;
 class DynamicsSolver;
 class FrameTask;
+class Task;
 
 class Contact
 {
@@ -93,6 +94,16 @@ class PuppetContact : public Contact
 {
 public:
   PuppetContact();
+
+  virtual Wrench add_wrench(Problem& problem);
+};
+
+class TaskContact : public Contact
+{
+public:
+  TaskContact(Task& mimic_task);
+
+  Task* task;
 
   virtual Wrench add_wrench(Problem& problem);
 };

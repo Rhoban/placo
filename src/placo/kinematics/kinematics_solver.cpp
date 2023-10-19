@@ -158,6 +158,11 @@ JointsTask& KinematicsSolver::add_joints_task()
   return add_task(new JointsTask());
 }
 
+MimicTask& KinematicsSolver::add_mimic_task()
+{
+  return add_task(new MimicTask());
+}
+
 RegularizationTask& KinematicsSolver::add_regularization_task(double magnitude)
 {
   RegularizationTask& task = add_task(new RegularizationTask());

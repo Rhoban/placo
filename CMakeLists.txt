@@ -59,6 +59,7 @@ add_library(libplaco
     src/placo/kinematics/axis_plane_task.cpp
     src/placo/kinematics/distance_task.cpp
     src/placo/kinematics/joints_task.cpp
+    src/placo/kinematics/mimic_task.cpp
     src/placo/kinematics/regularization_task.cpp
 
     # Dynamics QP solver
@@ -68,6 +69,7 @@ add_library(libplaco
     src/placo/dynamics/frame_task.cpp
     src/placo/dynamics/orientation_task.cpp
     src/placo/dynamics/joints_task.cpp
+    src/placo/dynamics/mimic_task.cpp
     src/placo/dynamics/com_task.cpp
     src/placo/dynamics/contacts.cpp
     src/placo/dynamics/dynamics_solver.cpp

@@ -19,6 +19,7 @@
 #include "placo/kinematics/axis_plane_task.h"
 #include "placo/kinematics/distance_task.h"
 #include "placo/kinematics/joints_task.h"
+#include "placo/kinematics/mimic_task.h"
 #include "placo/kinematics/regularization_task.h"
 #include "placo/kinematics/centroidal_momentum_task.h"
 
@@ -129,11 +130,16 @@ public:
   RelativeFrameTask add_relative_frame_task(std::string frame_a, std::string frame_b, Eigen::Affine3d T_a_b);
 
   /**
-   * @brief Adding joints task
+   * @brief Adds joints task
    * @param joints value for the joints
    */
   JointsTask& add_joints_task(std::map<std::string, double>& joints);
   JointsTask& add_joints_task();
+
+  /**
+   * @brief Adds a mimic task
+   */
+  MimicTask& add_mimic_task();
 
   /**
    * @brief Adds a distance task to be maintained between two frames

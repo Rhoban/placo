@@ -13,6 +13,7 @@
 #include "placo/dynamics/frame_task.h"
 #include "placo/dynamics/relative_position_task.h"
 #include "placo/dynamics/joints_task.h"
+#include "placo/dynamics/mimic_task.h"
 #include "placo/dynamics/com_task.h"
 
 // Problem formulation
@@ -56,6 +57,7 @@ public:
   ExternalWrenchContact& add_external_wrench_contact(RobotWrapper::FrameIndex frame_index);
   ExternalWrenchContact& add_external_wrench_contact(std::string frame_name);
   PuppetContact& add_puppet_contact();
+  TaskContact& add_task_contact(Task& task);
 
   /**
    * @brief Sets a DoF as passive
@@ -76,6 +78,7 @@ public:
                                                    Eigen::Vector3d target_world);
   CoMTask& add_com_task(Eigen::Vector3d target_world);
   JointsTask& add_joints_task();
+  MimicTask& add_mimic_task();
 
   void set_static(bool is_static);
 

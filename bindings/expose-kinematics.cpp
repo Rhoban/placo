@@ -86,6 +86,10 @@ void exposeKinematics()
           .def<JointsTask& (KinematicsSolver::*)(void)>("add_joints_task", &KinematicsSolver::add_joints_task,
                                                         return_internal_reference<>())
 
+          // Mimic task
+          .def<MimicTask& (KinematicsSolver::*)(void)>("add_mimic_task", &KinematicsSolver::add_mimic_task,
+                                                       return_internal_reference<>())
+
           // Distance task
           .def<DistanceTask& (KinematicsSolver::*)(std::string, std::string, double)>(
               "add_distance_task", &KinematicsSolver::add_distance_task, return_internal_reference<>())
@@ -208,6 +212,8 @@ void exposeKinematics()
                               "set_joints", +[](JointsTask& task, boost::python::dict& py_dict) {
                                 update_map<std::string, double>(task.joints, py_dict);
                               }));
+
+  registerTaskMethods(class_<MimicTask>("MimicTask", init<>()).def("set_mimic", &MimicTask::set_mimic));
 
   registerTaskMethods(
       class_<DistanceTask>("DistanceTask", init<RobotWrapper::FrameIndex, RobotWrapper::FrameIndex, double>())

@@ -55,6 +55,11 @@ PuppetContact& DynamicsSolver::add_puppet_contact()
   return add_contact(new PuppetContact());
 }
 
+TaskContact& DynamicsSolver::add_task_contact(Task& task)
+{
+  return add_contact(new TaskContact(task));
+}
+
 PositionTask& DynamicsSolver::add_position_task(pinocchio::FrameIndex frame_index, Eigen::Vector3d target_world)
 {
   return add_task(new PositionTask(frame_index, target_world));
@@ -92,6 +97,11 @@ void DynamicsSolver::set_static(bool is_static_)
 JointsTask& DynamicsSolver::add_joints_task()
 {
   return add_task(new JointsTask());
+}
+
+MimicTask& DynamicsSolver::add_mimic_task()
+{
+  return add_task(new MimicTask());
 }
 
 OrientationTask& DynamicsSolver::add_orientation_task(pinocchio::FrameIndex frame_index, Eigen::Matrix3d R_world_frame)
@@ -486,7 +496,7 @@ DynamicsSolver::Result DynamicsSolver::solve()
   }
 
   // We want to minimize torques
-  problem.add_constraint(tau == 0).configure(ProblemConstraint::Soft, 1.0);
+  problem.add_constraint(tau == 0).configure(ProblemConstraint::Soft, 1.);
 
   try
   {
