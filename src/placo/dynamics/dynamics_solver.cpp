@@ -525,7 +525,8 @@ void DynamicsSolver::remove_task(Task& task)
 
 void DynamicsSolver::remove_contact(Contact& contact)
 {
-  contacts.erase(&contact);
+  // Removing the contact from the vector
+  contacts.erase(std::remove(contacts.begin(), contacts.end(), &contact), contacts.end());
 
   delete &contact;
 }
