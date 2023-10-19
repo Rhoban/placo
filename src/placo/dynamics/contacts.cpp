@@ -128,8 +128,10 @@ Contact::Wrench PlanarContact::add_wrench(Problem& problem)
 
   Contact::Wrench wrench;
   Eigen::MatrixXd J = Eigen::MatrixXd::Zero(6, solver->N);
-  J.block(0, 0, 3, solver->N) = position_task->A;
-  J.block(3, 0, 3, solver->N) = orientation_task->A;
+  J.block(0, 0, 3, solver->N) =
+      solver->robot.frame_jacobian(position_task->frame_index, pinocchio::LOCAL).block(0, 0, 3, solver->N);
+  J.block(3, 0, 3, solver->N) =
+      solver->robot.frame_jacobian(orientation_task->frame_index, pinocchio::LOCAL).block(3, 0, 3, solver->N);
 
   wrench.J = J;
   wrench.f = variable->expr();

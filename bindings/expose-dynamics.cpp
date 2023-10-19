@@ -92,9 +92,8 @@ void exposeDynamics()
           .def("set_static", &DynamicsSolver::set_static)
           .def("solve", &DynamicsSolver::solve)
           .def("remove_task", &DynamicsSolver::remove_task)
-          .def(
-              "robot", +[](DynamicsSolver& solver) -> RobotWrapper& { return solver.robot; },
-              return_internal_reference<>())
+          .add_property(
+              "robot", +[](const DynamicsSolver& solver) { return solver.robot; })
           .def(
               "count_contacts", +[](DynamicsSolver& solver) { return solver.contacts.size(); })
           .def(

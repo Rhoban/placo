@@ -163,20 +163,22 @@ def arrow_viz(
     vis["arrows"][name]["head"].set_transform(T_head)
 
 
-def contacts_viz(solver: placo.DynamicsSolver):
-    frames = solver.robot().frame_names()
+def contacts_viz(solver: placo.DynamicsSolver, ratio=0.1, radius=0.005):
+    robot = solver.robot
+    frames = robot.frame_names()
     for k in range(solver.count_contacts()):
         contact = solver.get_contact(k)
 
         if isinstance(contact, placo.PointContact):
             frame_name = frames[contact.position_task().frame_index]
-            T_world_frame = solver.robot().get_T_world_frame(frame_name)
-            arrow_viz(f"contact_{k}", T_world_frame[:3, 3], T_world_frame[:3, 3] + contact.wrench * 0.1, color=0x00FF00)
+            T_world_frame = robot.get_T_world_frame(frame_name)
+            arrow_viz(f"contact_{k}", T_world_frame[:3, 3], T_world_frame[:3, 3] + contact.wrench * ratio, color=0x00FF00, radius=radius)
         elif isinstance(contact, placo.PlanarContact):
             frame_name = frames[contact.position_task().frame_index]
-            T_world_frame = solver.robot().get_T_world_frame(frame_name)
-            arrow_viz(f"contact_{k}", T_world_frame[:3, 3], T_world_frame[:3, 3] + contact.wrench[:3] * 0.1, color=0x00FFAA)
+            T_world_frame = robot.get_T_world_frame(frame_name)
+            wrench = T_world_frame[:3, :3] @ contact.wrench[:3]
+            arrow_viz(f"contact_{k}", T_world_frame[:3, 3], T_world_frame[:3, 3] + wrench * ratio, color=0x00FFAA, radius=radius)
         elif isinstance(contact, placo.ExternalWrenchContact):
             frame_name = frames[contact.frame_index]
-            T_world_frame = solver.robot().get_T_world_frame(frame_name)
-            arrow_viz(f"contact_{k}", T_world_frame[:3, 3], T_world_frame[:3, 3] + contact.w_ext[:3] * 0.1, color=0xFF2222)
+            T_world_frame = robot.get_T_world_frame(frame_name)
+            arrow_viz(f"contact_{k}", T_world_frame[:3, 3], T_world_frame[:3, 3] + contact.w_ext[:3] * ratio, color=0xFF2222, radius=radius)
