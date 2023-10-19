@@ -16,6 +16,7 @@ class Contact
 {
 public:
   Contact();
+  virtual ~Contact();
 
   struct Wrench
   {

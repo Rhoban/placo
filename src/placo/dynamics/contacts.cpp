@@ -18,9 +18,13 @@ Contact::Contact()
 {
 }
 
+Contact::~Contact()
+{
+}
+
 Eigen::Vector3d PlanarContact::zmp()
 {
-  Eigen::Vector3d wrench = variable->value;
+  Eigen::VectorXd wrench = variable->value;
   return Eigen::Vector3d(-wrench(M_Y, 0) / wrench(F_Z, 0), wrench(M_X, 0) / wrench(F_Z, 0), 0);
 }
 
