@@ -522,4 +522,11 @@ void DynamicsSolver::remove_task(Task& task)
 
   delete &task;
 }
+
+void DynamicsSolver::remove_contact(Contact& contact)
+{
+  contacts.erase(&contact);
+
+  delete &contact;
+}
 }  // namespace placo::dynamics

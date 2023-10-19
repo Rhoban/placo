@@ -138,6 +138,7 @@ public:
   RobotWrapper& robot;
 
   void remove_task(Task& task);
+  void remove_contact(Contact& contact);
 
   double friction = 1e-3;
   double dt = 0.;
