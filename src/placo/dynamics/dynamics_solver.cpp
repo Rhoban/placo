@@ -516,9 +516,10 @@ DynamicsSolver::Result DynamicsSolver::solve()
   return result;
 }
 
-void DynamicsSolver::remove_task(Task* task)
+void DynamicsSolver::remove_task(Task& task)
 {
-  tasks.erase(task);
-  delete task;
+  tasks.erase(&task);
+
+  delete &task;
 }
 }  // namespace placo::dynamics

@@ -200,7 +200,7 @@ public:
   /**
    * @brief Removes a task from the solver
    */
-  void remove_task(Task* task);
+  void remove_task(Task& task);
 
   /**
    * @brief Removes a frame task from the solver

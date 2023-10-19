@@ -10,35 +10,6 @@
 using namespace placo;
 using namespace placo::dynamics;
 
-static class_<DynamicsSolver>* solver_class_ptr = nullptr;
-
-template <typename T>
-void registerTaskMethods(class_<T>& class__)
-{
-  class__.add_property("name", &T::name)
-      .add_property("solver", &T::solver)
-      .add_property("weight", &T::weight)
-      .add_property(
-          "priority", +[](T& task) { return task.priority_name(); })
-      .add_property("A", &T::A)
-      .add_property("b", &T::b)
-      .add_property("kp", &T::kp, &T::kp)
-      .add_property("kd", &T::kd, &T::kd)
-      .add_property("error", &T::error)
-      .add_property("derror", &T::derror)
-      .def("update", &T::update)
-      .def("set_priority", &T::set_priority)
-      .def("set_weight", &T::set_weight)
-      .def("set_name", &T::set_name)
-      .def(
-          "configure", +[](T& task, std::string name, std::string priority, double weight) {
-            task.configure(name, priority, weight);
-          });
-
-  solver_class_ptr->def(
-      "remove_task", +[](DynamicsSolver& solver, T& task) { solver.remove_task(&task); });
-}
-
 void exposeDynamics()
 {
   class_<DynamicsSolver::Result>("DynamicsSolverResult")
@@ -87,6 +58,8 @@ void exposeDynamics()
 
   class_<PuppetContact>("DynamicsSolverPuppetContact", init<>());
 
+  class_<TaskContact>("DynamicsSolverTaskContact", init<Task&>());
+
   class_<DynamicsSolver> solver_class =
       class_<DynamicsSolver>("DynamicsSolver", init<RobotWrapper&>())
           .def_readwrite("friction", &DynamicsSolver::friction)
@@ -112,6 +85,7 @@ void exposeDynamics()
           .def("dump_status", &DynamicsSolver::dump_status)
           .def("set_static", &DynamicsSolver::set_static)
           .def("solve", &DynamicsSolver::solve)
+          .def("remove_task", &DynamicsSolver::remove_task)
           .def<PositionTask& (DynamicsSolver::*)(std::string, Eigen::Vector3d)>(
               "add_position_task", &DynamicsSolver::add_position_task, return_internal_reference<>())
           .def<RelativePositionTask& (DynamicsSolver::*)(std::string, std::string, Eigen::Vector3d)>(
@@ -127,43 +101,56 @@ void exposeDynamics()
           .def<FrameTask (DynamicsSolver::*)(std::string, Eigen::Affine3d)>("add_frame_task",
                                                                             &DynamicsSolver::add_frame_task);
 
-  solver_class_ptr = &solver_class;
+  class_<Task, boost::noncopyable>("DynamicsTask", no_init)
+      .add_property("name", &Task::name)
+      .add_property("solver", &Task::solver)
+      .add_property("weight", &Task::weight)
+      .add_property(
+          "priority", +[](Task& task) { return task.priority_name(); })
+      .add_property("A", &Task::A)
+      .add_property("b", &Task::b)
+      .add_property("kp", &Task::kp, &Task::kp)
+      .add_property("kd", &Task::kd, &Task::kd)
+      .add_property("error", &Task::error)
+      .add_property("derror", &Task::derror)
+      .def("update", &Task::update)
+      .def("set_priority", &Task::set_priority)
+      .def("set_weight", &Task::set_weight)
+      .def("set_name", &Task::set_name)
+      .def(
+          "configure", +[](Task& task, std::string name, std::string priority, double weight) {
+            task.configure(name, priority, weight);
+          });
 
-  registerTaskMethods(
-      class_<PositionTask>("DynamicsPositionTask", init<RobotWrapper::FrameIndex, Eigen::Vector3d>())
-          .add_property(
-              "target_world", +[](const PositionTask& task) { return task.target_world; }, &PositionTask::target_world)
-          .add_property(
-              "dtarget_world", +[](const PositionTask& task) { return task.dtarget_world; },
-              &PositionTask::dtarget_world)
-          .add_property("mask", &PositionTask::mask, &PositionTask::mask));
+  class_<PositionTask, bases<Task>>("DynamicsPositionTask", init<RobotWrapper::FrameIndex, Eigen::Vector3d>())
+      .add_property(
+          "target_world", +[](const PositionTask& task) { return task.target_world; }, &PositionTask::target_world)
+      .add_property(
+          "dtarget_world", +[](const PositionTask& task) { return task.dtarget_world; }, &PositionTask::dtarget_world)
+      .add_property("mask", &PositionTask::mask, &PositionTask::mask);
 
-  registerTaskMethods(
-      class_<CoMTask>("DynamicsCoMTask", init<Eigen::Vector3d>())
-          .add_property(
-              "target_world", +[](const CoMTask& task) { return task.target_world; }, &CoMTask::target_world)
-          .add_property(
-              "dtarget_world", +[](const CoMTask& task) { return task.dtarget_world; }, &CoMTask::dtarget_world)
-          .add_property("mask", &CoMTask::mask, &CoMTask::mask));
+  class_<CoMTask, bases<Task>>("DynamicsCoMTask", init<Eigen::Vector3d>())
+      .add_property(
+          "target_world", +[](const CoMTask& task) { return task.target_world; }, &CoMTask::target_world)
+      .add_property(
+          "dtarget_world", +[](const CoMTask& task) { return task.dtarget_world; }, &CoMTask::dtarget_world)
+      .add_property("mask", &CoMTask::mask, &CoMTask::mask);
 
-  registerTaskMethods(
-      class_<RelativePositionTask>("DynamicsRelativePositionTask",
-                                   init<RobotWrapper::FrameIndex, RobotWrapper::FrameIndex, Eigen::Vector3d>())
-          .add_property(
-              "target", +[](const RelativePositionTask& task) { return task.target; }, &RelativePositionTask::target)
-          .add_property(
-              "dtarget", +[](const RelativePositionTask& task) { return task.dtarget; }, &RelativePositionTask::dtarget)
-          .add_property("mask", &RelativePositionTask::mask, &RelativePositionTask::mask));
+  class_<RelativePositionTask, bases<Task>>("DynamicsRelativePositionTask",
+                                            init<RobotWrapper::FrameIndex, RobotWrapper::FrameIndex, Eigen::Vector3d>())
+      .add_property(
+          "target", +[](const RelativePositionTask& task) { return task.target; }, &RelativePositionTask::target)
+      .add_property(
+          "dtarget", +[](const RelativePositionTask& task) { return task.dtarget; }, &RelativePositionTask::dtarget)
+      .add_property("mask", &RelativePositionTask::mask, &RelativePositionTask::mask);
 
-  registerTaskMethods(
-      class_<OrientationTask>("DynamicsOrientationTask", init<RobotWrapper::FrameIndex, Eigen::Matrix3d>())
-          .add_property(
-              "R_world_frame", +[](const OrientationTask& task) { return task.R_world_frame; },
-              &OrientationTask::R_world_frame)
-          .add_property(
-              "omega_world", +[](const OrientationTask& task) { return task.omega_world; },
-              &OrientationTask::omega_world)
-          .add_property("mask", &OrientationTask::mask, &OrientationTask::mask));
+  class_<OrientationTask, bases<Task>>("DynamicsOrientationTask", init<RobotWrapper::FrameIndex, Eigen::Matrix3d>())
+      .add_property(
+          "R_world_frame", +[](const OrientationTask& task) { return task.R_world_frame; },
+          &OrientationTask::R_world_frame)
+      .add_property(
+          "omega_world", +[](const OrientationTask& task) { return task.omega_world; }, &OrientationTask::omega_world)
+      .add_property("mask", &OrientationTask::mask, &OrientationTask::mask);
 
   class_<FrameTask>("DynamicsFrameTask", init<>())
       .def(
@@ -176,17 +163,15 @@ void exposeDynamics()
       .def("configure", &FrameTask::configure)
       .add_property("T_world_frame", &FrameTask::get_T_world_frame, &FrameTask::set_T_world_frame);
 
-  registerTaskMethods(class_<JointsTask>("DynamicsJointsTask", init<>())
-                          .def("set_joint", &JointsTask::set_joint)
-                          .def(
-                              "set_joints",
-                              +[](JointsTask& task, boost::python::dict& py_dict) {
-                                update_map<std::string, double>(task.joints, py_dict);
-                              })
-                          .def(
-                              "set_joints_velocities", +[](JointsTask& task, boost::python::dict& py_dict) {
-                                update_map<std::string, double>(task.djoints, py_dict);
-                              }));
+  class_<JointsTask, bases<Task>>("DynamicsJointsTask", init<>())
+      .def("set_joint", &JointsTask::set_joint)
+      .def(
+          "set_joints", +[](JointsTask& task,
+                            boost::python::dict& py_dict) { update_map<std::string, double>(task.joints, py_dict); })
+      .def(
+          "set_joints_velocities", +[](JointsTask& task, boost::python::dict& py_dict) {
+            update_map<std::string, double>(task.djoints, py_dict);
+          });
 
-  registerTaskMethods(class_<MimicTask>("DynamicsMimicTask", init<>()).def("set_mimic", &MimicTask::set_mimic));
+  class_<MimicTask, bases<Task>>("DynamicsMimicTask", init<>()).def("set_mimic", &MimicTask::set_mimic);
 }

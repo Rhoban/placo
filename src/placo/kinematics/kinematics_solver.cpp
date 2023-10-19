@@ -452,11 +452,11 @@ std::set<Task*> KinematicsSolver::get_tasks()
   return tasks;
 }
 
-void KinematicsSolver::remove_task(Task* task)
+void KinematicsSolver::remove_task(Task& task)
 {
-  tasks.erase(task);
+  tasks.erase(&task);
 
-  delete task;
+  delete &task;
 }
 
 void KinematicsSolver::remove_task(FrameTask& task)
