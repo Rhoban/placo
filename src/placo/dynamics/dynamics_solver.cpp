@@ -476,13 +476,12 @@ DynamicsSolver::Result DynamicsSolver::solve()
   tau = tau + robot.non_linear_effects();
 
   // J^T F
-  // Computing body jacobians
   std::vector<std::pair<Contact*, Contact::Wrench>> wrenches;
   for (auto& contact : contacts)
   {
     wrenches.push_back(std::make_pair(contact, contact->add_wrench(problem)));
   }
-  tau.A.resize(N, problem.n_variables);
+  tau.A.conservativeResize(N, problem.n_variables);
   tau.A.block(0, N, N, problem.n_variables - N).setZero();
 
   int k = is_static ? 0 : N;
@@ -499,6 +498,7 @@ DynamicsSolver::Result DynamicsSolver::solve()
     tau.b -= wrench.J.transpose() * wrench.f.b;
   }
 
+  // Computing limit inequalitie
   compute_limits_inequalities(tau);
   compute_self_collision_inequalities();
 
