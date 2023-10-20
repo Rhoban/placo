@@ -32,8 +32,8 @@ void exposeDynamics()
 
   class_<Contact, boost::noncopyable>("Contact", no_init)
       .add_property("mu", &Contact::mu)
-      .add_property("weight_forces", &Contact::weight_forces)
-      .add_property("weight_moments", &Contact::weight_moments)
+      .def_readwrite("weight_forces", &Contact::weight_forces)
+      .def_readwrite("weight_moments", &Contact::weight_moments)
       .add_property(
           "wrench", +[](Contact& contact) { return contact.variable->value; });
 
