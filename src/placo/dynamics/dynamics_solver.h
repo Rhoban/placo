@@ -162,7 +162,7 @@ protected:
   int task_id = 0;
 
   // Limits
-  bool torque_limits = true;
+  bool torque_limits = false;
   bool joint_limits = false;
   bool velocity_vs_torque_limits = false;
   bool velocity_limits = false;
