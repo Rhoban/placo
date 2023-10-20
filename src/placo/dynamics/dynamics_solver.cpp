@@ -485,7 +485,7 @@ DynamicsSolver::Result DynamicsSolver::solve()
   tau.A.resize(N, problem.n_variables);
   tau.A.block(0, N, N, problem.n_variables - N).setZero();
 
-  int k = N;
+  int k = is_static ? 0 : N;
   for (auto& entry : wrenches)
   {
     Contact* contact = entry.first;
