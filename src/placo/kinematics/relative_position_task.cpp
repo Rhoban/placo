@@ -11,9 +11,9 @@ RelativePositionTask::RelativePositionTask(RobotWrapper::FrameIndex frame_a, Rob
 
 void RelativePositionTask::update()
 {
-  auto T_world_a = solver->robot.get_T_world_frame(frame_a);
-  auto T_world_b = solver->robot.get_T_world_frame(frame_b);
-  auto T_a_b = T_world_a.inverse() * T_world_b;
+  Eigen::Affine3d T_world_a = solver->robot.get_T_world_frame(frame_a);
+  Eigen::Affine3d T_world_b = solver->robot.get_T_world_frame(frame_b);
+  Eigen::Affine3d T_a_b = T_world_a.inverse() * T_world_b;
 
   A = solver->robot.relative_position_jacobian(frame_a, frame_b)(mask.indices, Eigen::placeholders::all);
   b = (target - T_a_b.translation())(mask.indices, Eigen::placeholders::all);

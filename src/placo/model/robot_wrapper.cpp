@@ -479,7 +479,7 @@ Eigen::MatrixXd RobotWrapper::frame_jacobian(pinocchio::FrameIndex frame, pinocc
 {
   Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> jacobian(6, model.nv);
   jacobian.setZero();
-  pinocchio::computeFrameJacobian(model, *data, state.q, frame, ref, jacobian);
+  pinocchio::getFrameJacobian(model, *data, frame, ref, jacobian);
 
   return jacobian;
 }
