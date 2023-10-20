@@ -131,11 +131,11 @@ def arrow_viz(
     point_to: np.ndarray,
     color: float = 0xFF0000,
     radius: float = 0.003,
-    head_length: float = 0.01,
 ) -> None:
     """
     Prints an arrow
     """
+    head_length = radius*3
     vis = get_viewer()
     length = np.linalg.norm(point_to - point_from)
     length = max(1e-3, length - head_length)
