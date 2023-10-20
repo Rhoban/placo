@@ -477,10 +477,26 @@ DynamicsSolver::Result DynamicsSolver::solve()
 
   // J^T F
   // Computing body jacobians
+  std::vector<std::pair<Contact*, Contact::Wrench>> wrenches;
   for (auto& contact : contacts)
   {
-    Contact::Wrench wrench = contact->add_wrench(problem);
-    tau = tau - wrench.J.transpose() * wrench.f;
+    wrenches.push_back(std::make_pair(contact, contact->add_wrench(problem)));
+  }
+  tau.A.resize(N, problem.n_variables);
+  tau.A.block(0, N, N, problem.n_variables - N).setZero();
+
+  int k = N;
+  for (auto& entry : wrenches)
+  {
+    Contact* contact = entry.first;
+    Contact::Wrench wrench = entry.second;
+
+    if (contact->variable != nullptr)
+    {
+      tau.A.block(0, k, N, contact->variable->size()) = -wrench.J.transpose();
+      k += contact->variable->size();
+    }
+    tau.b -= wrench.J.transpose() * wrench.f.b;
   }
 
   compute_limits_inequalities(tau);
