@@ -51,7 +51,8 @@ public:
 
   // Gains for PD control
   double kp = 1e3;
-  double kd = -1.;
+  double kd = 0.;
+  bool critically_damped = true;
 
   virtual double get_kd();
 };

@@ -3,7 +3,7 @@
 
 namespace placo::dynamics
 {
-void DynamicsSolver::set_passive(const std::string& joint_name, bool is_passive)
+void DynamicsSolver::set_passive(const std::string& joint_name, bool is_passive, double kp, double kd)
 {
   if (!is_passive)
   {
@@ -11,7 +11,10 @@ void DynamicsSolver::set_passive(const std::string& joint_name, bool is_passive)
   }
   else
   {
-    passive_joints.insert(joint_name);
+    PassiveJoint pj;
+    pj.kp = kp;
+    pj.kd = kd;
+    passive_joints[joint_name] = pj;
   }
 }
 
@@ -188,7 +191,7 @@ void DynamicsSolver::compute_limits_inequalities(Expression& tau)
   std::set<int> passive_ids;
   for (auto& passive_joint : passive_joints)
   {
-    passive_ids.insert(robot.get_joint_v_offset(passive_joint));
+    passive_ids.insert(robot.get_joint_v_offset(passive_joint.first));
   }
 
   if (torque_limits)
@@ -487,12 +490,15 @@ DynamicsSolver::Result DynamicsSolver::solve()
   problem.add_constraint(tau.slice(0, 6) == 0);
 
   // Passive joints have no torque
-  for (auto& joint : robot.actuated_joint_names())
+  for (auto& entry : passive_joints)
   {
-    if (passive_joints.count(joint) > 0)
-    {
-      problem.add_constraint(tau.slice(robot.get_joint_v_offset(joint), 1) == 0);
-    }
+    std::string joint = entry.first;
+    PassiveJoint pj = entry.second;
+    double q = robot.get_joint(joint);
+    double qd = robot.get_joint_velocity(joint);
+    double target_tau = q * pj.kp + qd * pj.kd;
+
+    problem.add_constraint(tau.slice(robot.get_joint_v_offset(joint), 1) == target_tau);
   }
 
   // We want to minimize torques

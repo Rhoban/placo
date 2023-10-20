@@ -78,7 +78,7 @@ std::string Task::priority_name()
 
 double Task::get_kd()
 {
-  if (kd < 0)
+  if (critically_damped)
   {
     return 2. * sqrt(kp);
   }

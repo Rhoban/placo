@@ -2,6 +2,7 @@
 
 #include <Eigen/Dense>
 #include <set>
+#include <map>
 
 // Tasks
 #include "placo/model/robot_wrapper.h"
@@ -36,6 +37,12 @@ public:
     Eigen::VectorXd qdd;
   };
 
+  struct PassiveJoint
+  {
+    double kp;
+    double kd;
+  };
+
   DynamicsSolver(RobotWrapper& robot);
   virtual ~DynamicsSolver();
 
@@ -43,7 +50,7 @@ public:
   std::vector<Contact*> contacts;
 
   // Passive joints
-  std::set<std::string> passive_joints;
+  std::map<std::string, PassiveJoint> passive_joints;
 
   /**
    * @brief Adds a contact to the solver
@@ -64,7 +71,7 @@ public:
    * @param joint_name the DoF name
    * @param is_passive true if the DoF should be passive
    */
-  void set_passive(const std::string& joint_name, bool is_passive = true);
+  void set_passive(const std::string& joint_name, bool is_passive = true, double kp = 0., double kd = 0.);
 
   PositionTask& add_position_task(pinocchio::FrameIndex frame_index, Eigen::Vector3d target_world);
   PositionTask& add_position_task(std::string frame_name, Eigen::Vector3d target_world);
