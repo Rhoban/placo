@@ -25,9 +25,12 @@ public:
   double weight_forces = 0.;
   double weight_moments = 0.;
 
+  int size();
+
   Eigen::MatrixXd J;
   virtual void update() = 0;
-  virtual void add_constraints(Problem& problem, Expression& f);
+  virtual void add_constraints(Problem& problem);
+  virtual bool is_internal();
 
   // Wrench variable for the solver
   Eigen::VectorXd wrench;
@@ -45,7 +48,7 @@ public:
   bool unilateral;
 
   virtual void update();
-  virtual void add_constraints(Problem& problem, Expression& f);
+  virtual void add_constraints(Problem& problem);
 };
 
 class PlanarContact : public Contact
@@ -65,7 +68,7 @@ public:
   Eigen::Vector3d zmp();
 
   virtual void update();
-  virtual void add_constraints(Problem& problem, Expression& f);
+  virtual void add_constraints(Problem& problem);
 };
 
 class RelativePointContact : public Contact
@@ -76,7 +79,8 @@ public:
   RelativePositionTask* relative_position_task;
 
   virtual void update();
-  virtual void add_constraints(Problem& problem, Expression& f);
+  virtual void add_constraints(Problem& problem);
+  virtual bool is_internal();
 };
 
 class ExternalWrenchContact : public Contact

@@ -22,8 +22,18 @@ Contact::~Contact()
 {
 }
 
-void Contact::add_constraints(Problem& problem, Expression& f)
+int Contact::size()
 {
+  return J.rows();
+}
+
+void Contact::add_constraints(Problem& problem)
+{
+}
+
+bool Contact::is_internal()
+{
+  return false;
 }
 
 Eigen::Vector3d PlanarContact::zmp()
@@ -42,7 +52,7 @@ void PointContact::update()
   J = position_task->A;
 }
 
-void PointContact::add_constraints(Problem& problem, Expression& f)
+void PointContact::add_constraints(Problem& problem)
 {
   if (unilateral)
   {
@@ -64,6 +74,11 @@ void PointContact::add_constraints(Problem& problem, Expression& f)
   }
 }
 
+bool RelativePointContact::is_internal()
+{
+  return true;
+}
+
 RelativePointContact::RelativePointContact(RelativePositionTask& relative_position_task)
 {
   this->relative_position_task = &relative_position_task;
@@ -74,7 +89,7 @@ void RelativePointContact::update()
   J = relative_position_task->A;
 }
 
-void RelativePointContact::add_constraints(Problem& problem, Expression& f)
+void RelativePointContact::add_constraints(Problem& problem)
 {
   // Objective
   if (weight_forces > 0)
@@ -99,7 +114,7 @@ void PlanarContact::update()
       solver->robot.frame_jacobian(orientation_task->frame_index, pinocchio::LOCAL).block(3, 0, 3, solver->N);
 }
 
-void PlanarContact::add_constraints(Problem& problem, Expression& f)
+void PlanarContact::add_constraints(Problem& problem)
 {
   if (unilateral)
   {

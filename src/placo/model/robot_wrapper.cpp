@@ -570,7 +570,10 @@ Eigen::MatrixXd RobotWrapper::mass_matrix()
 
   // We account for inertia by adding the rotor inertia times the squared gear ratio to
   // the diagonal (see Featherstone, Rigid Body Dynamics Algorithm, 2008, end of chapter 9.6)
-  M.diagonal() += model.rotorGearRatio * model.rotorGearRatio * model.rotorInertia;
+  for (int k = 0; k < M.rows(); k++)
+  {
+    M(k, k) += model.rotorGearRatio[k] * model.rotorGearRatio[k] * model.rotorInertia[k];
+  }
 
   return M;
 }

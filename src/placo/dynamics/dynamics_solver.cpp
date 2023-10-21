@@ -436,6 +436,17 @@ DynamicsSolver::Result DynamicsSolver::solve()
   problem.clear_constraints();
   problem.clear_variables();
 
+  // Computing target torque for passive joints
+  std::map<int, double> passive_taus;
+  for (auto& entry : passive_joints)
+  {
+    std::string joint = entry.first;
+    PassiveJoint pj = entry.second;
+    double q = robot.get_joint(joint);
+    double qd = robot.get_joint_velocity(joint);
+    passive_taus[robot.get_joint_v_offset(joint)] = q * pj.kp + qd * pj.kd;
+  }
+
   Expression qdd;
   if (is_static)
   {
@@ -476,7 +487,13 @@ DynamicsSolver::Result DynamicsSolver::solve()
   tau = tau + robot.non_linear_effects();
 
   // J^T F
+
+  // Contacts that will result in a decision variable
   std::vector<Contact*> variable_contacts;
+  // Contacts that will be optimized out
+  std::vector<Contact*> determined_contacts;
+  std::vector<int> determined_indices;
+  int determined_contacts_count = 0;
 
   for (auto& contact : contacts)
   {
@@ -490,22 +507,84 @@ DynamicsSolver::Result DynamicsSolver::solve()
     }
     else
     {
-      Variable& f_variable = problem.add_variable(contact->J.rows());
-      contact->f = f_variable.expr();
-      contact->add_constraints(problem, contact->f);
-      variable_contacts.push_back(contact);
+      if (optimize_contact_forces && contact->is_internal() &&
+          determined_contacts_count + contact->size() <= passive_joints.size())
+      {
+        // This contact will be determined out
+        determined_contacts.push_back(contact);
+        determined_contacts_count += contact->size();
+      }
+      else
+      {
+        // This contact will be an actual decision variable
+        Variable& f_variable = problem.add_variable(contact->size());
+        contact->f = f_variable.expr();
+        contact->add_constraints(problem);
+        variable_contacts.push_back(contact);
+      }
     }
   }
 
+  // The number of decision variables is now known, resizing the expression of tau
   tau.A.conservativeResize(N, problem.n_variables);
   tau.A.block(0, N, N, problem.n_variables - N).setZero();
 
+  // Filling the columns of the tau expression with contact forces
   int k = is_static ? 0 : N;
   for (auto& contact : variable_contacts)
   {
     tau.A.block(0, k, N, contact->J.rows()) = -contact->J.transpose();
     tau.b -= contact->J.transpose() * contact->f.b;
     k += contact->J.rows();
+  }
+
+  // Gathering the first N entries of the passive torque ids
+  k = 0;
+  for (auto& entry : passive_taus)
+  {
+    if (k >= determined_contacts_count)
+    {
+      break;
+    }
+    k += 1;
+    determined_indices.push_back(entry.first);
+  }
+
+  if (optimize_contact_forces && determined_contacts_count > 0)
+  {
+    // Computing Jd, the jacobian of determined contact forces
+    Eigen::MatrixXd Jd = Eigen::MatrixXd::Zero(N, determined_contacts_count);
+    k = 0;
+    for (auto& contact : determined_contacts)
+    {
+      Jd.block(0, k, N, contact->J.rows()) = contact->J.transpose();
+      k += contact->J.rows();
+    }
+
+    // Building the expression for the determined forces
+    // Jd^T fd = M qdd + b - J^T F - tau_passive
+    Expression fd;
+    fd.A = tau.A(determined_indices, Eigen::all);
+    fd.b = tau.b(determined_indices);
+    k = 0;
+    for (auto& i : determined_indices)
+    {
+      fd.b[k] -= passive_taus[i];
+      k += 1;
+    }
+    fd = Jd(determined_indices, Eigen::all).inverse() * fd;
+
+    // We feed the determined contacts with force expressed as other variables
+    k = 0;
+    for (auto& contact : determined_contacts)
+    {
+      contact->f = fd.slice(k, contact->size());
+      contact->add_constraints(problem);
+      k += contact->size();
+    }
+
+    // fd can now be added to tau
+    tau = tau - Jd * fd;
   }
 
   // Computing limit inequalitie
@@ -515,16 +594,15 @@ DynamicsSolver::Result DynamicsSolver::solve()
   // Floating base has no torque
   problem.add_constraint(tau.slice(0, 6) == 0);
 
-  // Passive joints have no torque
-  for (auto& entry : passive_joints)
+  // Passive joints that are not determined have a tau constraint
+  k = 0;
+  for (auto& entry : passive_taus)
   {
-    std::string joint = entry.first;
-    PassiveJoint pj = entry.second;
-    double q = robot.get_joint(joint);
-    double qd = robot.get_joint_velocity(joint);
-    double target_tau = q * pj.kp + qd * pj.kd;
-
-    problem.add_constraint(tau.slice(robot.get_joint_v_offset(joint), 1) == target_tau);
+    if (k >= determined_contacts_count)
+    {
+      problem.add_constraint(tau.slice(entry.first, 1) == entry.second);
+    }
+    k += 1;
   }
 
   // We want to minimize torques

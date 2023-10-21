@@ -70,6 +70,7 @@ void exposeDynamics()
       class_<DynamicsSolver>("DynamicsSolver", init<RobotWrapper&>())
           .def_readwrite("friction", &DynamicsSolver::friction)
           .def_readwrite("dt", &DynamicsSolver::dt)
+          .def_readwrite("optimize_contact_forces", &DynamicsSolver::optimize_contact_forces)
           .def("add_point_contact", &DynamicsSolver::add_point_contact, return_internal_reference<>())
           .def("add_unilateral_point_contact", &DynamicsSolver::add_unilateral_point_contact,
                return_internal_reference<>())

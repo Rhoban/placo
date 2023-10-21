@@ -151,6 +151,9 @@ public:
   double dt = 0.;
   int N;
 
+  // Try to remove contact forces that can be deduces from passive joint equations
+  bool optimize_contact_forces = true;
+
 protected:
   // The problem instance is kept alive by the solver (so that variables etc. are available)
   Problem problem;
