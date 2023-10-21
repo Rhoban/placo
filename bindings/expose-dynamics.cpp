@@ -35,7 +35,7 @@ void exposeDynamics()
       .def_readwrite("weight_forces", &Contact::weight_forces)
       .def_readwrite("weight_moments", &Contact::weight_moments)
       .add_property(
-          "wrench", +[](Contact& contact) { return contact.variable->value; });
+          "wrench", +[](Contact& contact) { return contact.wrench; });
 
   class_<PointContact, bases<Contact>>("PointContact", init<PositionTask&, bool>())
       .def(

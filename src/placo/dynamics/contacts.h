@@ -18,12 +18,6 @@ public:
   Contact();
   virtual ~Contact();
 
-  struct Wrench
-  {
-    Eigen::MatrixXd J;
-    Expression f;
-  };
-
   // Friction coefficient
   double mu = 1.;
 
@@ -31,11 +25,13 @@ public:
   double weight_forces = 0.;
   double weight_moments = 0.;
 
-  // Adds the wrench to the problem
-  virtual Wrench add_wrench(Problem& problem) = 0;
+  Eigen::MatrixXd J;
+  virtual void update() = 0;
+  virtual void add_constraints(Problem& problem, Expression& f);
 
   // Wrench variable for the solver
-  Variable* variable;
+  Eigen::VectorXd wrench;
+  Expression f;
 
   DynamicsSolver* solver = nullptr;
 };
@@ -48,7 +44,8 @@ public:
   PositionTask* position_task;
   bool unilateral;
 
-  virtual Wrench add_wrench(Problem& problem);
+  virtual void update();
+  virtual void add_constraints(Problem& problem, Expression& f);
 };
 
 class PlanarContact : public Contact
@@ -67,7 +64,8 @@ public:
   // Returns the ZMP of the contact expressed in the local frame
   Eigen::Vector3d zmp();
 
-  virtual Wrench add_wrench(Problem& problem);
+  virtual void update();
+  virtual void add_constraints(Problem& problem, Expression& f);
 };
 
 class RelativePointContact : public Contact
@@ -77,7 +75,8 @@ public:
 
   RelativePositionTask* relative_position_task;
 
-  virtual Wrench add_wrench(Problem& problem);
+  virtual void update();
+  virtual void add_constraints(Problem& problem, Expression& f);
 };
 
 class ExternalWrenchContact : public Contact
@@ -88,7 +87,7 @@ public:
   RobotWrapper::FrameIndex frame_index;
   Eigen::VectorXd w_ext = Eigen::VectorXd::Zero(6);
 
-  virtual Wrench add_wrench(Problem& problem);
+  virtual void update();
 };
 
 class PuppetContact : public Contact
@@ -96,7 +95,7 @@ class PuppetContact : public Contact
 public:
   PuppetContact();
 
-  virtual Wrench add_wrench(Problem& problem);
+  virtual void update();
 };
 
 class TaskContact : public Contact
@@ -106,7 +105,7 @@ public:
 
   Task* task;
 
-  virtual Wrench add_wrench(Problem& problem);
+  virtual void update();
 };
 
 }  // namespace placo::dynamics

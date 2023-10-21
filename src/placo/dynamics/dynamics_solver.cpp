@@ -476,26 +476,36 @@ DynamicsSolver::Result DynamicsSolver::solve()
   tau = tau + robot.non_linear_effects();
 
   // J^T F
-  std::vector<std::pair<Contact*, Contact::Wrench>> wrenches;
+  std::vector<Contact*> variable_contacts;
+
   for (auto& contact : contacts)
   {
-    wrenches.push_back(std::make_pair(contact, contact->add_wrench(problem)));
+    contact->update();
+
+    ExternalWrenchContact* ext = dynamic_cast<ExternalWrenchContact*>(contact);
+    if (ext != nullptr)
+    {
+      Eigen::VectorXd w_ext = ext->w_ext;
+      tau.b -= contact->J.transpose() * w_ext;
+    }
+    else
+    {
+      Variable& f_variable = problem.add_variable(contact->J.rows());
+      contact->f = f_variable.expr();
+      contact->add_constraints(problem, contact->f);
+      variable_contacts.push_back(contact);
+    }
   }
+
   tau.A.conservativeResize(N, problem.n_variables);
   tau.A.block(0, N, N, problem.n_variables - N).setZero();
 
   int k = is_static ? 0 : N;
-  for (auto& entry : wrenches)
+  for (auto& contact : variable_contacts)
   {
-    Contact* contact = entry.first;
-    Contact::Wrench wrench = entry.second;
-
-    if (contact->variable != nullptr)
-    {
-      tau.A.block(0, k, N, contact->variable->size()) = -wrench.J.transpose();
-      k += contact->variable->size();
-    }
-    tau.b -= wrench.J.transpose() * wrench.f.b;
+    tau.A.block(0, k, N, contact->J.rows()) = -contact->J.transpose();
+    tau.b -= contact->J.transpose() * contact->f.b;
+    k += contact->J.rows();
   }
 
   // Computing limit inequalitie
@@ -529,6 +539,11 @@ DynamicsSolver::Result DynamicsSolver::solve()
     // Exporting result values
     result.tau = tau.value(problem.x);
     result.qdd = qdd.value(problem.x);
+
+    for (auto& contact : contacts)
+    {
+      contact->wrench = contact->f.value(problem.x);
+    }
   }
   catch (QPError& e)
   {
