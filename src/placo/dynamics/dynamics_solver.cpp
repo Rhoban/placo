@@ -443,8 +443,8 @@ DynamicsSolver::Result DynamicsSolver::solve()
   }
   else
   {
-    Variable& qdd_varaible = problem.add_variable(robot.model.nv);
-    qdd = qdd_varaible.expr();
+    Variable& qdd_variable = problem.add_variable(robot.model.nv);
+    qdd = qdd_variable.expr();
   }
 
   for (auto& task : tasks)
