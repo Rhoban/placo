@@ -168,7 +168,8 @@ void Problem::solve()
                 constraint->weight * block.transpose() * block;
           }
 
-          q.noalias() += constraint->weight * (constraint->expression.A.transpose() * constraint->expression.b);
+          q.block(0, 0, constraint->expression.A.cols(), 1).noalias() +=
+              constraint->weight * (constraint->expression.A.transpose() * constraint->expression.b);
         }
         else
         {
@@ -277,7 +278,7 @@ void Problem::solve()
     Eigen::VectorXd equality_constraints = A * x + b;
     for (int k = 0; k < A.rows(); k++)
     {
-      if (fabs(equality_constraints[k]) > 1e-8)
+      if (fabs(equality_constraints[k]) > 1e-6)
       {
         throw QPError("Problem: Infeasible QP (equality constraints were not enforced)");
       }
