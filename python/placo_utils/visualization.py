@@ -162,10 +162,13 @@ def arrow_viz(
     vis["arrows"][name]["head"].set_object(head, g.MeshBasicMaterial(color=color))
     vis["arrows"][name]["head"].set_transform(T_head)
 
+previous_contacts: int = 0
 
 def contacts_viz(solver: placo.DynamicsSolver, ratio=0.1, radius=0.005):
+    global previous_contacts
     robot = solver.robot
     frames = robot.frame_names()
+    
     for k in range(solver.count_contacts()):
         contact = solver.get_contact(k)
 
@@ -182,3 +185,9 @@ def contacts_viz(solver: placo.DynamicsSolver, ratio=0.1, radius=0.005):
             frame_name = frames[contact.frame_index]
             T_world_frame = robot.get_T_world_frame(frame_name)
             arrow_viz(f"contact_{k}", T_world_frame[:3, 3], T_world_frame[:3, 3] + contact.w_ext[:3] * ratio, color=0xFF2222, radius=radius)
+            
+    vis = get_viewer()
+    while k < previous_contacts:
+        k += 1
+        vis["arrows"][f"contact_{k}"].delete()
+    previous_contacts = k
