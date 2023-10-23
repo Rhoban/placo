@@ -6,10 +6,12 @@
 namespace placo::dynamics
 {
 class PositionTask;
-class RelativePositionTask;
 class OrientationTask;
-class DynamicsSolver;
 class FrameTask;
+class RelativePositionTask;
+class RelativeOrientationTask;
+class RelativeFrameTask;
+class DynamicsSolver;
 class Task;
 
 class Contact
@@ -82,6 +84,18 @@ public:
 
   virtual void update();
   virtual void add_constraints(Problem& problem);
+  virtual bool is_internal();
+};
+
+class RelativeFixedContact : public Contact
+{
+public:
+  RelativeFixedContact(RelativeFrameTask& frame_task);
+
+  RelativePositionTask* relative_position_task;
+  RelativeOrientationTask* relative_orientation_task;
+
+  virtual void update();
   virtual bool is_internal();
 };
 

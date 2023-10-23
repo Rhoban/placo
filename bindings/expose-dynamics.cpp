@@ -58,6 +58,8 @@ void exposeDynamics()
 
   class_<RelativePointContact, bases<Contact>>("RelativePointContact", init<RelativePositionTask&>());
 
+  class_<RelativeFixedContact, bases<Contact>>("RelativeFixedContact", init<RelativeFrameTask&>());
+
   class_<ExternalWrenchContact, bases<Contact>>("ExternalWrenchContact", init<RobotWrapper::FrameIndex>())
       .add_property("frame_index", &ExternalWrenchContact::frame_index)
       .add_property(
@@ -78,6 +80,7 @@ void exposeDynamics()
           .def("add_unilateral_point_contact", &DynamicsSolver::add_unilateral_point_contact,
                return_internal_reference<>())
           .def("add_relative_point_contact", &DynamicsSolver::add_relative_point_contact, return_internal_reference<>())
+          .def("add_relative_fixed_contact", &DynamicsSolver::add_relative_fixed_contact, return_internal_reference<>())
           .def("add_planar_contact", &DynamicsSolver::add_planar_contact, return_internal_reference<>())
           .def("add_fixed_contact", &DynamicsSolver::add_fixed_contact, return_internal_reference<>())
           .def<ExternalWrenchContact& (DynamicsSolver::*)(std::string)>("add_external_wrench_contact",

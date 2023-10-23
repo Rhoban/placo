@@ -98,6 +98,29 @@ void RelativePointContact::add_constraints(Problem& problem)
   }
 }
 
+RelativeFixedContact::RelativeFixedContact(RelativeFrameTask& relative_frame_task)
+{
+  this->relative_position_task = relative_frame_task.position;
+  this->relative_orientation_task = relative_frame_task.orientation;
+}
+
+void RelativeFixedContact::update()
+{
+  J = Eigen::MatrixXd::Zero(6, solver->N);
+  J.block(0, 0, 3, solver->N) =
+      solver->robot.frame_jacobian(relative_position_task->frame_b_index, pinocchio::WORLD).block(0, 0, 3, solver->N) -
+      solver->robot.frame_jacobian(relative_position_task->frame_a_index, pinocchio::WORLD).block(0, 0, 3, solver->N);
+  J.block(3, 0, 3, solver->N) = solver->robot.frame_jacobian(relative_orientation_task->frame_b_index, pinocchio::WORLD)
+                                    .block(3, 0, 3, solver->N) -
+                                solver->robot.frame_jacobian(relative_orientation_task->frame_a_index, pinocchio::WORLD)
+                                    .block(3, 0, 3, solver->N);
+}
+
+bool RelativeFixedContact::is_internal()
+{
+  return true;
+}
+
 PlanarContact::PlanarContact(FrameTask& frame_task, bool unilateral)
 {
   this->position_task = frame_task.position;

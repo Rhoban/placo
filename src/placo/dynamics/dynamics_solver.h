@@ -61,6 +61,7 @@ public:
   PointContact& add_point_contact(PositionTask& position_task);
   PointContact& add_unilateral_point_contact(PositionTask& position_task);
   RelativePointContact& add_relative_point_contact(RelativePositionTask& position_task);
+  RelativeFixedContact& add_relative_fixed_contact(RelativeFrameTask& frame_task);
   PlanarContact& add_fixed_contact(FrameTask& frame_task);
   PlanarContact& add_planar_contact(FrameTask& frame_task);
   ExternalWrenchContact& add_external_wrench_contact(RobotWrapper::FrameIndex frame_index);
@@ -185,7 +186,7 @@ public:
   double xdd_safe = 1.;
 
   // Try to remove contact forces that can be deduces from passive joint equations
-  bool optimize_contact_forces = true;
+  bool optimize_contact_forces = false;
 
 protected:
   // The problem instance is kept alive by the solver (so that variables etc. are available)
