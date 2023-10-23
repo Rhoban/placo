@@ -269,8 +269,6 @@ void DynamicsSolver::compute_limits_inequalities(Expression& tau)
 
       if (joint_limits)
       {
-        double qdd_safe = 1.;  // XXX: This should be specified somewhere else
-
         if (q > robot.model.upperPositionLimit[k + 7])
         {
           // We are in the contact, ensuring at least
@@ -334,8 +332,6 @@ void DynamicsSolver::compute_self_collision_inequalities()
     e.A = Eigen::MatrixXd(constraints, N);
     e.b = Eigen::VectorXd(constraints);
     int constraint = 0;
-
-    double xdd_safe = 1.;  // XXX: How to estimate this ?
 
     for (auto& distance : distances)
     {
