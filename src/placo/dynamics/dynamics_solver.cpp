@@ -133,6 +133,7 @@ FrameTask DynamicsSolver::add_frame_task(std::string frame_name, Eigen::Affine3d
 DynamicsSolver::DynamicsSolver(RobotWrapper& robot) : robot(robot)
 {
   N = robot.model.nv;
+  masked_fbase = false;
 }
 
 DynamicsSolver::~DynamicsSolver()
