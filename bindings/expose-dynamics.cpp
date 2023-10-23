@@ -108,14 +108,20 @@ void exposeDynamics()
               "add_position_task", &DynamicsSolver::add_position_task, return_internal_reference<>())
           .def<RelativePositionTask& (DynamicsSolver::*)(std::string, std::string, Eigen::Vector3d)>(
               "add_relative_position_task", &DynamicsSolver::add_relative_position_task, return_internal_reference<>())
-          .def<OrientationTask& (DynamicsSolver::*)(std::string, Eigen::Matrix3d)>(
-              "add_orientation_task", &DynamicsSolver::add_orientation_task, return_internal_reference<>())
+          .def<RelativeOrientationTask& (DynamicsSolver::*)(std::string, std::string, Eigen::Matrix3d)>(
+              "add_relative_orientation_task", &DynamicsSolver::add_relative_orientation_task,
+              return_internal_reference<>())
+          .def<RelativeFrameTask (DynamicsSolver::*)(std::string, std::string, Eigen::Affine3d)>(
+              "add_relative_frame_task", &DynamicsSolver::add_relative_frame_task)
           .def<JointsTask& (DynamicsSolver::*)()>("add_joints_task", &DynamicsSolver::add_joints_task,
                                                   return_internal_reference<>())
           .def<MimicTask& (DynamicsSolver::*)()>("add_mimic_task", &DynamicsSolver::add_mimic_task,
                                                  return_internal_reference<>())
           .def<CoMTask& (DynamicsSolver::*)(Eigen::Vector3d)>("add_com_task", &DynamicsSolver::add_com_task,
                                                               return_internal_reference<>())
+
+          .def<OrientationTask& (DynamicsSolver::*)(std::string, Eigen::Matrix3d)>(
+              "add_orientation_task", &DynamicsSolver::add_orientation_task, return_internal_reference<>())
           .def<FrameTask (DynamicsSolver::*)(std::string, Eigen::Affine3d)>("add_frame_task",
                                                                             &DynamicsSolver::add_frame_task);
 
@@ -164,6 +170,15 @@ void exposeDynamics()
           "dtarget", +[](const RelativePositionTask& task) { return task.dtarget; }, &RelativePositionTask::dtarget)
       .add_property("mask", &RelativePositionTask::mask, &RelativePositionTask::mask);
 
+  class_<RelativeOrientationTask, bases<Task>>(
+      "DynamicsRelativeOrientationTask", init<RobotWrapper::FrameIndex, RobotWrapper::FrameIndex, Eigen::Matrix3d>())
+      .add_property(
+          "R_a_b", +[](const RelativeOrientationTask& task) { return task.R_a_b; }, &RelativeOrientationTask::R_a_b)
+      .add_property(
+          "omega_a_b", +[](const RelativeOrientationTask& task) { return task.omega_a_b; },
+          &RelativeOrientationTask::omega_a_b)
+      .add_property("mask", &RelativeOrientationTask::mask, &RelativeOrientationTask::mask);
+
   class_<OrientationTask, bases<Task>>("DynamicsOrientationTask", init<RobotWrapper::FrameIndex, Eigen::Matrix3d>())
       .add_property(
           "R_world_frame", +[](const OrientationTask& task) { return task.R_world_frame; },
@@ -182,6 +197,17 @@ void exposeDynamics()
           return_internal_reference<>())
       .def("configure", &FrameTask::configure)
       .add_property("T_world_frame", &FrameTask::get_T_world_frame, &FrameTask::set_T_world_frame);
+
+  class_<RelativeFrameTask>("DynamicsRelativeFrameTask", init<>())
+      .def(
+          "position", +[](const RelativeFrameTask& task) -> RelativePositionTask& { return *task.position; },
+          return_internal_reference<>())
+
+      .def(
+          "orientation", +[](const RelativeFrameTask& task) -> RelativeOrientationTask& { return *task.orientation; },
+          return_internal_reference<>())
+      .def("configure", &RelativeFrameTask::configure)
+      .add_property("T_a_b", &RelativeFrameTask::get_T_a_b, &RelativeFrameTask::set_T_a_b);
 
   class_<JointsTask, bases<Task>>("DynamicsJointsTask", init<>())
       .def("set_joint", &JointsTask::set_joint)

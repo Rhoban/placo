@@ -75,16 +75,44 @@ PositionTask& DynamicsSolver::add_position_task(std::string frame_name, Eigen::V
 
 RelativePositionTask& DynamicsSolver::add_relative_position_task(pinocchio::FrameIndex frame_a_index,
                                                                  pinocchio::FrameIndex frame_b_index,
-                                                                 Eigen::Vector3d target_world)
+                                                                 Eigen::Vector3d target)
 {
-  return add_task(new RelativePositionTask(frame_a_index, frame_b_index, target_world));
+  return add_task(new RelativePositionTask(frame_a_index, frame_b_index, target));
 }
 
 RelativePositionTask& DynamicsSolver::add_relative_position_task(std::string frame_a_name, std::string frame_b_name,
-                                                                 Eigen::Vector3d target_world)
+                                                                 Eigen::Vector3d target)
 {
-  return add_relative_position_task(robot.get_frame_index(frame_a_name), robot.get_frame_index(frame_b_name),
-                                    target_world);
+  return add_relative_position_task(robot.get_frame_index(frame_a_name), robot.get_frame_index(frame_b_name), target);
+}
+
+RelativeOrientationTask& DynamicsSolver::add_relative_orientation_task(pinocchio::FrameIndex frame_a_index,
+                                                                       pinocchio::FrameIndex frame_b_index,
+                                                                       Eigen::Matrix3d R_a_b)
+{
+  return add_task(new RelativeOrientationTask(frame_a_index, frame_b_index, R_a_b));
+}
+
+RelativeOrientationTask& DynamicsSolver::add_relative_orientation_task(std::string frame_a_name,
+                                                                       std::string frame_b_name, Eigen::Matrix3d R_a_b)
+{
+  return add_relative_orientation_task(robot.get_frame_index(frame_a_name), robot.get_frame_index(frame_b_name), R_a_b);
+}
+
+RelativeFrameTask DynamicsSolver::add_relative_frame_task(pinocchio::FrameIndex frame_a_index,
+                                                          pinocchio::FrameIndex frame_b_index, Eigen::Affine3d T_a_b)
+{
+  RelativePositionTask& position = add_relative_position_task(frame_a_index, frame_b_index, T_a_b.translation());
+  RelativeOrientationTask& orientation = add_relative_orientation_task(frame_a_index, frame_b_index, T_a_b.rotation());
+
+  return RelativeFrameTask(&position, &orientation);
+}
+
+RelativeFrameTask DynamicsSolver::add_relative_frame_task(std::string frame_a_name, std::string frame_b_name,
+                                                          Eigen::Affine3d T_world_frame)
+{
+  return add_relative_frame_task(robot.get_frame_index(frame_a_name), robot.get_frame_index(frame_b_name),
+                                 T_world_frame);
 }
 
 CoMTask& DynamicsSolver::add_com_task(Eigen::Vector3d target_world)

@@ -13,6 +13,8 @@
 #include "placo/dynamics/orientation_task.h"
 #include "placo/dynamics/frame_task.h"
 #include "placo/dynamics/relative_position_task.h"
+#include "placo/dynamics/relative_orientation_task.h"
+#include "placo/dynamics/relative_frame_task.h"
 #include "placo/dynamics/joints_task.h"
 #include "placo/dynamics/mimic_task.h"
 #include "placo/dynamics/com_task.h"
@@ -79,10 +81,20 @@ public:
   OrientationTask& add_orientation_task(std::string frame_name, Eigen::Matrix3d R_world_frame);
   FrameTask add_frame_task(pinocchio::FrameIndex frame_index, Eigen::Affine3d T_world_frame);
   FrameTask add_frame_task(std::string frame_name, Eigen::Affine3d T_world_frame);
+
   RelativePositionTask& add_relative_position_task(pinocchio::FrameIndex frame_a_index,
-                                                   pinocchio::FrameIndex frame_b_index, Eigen::Vector3d target_world);
+                                                   pinocchio::FrameIndex frame_b_index, Eigen::Vector3d target);
   RelativePositionTask& add_relative_position_task(std::string frame_a_name, std::string frame_b_name,
                                                    Eigen::Vector3d target_world);
+
+  RelativeOrientationTask& add_relative_orientation_task(pinocchio::FrameIndex frame_a_index,
+                                                         pinocchio::FrameIndex frame_b_index, Eigen::Matrix3d R_a_b);
+  RelativeOrientationTask& add_relative_orientation_task(std::string frame_a_name, std::string frame_b_name,
+                                                         Eigen::Matrix3d R_a_b);
+  RelativeFrameTask add_relative_frame_task(pinocchio::FrameIndex frame_a_index, pinocchio::FrameIndex frame_b_index,
+                                            Eigen::Affine3d T_a_b);
+  RelativeFrameTask add_relative_frame_task(std::string frame_a_name, std::string frame_b_name, Eigen::Affine3d T_a_b);
+
   CoMTask& add_com_task(Eigen::Vector3d target_world);
   JointsTask& add_joints_task();
   MimicTask& add_mimic_task();

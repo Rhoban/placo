@@ -65,9 +65,11 @@ add_library(libplaco
     # Dynamics QP solver
     src/placo/dynamics/task.cpp
     src/placo/dynamics/position_task.cpp
-    src/placo/dynamics/relative_position_task.cpp
-    src/placo/dynamics/frame_task.cpp
     src/placo/dynamics/orientation_task.cpp
+    src/placo/dynamics/frame_task.cpp
+    src/placo/dynamics/relative_position_task.cpp
+    src/placo/dynamics/relative_orientation_task.cpp
+    src/placo/dynamics/relative_frame_task.cpp
     src/placo/dynamics/joints_task.cpp
     src/placo/dynamics/mimic_task.cpp
     src/placo/dynamics/com_task.cpp
