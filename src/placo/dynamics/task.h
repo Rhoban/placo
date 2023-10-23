@@ -38,8 +38,6 @@ public:
   // If the task is "soft", this is its weight
   double weight;
 
-  // The task is of type Ax = b if equality_task is true, and Ax <= b if equality_task is false
-  bool equality_task = true;
   Eigen::MatrixXd A;
   Eigen::MatrixXd b;
   Eigen::MatrixXd error;

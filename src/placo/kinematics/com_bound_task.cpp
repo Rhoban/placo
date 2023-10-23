@@ -5,7 +5,7 @@ namespace placo::kinematics
 {
 CoMBoundTask::CoMBoundTask(double bound, int dir) : bound(bound), dir(dir)
 {
-  equality_task = false;
+  type = Inequality;
   b = Eigen::MatrixXd(1, 1);
 }
 

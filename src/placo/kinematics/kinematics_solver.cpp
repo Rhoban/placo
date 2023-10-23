@@ -369,7 +369,7 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
       e.b = -task->b;
     }
 
-    if (task->equality_task)
+    if (task->type == Task::Type::Equality)
     {
       problem.add_constraint(e == 0).configure(task_priority, task->weight);
     }

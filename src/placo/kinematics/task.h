@@ -18,6 +18,12 @@ public:
     Scaled = 2
   };
 
+  enum Type
+  {
+    Equality = 0,
+    Inequality = 1
+  };
+
   Task();
   virtual ~Task();
 
@@ -36,11 +42,12 @@ public:
   Priority priority;
   std::string priority_name();
 
+  // Task type (equality or inequality)
+  Type type = Equality;
+
   // If the task is "soft", this is its weight
   double weight;
 
-  // The task is of type Ax = b if equality_task is true, and Ax <= b if equality_task is false
-  bool equality_task = true;
   Eigen::MatrixXd A;
   Eigen::MatrixXd b;
 

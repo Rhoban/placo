@@ -599,7 +599,7 @@ DynamicsSolver::Result DynamicsSolver::solve()
   }
 
   // We want to minimize torques
-  problem.add_constraint(tau == 0).configure(ProblemConstraint::Soft, 1.);
+  problem.add_constraint(tau == 0).configure(ProblemConstraint::Soft, 1e-3);
 
   try
   {
