@@ -460,6 +460,16 @@ DynamicsSolver::Result DynamicsSolver::solve()
   {
     Variable& qdd_variable = problem.add_variable(robot.model.nv);
     qdd = qdd_variable.expr();
+
+    for (auto& joint : masked_dof)
+    {
+      problem.add_constraint(qdd_variable.expr(joint, 1) == 0);
+    }
+
+    if (masked_fbase)
+    {
+      problem.add_constraint(qdd_variable.expr(0, 6) == 0.);
+    }
   }
 
   for (auto& task : tasks)
@@ -622,6 +632,21 @@ DynamicsSolver::Result DynamicsSolver::solve()
   }
 
   return result;
+}
+
+void DynamicsSolver::mask_dof(std::string dof)
+{
+  masked_dof.insert(robot.get_joint_v_offset(dof));
+}
+
+void DynamicsSolver::unmask_dof(std::string dof)
+{
+  masked_dof.erase(robot.get_joint_v_offset(dof));
+}
+
+void DynamicsSolver::mask_fbase(bool masked)
+{
+  masked_fbase = masked;
 }
 
 void DynamicsSolver::remove_task(Task& task)
