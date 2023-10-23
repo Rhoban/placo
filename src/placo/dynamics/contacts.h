@@ -25,6 +25,8 @@ public:
   double weight_forces = 0.;
   double weight_moments = 0.;
 
+  double reaction_ratio = 0.;
+
   int size();
 
   Eigen::MatrixXd J;

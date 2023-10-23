@@ -32,6 +32,7 @@ void exposeDynamics()
 
   class_<Contact, boost::noncopyable>("Contact", no_init)
       .def_readwrite("mu", &Contact::mu)
+      .def_readwrite("reaction_ratio", &Contact::reaction_ratio)
       .def_readwrite("weight_forces", &Contact::weight_forces)
       .def_readwrite("weight_moments", &Contact::weight_moments)
       .add_property(

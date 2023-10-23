@@ -382,6 +382,34 @@ void DynamicsSolver::compute_self_collision_inequalities()
   }
 }
 
+void DynamicsSolver::compute_reaction_ratio_inequalities()
+{
+  // If a contact has a reaction ratio constraint, we want:
+  // (f_z_1) / (f_z_1 + f_z_2 + ...) <= lambda
+  // 0 <= - (f_z_1) ( 1 - lambda) + lambda * (f_z_2 + ...)
+  for (auto& contact : contacts)
+  {
+    if (!contact->is_internal())
+    {
+      if (contact->reaction_ratio > 0)
+      {
+        double lambda = contact->reaction_ratio;
+        Expression e = -contact->f.slice(2, 1) * (1 - lambda);
+
+        for (auto& other_contact : contacts)
+        {
+          if (!other_contact->is_internal())
+          {
+            e = e + lambda * other_contact->f.slice(2, 1);
+          }
+        }
+
+        problem.add_constraint(e >= 0);
+      }
+    }
+  }
+}
+
 void DynamicsSolver::clear_tasks()
 {
   for (auto& task : tasks)
@@ -587,6 +615,9 @@ DynamicsSolver::Result DynamicsSolver::solve()
     // fd can now be added to tau
     tau = tau - Jd * fd;
   }
+
+  // Reaction ratio
+  compute_reaction_ratio_inequalities();
 
   // Computing limit inequalitie
   compute_limits_inequalities(tau);

@@ -122,6 +122,7 @@ public:
    */
   void enable_torque_limits(bool enable);
 
+  void compute_reaction_ratio_inequalities();
   void compute_limits_inequalities(Expression& tau);
   void compute_self_collision_inequalities();
 
