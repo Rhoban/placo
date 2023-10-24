@@ -424,7 +424,7 @@ void DynamicsSolver::compute_reaction_ratio_inequalities()
   {
     if (!contact->is_internal())
     {
-      if (contact->reaction_ratio > 0)
+      if (contact->reaction_ratio >= 0)
       {
         double lambda = contact->reaction_ratio;
         Expression e = -contact->f.slice(2, 1) * (1 - lambda);
