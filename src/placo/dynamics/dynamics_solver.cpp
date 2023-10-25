@@ -382,12 +382,17 @@ void DynamicsSolver::compute_self_collision_inequalities()
 
         Eigen::MatrixXd X_A_world = pinocchio::SE3(Eigen::Matrix3d::Identity(), -distance.pointA).toActionMatrix();
         Eigen::MatrixXd JA = X_A_world * robot.joint_jacobian(distance.parentA, pinocchio::ReferenceFrame::WORLD);
+        Eigen::MatrixXd dJA =
+            X_A_world * robot.joint_jacobian_time_variation(distance.parentA, pinocchio::ReferenceFrame::WORLD);
 
         Eigen::MatrixXd X_B_world = pinocchio::SE3(Eigen::Matrix3d::Identity(), -distance.pointB).toActionMatrix();
         Eigen::MatrixXd JB = X_B_world * robot.joint_jacobian(distance.parentB, pinocchio::ReferenceFrame::WORLD);
+        Eigen::MatrixXd dJB =
+            X_B_world * robot.joint_jacobian_time_variation(distance.parentB, pinocchio::ReferenceFrame::WORLD);
 
         // We want: current_distance + J dq >= margin
         Eigen::MatrixXd J = n.transpose() * (JB - JA).block(0, 0, 3, N);
+        Eigen::VectorXd dJ = n.transpose() * (dJB - dJA).block(0, 0, 3, N) * robot.state.qd;
 
         if (distance.min_distance >= self_collisions_margin)
         {
@@ -397,7 +402,7 @@ void DynamicsSolver::compute_self_collision_inequalities()
           double xd_max = sqrt(2. * error * xdd_safe);
 
           e.A.block(constraint, 0, 1, N) = dt * J;
-          e.b[constraint] = xd + xd_max;
+          e.b[constraint] = dJ[0] + xd + xd_max;
         }
         else
         {
