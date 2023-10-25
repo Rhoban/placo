@@ -236,7 +236,7 @@ void Problem::solve()
         // A slack variable is assigend with all "soft" inequality and a minimization is added to the problem
         Eigen::MatrixXd As(constraint->expression.rows(), n_variables + slack_variables);
         As.setZero();
-        As.block(0, 0, As.rows(), n_variables) = constraint->expression.A;
+        As.block(0, 0, constraint->expression.rows(), constraint->expression.cols()) = constraint->expression.A;
 
         for (int k = 0; k < constraint->expression.rows(); k++)
         {
