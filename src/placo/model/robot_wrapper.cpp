@@ -513,6 +513,20 @@ Eigen::MatrixXd RobotWrapper::joint_jacobian(pinocchio::JointIndex joint, pinocc
   return jacobian;
 }
 
+Eigen::MatrixXd RobotWrapper::joint_jacobian_time_variation(const std::string& joint, const std::string& reference)
+{
+  return joint_jacobian(model.getJointId(joint), string_to_reference(reference));
+}
+
+Eigen::MatrixXd RobotWrapper::joint_jacobian_time_variation(pinocchio::JointIndex joint, pinocchio::ReferenceFrame ref)
+{
+  Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> jacobian(6, model.nv);
+  jacobian.setZero();
+  pinocchio::getJointJacobianTimeVariation(model, *data, joint, ref, jacobian);
+
+  return jacobian;
+}
+
 Eigen::MatrixXd RobotWrapper::relative_position_jacobian(pinocchio::FrameIndex frame_a, pinocchio::FrameIndex frame_b)
 {
   auto T_world_a = get_T_world_frame(frame_a);
