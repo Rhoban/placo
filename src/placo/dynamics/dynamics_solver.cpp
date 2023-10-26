@@ -401,7 +401,6 @@ void DynamicsSolver::compute_self_collision_inequalities()
           if (fabs(J(1, k)) > 1e-6)
           {
             double lambda_i = fabs(qdd_safe / J(1, k));
-            std::cout << "Lamdba " << k << ": " << lambda_i << std::endl;
             if (lambda < 0 || lambda_i < lambda)
             {
               lambda = lambda_i;
