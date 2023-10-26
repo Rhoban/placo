@@ -394,6 +394,23 @@ void DynamicsSolver::compute_self_collision_inequalities()
         Eigen::MatrixXd J = n.transpose() * (JB - JA).block(0, 0, 3, N);
         Eigen::VectorXd dJ = n.transpose() * (dJB - dJA).block(0, 0, 3, N) * robot.state.qd;
 
+        // Computing xdd_safe from qdd_safe
+        double lambda = -1;
+        for (int k = 6; k < N; k++)
+        {
+          if (fabs(J(1, k)) > 1e-6)
+          {
+            double lambda_i = fabs(qdd_safe / J(1, k));
+            std::cout << "Lamdba " << k << ": " << lambda_i << std::endl;
+            if (lambda < 0 || lambda_i < lambda)
+            {
+              lambda = lambda_i;
+            }
+          }
+        }
+
+        double xdd_safe = (lambda * (J * J.transpose()) + dJ * robot.state.qd)(0, 0);
+
         if (distance.min_distance >= self_collisions_margin)
         {
           // We prevent excessive velocity towards the collision

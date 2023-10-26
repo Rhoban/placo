@@ -74,7 +74,6 @@ void exposeDynamics()
           .def_readwrite("friction", &DynamicsSolver::friction)
           .def_readwrite("dt", &DynamicsSolver::dt)
           .def_readwrite("qdd_safe", &DynamicsSolver::qdd_safe)
-          .def_readwrite("xdd_safe", &DynamicsSolver::xdd_safe)
           .def_readwrite("optimize_contact_forces", &DynamicsSolver::optimize_contact_forces)
           .def("add_point_contact", &DynamicsSolver::add_point_contact, return_internal_reference<>())
           .def("add_unilateral_point_contact", &DynamicsSolver::add_unilateral_point_contact,

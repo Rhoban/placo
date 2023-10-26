@@ -183,7 +183,6 @@ public:
   int N;
 
   double qdd_safe = 1.;
-  double xdd_safe = 1.;
 
   // Try to remove contact forces that can be deduces from passive joint equations
   bool optimize_contact_forces = false;
