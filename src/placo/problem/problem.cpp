@@ -2,7 +2,6 @@
 #include "placo/problem/problem.h"
 #include "placo/problem/qp_error.h"
 #include "eiquadprog/eiquadprog.hpp"
-#include "rhoban_utils/timing/time_stamp.h"
 
 namespace placo
 {
