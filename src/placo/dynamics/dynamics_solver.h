@@ -55,52 +55,149 @@ public:
   std::map<std::string, PassiveJoint> passive_joints;
 
   /**
-   * @brief Adds a contact to the solver
-   * @param contact the contact to add
+   * @brief Sets the robot as static, this will impose the joint accelerations to be zero
+   * @param is_static whether the robot should be static
    */
-  PointContact& add_point_contact(PositionTask& position_task);
-  PointContact& add_unilateral_point_contact(PositionTask& position_task);
-  RelativePointContact& add_relative_point_contact(RelativePositionTask& position_task);
-  RelativeFixedContact& add_relative_fixed_contact(RelativeFrameTask& frame_task);
-  PlanarContact& add_fixed_contact(FrameTask& frame_task);
-  PlanarContact& add_planar_contact(FrameTask& frame_task);
-  ExternalWrenchContact& add_external_wrench_contact(RobotWrapper::FrameIndex frame_index);
-  ExternalWrenchContact& add_external_wrench_contact(std::string frame_name);
-  PuppetContact& add_puppet_contact();
-  TaskContact& add_task_contact(Task& task);
+  void set_static(bool is_static);
 
   /**
-   * @brief Sets a DoF as passive
-   * @param joint_name the DoF name
-   * @param is_passive true if the DoF should be passive
+   * @brief Sets a DoF as passive, the corresponding tau will be fixed in the equation of motion
+   *        it can be purely passive joint or a spring-like behaviour
+   * @param joint_name the joint
+   * @param is_passive true if the should the joint be passive
+   * @param kp kp gain if the joint is a spring (0 by default)
+   * @param kd kd gain if the joint is a spring (0 by default)
    */
   void set_passive(const std::string& joint_name, bool is_passive = true, double kp = 0., double kd = 0.);
 
+  /**
+   * @brief Adds a position (in the world) task
+   * @param frame_index target frame
+   * @param target_world target position in the world
+   */
   PositionTask& add_position_task(pinocchio::FrameIndex frame_index, Eigen::Vector3d target_world);
   PositionTask& add_position_task(std::string frame_name, Eigen::Vector3d target_world);
+
+  /**
+   * @brief Adds an orientation (in the world) task
+   * @param frame_index target frame
+   * @param R_world_frame target world orientation
+   */
   OrientationTask& add_orientation_task(pinocchio::FrameIndex frame_index, Eigen::Matrix3d R_world_frame);
   OrientationTask& add_orientation_task(std::string frame_name, Eigen::Matrix3d R_world_frame);
+
+  /**
+   * @brief Adds a frame task, which is a pseudo-task packaging position and orientation, resulting in a
+   *        decoupled task
+   * @param frame_index target frame
+   * @param T_world_frame target transformation in the world
+   */
   FrameTask add_frame_task(pinocchio::FrameIndex frame_index, Eigen::Affine3d T_world_frame);
   FrameTask add_frame_task(std::string frame_name, Eigen::Affine3d T_world_frame);
 
+  /**
+   * @brief Adds a relative position task
+   * @param frame_a_index frame a
+   * @param frame_b_index  frame b
+   * @param target target value for AB vector, expressed in A
+   */
   RelativePositionTask& add_relative_position_task(pinocchio::FrameIndex frame_a_index,
                                                    pinocchio::FrameIndex frame_b_index, Eigen::Vector3d target);
   RelativePositionTask& add_relative_position_task(std::string frame_a_name, std::string frame_b_name,
                                                    Eigen::Vector3d target_world);
 
+  /**
+   * @brief Adds a relative orientation task
+   * @param frame_a_index frame a
+   * @param frame_b_index frame b
+   * @param R_a_b target value for the orientation of b frame in a
+   */
   RelativeOrientationTask& add_relative_orientation_task(pinocchio::FrameIndex frame_a_index,
                                                          pinocchio::FrameIndex frame_b_index, Eigen::Matrix3d R_a_b);
   RelativeOrientationTask& add_relative_orientation_task(std::string frame_a_name, std::string frame_b_name,
                                                          Eigen::Matrix3d R_a_b);
+
+  /**
+   * @brief Adds a relative frame task, which is a pseudo-task packaging relative position and orientation tasks
+   * @param frame_a_index frame a
+   * @param frame_b_index frame b
+   * @param T_a_b target transformation value for b frame in a
+   */
   RelativeFrameTask add_relative_frame_task(pinocchio::FrameIndex frame_a_index, pinocchio::FrameIndex frame_b_index,
                                             Eigen::Affine3d T_a_b);
   RelativeFrameTask add_relative_frame_task(std::string frame_a_name, std::string frame_b_name, Eigen::Affine3d T_a_b);
 
+  /**
+   * @brief Adds a center of mass (in the world) task
+   * @param target_world target (in the world)
+   */
   CoMTask& add_com_task(Eigen::Vector3d target_world);
+
+  /**
+   * @brief Adds a joints task
+   * @param target target joints values
+   */
   JointsTask& add_joints_task();
+
+  /**
+   * @brief Adds a mimic d, allowing replication of a joint. This can be used to implement timing belt, if coupled
+   *        with an internal force.
+   */
   MimicTask& add_mimic_task();
 
-  void set_static(bool is_static);
+  /**
+   * @brief Adds a point contact
+   * @param position_task the associated position task
+   */
+  PointContact& add_point_contact(PositionTask& position_task);
+
+  /**
+   * @brief Adds an unilateral point contact, in the sense of the world z-axis
+   * @param position_task the associated position task
+   */
+  PointContact& add_unilateral_point_contact(PositionTask& position_task);
+
+  /**
+   * @brief Adds a relative point contact, which can be typically used for internal forces like loop-closing
+   * @param position_task associated relative position task
+   */
+  RelativePointContact& add_relative_point_contact(RelativePositionTask& position_task);
+
+  /**
+   * @brief Adds a relative fixed contact, can be used for fixed closed loops
+   * @param frame_task the associated relative frame task
+   */
+  RelativeFixedContact& add_relative_fixed_contact(RelativeFrameTask& frame_task);
+
+  /**
+   * @brief Adds a fixed contact
+   * @param frame_task the associated frame task
+   */
+  PlanarContact& add_fixed_contact(FrameTask& frame_task);
+
+  /**
+   * @brief Adds a planar contact, which is unilateral in the sense of the local body z-axis
+   * @param frame_task associated frame task
+   */
+  PlanarContact& add_planar_contact(FrameTask& frame_task);
+
+  /**
+   * @brief Adds an external wrench
+   * @param frame_index
+   */
+  ExternalWrenchContact& add_external_wrench_contact(RobotWrapper::FrameIndex frame_index);
+  ExternalWrenchContact& add_external_wrench_contact(std::string frame_name);
+
+  /**
+   * @brief Adds a puppet contact, this will add some free contact forces for the whole system, allowing it
+   *        to be controlled freely
+   */
+  PuppetContact& add_puppet_contact();
+
+  /**
+   * @brief Adds contact forces associated with any given task
+   */
+  TaskContact& add_task_contact(Task& task);
 
   /**
    * @brief Enables/disables joint limits inequalities

@@ -137,7 +137,7 @@ public:
   JointsTask& add_joints_task();
 
   /**
-   * @brief Adds a mimic task
+   * @brief Adds a mimic task, allowing replication of joints
    */
   MimicTask& add_mimic_task();
 
