@@ -619,8 +619,9 @@ DynamicsSolver::Result DynamicsSolver::solve()
   }
 
   // The number of decision variables is now known, resizing the expression of tau
+  int cols_before = tau.A.cols();
   tau.A.conservativeResize(N, problem.n_variables);
-  tau.A.block(0, N, N, problem.n_variables - N).setZero();
+  tau.A.block(0, N, N, cols_before - N).setZero();
 
   // Now, tau = Ax + b with x = [qdd, f1, f2, ...], we copy J^T to the extended A
   // for forces that are decision variables
