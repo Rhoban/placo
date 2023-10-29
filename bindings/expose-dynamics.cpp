@@ -97,7 +97,7 @@ void exposeDynamics()
           .def("dump_status", &DynamicsSolver::dump_status)
           .def("set_static", &DynamicsSolver::set_static)
           .def("solve", &DynamicsSolver::solve)
-          .def("remove_task", &DynamicsSolver::remove_task)
+          .def<void (DynamicsSolver::*)(Task&)>("remove_task", &DynamicsSolver::remove_task)
           .def<void (DynamicsSolver::*)(FrameTask&)>("remove_task", &DynamicsSolver::remove_task)
           .def("remove_contact", &DynamicsSolver::remove_contact)
           .add_property(

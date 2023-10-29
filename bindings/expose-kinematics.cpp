@@ -91,8 +91,7 @@ void exposeKinematics()
           .def("enable_velocity_post_limits", &KinematicsSolver::enable_velocity_post_limits)
           .def("enable_self_collision_avoidance", &KinematicsSolver::enable_self_collision_avoidance)
           .def("configure_self_collision_avoidance", &KinematicsSolver::configure_self_collision_avoidance)
-          .def(
-              "remove_task", +[](KinematicsSolver& solver, Task& task) { solver.remove_task(task); })
+          .def<void (KinematicsSolver::*)(Task&)>("remove_task", &KinematicsSolver::remove_task)
           .def<void (KinematicsSolver::*)(FrameTask&)>("remove_task", &KinematicsSolver::remove_task)
           .def("solve", &KinematicsSolver::solve);
 

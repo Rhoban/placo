@@ -111,6 +111,8 @@ void exposeProblem()
       .def("solve", &Problem::solve)
       .def("clear_variables", &Problem::clear_variables)
       .def("clear_constraints", &Problem::clear_constraints)
+      .add_property("n_variables", &Problem::n_variables, &Problem::n_variables)
+      .add_property("qp_variables", &Problem::qp_variables, &Problem::qp_variables)
       .add_property("use_sparsity", &Problem::use_sparsity, &Problem::use_sparsity)
       .add_property("rewrite_equalities", &Problem::rewrite_equalities, &Problem::rewrite_equalities)
       .add_property(

@@ -741,7 +741,7 @@ void DynamicsSolver::remove_task(Task& task)
   delete &task;
 }
 
-void DynamicsSolver::remove_frame_task(FrameTask& task)
+void DynamicsSolver::remove_task(FrameTask& task)
 {
   remove_task(*task.position);
   remove_task(*task.orientation);

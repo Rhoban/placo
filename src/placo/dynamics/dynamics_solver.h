@@ -273,7 +273,7 @@ public:
   RobotWrapper& robot;
 
   void remove_task(Task& task);
-  void remove_frame_task(FrameTask& task);
+  void remove_task(FrameTask& task);
   void remove_contact(Contact& contact);
 
   double friction = 1e-3;
