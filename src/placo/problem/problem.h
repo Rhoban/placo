@@ -57,6 +57,8 @@ public:
 
   // Problem variables (real)
   int n_variables = 0;
+  int n_inequalities = 0;
+  int n_equalities = 0;
 
   // Number of QP variables used
   int qp_variables = 0;

@@ -106,8 +106,8 @@ void Problem::get_constraint_expressions(ProblemConstraint* constraint, Eigen::M
 
 void Problem::solve()
 {
-  int n_equalities = 0;
-  int n_inequalities = 0;
+  n_equalities = 0;
+  n_inequalities = 0;
   int slack_variables = 0;
 
   for (auto constraint : constraints)
@@ -174,6 +174,7 @@ void Problem::solve()
     qp_variables = n_variables - determined_variables;
 
     // Removing equality constraints
+    n_equalities = 0.;
     A.resize(0, 0);
     b.resize(0);
   }
