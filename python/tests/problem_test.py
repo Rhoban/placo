@@ -300,6 +300,22 @@ class TestProblem(unittest.TestCase):
         self.assertTrue(cst2.is_active)
         self.assertFalse(cst3.is_active)
 
+    def test_exactly_constrained(self):
+        """
+        Testing what happens if a problem is *exactly* constrained
+        """
+        problem = placo.Problem()
+        x = problem.add_variable(1)
+        y = problem.add_variable(1)
+
+        problem.add_constraint((x.expr() + y.expr()) == 2.0)
+        problem.add_constraint((x.expr() - y.expr()) == 1.0)
+
+        problem.solve()
+
+        self.assertNumpyEqual(x.value, 1.5)
+        self.assertNumpyEqual(y.value, 0.5)
+
 
 if __name__ == "__main__":
     unittest.main()
