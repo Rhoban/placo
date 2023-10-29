@@ -159,6 +159,11 @@ void Problem::solve()
 
     determined_variables = QR.rank();
 
+    if (determined_variables != A.rows())
+    {
+      throw QPError("QR decomposition failed to find a full rank matrix for equality constraints");
+    }
+
     Eigen::MatrixXd R = QR.matrixR().transpose().block(0, 0, determined_variables, determined_variables);
     Eigen::MatrixXd b2 = b.transpose();
     QR.colsPermutation().applyThisOnTheRight(b2);

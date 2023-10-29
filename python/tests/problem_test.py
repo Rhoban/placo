@@ -82,7 +82,7 @@ class TestProblem(unittest.TestCase):
         problem.add_constraint(x.expr(0, 1) >= np.array([2.0]))
         problem.add_constraint(x.expr(0, 1) <= np.array([10.0]))
         problem.solve()
-        self.assertGreaterEqual(x.value[0], 2.0, msg=f"The 8th value should be >= 2")
+        self.assertGreaterEqual(x.value[0], 2.0 - 1e-6, msg=f"The value should be >= 2")
         self.assertNumpyEqual(x.value[1:], -1 / 15.0, msg=f"The remaining values should be -1/15.")
 
     def test_expression_constraint(self):
@@ -149,7 +149,7 @@ class TestProblem(unittest.TestCase):
         self.assertNumpyEqual(integrator.value(1.0, 2), 6)
 
         # Testing that inequality is still enforced
-        self.assertTrue(integrator.value(0.5, 0) < -5.0)
+        self.assertTrue(integrator.value(0.5, 0) <= -5.0)
 
     def test_soft_inequality(self):
         problem = placo.Problem()

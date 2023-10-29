@@ -93,9 +93,7 @@ void exposeKinematics()
           .def("configure_self_collision_avoidance", &KinematicsSolver::configure_self_collision_avoidance)
           .def(
               "remove_task", +[](KinematicsSolver& solver, Task& task) { solver.remove_task(task); })
-          .def(
-              "remove_frame_task", +[](KinematicsSolver& solver, FrameTask& task) { solver.remove_task(task); })
-
+          .def<void (KinematicsSolver::*)(FrameTask&)>("remove_task", &KinematicsSolver::remove_task)
           .def("solve", &KinematicsSolver::solve);
 
   class_<Task, boost::noncopyable>("Task", no_init)

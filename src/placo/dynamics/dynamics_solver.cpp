@@ -741,6 +741,12 @@ void DynamicsSolver::remove_task(Task& task)
   delete &task;
 }
 
+void DynamicsSolver::remove_frame_task(FrameTask& task)
+{
+  remove_task(*task.position);
+  remove_task(*task.orientation);
+}
+
 void DynamicsSolver::remove_contact(Contact& contact)
 {
   // Removing the contact from the vector
