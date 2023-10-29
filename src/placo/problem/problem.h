@@ -60,6 +60,7 @@ public:
   Eigen::VectorXd slacks;
 
   bool use_sparsity = true;
+  bool rewrite_equalities = true;
 
   std::vector<ProblemConstraint*> constraints;
 };

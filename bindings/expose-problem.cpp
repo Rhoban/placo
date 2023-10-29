@@ -112,6 +112,7 @@ void exposeProblem()
       .def("clear_variables", &Problem::clear_variables)
       .def("clear_constraints", &Problem::clear_constraints)
       .add_property("use_sparsity", &Problem::use_sparsity, &Problem::use_sparsity)
+      .add_property("rewrite_equalities", &Problem::rewrite_equalities, &Problem::rewrite_equalities)
       .add_property(
           "slacks", +[](const Problem& problem) { return problem.slacks; });
 

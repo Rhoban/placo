@@ -168,6 +168,7 @@ DynamicsSolver::DynamicsSolver(RobotWrapper& robot) : robot(robot)
   N = robot.model.nv;
   masked_fbase = false;
   problem.use_sparsity = false;
+  problem.rewrite_equalities = true;
 }
 
 DynamicsSolver::~DynamicsSolver()
