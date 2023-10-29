@@ -89,13 +89,13 @@ void Problem::get_constraint_expressions(ProblemConstraint* constraint, Eigen::M
 {
   if (determined_variables)
   {
-    A.conservativeResize(constraint->expression.A.rows(), n_variables);
-    A.setZero();
-    A.block(0, 0, constraint->expression.A.rows(), constraint->expression.A.cols()) = constraint->expression.A;
-    QR.matrixQ().applyThisOnTheRight(A);
+    Eigen::MatrixXd full_A(constraint->expression.A.rows(), n_variables);
+    full_A.setZero();
+    full_A.block(0, 0, constraint->expression.A.rows(), constraint->expression.A.cols()) = constraint->expression.A;
+    QR.matrixQ().applyThisOnTheRight(full_A);
 
-    b = constraint->expression.b + A.leftCols(determined_variables) * y;
-    A = A.rightCols(qp_variables);
+    A = full_A.rightCols(qp_variables);
+    b = constraint->expression.b + full_A.leftCols(determined_variables) * y;
   }
   else
   {
