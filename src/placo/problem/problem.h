@@ -54,14 +54,35 @@ public:
   void solve();
 
   std::vector<Variable*> variables;
+
+  // Problem variables (real)
   int n_variables = 0;
 
+  // Number of QP variables used
+  int qp_variables = 0;
+
+  // Number of determined variables
+  int determined_variables = 0;
+
+  // Result
   Eigen::VectorXd x;
   Eigen::VectorXd slacks;
 
+  // Should sparsity be used ?
   bool use_sparsity = true;
+
+  // Should the equalities be rewritten using the QR decomposition ?
   bool rewrite_equalities = true;
 
   std::vector<ProblemConstraint*> constraints;
+
+protected:
+  // QR decomposition for equality constraints
+  Eigen::ColPivHouseholderQR<Eigen::Matrix<double, -1, -1, 1, -1, -1>> QR;
+
+  // Determined variables values
+  Eigen::MatrixXd y;
+
+  void get_constraint_expressions(ProblemConstraint* constraint, Eigen::MatrixXd& A, Eigen::MatrixXd& b);
 };
 }  // namespace placo

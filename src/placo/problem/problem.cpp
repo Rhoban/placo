@@ -85,6 +85,25 @@ void Problem::clear_variables()
   n_variables = 0;
 }
 
+void Problem::get_constraint_expressions(ProblemConstraint* constraint, Eigen::MatrixXd& A, Eigen::MatrixXd& b)
+{
+  if (determined_variables)
+  {
+    A.conservativeResize(constraint->expression.A.rows(), n_variables);
+    A.setZero();
+    A.block(0, 0, constraint->expression.A.rows(), constraint->expression.A.cols()) = constraint->expression.A;
+    QR.matrixQ().applyThisOnTheRight(A);
+
+    b = constraint->expression.b + A.leftCols(determined_variables) * y;
+    A = A.rightCols(qp_variables);
+  }
+  else
+  {
+    A = constraint->expression.A;
+    b = constraint->expression.b;
+  }
+}
+
 void Problem::solve()
 {
   int n_equalities = 0;
@@ -113,7 +132,7 @@ void Problem::solve()
   }
 
   // Equality constraints
-  Eigen::MatrixXd A(n_equalities, n_variables + slack_variables);
+  Eigen::MatrixXd A(n_equalities, n_variables);
   Eigen::VectorXd b(n_equalities);
   A.setZero();
   b.setZero();
@@ -130,30 +149,24 @@ void Problem::solve()
     }
   }
 
-  int qp_variables = n_variables;
+  qp_variables = n_variables;
+  determined_variables = 0;
 
-  int rewriting_variables = 0;
-  // XXX: Handle memory better
-  Eigen::ColPivHouseholderQR<Eigen::Matrix<double, -1, -1, 1, -1, -1>>* QR = nullptr;
-  Eigen::MatrixXd y;
   if (rewrite_equalities && A.rows() > 0)
   {
     // Computing QR decomposition of A.T
-    QR = new Eigen::ColPivHouseholderQR<Eigen::Matrix<double, -1, -1, 1, -1, -1>>(A.transpose().colPivHouseholderQr());
+    QR = A.transpose().colPivHouseholderQr();
 
-    int rank = QR->rank();  // XXX: Remove rank variable
+    determined_variables = QR.rank();
 
-    // A = Q * R * P.inverse()
-    Eigen::MatrixXd R = QR->matrixR().transpose().block(0, 0, rank, rank);
-
+    Eigen::MatrixXd R = QR.matrixR().transpose().block(0, 0, determined_variables, determined_variables);
     Eigen::MatrixXd b2 = b.transpose();
-    QR->colsPermutation().applyThisOnTheRight(b2);
+    QR.colsPermutation().applyThisOnTheRight(b2);
     b2.transposeInPlace();
 
     y = R.triangularView<Eigen::Lower>().solve(-b2);
 
-    qp_variables = n_variables - rank;
-    rewriting_variables = rank;
+    qp_variables = n_variables - determined_variables;
 
     // Removing equality constraints
     A.resize(0, 0);
@@ -167,10 +180,7 @@ void Problem::solve()
   q.setZero();
 
   // Adding regularization
-  // XXX: The user variables should maybe not be regularized by default?
   double epsilon = 1e-8;
-
-  // If equalities are not rewritten, regularizing x
   P.block(0, 0, qp_variables, qp_variables).setIdentity();
   P.block(0, 0, qp_variables, qp_variables) *= epsilon;
 
@@ -198,21 +208,9 @@ void Problem::solve()
     }
     else if (constraint->priority == ProblemConstraint::Soft)
     {
-      Eigen::MatrixXd expression_A = constraint->expression.A;
-      Eigen::VectorXd expression_b = constraint->expression.b;
-
-      if (rewriting_variables)
-      {
-        expression_A.conservativeResize(expression_A.rows(), n_variables);
-        expression_A
-            .block(0, constraint->expression.A.cols(), expression_A.rows(),
-                   n_variables - constraint->expression.A.cols())
-            .setZero();
-        QR->matrixQ().applyThisOnTheRight(expression_A);
-
-        expression_b = constraint->expression.b + expression_A.leftCols(rewriting_variables) * y;
-        expression_A = expression_A.rightCols(qp_variables);
-      }
+      Eigen::MatrixXd expression_A;
+      Eigen::MatrixXd expression_b;
+      get_constraint_expressions(constraint, expression_A, expression_b);
 
       // Adding the soft constraint to the objective function
       if (use_sparsity)
@@ -270,21 +268,9 @@ void Problem::solve()
   {
     if (constraint->inequality)
     {
-      Eigen::MatrixXd expression_A = constraint->expression.A;
-      Eigen::VectorXd expression_b = constraint->expression.b;
-
-      if (rewriting_variables)
-      {
-        expression_A.conservativeResize(expression_A.rows(), n_variables);
-        expression_A
-            .block(0, constraint->expression.A.cols(), expression_A.rows(),
-                   n_variables - constraint->expression.A.cols())
-            .setZero();
-        QR->matrixQ().applyThisOnTheRight(expression_A);
-
-        expression_b = constraint->expression.b + expression_A.leftCols(rewriting_variables) * y;
-        expression_A = expression_A.rightCols(qp_variables);
-      }
+      Eigen::MatrixXd expression_A;
+      Eigen::MatrixXd expression_b;
+      get_constraint_expressions(constraint, expression_A, expression_b);
 
       if (constraint->priority == ProblemConstraint::Hard)
       {
@@ -322,28 +308,23 @@ void Problem::solve()
   Eigen::VectorXi active_set;
   size_t active_set_size;
 
-  // std::cout << "QP variables: " << qp_variables << " / " << n_variables << std::endl;
-  // std::cout << "Inequalities: " << n_inequalities << std::endl;
-  // std::cout << "Equalities: " << A.rows() << std::endl;
-
-  x = Eigen::VectorXd(qp_variables + slack_variables);
-  x.setZero();
+  Eigen::VectorXd qp_x(qp_variables + slack_variables);
+  qp_x.setZero();
   double result =
-      eiquadprog::solvers::solve_quadprog(P, q, A.transpose(), b, G.transpose(), h, x, active_set, active_set_size);
+      eiquadprog::solvers::solve_quadprog(P, q, A.transpose(), b, G.transpose(), h, qp_x, active_set, active_set_size);
 
-  if (rewriting_variables)
+  if (determined_variables)
   {
     Eigen::VectorXd u(n_variables, 1);
     u.setZero();
-    u.topRows(rewriting_variables) = y;
-    u.bottomRows(qp_variables) = x;
-    QR->matrixQ().applyThisOnTheLeft(u);
+    u.topRows(determined_variables) = y;
+    u.bottomRows(qp_variables) = qp_x.topRows(qp_variables);
+    QR.matrixQ().applyThisOnTheLeft(u);
     x = u;
   }
-
-  if (QR != nullptr)
+  else
   {
-    delete QR;
+    x = qp_x;
   }
 
   // Checking that the problem is indeed feasible
@@ -355,8 +336,7 @@ void Problem::solve()
   // Checking that equality constraints were enforced, since this is not covered by above result
   if (A.rows() > 0)
   {
-    // XXX: This is not compliant with soft inequality slacks
-    Eigen::VectorXd equality_constraints = A * x + b;
+    Eigen::VectorXd equality_constraints = A * x.topRows(A.cols()) + b;
     for (int k = 0; k < A.rows(); k++)
     {
       if (fabs(equality_constraints[k]) > 1e-6)
@@ -383,7 +363,7 @@ void Problem::solve()
     }
   }
 
-  slacks = x.block(qp_variables, 0, slack_variables, 1);
+  slacks = qp_x.block(qp_variables, 0, slack_variables, 1);
   for (int k = 0; k < slacks.rows(); k++)
   {
     if (slacks[k] <= 1e-6 && soft_inequalities_mapping.count(k))
