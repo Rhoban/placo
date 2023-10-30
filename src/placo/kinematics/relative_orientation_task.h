@@ -17,5 +17,7 @@ struct RelativeOrientationTask : public Task
   virtual void update();
   virtual std::string type_name();
   virtual std::string error_unit();
+
+  AxisesMask mask;
 };
 }  // namespace placo::kinematics
