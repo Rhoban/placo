@@ -19,7 +19,7 @@ void RelativeOrientationTask::update()
   // |-----------------|
   //         | This part is the world error that "correct" the rotation
   //           matrix to the desired one
-  Eigen::Vector3d error = pinocchio::log3(R_a_b * T_a_b.linear().inverse());
+  Eigen::Vector3d error = pinocchio::log3(R_a_b * T_a_b.linear().transpose());
 
   Eigen::MatrixXd J_a = solver->robot.frame_jacobian(frame_a, pinocchio::WORLD);
   Eigen::MatrixXd J_b = solver->robot.frame_jacobian(frame_b, pinocchio::WORLD);

@@ -21,7 +21,7 @@ void OrientationTask::update()
   // Computing error
   Eigen::Affine3d T_world_frame = solver->robot.get_T_world_frame(frame_index);
   mask.R_local_world = T_world_frame.linear().transpose();
-  Eigen::Matrix3d M = (R_world_frame * T_world_frame.linear().inverse()).matrix();
+  Eigen::Matrix3d M = (R_world_frame * T_world_frame.linear().transpose()).matrix();
   Eigen::Vector3d orientation_error = pinocchio::log3(M);
 
   // Computing A and b
