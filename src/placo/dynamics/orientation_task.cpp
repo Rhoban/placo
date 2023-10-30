@@ -11,28 +11,43 @@ OrientationTask::OrientationTask(RobotWrapper::FrameIndex frame_index, Eigen::Ma
 
 void OrientationTask::update()
 {
+  Eigen::Affine3d T_world_frame = solver->robot.get_T_world_frame(frame_index);
+
+  pinocchio::ReferenceFrame frame_type =
+      mask.local ? pinocchio::ReferenceFrame::LOCAL : pinocchio::ReferenceFrame::WORLD;
+
   // Computing J and dJ
-  Eigen::MatrixXd J = solver->robot.frame_jacobian(frame_index, pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED)
-                          .block(3, 0, 3, solver->N);
-  Eigen::MatrixXd dJ =
-      solver->robot.frame_jacobian_time_variation(frame_index, pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED)
-          .block(3, 0, 3, solver->N);
+  Eigen::MatrixXd J = solver->robot.frame_jacobian(frame_index, frame_type).block(3, 0, 3, solver->N);
+  Eigen::MatrixXd dJ = solver->robot.frame_jacobian_time_variation(frame_index, frame_type).block(3, 0, 3, solver->N);
 
   // Computing error
-  Eigen::Affine3d T_world_frame = solver->robot.get_T_world_frame(frame_index);
-  mask.R_local_world = T_world_frame.linear().transpose();
-  Eigen::Matrix3d M = (R_world_frame * T_world_frame.linear().transpose()).matrix();
-  Eigen::Vector3d orientation_error = pinocchio::log3(M);
+  Eigen::Matrix3d M;
+  Eigen::Vector3d orientation_error;
+  if (mask.local)
+  {
+    M = (R_world_frame.transpose() * T_world_frame.linear()).matrix();
+    orientation_error = -pinocchio::log3(M);
+  }
+  else
+  {
+    M = (R_world_frame * T_world_frame.linear().transpose()).matrix();
+    orientation_error = pinocchio::log3(M);
+  }
 
   // Computing A and b
   Eigen::Vector3d velocity_world = J * solver->robot.state.qd;
   Eigen::Vector3d velocity_error = omega_world - velocity_world;
 
+  // Applying Jlog3, since it is the right jacobian, we transpose M to get the
+  // left jacobian
+  Eigen::MatrixXd Jlog;
+  pinocchio::Jlog3(M, Jlog);
+
   Eigen::Vector3d desired_acceleration = kp * orientation_error + get_kd() * velocity_error;
 
   // Acceleration is: J * qdd + dJ * qd
-  A = mask.apply(J);
-  b = mask.apply(desired_acceleration - dJ * solver->robot.state.qd);
+  A = mask.apply(Jlog * J);
+  b = mask.apply(desired_acceleration - Jlog * dJ * solver->robot.state.qd);
   error = mask.apply(orientation_error);
   derror = mask.apply(velocity_error);
 }

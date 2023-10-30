@@ -12,22 +12,37 @@ OrientationTask::OrientationTask(RobotWrapper::FrameIndex frame_index, Eigen::Ma
 void OrientationTask::update()
 {
   auto T_world_frame = solver->robot.get_T_world_frame(frame_index);
-  mask.R_local_world = T_world_frame.linear().transpose();
+  Eigen::MatrixXd J, Jlog, error;
 
-  Eigen::Matrix3d M = (R_world_frame * T_world_frame.linear().transpose()).matrix();
+  if (mask.local)
+  {
+    // When expressing the error in local:
+    // R exp(w) = Rd
+    // Rd.T R exp(w) = I
+    // log3(Rd.T R exp(w)) = 0
+    // Jlog(Rd.T R) w = -log3(Rd.T R)
 
-  // (R_frame R_current^{-1}) R_current = R_frame
-  // |-----------------------|
-  //            | This part is the world error that "correct" the rotation
-  //            matrix to the desired one
-  Eigen::Vector3d error = pinocchio::log3(M);
-  Eigen::MatrixXd J = solver->robot.frame_jacobian(frame_index, pinocchio::WORLD);
+    Eigen::Matrix3d M = (R_world_frame.transpose() * T_world_frame.linear()).matrix();
+    error = -pinocchio::log3(M);
+    J = solver->robot.frame_jacobian(frame_index, pinocchio::LOCAL);
 
-  // Applying Jlog3, since it is the right jacobian, we transpose M to get the
-  // left jacobian
-  Eigen::MatrixXd Jlog;
-  M.transposeInPlace();
-  pinocchio::Jlog3(M, Jlog);
+    pinocchio::Jlog3(M, Jlog);
+  }
+  else
+  {
+    // When expressing the error in the world:
+    // exp(w) R = Rd
+    // exp(w) R Rd.T = I
+    // log3(exp(w) R Rd.T) = 0
+    // log3(Rd R.T exp(-w)) = 0
+    // log3(Rd R.T) - Jlog(Rd R.T) w = 0
+    // Jlog(Rd R.T) w = log3(Rd R.T)
+
+    Eigen::Matrix3d M = (R_world_frame * T_world_frame.linear().transpose()).matrix();
+    error = pinocchio::log3(M);
+    J = solver->robot.frame_jacobian(frame_index, pinocchio::WORLD);
+    pinocchio::Jlog3(M, Jlog);
+  }
 
   A = mask.apply(Jlog * J.block(3, 0, 3, solver->N));
   b = mask.apply(error);
