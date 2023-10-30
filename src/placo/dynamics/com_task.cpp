@@ -25,10 +25,10 @@ void CoMTask::update()
   Eigen::Vector3d desired_acceleration = kp * position_error + get_kd() * velocity_error;
 
   // Acceleration is: J * qdd + dJ * qd
-  A = J(mask.indices, Eigen::placeholders::all);
-  b = (desired_acceleration - dJ * solver->robot.state.qd)(mask.indices, Eigen::placeholders::all);
-  error = position_error(mask.indices, Eigen::placeholders::all);
-  derror = velocity_error(mask.indices, Eigen::placeholders::all);
+  A = mask.apply(J);
+  b = mask.apply(desired_acceleration - dJ * solver->robot.state.qd);
+  error = mask.apply(position_error);
+  derror = mask.apply(velocity_error);
 }
 
 std::string CoMTask::type_name()

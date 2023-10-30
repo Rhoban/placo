@@ -31,6 +31,48 @@ double frame_yaw(Eigen::Matrix3d rotation)
   return atan2(xInNewFrame.y(), xInNewFrame.x());
 }
 
+Eigen::Matrix3d rotation_from_axis(std::string axis, Eigen::Vector3d vector)
+{
+  Eigen::Matrix3d R;
+  vector.normalize();
+
+  Eigen::Vector3d vector_id;
+  if (axis == "x")
+  {
+    vector_id = Eigen::Vector3d::UnitX();
+  }
+  else if (axis == "y")
+  {
+    vector_id = Eigen::Vector3d::UnitY();
+  }
+  else if (axis == "z")
+  {
+    vector_id = Eigen::Vector3d::UnitZ();
+  }
+  else
+  {
+    throw std::runtime_error("Unknown axis: " + axis);
+  }
+
+  Eigen::Vector3d w = vector_id.cross(vector);
+  double theta = safe_acos(vector_id.dot(vector));
+  if (w.norm() == 0)
+  {
+    if (axis == "x")
+      w = Eigen::Vector3d::UnitY();
+    if (axis == "y")
+      w = Eigen::Vector3d::UnitZ();
+    if (axis == "z")
+      w = Eigen::Vector3d::UnitX();
+  }
+  else
+  {
+    w.normalize();
+  }
+
+  return pinocchio::exp3(w * theta);
+}
+
 Eigen::Affine3d frame(Eigen::Matrix4d matrix)
 {
   Eigen::Affine3d result;
@@ -103,26 +145,24 @@ double velocity_limit(double torque, std::string dof, bool use_doc_limits)
   return std::max(-0.79223 * std::abs(torque) + 4.5553, min_velocity_limit);
 }
 
-std::map<std::string, std::string> dof_to_motors = {
-  { "left_hip_yaw", "mx_64" },
-  { "right_hip_yaw", "mx_64" },
-  { "left_hip_pitch", "mx_106" },
-  { "right_hip_pitch", "mx_106" },
-  { "left_hip_roll", "mx_106" },
-  { "right_hip_roll", "mx_106" },
-  { "left_knee", "mx_106" },
-  { "right_knee", "mx_106" },
-  { "left_ankle_pitch", "mx_106" },
-  { "right_ankle_pitch", "mx_106" },
-  { "left_ankle_roll", "mx_106" },
-  { "right_ankle_roll", "mx_106" },
-  { "left_shoulder_pitch", "mx_64" },
-  { "right_shoulder_pitch", "mx_64" },
-  { "left_shoulder_roll", "mx_64" },
-  { "right_shoulder_roll", "mx_64" },
-  { "left_elbow", "mx_64" },
-  { "right_elbow", "mx_64" },
-  { "head_yaw", "mx_64" },
-  { "head_pitch", "mx_64" }
-};
+std::map<std::string, std::string> dof_to_motors = { { "left_hip_yaw", "mx_64" },
+                                                     { "right_hip_yaw", "mx_64" },
+                                                     { "left_hip_pitch", "mx_106" },
+                                                     { "right_hip_pitch", "mx_106" },
+                                                     { "left_hip_roll", "mx_106" },
+                                                     { "right_hip_roll", "mx_106" },
+                                                     { "left_knee", "mx_106" },
+                                                     { "right_knee", "mx_106" },
+                                                     { "left_ankle_pitch", "mx_106" },
+                                                     { "right_ankle_pitch", "mx_106" },
+                                                     { "left_ankle_roll", "mx_106" },
+                                                     { "right_ankle_roll", "mx_106" },
+                                                     { "left_shoulder_pitch", "mx_64" },
+                                                     { "right_shoulder_pitch", "mx_64" },
+                                                     { "left_shoulder_roll", "mx_64" },
+                                                     { "right_shoulder_roll", "mx_64" },
+                                                     { "left_elbow", "mx_64" },
+                                                     { "right_elbow", "mx_64" },
+                                                     { "head_yaw", "mx_64" },
+                                                     { "head_pitch", "mx_64" } };
 }  // namespace placo

@@ -55,8 +55,6 @@ add_library(libplaco
     src/placo/kinematics/relative_frame_task.cpp
     src/placo/kinematics/com_task.cpp
     src/placo/kinematics/com_bound_task.cpp
-    src/placo/kinematics/axis_align_task.cpp
-    src/placo/kinematics/axis_plane_task.cpp
     src/placo/kinematics/distance_task.cpp
     src/placo/kinematics/joints_task.cpp
     src/placo/kinematics/gear_task.cpp

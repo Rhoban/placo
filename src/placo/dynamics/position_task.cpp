@@ -19,7 +19,9 @@ void PositionTask::update()
           .block(0, 0, 3, solver->N);
 
   // Computing error
-  Eigen::Vector3d position_world = solver->robot.get_T_world_frame(frame_index).translation();
+  Eigen::Affine3d T_world_frame = solver->robot.get_T_world_frame(frame_index);
+  mask.R_local_world = T_world_frame.rotation().transpose();
+  Eigen::Vector3d position_world = T_world_frame.translation();
   Eigen::Vector3d position_error = target_world - position_world;
 
   // Computing A and b
@@ -29,10 +31,10 @@ void PositionTask::update()
   Eigen::Vector3d desired_acceleration = kp * position_error + get_kd() * velocity_error;
 
   // Acceleration is: J * qdd + dJ * qd
-  A = J(mask.indices, Eigen::placeholders::all);
-  b = (desired_acceleration - dJ * solver->robot.state.qd)(mask.indices, Eigen::placeholders::all);
-  error = position_error(mask.indices, Eigen::placeholders::all);
-  derror = velocity_error(mask.indices, Eigen::placeholders::all);
+  A = mask.apply(J);
+  b = mask.apply(desired_acceleration - dJ * solver->robot.state.qd);
+  error = mask.apply(position_error);
+  derror = mask.apply(velocity_error);
 }
 
 std::string PositionTask::type_name()

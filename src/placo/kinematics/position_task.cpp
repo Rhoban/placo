@@ -11,11 +11,12 @@ PositionTask::PositionTask(RobotWrapper::FrameIndex frame_index, Eigen::Vector3d
 void PositionTask::update()
 {
   auto T_world_frame = solver->robot.get_T_world_frame(frame_index);
+  mask.R_local_world = T_world_frame.linear().transpose();
   Eigen::Vector3d error = target_world - T_world_frame.translation();
   Eigen::MatrixXd J = solver->robot.frame_jacobian(frame_index, pinocchio::LOCAL_WORLD_ALIGNED);
 
-  A = J.block(0, 0, 3, solver->N)(mask.indices, Eigen::placeholders::all);
-  b = error(mask.indices, Eigen::placeholders::all);
+  A = mask.apply(J.block(0, 0, 3, solver->N));
+  b = mask.apply(error);
 }
 
 std::string PositionTask::type_name()

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "placo/kinematics/task.h"
+#include "placo/tools/axises_mask.h"
 
 namespace placo::kinematics
 {
@@ -16,5 +17,7 @@ struct OrientationTask : public Task
   virtual void update();
   virtual std::string type_name();
   virtual std::string error_unit();
+
+  AxisesMask mask;
 };
 }  // namespace placo::kinematics

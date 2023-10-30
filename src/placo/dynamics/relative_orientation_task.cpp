@@ -44,11 +44,10 @@ void RelativeOrientationTask::update()
   Eigen::Vector3d desired_acceleration = kp * orientation_error_world + get_kd() * velocity_error_world;
 
   // Acceleration is: J * qdd + dJ * qd
-  A = (Jb - Ja)(mask.indices, Eigen::placeholders::all);
-  b = (desired_acceleration - (dJb * solver->robot.state.qd - dJa * solver->robot.state.qd))(mask.indices,
-                                                                                             Eigen::placeholders::all);
-  error = orientation_error_world(mask.indices, Eigen::placeholders::all);
-  derror = velocity_error_world(mask.indices, Eigen::placeholders::all);
+  A = mask.apply(Jb - Ja);
+  b = mask.apply(desired_acceleration - (dJb * solver->robot.state.qd - dJa * solver->robot.state.qd));
+  error = mask.apply(orientation_error_world);
+  derror = mask.apply(velocity_error_world);
 }
 
 std::string RelativeOrientationTask::type_name()

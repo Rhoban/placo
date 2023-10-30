@@ -25,8 +25,8 @@ void RelativeOrientationTask::update()
   Eigen::MatrixXd J_b = solver->robot.frame_jacobian(frame_b, pinocchio::WORLD);
   Eigen::MatrixXd J_ab = T_world_a.linear().transpose() * (J_b - J_a).block(3, 0, 3, solver->N);
 
-  A = J_ab(mask.indices, Eigen::placeholders::all);
-  b = error(mask.indices, Eigen::placeholders::all);
+  A = mask.apply(J_ab);
+  b = mask.apply(error);
 }
 
 std::string RelativeOrientationTask::type_name()

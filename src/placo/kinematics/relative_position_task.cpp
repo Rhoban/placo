@@ -15,8 +15,8 @@ void RelativePositionTask::update()
   Eigen::Affine3d T_world_b = solver->robot.get_T_world_frame(frame_b);
   Eigen::Affine3d T_a_b = T_world_a.inverse() * T_world_b;
 
-  A = solver->robot.relative_position_jacobian(frame_a, frame_b)(mask.indices, Eigen::placeholders::all);
-  b = (target - T_a_b.translation())(mask.indices, Eigen::placeholders::all);
+  A = mask.apply(solver->robot.relative_position_jacobian(frame_a, frame_b));
+  b = mask.apply(target - T_a_b.translation());
 }
 
 std::string RelativePositionTask::type_name()

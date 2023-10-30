@@ -54,10 +54,10 @@ void RelativePositionTask::update()
   e += a_R_w * (dJb.block(3, 0, 3, solver->N) - dJa.block(3, 0, 3, solver->N)) * solver->robot.state.qd;
   e += pinocchio::skew(a_AB) * a_R_w * dJa.block(3, 0, 3, solver->N) * solver->robot.state.qd;
 
-  A = (J)(mask.indices, Eigen::placeholders::all);
-  b = (-e + desired_acceleration)(mask.indices, Eigen::placeholders::all);
-  error = position_error(mask.indices, Eigen::placeholders::all);
-  derror = velocity_error(mask.indices, Eigen::placeholders::all);
+  A = mask.apply(J);
+  b = mask.apply(-e + desired_acceleration);
+  error = mask.apply(position_error);
+  derror = mask.apply(velocity_error);
 }
 
 std::string RelativePositionTask::type_name()

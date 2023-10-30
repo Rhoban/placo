@@ -20,6 +20,7 @@ void OrientationTask::update()
 
   // Computing error
   Eigen::Affine3d T_world_frame = solver->robot.get_T_world_frame(frame_index);
+  mask.R_local_world = T_world_frame.linear().transpose();
   Eigen::Matrix3d M = (R_world_frame * T_world_frame.linear().inverse()).matrix();
   Eigen::Vector3d orientation_error = pinocchio::log3(M);
 
@@ -30,10 +31,10 @@ void OrientationTask::update()
   Eigen::Vector3d desired_acceleration = kp * orientation_error + get_kd() * velocity_error;
 
   // Acceleration is: J * qdd + dJ * qd
-  A = J(mask.indices, Eigen::placeholders::all);
-  b = (desired_acceleration - dJ * solver->robot.state.qd)(mask.indices, Eigen::placeholders::all);
-  error = orientation_error(mask.indices, Eigen::placeholders::all);
-  derror = velocity_error(mask.indices, Eigen::placeholders::all);
+  A = mask.apply(J);
+  b = mask.apply(desired_acceleration - dJ * solver->robot.state.qd);
+  error = mask.apply(orientation_error);
+  derror = mask.apply(velocity_error);
 }
 
 std::string OrientationTask::type_name()

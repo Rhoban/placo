@@ -43,12 +43,6 @@ void exposeKinematics()
               "add_relative_orientation_task", &KinematicsSolver::add_relative_orientation_task,
               return_internal_reference<>())
 
-          // Axis tasks
-          .def<AxisAlignTask& (KinematicsSolver::*)(std::string, Eigen::Vector3d, Eigen::Vector3d)>(
-              "add_axisalign_task", &KinematicsSolver::add_axisalign_task, return_internal_reference<>())
-          .def<AxisPlaneTask& (KinematicsSolver::*)(std::string, Eigen::Vector3d, Eigen::Vector3d)>(
-              "add_axisplane_task", &KinematicsSolver::add_axisplane_task, return_internal_reference<>())
-
           // Frame task
           .def<FrameTask (KinematicsSolver::*)(std::string, Eigen::Affine3d)>("add_frame_task",
                                                                               &KinematicsSolver::add_frame_task)
@@ -141,14 +135,16 @@ void exposeKinematics()
       .add_property("frame_index", &OrientationTask::frame_index)
       .add_property(
           "R_world_frame", +[](const OrientationTask& task) { return task.R_world_frame; },
-          &OrientationTask::R_world_frame);
+          &OrientationTask::R_world_frame)
+      .add_property("mask", &OrientationTask::mask, &OrientationTask::mask);
 
   class_<RelativeOrientationTask, bases<Task>>(
       "RelativeOrientationTask", init<RobotWrapper::FrameIndex, RobotWrapper::FrameIndex, Eigen::Matrix3d>())
       .add_property("frame_a", &RelativeOrientationTask::frame_a)
       .add_property("frame_b", &RelativeOrientationTask::frame_b)
       .add_property(
-          "R_a_b", +[](const RelativeOrientationTask& task) { return task.R_a_b; }, &RelativeOrientationTask::R_a_b);
+          "R_a_b", +[](const RelativeOrientationTask& task) { return task.R_a_b; }, &RelativeOrientationTask::R_a_b)
+      .add_property("mask", &RelativeOrientationTask::mask, &RelativeOrientationTask::mask);
 
   class_<FrameTask>("FrameTask", init<>())
       .def(
@@ -171,23 +167,6 @@ void exposeKinematics()
           return_internal_reference<>())
       .def("configure", &RelativeFrameTask::configure)
       .add_property("T_a_b", &RelativeFrameTask::get_T_a_b, &RelativeFrameTask::set_T_a_b);
-
-  class_<AxisAlignTask, bases<Task>>("AxisAlignTask",
-                                     init<RobotWrapper::FrameIndex, Eigen::Vector3d, Eigen::Vector3d>())
-      .add_property("frame_index", &AxisAlignTask::frame_index)
-      .add_property(
-          "axis_frame", +[](const AxisAlignTask& task) { return task.axis_frame; }, &AxisAlignTask::axis_frame)
-      .add_property(
-          "targetAxis_world", +[](const AxisAlignTask& task) { return task.targetAxis_world; },
-          &AxisAlignTask::targetAxis_world);
-
-  class_<AxisPlaneTask, bases<Task>>("AxisPlaneTask",
-                                     init<RobotWrapper::FrameIndex, Eigen::Vector3d, Eigen::Vector3d>())
-      .add_property("frame_index", &AxisPlaneTask::frame_index)
-      .add_property(
-          "axis_frame", +[](const AxisPlaneTask& task) { return task.axis_frame; }, &AxisPlaneTask::axis_frame)
-      .add_property(
-          "normal_world", +[](const AxisPlaneTask& task) { return task.normal_world; }, &AxisPlaneTask::normal_world);
 
   class_<JointsTask, bases<Task>>("JointsTask", init<>())
       .def("set_joint", &JointsTask::set_joint)

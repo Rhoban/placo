@@ -75,30 +75,6 @@ RelativeOrientationTask& KinematicsSolver::add_relative_orientation_task(std::st
   return add_relative_orientation_task(robot.get_frame_index(frame_a), robot.get_frame_index(frame_b), R_a_b);
 }
 
-AxisAlignTask& KinematicsSolver::add_axisalign_task(RobotWrapper::FrameIndex frame, Eigen::Vector3d axis_frame,
-                                                    Eigen::Vector3d targetAxis_world)
-{
-  return add_task(new AxisAlignTask(frame, axis_frame, targetAxis_world));
-}
-
-AxisAlignTask& KinematicsSolver::add_axisalign_task(std::string frame, Eigen::Vector3d axis_frame,
-                                                    Eigen::Vector3d target_axis_world)
-{
-  return add_axisalign_task(robot.get_frame_index(frame), axis_frame, target_axis_world);
-}
-
-AxisPlaneTask& KinematicsSolver::add_axisplane_task(RobotWrapper::FrameIndex frame, Eigen::Vector3d axis_frame,
-                                                    Eigen::Vector3d normal_world)
-{
-  return add_task(new AxisPlaneTask(frame, axis_frame, normal_world));
-}
-
-AxisPlaneTask& KinematicsSolver::add_axisplane_task(std::string frame, Eigen::Vector3d axis_frame,
-                                                    Eigen::Vector3d normal_world)
-{
-  return add_axisplane_task(robot.get_frame_index(frame), axis_frame, normal_world);
-}
-
 FrameTask KinematicsSolver::add_frame_task(RobotWrapper::FrameIndex frame, Eigen::Affine3d T_world_frame)
 {
   PositionTask& position = add_position_task(frame, T_world_frame.translation());

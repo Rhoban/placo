@@ -18,10 +18,13 @@ using namespace boost::python;
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(loadReplays_overloads, loadReplays, 1, 2);
 #endif
 
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(set_axises_overloads, set_axises, 1, 2);
+
 void exposeUtils()
 {
   def("interpolate_frames", &placo::interpolate_frames);
   def("wrap_angle", &placo::wrap_angle);
+  def("rotation_from_axis", &placo::rotation_from_axis);
   def("frame_yaw", &placo::frame_yaw);
   def("frame", &placo::frame);
   def("flatten_on_floor", &placo::flatten_on_floor);
@@ -47,8 +50,8 @@ void exposeUtils()
       .def("add_point", &placo::CubicSpline3D::add_point);
 
   class_<AxisesMask>("AxisesMask", init<>())
-      .def("set_axises", &AxisesMask::set_axises)
-      .add_property("indices", &AxisesMask::indices);
+      .def("set_axises", &AxisesMask::set_axises, set_axises_overloads())
+      .def("apply", &AxisesMask::apply);
 
 #ifdef HAVE_RHOBAN_UTILS
   using namespace rhoban_utils;
