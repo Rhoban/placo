@@ -19,7 +19,7 @@
 #include "placo/kinematics/axis_plane_task.h"
 #include "placo/kinematics/distance_task.h"
 #include "placo/kinematics/joints_task.h"
-#include "placo/kinematics/mimic_task.h"
+#include "placo/kinematics/gear_task.h"
 #include "placo/kinematics/regularization_task.h"
 #include "placo/kinematics/centroidal_momentum_task.h"
 
@@ -137,9 +137,9 @@ public:
   JointsTask& add_joints_task();
 
   /**
-   * @brief Adds a mimic task, allowing replication of joints
+   * @brief Adds a gear task, allowing replication of joints
    */
-  MimicTask& add_mimic_task();
+  GearTask& add_gear_task();
 
   /**
    * @brief Adds a distance task to be maintained between two frames

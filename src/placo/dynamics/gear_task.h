@@ -8,19 +8,19 @@
 
 namespace placo::dynamics
 {
-class MimicTask : public Task
+class GearTask : public Task
 {
 public:
-  struct Mimic
+  struct Gear
   {
     int source;
     double ratio;
   };
-  MimicTask();
+  GearTask();
 
-  std::map<int, Mimic> mimics;
+  std::map<int, Gear> gears;
 
-  void set_mimic(std::string target, std::string source, double ratio);
+  void set_gear(std::string target, std::string source, double ratio);
 
   void update() override;
   std::string type_name() override;

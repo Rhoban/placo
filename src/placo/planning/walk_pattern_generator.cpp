@@ -79,7 +79,7 @@ bool WalkPatternGenerator::Trajectory::is_flying(HumanoidRobot::Side side, doubl
 }
 
 Eigen::Affine3d WalkPatternGenerator::Trajectory::get_T_world_left(double t)
-{  
+{
   TrajectoryPart& part = _findPart(parts, t);
 
   if (is_flying(HumanoidRobot::Left, t))
@@ -332,7 +332,8 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
   {
     for (int timestep = 0; timestep < kept_timesteps; timestep++)
     {
-      Eigen::Vector2d jerk = old_trajectory->get_j_world_CoM(trajectory.t_start + timestep * parameters.dt() + 1e-6).head(2);
+      Eigen::Vector2d jerk =
+          old_trajectory->get_j_world_CoM(trajectory.t_start + timestep * parameters.dt() + 1e-6).head(2);
       problem.add_constraint(lipm.jerk(timestep) == jerk);
     }
   }
@@ -351,10 +352,10 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
       // Ensuring ZMP remains in the support polygon
       if (timestep > kept_timesteps)
       {
-        problem.add_constraints(PolygonConstraint::in_polygon_xy(lipm.zmp(timestep, omega_2_min), 
-                                current_support.support_polygon(), parameters.zmp_margin));
-        problem.add_constraints(PolygonConstraint::in_polygon_xy(lipm.zmp(timestep, omega_2_max), 
-                                current_support.support_polygon(), parameters.zmp_margin));
+        problem.add_constraints(PolygonConstraint::in_polygon_xy(
+            lipm.zmp(timestep, omega_2_min), current_support.support_polygon(), parameters.zmp_margin));
+        problem.add_constraints(PolygonConstraint::in_polygon_xy(
+            lipm.zmp(timestep, omega_2_max), current_support.support_polygon(), parameters.zmp_margin));
       }
 
       // ZMP reference trajectory
@@ -396,7 +397,8 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
       }
 
       Eigen::Vector3d zmp_target = current_support.frame() * Eigen::Vector3d(x_offset, y_offset, 0);
-      problem.add_constraint(lipm.zmp(timestep, omega_2_target) == zmp_target.head(2)).configure(ProblemConstraint::Soft, parameters.zmp_reference_weight);
+      problem.add_constraint(lipm.zmp(timestep, omega_2_target) == zmp_target.head(2))
+          .configure(ProblemConstraint::Soft, parameters.zmp_reference_weight);
     }
 
     constrained_timesteps += step_timesteps;
@@ -418,6 +420,7 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
   }
 
   problem.solve();
+  problem.dump_status();
   trajectory.com = lipm.get_trajectory();
 }
 

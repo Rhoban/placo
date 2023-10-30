@@ -386,4 +386,29 @@ void Problem::solve()
   }
 }
 
+void Problem::dump_status()
+{
+  std::cout << "Problem status:" << std::endl;
+  std::cout << "  - Variables: " << n_variables << std::endl;
+  std::cout << "  - Inequalities: " << n_inequalities << std::endl;
+  std::cout << "  - Equalities: " << n_equalities << std::endl;
+  if (rewrite_equalities)
+  {
+    std::cout << "  - Determined variables: " << determined_variables << std::endl;
+    std::cout << "  - QP variables: " << qp_variables << std::endl;
+  }
+  else
+  {
+    std::cout << "  - Not using QR decomposition" << std::endl;
+  }
+  if (use_sparsity)
+  {
+    std::cout << "  - Using sparsity" << std::endl;
+  }
+  else
+  {
+    std::cout << "  - Not using sparsity" << std::endl;
+  }
+}
+
 };  // namespace placo

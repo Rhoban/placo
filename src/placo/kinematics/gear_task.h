@@ -5,19 +5,19 @@
 namespace placo::kinematics
 {
 class KinematicsSolver;
-struct MimicTask : public Task
+struct GearTask : public Task
 {
-  struct Mimic
+  struct Gear
   {
     int source;
     double ratio;
   };
 
-  MimicTask();
+  GearTask();
 
-  std::map<int, Mimic> mimics;
+  std::map<int, Gear> gears;
 
-  void set_mimic(std::string target, std::string source, double ratio);
+  void set_gear(std::string target, std::string source, double ratio);
 
   virtual void update();
   virtual std::string type_name();

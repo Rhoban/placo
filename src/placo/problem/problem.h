@@ -78,6 +78,8 @@ public:
 
   std::vector<ProblemConstraint*> constraints;
 
+  void dump_status();
+
 protected:
   // QR decomposition for equality constraints
   Eigen::ColPivHouseholderQR<Eigen::Matrix<double, -1, -1, 1, -1, -1>> QR;

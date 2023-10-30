@@ -59,9 +59,9 @@ void exposeKinematics()
           .def<JointsTask& (KinematicsSolver::*)(void)>("add_joints_task", &KinematicsSolver::add_joints_task,
                                                         return_internal_reference<>())
 
-          // Mimic task
-          .def<MimicTask& (KinematicsSolver::*)(void)>("add_mimic_task", &KinematicsSolver::add_mimic_task,
-                                                       return_internal_reference<>())
+          // Gear task
+          .def<GearTask& (KinematicsSolver::*)(void)>("add_gear_task", &KinematicsSolver::add_gear_task,
+                                                      return_internal_reference<>())
 
           // Distance task
           .def<DistanceTask& (KinematicsSolver::*)(std::string, std::string, double)>(
@@ -196,7 +196,7 @@ void exposeKinematics()
             update_map<std::string, double>(task.joints, py_dict);
           });
 
-  class_<MimicTask, bases<Task>>("MimicTask", init<>()).def("set_mimic", &MimicTask::set_mimic);
+  class_<GearTask, bases<Task>>("GearTask", init<>()).def("set_gear", &GearTask::set_gear);
 
   class_<DistanceTask, bases<Task>>("DistanceTask", init<RobotWrapper::FrameIndex, RobotWrapper::FrameIndex, double>())
       .add_property("frame_a", &DistanceTask::frame_a)

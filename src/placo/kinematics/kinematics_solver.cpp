@@ -158,9 +158,9 @@ JointsTask& KinematicsSolver::add_joints_task()
   return add_task(new JointsTask());
 }
 
-MimicTask& KinematicsSolver::add_mimic_task()
+GearTask& KinematicsSolver::add_gear_task()
 {
-  return add_task(new MimicTask());
+  return add_task(new GearTask());
 }
 
 RegularizationTask& KinematicsSolver::add_regularization_task(double magnitude)

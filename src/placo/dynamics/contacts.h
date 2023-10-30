@@ -121,7 +121,7 @@ public:
 class TaskContact : public Contact
 {
 public:
-  TaskContact(Task& mimic_task);
+  TaskContact(Task& task);
 
   Task* task;
 

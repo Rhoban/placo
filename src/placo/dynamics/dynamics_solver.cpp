@@ -135,9 +135,9 @@ JointsTask& DynamicsSolver::add_joints_task()
   return add_task(new JointsTask());
 }
 
-MimicTask& DynamicsSolver::add_mimic_task()
+GearTask& DynamicsSolver::add_gear_task()
 {
-  return add_task(new MimicTask());
+  return add_task(new GearTask());
 }
 
 OrientationTask& DynamicsSolver::add_orientation_task(pinocchio::FrameIndex frame_index, Eigen::Matrix3d R_world_frame)

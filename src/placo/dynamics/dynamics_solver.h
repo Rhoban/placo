@@ -16,7 +16,7 @@
 #include "placo/dynamics/relative_orientation_task.h"
 #include "placo/dynamics/relative_frame_task.h"
 #include "placo/dynamics/joints_task.h"
-#include "placo/dynamics/mimic_task.h"
+#include "placo/dynamics/gear_task.h"
 #include "placo/dynamics/com_task.h"
 
 // Problem formulation
@@ -140,10 +140,10 @@ public:
   JointsTask& add_joints_task();
 
   /**
-   * @brief Adds a mimic d, allowing replication of a joint. This can be used to implement timing belt, if coupled
+   * @brief Adds a gear task, allowing replication of a joint. This can be used to implement timing belt, if coupled
    *        with an internal force.
    */
-  MimicTask& add_mimic_task();
+  GearTask& add_gear_task();
 
   /**
    * @brief Adds a point contact
@@ -285,10 +285,10 @@ public:
   // Try to remove contact forces that can be deduces from passive joint equations
   bool optimize_contact_forces = false;
 
-protected:
   // The problem instance is kept alive by the solver (so that variables etc. are available)
   Problem problem;
 
+protected:
   // Masked DoFs (enforce zero acceleration)
   std::set<int> masked_dof;
   bool masked_fbase;

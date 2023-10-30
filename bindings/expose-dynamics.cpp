@@ -71,6 +71,7 @@ void exposeDynamics()
 
   class_<DynamicsSolver> solver_class =
       class_<DynamicsSolver>("DynamicsSolver", init<RobotWrapper&>())
+          .add_property("problem", &DynamicsSolver::problem)
           .def_readwrite("friction", &DynamicsSolver::friction)
           .def_readwrite("dt", &DynamicsSolver::dt)
           .def_readwrite("qdd_safe", &DynamicsSolver::qdd_safe)
@@ -118,8 +119,8 @@ void exposeDynamics()
               "add_relative_frame_task", &DynamicsSolver::add_relative_frame_task)
           .def<JointsTask& (DynamicsSolver::*)()>("add_joints_task", &DynamicsSolver::add_joints_task,
                                                   return_internal_reference<>())
-          .def<MimicTask& (DynamicsSolver::*)()>("add_mimic_task", &DynamicsSolver::add_mimic_task,
-                                                 return_internal_reference<>())
+          .def<GearTask& (DynamicsSolver::*)()>("add_gear_task", &DynamicsSolver::add_gear_task,
+                                                return_internal_reference<>())
           .def<CoMTask& (DynamicsSolver::*)(Eigen::Vector3d)>("add_com_task", &DynamicsSolver::add_com_task,
                                                               return_internal_reference<>())
 
@@ -222,5 +223,5 @@ void exposeDynamics()
             update_map<std::string, double>(task.djoints, py_dict);
           });
 
-  class_<MimicTask, bases<Task>>("DynamicsMimicTask", init<>()).def("set_mimic", &MimicTask::set_mimic);
+  class_<GearTask, bases<Task>>("DynamicsGearTask", init<>()).def("set_gear", &GearTask::set_gear);
 }
