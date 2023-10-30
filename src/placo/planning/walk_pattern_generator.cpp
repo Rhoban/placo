@@ -420,7 +420,6 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
   }
 
   problem.solve();
-  problem.dump_status();
   trajectory.com = lipm.get_trajectory();
 }
 
