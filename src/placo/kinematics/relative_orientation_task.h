@@ -1,6 +1,7 @@
 #pragma once
 
 #include "placo/kinematics/task.h"
+#include "placo/tools/axises_mask.h"
 
 namespace placo::kinematics
 {
