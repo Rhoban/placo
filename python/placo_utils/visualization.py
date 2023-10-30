@@ -180,7 +180,8 @@ def contacts_viz(solver: placo.DynamicsSolver, ratio=0.1, radius=0.005):
             frame_name = frames[contact.position_task().frame_index]
             T_world_frame = robot.get_T_world_frame(frame_name)
             wrench = T_world_frame[:3, :3] @ contact.wrench[:3]
-            arrow_viz(f"contact_{k}", T_world_frame[:3, 3], T_world_frame[:3, 3] + wrench * ratio, color=0x00FFAA, radius=radius)
+            origin = T_world_frame[:3, 3] + T_world_frame[:3, :3] @ contact.zmp()
+            arrow_viz(f"contact_{k}", origin, origin + wrench * ratio, color=0x00FFAA, radius=radius)
         elif isinstance(contact, placo.ExternalWrenchContact):
             frame_name = frames[contact.frame_index]
             T_world_frame = robot.get_T_world_frame(frame_name)
