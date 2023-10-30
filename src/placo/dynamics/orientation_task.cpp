@@ -45,7 +45,6 @@ void OrientationTask::update()
 
   Eigen::Vector3d desired_acceleration = kp * orientation_error + get_kd() * velocity_error;
 
-  // Acceleration is: J * qdd + dJ * qd
   A = mask.apply(Jlog * J);
   b = mask.apply(desired_acceleration - Jlog * dJ * solver->robot.state.qd);
   error = mask.apply(orientation_error);
