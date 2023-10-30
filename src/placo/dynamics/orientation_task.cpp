@@ -38,8 +38,6 @@ void OrientationTask::update()
   Eigen::Vector3d velocity_world = J * solver->robot.state.qd;
   Eigen::Vector3d velocity_error = omega_world - velocity_world;
 
-  // Applying Jlog3, since it is the right jacobian, we transpose M to get the
-  // left jacobian
   Eigen::MatrixXd Jlog;
   pinocchio::Jlog3(M, Jlog);
 
