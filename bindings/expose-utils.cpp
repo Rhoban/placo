@@ -4,6 +4,7 @@
 #include <boost/python.hpp>
 #include "placo/trajectory/cubic_spline.h"
 #include "placo/trajectory/cubic_spline_3d.h"
+#include "placo/tools/axises_mask.h"
 #include "module.h"
 #include "placo/utils.h"
 #include "expose-utils.hpp"
@@ -44,6 +45,10 @@ void exposeUtils()
       .def("pos", &placo::CubicSpline3D::pos)
       .def("vel", &placo::CubicSpline3D::vel)
       .def("add_point", &placo::CubicSpline3D::add_point);
+
+  class_<AxisesMask>("AxisesMask", init<>())
+      .def("set_axises", &AxisesMask::set_axises)
+      .add_property("indices", &AxisesMask::indices);
 
 #ifdef HAVE_RHOBAN_UTILS
   using namespace rhoban_utils;

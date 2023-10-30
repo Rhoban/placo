@@ -20,6 +20,7 @@ add_library(libplaco
     # Wrappers and basic utils
     src/placo/model/robot_wrapper.cpp
     src/placo/model/humanoid_robot.cpp
+    src/placo/tools/axises_mask.cpp
     src/placo/utils.cpp
 
     # Trajectories
@@ -43,26 +44,37 @@ add_library(libplaco
     src/placo/problem/sparsity.cpp
 
     # Kinematics QP solver
-    src/placo/control/kinematics_solver.cpp
-    src/placo/control/task.cpp
-    src/placo/control/position_task.cpp
-    src/placo/control/axises_mask.cpp
-    src/placo/control/orientation_task.cpp
-    src/placo/control/centroidal_momentum_task.cpp
-    src/placo/control/frame_task.cpp
-    src/placo/control/pose_task.cpp
-    src/placo/control/relative_position_task.cpp
-    src/placo/control/relative_orientation_task.cpp
-    src/placo/control/relative_frame_task.cpp
-    src/placo/control/relative_pose_task.cpp
-    src/placo/control/com_task.cpp
-    src/placo/control/com_bound_task.cpp
-    src/placo/control/axis_align_task.cpp
-    src/placo/control/axis_plane_task.cpp
-    src/placo/control/distance_task.cpp
-    src/placo/control/joint_task.cpp
-    src/placo/control/joints_task.cpp
-    src/placo/control/regularization_task.cpp
+    src/placo/kinematics/kinematics_solver.cpp
+    src/placo/kinematics/task.cpp
+    src/placo/kinematics/position_task.cpp
+    src/placo/kinematics/orientation_task.cpp
+    src/placo/kinematics/centroidal_momentum_task.cpp
+    src/placo/kinematics/frame_task.cpp
+    src/placo/kinematics/relative_position_task.cpp
+    src/placo/kinematics/relative_orientation_task.cpp
+    src/placo/kinematics/relative_frame_task.cpp
+    src/placo/kinematics/com_task.cpp
+    src/placo/kinematics/com_bound_task.cpp
+    src/placo/kinematics/axis_align_task.cpp
+    src/placo/kinematics/axis_plane_task.cpp
+    src/placo/kinematics/distance_task.cpp
+    src/placo/kinematics/joints_task.cpp
+    src/placo/kinematics/gear_task.cpp
+    src/placo/kinematics/regularization_task.cpp
+
+    # Dynamics QP solver
+    src/placo/dynamics/task.cpp
+    src/placo/dynamics/position_task.cpp
+    src/placo/dynamics/orientation_task.cpp
+    src/placo/dynamics/frame_task.cpp
+    src/placo/dynamics/relative_position_task.cpp
+    src/placo/dynamics/relative_orientation_task.cpp
+    src/placo/dynamics/relative_frame_task.cpp
+    src/placo/dynamics/joints_task.cpp
+    src/placo/dynamics/gear_task.cpp
+    src/placo/dynamics/com_task.cpp
+    src/placo/dynamics/contacts.cpp
+    src/placo/dynamics/dynamics_solver.cpp
 
     # Walking
     src/placo/footsteps/footsteps_planner.cpp
@@ -72,9 +84,6 @@ add_library(libplaco
     src/placo/planning/walk_tasks.cpp
     src/placo/model/humanoid_parameters.cpp
     src/placo/planning/lipm.cpp
-
-    # Contacts
-    src/placo/contacts/gravity_torques.cpp
 
     ${PROTO_SRCS}
     ${PROTO_HDRS}  
@@ -117,13 +126,13 @@ ADD_CUSTOM_TARGET(native_python_files ALL
 add_library(placo MODULE 
     bindings/expose-eigen.cpp
     bindings/expose-utils.cpp
+    bindings/expose-problem.cpp
     bindings/expose-footsteps.cpp
     bindings/expose-robot-wrapper.cpp
     bindings/expose-parameters.cpp
     bindings/expose-kinematics.cpp
     bindings/expose-walk-pattern-generator.cpp
-    bindings/expose-problem.cpp
-    bindings/expose-contacts.cpp
+    bindings/expose-dynamics.cpp
     bindings/module.cpp
 )
 target_link_libraries(placo ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} libplaco)

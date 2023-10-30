@@ -108,6 +108,11 @@ public:
   void set_velocity_limits(double limit);
 
   /**
+   * @brief Sets the torque limit for a given joint
+   */
+  void set_torque_limit(const std::string& name, double limit);
+
+  /**
    * @brief Check that expected DOFs and frames are present (see expected_dofs() and expected_frames())
    */
   void check_expected();
@@ -129,8 +134,9 @@ public:
   // Robot state
   struct State
   {
-    Eigen::VectorXd q;  // [rad]
-    Eigen::VectorXd qd; // [rad/s]
+    Eigen::VectorXd q;
+    Eigen::VectorXd qd;
+    Eigen::VectorXd qdd;
   };
 
   /**
@@ -234,6 +240,11 @@ public:
   Eigen::MatrixXd frame_jacobian(FrameIndex frame,
                                  pinocchio::ReferenceFrame ref = pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED);
 
+  Eigen::MatrixXd frame_jacobian_time_variation(const std::string& frame, const std::string& reference = "local_world_"
+                                                                                                         "aligned");
+  Eigen::MatrixXd frame_jacobian_time_variation(
+      FrameIndex frame, pinocchio::ReferenceFrame ref = pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED);
+
   /**
    * @brief Computes joint jacobian, default reference is LOCAL_WORLD_ALIGNED
    * @param frame given frame
@@ -244,10 +255,27 @@ public:
                                  pinocchio::ReferenceFrame ref = pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED);
 
   /**
+   * @brief Computes joint jacobian time variation, default reference is LOCAL_WORLD_ALIGNED
+   * @param frame given frame
+   * @return jacobian time variation (6xn matrix)
+   */
+  Eigen::MatrixXd joint_jacobian_time_variation(const std::string& joint, const std::string& reference = "local_world_"
+                                                                                                         "aligned");
+  Eigen::MatrixXd joint_jacobian_time_variation(
+      pinocchio::JointIndex joint, pinocchio::ReferenceFrame ref = pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED);
+
+  /**
+   * @brief Computes the jacobian of the relative position of the origin of frame b expressed in frame a
+   */
+  Eigen::MatrixXd relative_position_jacobian(const std::string& frame_a, const std::string& frame_b);
+  Eigen::MatrixXd relative_position_jacobian(FrameIndex frame_a, FrameIndex frame_b);
+
+  /**
    * @brief Computes the CoM jacobian
    * @return jacobian (3xn matrix)
    */
   Eigen::Matrix3Xd com_jacobian();
+  Eigen::Matrix3Xd com_jacobian_time_variation();
 
   /**
    * @brief Computes the centroidal map
@@ -285,7 +313,7 @@ public:
   Eigen::VectorXd static_gravity_compensation_torques(std::string frame);
 
   /**
-   * @brief Computes torques in the robot DOFs for a given acceleration of the actuated DOFs, assuming that the 
+   * @brief Computes torques in the robot DOFs for a given acceleration of the actuated DOFs, assuming that the
    * given frame is fixed
    *
    * Dimension of the output is q_a
@@ -307,6 +335,11 @@ public:
    * @brief Return all the frame names
    */
   std::vector<std::string> frame_names();
+
+  /**
+   * @brief Robot total mass
+   */
+  double total_mass();
 
   // Pinocchio model
   std::string model_directory;

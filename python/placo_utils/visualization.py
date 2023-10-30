@@ -115,3 +115,79 @@ def footsteps_viz(footsteps: placo.Footsteps, T: np.ndarray = np.eye(4)) -> None
             color = 0xFF3333 if str(footstep.side) == "left" else 0x33FF33
 
         vis["footsteps"][str(k)].set_object(g.LineLoop(g.PointsGeometry(polygon.T), g.MeshBasicMaterial(color=color)))
+
+
+def line_viz(name: str, points: np.ndarray, color: float = 0xFF0000) -> None:
+    """
+    Prints a line
+    """
+    vis = get_viewer()
+    vis["lines"][name].set_object(g.LineSegments(g.PointsGeometry(points.T), g.LineBasicMaterial(color=color)))
+
+
+def arrow_viz(
+    name: str,
+    point_from: np.ndarray,
+    point_to: np.ndarray,
+    color: float = 0xFF0000,
+    radius: float = 0.003,
+) -> None:
+    """
+    Prints an arrow
+    """
+    head_length = radius*3
+    vis = get_viewer()
+    length = np.linalg.norm(point_to - point_from)
+    length = max(1e-3, length - head_length)
+
+    cylinder = g.Cylinder(length, radius)
+    head = g.Cylinder(head_length, 2 * radius, 0.0, 2 * radius)
+
+    T = tf.translation_matrix(point_from)
+    if np.linalg.norm(point_to - point_from) > 1e-6:
+        new_y = (point_to - point_from) / np.linalg.norm(point_to - point_from)
+        new_z = np.cross(np.array([0, 0, 1]), new_y)
+        new_z /= np.linalg.norm(new_z)
+        new_x = np.cross(new_y, new_z)
+        new_x /= np.linalg.norm(new_x)
+        new_z = np.cross(new_x, new_y)
+        new_z /= np.linalg.norm(new_z)
+        T[:3, :3] = np.vstack([new_x, new_y, new_z]).T
+
+    T_cylinder = T @ tf.translation_matrix(np.array([0, length / 2.0, 0.0]))
+    T_head = T @ tf.translation_matrix(np.array([0, length + head_length / 2.0, 0.0]))
+
+    vis["arrows"][name]["cylinder"].set_object(cylinder, g.MeshBasicMaterial(color=color))
+    vis["arrows"][name]["cylinder"].set_transform(T_cylinder)
+    vis["arrows"][name]["head"].set_object(head, g.MeshBasicMaterial(color=color))
+    vis["arrows"][name]["head"].set_transform(T_head)
+
+previous_contacts: int = 0
+
+def contacts_viz(solver: placo.DynamicsSolver, ratio=0.1, radius=0.005):
+    global previous_contacts
+    robot = solver.robot
+    frames = robot.frame_names()
+    
+    for k in range(solver.count_contacts()):
+        contact = solver.get_contact(k)
+
+        if isinstance(contact, placo.PointContact):
+            frame_name = frames[contact.position_task().frame_index]
+            T_world_frame = robot.get_T_world_frame(frame_name)
+            arrow_viz(f"contact_{k}", T_world_frame[:3, 3], T_world_frame[:3, 3] + contact.wrench * ratio, color=0x00FF00, radius=radius)
+        elif isinstance(contact, placo.PlanarContact):
+            frame_name = frames[contact.position_task().frame_index]
+            T_world_frame = robot.get_T_world_frame(frame_name)
+            wrench = T_world_frame[:3, :3] @ contact.wrench[:3]
+            arrow_viz(f"contact_{k}", T_world_frame[:3, 3], T_world_frame[:3, 3] + wrench * ratio, color=0x00FFAA, radius=radius)
+        elif isinstance(contact, placo.ExternalWrenchContact):
+            frame_name = frames[contact.frame_index]
+            T_world_frame = robot.get_T_world_frame(frame_name)
+            arrow_viz(f"contact_{k}", T_world_frame[:3, 3], T_world_frame[:3, 3] + contact.w_ext[:3] * ratio, color=0xFF2222, radius=radius)
+            
+    vis = get_viewer()
+    while k < previous_contacts:
+        k += 1
+        vis["arrows"][f"contact_{k}"].delete()
+    previous_contacts = k

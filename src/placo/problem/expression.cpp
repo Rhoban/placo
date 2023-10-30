@@ -40,6 +40,21 @@ bool Expression::is_scalar() const
   return rows() == 1 && cols() == 0;
 }
 
+Expression Expression::slice(int start, int rows) const
+{
+  Expression e;
+
+  if (rows < 0)
+  {
+    rows = this->rows() - start;
+  }
+
+  e.A = A.block(start, 0, rows, cols());
+  e.b = b.block(start, 0, rows, 1);
+
+  return e;
+}
+
 int Expression::cols() const
 {
   return A.cols();
@@ -248,6 +263,11 @@ ProblemConstraint Expression::operator<=(const Expression& other) const
   constraint.inequality = true;
 
   return constraint;
+}
+
+Eigen::VectorXd Expression::value(Eigen::VectorXd x) const
+{
+  return A * x.block(0, 0, A.cols(), 1) + b;
 }
 
 ProblemConstraint Expression::operator>=(double f) const
