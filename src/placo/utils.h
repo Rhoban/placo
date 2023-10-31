@@ -28,6 +28,14 @@ double wrap_angle(double angle);
 double frame_yaw(Eigen::Matrix3d rotation);
 
 /**
+ * @brief Builds a rotation matrix with a given axis target
+ * @param axis axis
+ * @param vector target (unit) vector
+ * @return rotation matrix
+ */
+Eigen::Matrix3d rotation_from_axis(std::string axis, Eigen::Vector3d vector);
+
+/**
  * @brief Makes an Affine3d from a 4x4 matrix (for python bindings)
  * @param matrix the 4x4 matrix
  * @return The Affine3d
@@ -63,7 +71,7 @@ bool file_exists(const std::string& name);
 /**
  * @brief Return the velocity limit for a given torque and dof
  */
-double velocity_limit(double torque, std::string dof, bool use_doc_limits=false);
+double velocity_limit(double torque, std::string dof, bool use_doc_limits = false);
 
 extern std::map<std::string, std::string> dof_to_motors;
 }  // namespace placo

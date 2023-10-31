@@ -203,6 +203,11 @@ void RobotWrapper::set_velocity_limit(const std::string& name, double limit)
   model.velocityLimit[get_joint_v_offset(name)] = limit;
 }
 
+void RobotWrapper::set_torque_limit(const std::string& name, double limit)
+{
+  model.effortLimit[get_joint_v_offset(name)] = limit;
+}
+
 void RobotWrapper::set_velocity_limits(double limit)
 {
   for (auto& name : actuated_joint_names())
@@ -260,6 +265,7 @@ void RobotWrapper::update_kinematics()
 {
   pinocchio::framesForwardKinematics(model, *data, state.q);
   pinocchio::computeJointJacobians(model, *data, state.q);
+  pinocchio::computeJointJacobiansTimeVariation(model, *data, state.q, state.qd);
 }
 
 RobotWrapper::State RobotWrapper::neutral_state()
@@ -473,7 +479,22 @@ Eigen::MatrixXd RobotWrapper::frame_jacobian(pinocchio::FrameIndex frame, pinocc
 {
   Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> jacobian(6, model.nv);
   jacobian.setZero();
-  pinocchio::computeFrameJacobian(model, *data, state.q, frame, ref, jacobian);
+  pinocchio::getFrameJacobian(model, *data, frame, ref, jacobian);
+
+  return jacobian;
+}
+
+Eigen::MatrixXd RobotWrapper::frame_jacobian_time_variation(const std::string& frame, const std::string& reference)
+{
+  return frame_jacobian_time_variation(get_frame_index(frame), string_to_reference(reference));
+}
+
+Eigen::MatrixXd RobotWrapper::frame_jacobian_time_variation(pinocchio::FrameIndex frame, pinocchio::ReferenceFrame ref)
+{
+  Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> jacobian(6, model.nv);
+  jacobian.setZero();
+
+  pinocchio::getFrameJacobianTimeVariation(model, *data, frame, ref, jacobian);
 
   return jacobian;
 }
@@ -492,9 +513,50 @@ Eigen::MatrixXd RobotWrapper::joint_jacobian(pinocchio::JointIndex joint, pinocc
   return jacobian;
 }
 
+Eigen::MatrixXd RobotWrapper::joint_jacobian_time_variation(const std::string& joint, const std::string& reference)
+{
+  return joint_jacobian(model.getJointId(joint), string_to_reference(reference));
+}
+
+Eigen::MatrixXd RobotWrapper::joint_jacobian_time_variation(pinocchio::JointIndex joint, pinocchio::ReferenceFrame ref)
+{
+  Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> jacobian(6, model.nv);
+  jacobian.setZero();
+  pinocchio::getJointJacobianTimeVariation(model, *data, joint, ref, jacobian);
+
+  return jacobian;
+}
+
+Eigen::MatrixXd RobotWrapper::relative_position_jacobian(pinocchio::FrameIndex frame_a, pinocchio::FrameIndex frame_b)
+{
+  auto T_world_a = get_T_world_frame(frame_a);
+  auto T_world_b = get_T_world_frame(frame_b);
+  auto T_a_b = T_world_a.inverse() * T_world_b;
+
+  Eigen::MatrixXd R_world_a = T_world_a.linear();
+
+  Eigen::MatrixXd J_a_pos = frame_jacobian(frame_a, pinocchio::LOCAL_WORLD_ALIGNED).block(0, 0, 3, model.nv);
+  Eigen::MatrixXd J_a_rot = frame_jacobian(frame_a, pinocchio::LOCAL_WORLD_ALIGNED).block(3, 0, 3, model.nv);
+  Eigen::MatrixXd J_b_pos = frame_jacobian(frame_b, pinocchio::LOCAL_WORLD_ALIGNED).block(0, 0, 3, model.nv);
+
+  return (R_world_a.transpose() * (J_b_pos - J_a_pos) +
+          pinocchio::skew(T_a_b.translation()) * R_world_a.transpose() * J_a_rot);
+}
+
+Eigen::MatrixXd RobotWrapper::relative_position_jacobian(const std::string& frame_a, const std::string& frame_b)
+{
+  return relative_position_jacobian(get_frame_index(frame_a), get_frame_index(frame_b));
+}
+
 Eigen::Matrix3Xd RobotWrapper::com_jacobian()
 {
   return pinocchio::jacobianCenterOfMass(model, *data, state.q);
+}
+
+Eigen::Matrix3Xd RobotWrapper::com_jacobian_time_variation()
+{
+  // See https://github.com/stack-of-tasks/pinocchio/issues/1297
+  return pinocchio::computeCentroidalMapTimeVariation(model, *data, state.q, state.qd).topRows(3) / total_mass();
 }
 
 Eigen::MatrixXd RobotWrapper::centroidal_map()
@@ -522,14 +584,30 @@ Eigen::MatrixXd RobotWrapper::mass_matrix()
 
   // We account for inertia by adding the rotor inertia times the squared gear ratio to
   // the diagonal (see Featherstone, Rigid Body Dynamics Algorithm, 2008, end of chapter 9.6)
-  M.diagonal() += model.rotorGearRatio * model.rotorGearRatio * model.rotorInertia;
+  for (int k = 0; k < M.rows(); k++)
+  {
+    M(k, k) += model.rotorGearRatio[k] * model.rotorGearRatio[k] * model.rotorInertia[k];
+  }
 
   return M;
 }
 
 void RobotWrapper::integrate(double dt)
 {
-  state.q = pinocchio::integrate(model, state.q, state.qd);
+  // If qd is not set, initialize to 0
+  if (state.qd.rows() == 0)
+  {
+    state.qd = Eigen::VectorXd::Zero(model.nv);
+  }
+
+  if (state.qdd.rows() != 0)
+  {
+    // Integrate acceleration
+    state.qd = state.qd + dt * state.qdd;
+  }
+
+  // Integrate velocity
+  state.q = pinocchio::integrate(model, state.q, state.qd * dt);
 }
 
 Eigen::VectorXd RobotWrapper::static_gravity_compensation_torques(RobotWrapper::FrameIndex frameIndex)
@@ -553,7 +631,8 @@ Eigen::VectorXd RobotWrapper::static_gravity_compensation_torques(std::string fr
   return static_gravity_compensation_torques(get_frame_index(frame));
 }
 
-Eigen::VectorXd RobotWrapper::torques_from_acceleration_with_fixed_frame(Eigen::VectorXd qdd_a, RobotWrapper::FrameIndex frameIndex)
+Eigen::VectorXd RobotWrapper::torques_from_acceleration_with_fixed_frame(Eigen::VectorXd qdd_a,
+                                                                         RobotWrapper::FrameIndex frameIndex)
 {
   auto h = non_linear_effects();
   auto M = mass_matrix();
@@ -564,7 +643,7 @@ Eigen::VectorXd RobotWrapper::torques_from_acceleration_with_fixed_frame(Eigen::
 
   auto h_a = h.bottomRows(model.nv - 6);
   auto M_a = M.bottomRightCorner(model.nv - 6, model.nv - 6);
-  
+
   // Compute the torques
   return M_a * qdd_a + h_a - (J.transpose() * f).bottomRows(model.nv - 6);
 }
@@ -595,6 +674,18 @@ std::vector<std::string> RobotWrapper::frame_names()
     result.push_back(frame.name);
   }
   return result;
+}
+
+double RobotWrapper::total_mass()
+{
+  double mass = 0.0;
+
+  for (auto& body : model.inertias)
+  {
+    mass += body.mass();
+  }
+
+  return mass;
 }
 
 std::vector<std::string> RobotWrapper::expected_dofs()

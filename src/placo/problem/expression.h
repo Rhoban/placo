@@ -12,12 +12,16 @@ public:
   Expression();
   Expression(const Expression& other);
 
+  Eigen::VectorXd value(Eigen::VectorXd x) const;
+
   static Expression from_vector(const Eigen::VectorXd& v);
   static Expression from_double(const double& value);
 
   // An expression is Ax + b, where x is the decision variable
   Eigen::MatrixXd A = Eigen::MatrixXd(0, 0);
   Eigen::VectorXd b = Eigen::VectorXd(0);
+
+  Expression slice(int start, int rows = -1) const;
 
   bool is_scalar() const;
 

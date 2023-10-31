@@ -2,40 +2,14 @@
 
 #include "expose-utils.hpp"
 #include "module.h"
-#include "placo/control/kinematics_solver.h"
+#include "placo/kinematics/kinematics_solver.h"
 #include <boost/python/return_internal_reference.hpp>
 #include <Eigen/Dense>
 #include <boost/python.hpp>
 
 using namespace boost::python;
 using namespace placo;
-
-class_<KinematicsSolver>* solver_class_ptr = nullptr;
-
-template <typename T>
-void registerTaskMethods(class_<T>& class__)
-{
-  class__.add_property("name", &T::name)
-      .add_property("solver", &T::solver)
-      .add_property("weight", &T::weight)
-      .add_property(
-          "priority", +[](T& task) { return task.priority_name(); })
-      .add_property("A", &T::A)
-      .add_property("b", &T::b)
-      .def("error", &T::error)
-      .def("error_norm", &T::error_norm)
-      .def("update", &T::update)
-      .def("set_priority", &T::set_priority)
-      .def("set_weight", &T::set_weight)
-      .def("set_name", &T::set_name)
-      .def(
-          "configure", +[](T& task, std::string name, std::string priority, double weight) {
-            task.configure(name, priority, weight);
-          });
-
-  solver_class_ptr->def(
-      "remove_task", +[](KinematicsSolver& solver, T& task) { solver.remove_task(&task); });
-}
+using namespace placo::kinematics;
 
 void exposeKinematics()
 {
@@ -47,11 +21,7 @@ void exposeKinematics()
           .add_property("N", &KinematicsSolver::N)
           .add_property("scale", &KinematicsSolver::scale)
           .add_property(
-              "robot",
-              +[](const KinematicsSolver& solver) {
-                RobotWrapper& wrapper = *solver.robot;
-                return wrapper;
-              })
+              "robot", +[](const KinematicsSolver& solver) { return solver.robot; })
 
           // Position and CoM task
           .def<PositionTask& (KinematicsSolver::*)(std::string, Eigen::Vector3d)>(
@@ -73,29 +43,19 @@ void exposeKinematics()
               "add_relative_orientation_task", &KinematicsSolver::add_relative_orientation_task,
               return_internal_reference<>())
 
-          // Axis tasks
-          .def<AxisAlignTask& (KinematicsSolver::*)(std::string, Eigen::Vector3d, Eigen::Vector3d)>(
-              "add_axisalign_task", &KinematicsSolver::add_axisalign_task, return_internal_reference<>())
-          .def<AxisPlaneTask& (KinematicsSolver::*)(std::string, Eigen::Vector3d, Eigen::Vector3d)>(
-              "add_axisplane_task", &KinematicsSolver::add_axisplane_task, return_internal_reference<>())
-
           // Frame task
           .def<FrameTask (KinematicsSolver::*)(std::string, Eigen::Affine3d)>("add_frame_task",
                                                                               &KinematicsSolver::add_frame_task)
           .def<RelativeFrameTask (KinematicsSolver::*)(std::string, std::string, Eigen::Affine3d)>(
               "add_relative_frame_task", &KinematicsSolver::add_relative_frame_task)
 
-          // Pose task
-          .def<PoseTask& (KinematicsSolver::*)(std::string, Eigen::Affine3d)>(
-              "add_pose_task", &KinematicsSolver::add_pose_task, return_internal_reference<>())
-          .def<RelativePoseTask& (KinematicsSolver::*)(std::string, std::string, Eigen::Affine3d)>(
-              "add_relative_pose_task", &KinematicsSolver::add_relative_pose_task, return_internal_reference<>())
-
           // Joint task
-          .def<JointTask& (KinematicsSolver::*)(std::string, double)>(
-              "add_joint_task", &KinematicsSolver::add_joint_task, return_internal_reference<>())
           .def<JointsTask& (KinematicsSolver::*)(void)>("add_joints_task", &KinematicsSolver::add_joints_task,
                                                         return_internal_reference<>())
+
+          // Gear task
+          .def<GearTask& (KinematicsSolver::*)(void)>("add_gear_task", &KinematicsSolver::add_gear_task,
+                                                      return_internal_reference<>())
 
           // Distance task
           .def<DistanceTask& (KinematicsSolver::*)(std::string, std::string, double)>(
@@ -122,58 +82,68 @@ void exposeKinematics()
 
           .def("enable_joint_limits", &KinematicsSolver::enable_joint_limits)
           .def("enable_velocity_limits", &KinematicsSolver::enable_velocity_limits)
-          .def("enable_velocity_post_limits", &KinematicsSolver::enable_velocity_post_limits)
           .def("enable_self_collision_avoidance", &KinematicsSolver::enable_self_collision_avoidance)
           .def("configure_self_collision_avoidance", &KinematicsSolver::configure_self_collision_avoidance)
-          .def(
-              "remove_task", +[](KinematicsSolver& solver, FrameTask& task) { solver.remove_task(task); })
-
+          .def<void (KinematicsSolver::*)(Task&)>("remove_task", &KinematicsSolver::remove_task)
+          .def<void (KinematicsSolver::*)(FrameTask&)>("remove_task", &KinematicsSolver::remove_task)
           .def("solve", &KinematicsSolver::solve);
 
-  class_<AxisesMask>("AxisesMask", init<>())
-      .def("set_axises", &AxisesMask::set_axises)
-      .add_property("indices", &AxisesMask::indices);
+  class_<Task, boost::noncopyable>("Task", no_init)
+      .add_property("name", &Task::name)
+      .add_property("solver", &Task::solver)
+      .add_property("weight", &Task::weight)
+      .add_property(
+          "priority", +[](Task& task) { return task.priority_name(); })
+      .add_property("A", &Task::A)
+      .add_property("b", &Task::b)
+      .def("error", &Task::error)
+      .def("error_norm", &Task::error_norm)
+      .def("update", &Task::update)
+      .def("set_priority", &Task::set_priority)
+      .def("set_weight", &Task::set_weight)
+      .def("set_name", &Task::set_name)
+      .def(
+          "configure", +[](Task& task, std::string name, std::string priority, double weight) {
+            task.configure(name, priority, weight);
+          });
 
-  solver_class_ptr = &solver_class;
+  class_<PositionTask, bases<Task>>("PositionTask", init<RobotWrapper::FrameIndex, Eigen::Vector3d>())
+      .add_property("frame_index", &PositionTask::frame_index)
+      .add_property(
+          "target_world", +[](const PositionTask& task) { return task.target_world; }, &PositionTask::target_world)
+      .add_property("mask", &PositionTask::mask, &PositionTask::mask);
 
-  registerTaskMethods(
-      class_<PositionTask>("PositionTask", init<RobotWrapper::FrameIndex, Eigen::Vector3d>())
-          .add_property("frame_index", &PositionTask::frame_index)
-          .add_property(
-              "target_world", +[](const PositionTask& task) { return task.target_world; }, &PositionTask::target_world)
-          .add_property("mask", &PositionTask::mask, &PositionTask::mask));
+  class_<RelativePositionTask, bases<Task>>("RelativePositionTask",
+                                            init<RobotWrapper::FrameIndex, RobotWrapper::FrameIndex, Eigen::Vector3d>())
+      .add_property("frame_a", &RelativePositionTask::frame_a)
+      .add_property("frame_b", &RelativePositionTask::frame_b)
+      .add_property(
+          "target", +[](const RelativePositionTask& task) { return task.target; }, &RelativePositionTask::target)
+      .add_property("mask", &RelativePositionTask::mask, &RelativePositionTask::mask);
 
-  registerTaskMethods(
-      class_<RelativePositionTask>("RelativePositionTask",
-                                   init<RobotWrapper::FrameIndex, RobotWrapper::FrameIndex, Eigen::Vector3d>())
-          .add_property("frame_a", &RelativePositionTask::frame_a)
-          .add_property("frame_b", &RelativePositionTask::frame_b)
-          .add_property(
-              "target", +[](const RelativePositionTask& task) { return task.target; }, &RelativePositionTask::target)
-          .add_property("mask", &RelativePositionTask::mask, &RelativePositionTask::mask));
+  class_<CoMTask, bases<Task>>("CoMTask", init<Eigen::Vector3d>())
+      .add_property(
+          "target_world", +[](const CoMTask& task) { return task.target_world; }, &CoMTask::target_world)
+      .add_property("mask", &CoMTask::mask, &CoMTask::mask);
 
-  registerTaskMethods(class_<CoMTask>("CoMTask", init<Eigen::Vector3d>())
-                          .add_property("target_world", &CoMTask::target_world, &CoMTask::target_world)
-                          .add_property("mask", &CoMTask::mask, &CoMTask::mask));
+  class_<CoMBoundTask, bases<Task>>("CoMBoundTask", init<double, double>())
+      .add_property("bound", &CoMBoundTask::bound, &CoMBoundTask::bound)
+      .add_property("dir", &CoMBoundTask::dir, &CoMBoundTask::dir);
 
-  registerTaskMethods(class_<CoMBoundTask>("CoMBoundTask", init<double, double>())
-                          .add_property("bound", &CoMBoundTask::bound, &CoMBoundTask::bound)
-                          .add_property("dir", &CoMBoundTask::dir, &CoMBoundTask::dir));
+  class_<OrientationTask, bases<Task>>("OrientationTask", init<RobotWrapper::FrameIndex, Eigen::Matrix3d>())
+      .add_property("frame_index", &OrientationTask::frame_index)
+      .add_property(
+          "R_world_frame", +[](const OrientationTask& task) { return task.R_world_frame; },
+          &OrientationTask::R_world_frame)
+      .add_property("mask", &OrientationTask::mask, &OrientationTask::mask);
 
-  registerTaskMethods(class_<OrientationTask>("OrientationTask", init<RobotWrapper::FrameIndex, Eigen::Matrix3d>())
-                          .add_property("frame_index", &OrientationTask::frame_index)
-                          .add_property(
-                              "R_world_frame", +[](const OrientationTask& task) { return task.R_world_frame; },
-                              &OrientationTask::R_world_frame));
-
-  registerTaskMethods(
-      class_<RelativeOrientationTask>("RelativeOrientationTask",
-                                      init<RobotWrapper::FrameIndex, RobotWrapper::FrameIndex, Eigen::Matrix3d>())
-          .add_property("frame_a", &RelativeOrientationTask::frame_a)
-          .add_property("frame_b", &RelativeOrientationTask::frame_b)
-          .add_property(
-              "R_a_b", +[](const RelativeOrientationTask& task) { return task.R_a_b; },
-              &RelativeOrientationTask::R_a_b));
+  class_<RelativeOrientationTask, bases<Task>>(
+      "RelativeOrientationTask", init<RobotWrapper::FrameIndex, RobotWrapper::FrameIndex, Eigen::Matrix3d>())
+      .add_property("frame_a", &RelativeOrientationTask::frame_a)
+      .add_property("frame_b", &RelativeOrientationTask::frame_b)
+      .add_property(
+          "R_a_b", +[](const RelativeOrientationTask& task) { return task.R_a_b; }, &RelativeOrientationTask::R_a_b)
+      .add_property("mask", &RelativeOrientationTask::mask, &RelativeOrientationTask::mask);
 
   class_<FrameTask>("FrameTask", init<>())
       .def(
@@ -197,59 +167,23 @@ void exposeKinematics()
       .def("configure", &RelativeFrameTask::configure)
       .add_property("T_a_b", &RelativeFrameTask::get_T_a_b, &RelativeFrameTask::set_T_a_b);
 
-  registerTaskMethods(
-      class_<AxisAlignTask>("AxisAlignTask", init<RobotWrapper::FrameIndex, Eigen::Vector3d, Eigen::Vector3d>())
-          .add_property("frame_index", &AxisAlignTask::frame_index)
-          .add_property(
-              "axis_frame", +[](const AxisAlignTask& task) { return task.axis_frame; }, &AxisAlignTask::axis_frame)
-          .add_property(
-              "targetAxis_world", +[](const AxisAlignTask& task) { return task.targetAxis_world; },
-              &AxisAlignTask::targetAxis_world));
+  class_<JointsTask, bases<Task>>("JointsTask", init<>())
+      .def("set_joint", &JointsTask::set_joint)
+      .def(
+          "set_joints", +[](JointsTask& task, boost::python::dict& py_dict) {
+            update_map<std::string, double>(task.joints, py_dict);
+          });
 
-  registerTaskMethods(
-      class_<AxisPlaneTask>("AxisPlaneTask", init<RobotWrapper::FrameIndex, Eigen::Vector3d, Eigen::Vector3d>())
-          .add_property("frame_index", &AxisPlaneTask::frame_index)
-          .add_property(
-              "axis_frame", +[](const AxisPlaneTask& task) { return task.axis_frame; }, &AxisPlaneTask::axis_frame)
-          .add_property(
-              "normal_world", +[](const AxisPlaneTask& task) { return task.normal_world; },
-              &AxisPlaneTask::normal_world));
+  class_<GearTask, bases<Task>>("GearTask", init<>()).def("set_gear", &GearTask::set_gear);
 
-  registerTaskMethods(
-      class_<PoseTask>("PoseTask", init<RobotWrapper::FrameIndex, Eigen::Affine3d>())
-          .add_property("frame_index", &PoseTask::frame_index)
-          .add_property(
-              "T_world_frame", +[](const PoseTask& task) { return task.T_world_frame; }, &PoseTask::T_world_frame));
+  class_<DistanceTask, bases<Task>>("DistanceTask", init<RobotWrapper::FrameIndex, RobotWrapper::FrameIndex, double>())
+      .add_property("frame_a", &DistanceTask::frame_a)
+      .add_property("frame_b", &DistanceTask::frame_b)
+      .add_property("distance", &DistanceTask::distance, &DistanceTask::distance);
 
-  registerTaskMethods(
-      class_<RelativePoseTask>("RelativePoseTask",
-                               init<RobotWrapper::FrameIndex, RobotWrapper::FrameIndex, Eigen::Affine3d>())
-          .add_property("frame_a", &RelativePoseTask::frame_a)
-          .add_property("frame_b", &RelativePoseTask::frame_b)
-          .add_property(
-              "T_a_b", +[](const RelativePoseTask& task) { return task.T_a_b; }, &RelativePoseTask::T_a_b));
+  class_<CentroidalMomentumTask, bases<Task>>("CentroidalMomentumTask", init<Eigen::Vector3d>())
+      .def("mask_axis", &CentroidalMomentumTask::mask_axis)
+      .add_property("L_world", &CentroidalMomentumTask::L_world, &CentroidalMomentumTask::L_world);
 
-  registerTaskMethods(class_<JointTask>("JointTask", init<std::string, double>())
-                          .add_property("joint", &JointTask::joint)
-                          .add_property("target", &JointTask::target, &JointTask::target));
-
-  registerTaskMethods(class_<JointsTask>("JointsTask", init<>())
-                          .def("set_joint", &JointsTask::set_joint)
-                          .def(
-                              "set_joints", +[](JointsTask& task, boost::python::dict& py_dict) {
-                                update_map<std::string, double>(task.joints, py_dict);
-                              }));
-
-  registerTaskMethods(
-      class_<DistanceTask>("DistanceTask", init<RobotWrapper::FrameIndex, RobotWrapper::FrameIndex, double>())
-          .add_property("frame_a", &DistanceTask::frame_a)
-          .add_property("frame_b", &DistanceTask::frame_b)
-          .add_property("distance", &DistanceTask::distance, &DistanceTask::distance));
-
-  registerTaskMethods(class_<CentroidalMomentumTask>("CentroidalMomentumTask", init<Eigen::Vector3d>())
-                          .def("mask_axis", &CentroidalMomentumTask::mask_axis)
-                          .add_property("L_world", &CentroidalMomentumTask::L_world, &CentroidalMomentumTask::L_world));
-
-  auto regularizationTask = class_<RegularizationTask>("RegularizationTask");
-  registerTaskMethods(regularizationTask);
+  class_<RegularizationTask, bases<Task>>("RegularizationTask");
 }

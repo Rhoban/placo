@@ -14,7 +14,7 @@ class TestLIPM(unittest.TestCase):
     def test_lipm(self):
         problem = placo.Problem()
 
-        lipm = placo.LIPM(problem, 64, 0.5, 0.1, np.array([0.0, 0.0]), np.array([0.0, 0.0]), np.array([0.0, 0.0]))
+        lipm = placo.LIPM(problem, 64, 0.1, np.array([0.0, 0.0]), np.array([0.0, 0.0]), np.array([0.0, 0.0]))
 
         problem.add_constraint(lipm.pos(64) == np.array([1.0, -1.0]))
         problem.add_constraint(lipm.vel(64) == np.array([0.0, 0.0]))

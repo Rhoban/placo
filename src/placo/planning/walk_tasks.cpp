@@ -2,6 +2,8 @@
 #include "placo/model/humanoid_robot.h"
 #include "placo/utils.h"
 
+using namespace placo::kinematics;
+
 namespace placo
 {
 void WalkTasks::initialize_tasks(KinematicsSolver* solver_, HumanoidRobot* robot_, double com_z_min, double com_z_max)
@@ -50,12 +52,12 @@ void WalkTasks::update_com_task()
   {
     if (com_xy_task != nullptr)
     {
-      solver->remove_task(com_xy_task);
+      solver->remove_task(*com_xy_task);
       com_xy_task = nullptr;
     }
     if (com_z_task != nullptr)
     {
-      solver->remove_task(com_z_task);
+      solver->remove_task(*com_z_task);
       com_z_task = nullptr;
     }
     if (trunk_task == nullptr)
@@ -68,7 +70,7 @@ void WalkTasks::update_com_task()
   {
     if (trunk_task != nullptr)
     {
-      solver->remove_task(trunk_task);
+      solver->remove_task(*trunk_task);
       trunk_task = nullptr;
     }
     if (com_xy_task == nullptr)
@@ -93,23 +95,24 @@ void WalkTasks::update_com_task()
   }
 }
 
-void WalkTasks::reach_initial_pose(Eigen::Affine3d T_world_left, double feet_spacing, double com_height, double trunk_pitch)
+void WalkTasks::reach_initial_pose(Eigen::Affine3d T_world_left, double feet_spacing, double com_height,
+                                   double trunk_pitch)
 {
   Eigen::Affine3d T_world_right = T_world_left;
-  T_world_right.translation().y() = - feet_spacing;
+  T_world_right.translation().y() = -feet_spacing;
 
   Eigen::Vector3d com_world = interpolate_frames(T_world_left, T_world_right, .5).translation();
   com_world.z() = com_height;
-  
-  Eigen::MatrixXd R_world_trunk = interpolate_frames(T_world_left, T_world_right, .5) 
-                                  * Eigen::AngleAxisd(trunk_pitch, Eigen::Vector3d::UnitY()).matrix();
+
+  Eigen::MatrixXd R_world_trunk = interpolate_frames(T_world_left, T_world_right, .5) *
+                                  Eigen::AngleAxisd(trunk_pitch, Eigen::Vector3d::UnitY()).matrix();
   trunk_orientation_task->R_world_frame = R_world_trunk;
 
   update_tasks(T_world_left, T_world_right, com_world, R_world_trunk);
-  
+
   // Adding strong noise to avoid singularities
   solver->noise = 0.1;
-  for (int i=0; i<100; i++)
+  for (int i = 0; i < 100; i++)
   {
     if (i == 10)
     {
@@ -123,13 +126,12 @@ void WalkTasks::reach_initial_pose(Eigen::Affine3d T_world_left, double feet_spa
 
 void WalkTasks::update_tasks(WalkPatternGenerator::Trajectory& trajectory, double t)
 {
-  update_tasks(trajectory.get_T_world_left(t), 
-               trajectory.get_T_world_right(t),
-               trajectory.get_p_world_CoM(t + com_delay),
-               trajectory.get_R_world_trunk(t));
+  update_tasks(trajectory.get_T_world_left(t), trajectory.get_T_world_right(t),
+               trajectory.get_p_world_CoM(t + com_delay), trajectory.get_R_world_trunk(t));
 }
 
-void WalkTasks::update_tasks(Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right, Eigen::Vector3d com_world, Eigen::Matrix3d R_world_trunk)
+void WalkTasks::update_tasks(Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right, Eigen::Vector3d com_world,
+                             Eigen::Matrix3d R_world_trunk)
 {
   update_com_task();
   Eigen::Vector3d offset = robot->get_T_world_frame("trunk").linear() * Eigen::Vector3d(com_x, com_y, 0);
@@ -164,7 +166,7 @@ void WalkTasks::update_tasks(Eigen::Affine3d T_world_left, Eigen::Affine3d T_wor
       }
       
       solver->enable_velocity_limits(true);
-      double expected_torque = std::abs(torques[robot->get_joint_v_offset(dof)]) + 0.1; // 0.1 is a safety margin
+      double expected_torque = std::abs(torques[robot->get_joint_v_offset(dof)]) + 0.1;  // 0.1 is a safety margin
       double limit = velocity_limit(expected_torque, dof, use_doc_limits);
       robot->set_velocity_limit(dof, limit);
     }
@@ -179,20 +181,20 @@ void WalkTasks::remove_tasks()
     solver->remove_task(right_foot_task);
     if (com_xy_task != nullptr)
     {
-      solver->remove_task(com_xy_task);
+      solver->remove_task(*com_xy_task);
       com_xy_task = nullptr;
     }
     if (com_z_task != nullptr)
     {
-      solver->remove_task(com_z_task);
+      solver->remove_task(*com_z_task);
       com_z_task = nullptr;
     }
     if (trunk_task != nullptr)
     {
-      solver->remove_task(trunk_task);
+      solver->remove_task(*trunk_task);
       trunk_task = nullptr;
     }
-    solver->remove_task(trunk_orientation_task);
+    solver->remove_task(*trunk_orientation_task);
     solver = nullptr;
   }
 }

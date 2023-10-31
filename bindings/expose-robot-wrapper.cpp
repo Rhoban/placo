@@ -4,7 +4,7 @@
 #include "module.h"
 #include "placo/model/robot_wrapper.h"
 #include "placo/model/humanoid_robot.h"
-#include "placo/control/kinematics_solver.h"
+#include "placo/kinematics/kinematics_solver.h"
 #include <Eigen/Dense>
 #include <boost/python.hpp>
 
@@ -33,6 +33,7 @@ void exposeRobotType(class_<RobotType, W1>& type)
       .def("get_joint_velocity", &RobotType::get_joint_velocity)
       .def("set_velocity_limit", &RobotType::set_velocity_limit)
       .def("set_velocity_limits", &RobotType::set_velocity_limits)
+      .def("set_torque_limit", &RobotType::set_torque_limit)
       .def("set_joint_limits", &RobotType::set_joint_limits)
       .def("update_kinematics", &RobotType::update_kinematics)
       .def("get_T_world_fbase", &RobotType::get_T_world_fbase)
@@ -44,9 +45,11 @@ void exposeRobotType(class_<RobotType, W1>& type)
       .def("self_collisions", &RobotType::self_collisions)
       .def("distances", &RobotType::distances)
       .def("com_jacobian", &RobotType::com_jacobian)
+      .def("com_jacobian_time_variation", &RobotType::com_jacobian_time_variation)
       .def("generalized_gravity", &RobotType::generalized_gravity)
       .def("non_linear_effects", &RobotType::non_linear_effects)
       .def("mass_matrix", &RobotType::mass_matrix)
+      .def("total_mass", &RobotType::total_mass)
       .def("integrate", &RobotType::integrate)
       .def(
           "static_gravity_compensation_torques",
@@ -66,7 +69,9 @@ void exposeRobotType(class_<RobotType, W1>& type)
           })
       .def(
           "torques_from_acceleration_with_fixed_frame",
-          +[](RobotType& robot, Eigen::VectorXd qdd_a, const std::string& frame) { return robot.torques_from_acceleration_with_fixed_frame(qdd_a, frame); })
+          +[](RobotType& robot, Eigen::VectorXd qdd_a, const std::string& frame) {
+            return robot.torques_from_acceleration_with_fixed_frame(qdd_a, frame);
+          })
       .def(
           "torques_from_acceleration_with_fixed_frame_dict",
           +[](RobotType& robot, Eigen::VectorXd qdd_a, const std::string& frame) {
@@ -93,10 +98,15 @@ void exposeRobotType(class_<RobotType, W1>& type)
           "frame_jacobian", +[](RobotType& robot, const std::string& frame,
                                 const std::string& reference) { return robot.frame_jacobian(frame, reference); })
       .def(
+          "frame_jacobian_time_variation",
+          +[](RobotType& robot, const std::string& frame, const std::string& reference) {
+            return robot.frame_jacobian_time_variation(frame, reference);
+          })
+      .def(
           "joint_jacobian", +[](RobotType& robot, const std::string& joint,
                                 const std::string& reference) { return robot.joint_jacobian(joint, reference); })
       .def(
-          "make_solver", +[](RobotType& robot) { return KinematicsSolver(&robot); });
+          "make_solver", +[](RobotType& robot) { return placo::kinematics::KinematicsSolver(robot); });
 }
 
 void exposeRobotWrapper()
@@ -111,7 +121,11 @@ void exposeRobotWrapper()
           +[](RobotWrapper::State& state, const Eigen::VectorXd& q) { state.q = q; })
       .add_property(
           "qd", +[](const RobotWrapper::State& state) { return state.qd; },
-          +[](RobotWrapper::State& state, const Eigen::VectorXd& qd) { state.qd = qd; });
+          +[](RobotWrapper::State& state, const Eigen::VectorXd& qd) { state.qd = qd; })
+      .add_property(
+          "qdd", +[](const RobotWrapper::State& state) { return state.qdd; },
+          +[](RobotWrapper::State& state, const Eigen::VectorXd& qdd) { state.qdd = qdd; });
+  ;
 
   class_<RobotWrapper::Collision>("Collision")
       .add_property("objA", &RobotWrapper::Collision::objA)
@@ -156,7 +170,8 @@ void exposeRobotWrapper()
 #ifdef HAVE_RHOBAN_UTILS
       .def("read_from_histories", &HumanoidRobot::read_from_histories, read_from_histories_overloads())
 #endif
-      .def("get_support_side", +[](const HumanoidRobot& robot) { return robot.support_side; })
+      .def(
+          "get_support_side", +[](const HumanoidRobot& robot) { return robot.support_side; })
       .add_property("support_is_both", &HumanoidRobot::support_is_both, &HumanoidRobot::support_is_both)
       .add_property(
           "T_world_support", +[](HumanoidRobot& robot) { return robot.T_world_support; },
