@@ -69,8 +69,8 @@ void exposeWalkPatternGenerator()
 
   class_<WalkTasks>("WalkTasks", init<>())
       .def(
-          "initialize_tasks", +[](WalkTasks& tasks, KinematicsSolver& solver, HumanoidRobot& robot, double com_z_min,
-                                  double com_z_max) { tasks.initialize_tasks(&solver, &robot, com_z_min, com_z_max); })
+          "initialize_tasks", +[](WalkTasks& tasks, KinematicsSolver& solver, HumanoidRobot& robot) 
+                                  { tasks.initialize_tasks(&solver, &robot); })
       .def(
           "update_tasks_from_trajectory", +[](WalkTasks& tasks, WalkPatternGenerator::Trajectory& trajectory,
                                               double t) { return tasks.update_tasks(trajectory, t); })
@@ -102,10 +102,6 @@ void exposeWalkPatternGenerator()
           })
       .add_property(
           "solver", +[](WalkTasks& tasks) { return *tasks.solver; })
-      .add_property("relax_weight", &WalkTasks::relax_weight, &WalkTasks::relax_weight)
-      .add_property("relax_com_height", &WalkTasks::relax_com_height, &WalkTasks::relax_com_height)
-      .add_property("relax_trunk_orientation", &WalkTasks::relax_trunk_orientation, &WalkTasks::relax_trunk_orientation)
-      .add_property("relax_shoulder", &WalkTasks::relax_shoulder, &WalkTasks::relax_shoulder)
       .add_property("left_foot_task", &WalkTasks::left_foot_task)
       .add_property("right_foot_task", &WalkTasks::right_foot_task)
       .add_property("trunk_mode", &WalkTasks::trunk_mode, &WalkTasks::trunk_mode)

@@ -8,8 +8,7 @@ namespace placo
 class WalkTasks
 {
 public:
-  void initialize_tasks(placo::kinematics::KinematicsSolver* solver, HumanoidRobot* robot, double com_z_min = -1,
-                        double com_z_max = -1);
+  void initialize_tasks(placo::kinematics::KinematicsSolver* solver, HumanoidRobot* robot);
   void remove_tasks();
   virtual ~WalkTasks();
 
@@ -26,17 +25,8 @@ public:
   placo::kinematics::FrameTask right_foot_task;
   placo::kinematics::OrientationTask* trunk_orientation_task;
 
-  placo::kinematics::CoMTask* com_xy_task = nullptr;
-  placo::kinematics::CoMTask* com_z_task = nullptr;
-  placo::kinematics::CoMBoundTask* com_lb_task = nullptr;
-  placo::kinematics::CoMBoundTask* com_ub_task = nullptr;
-
+  placo::kinematics::CoMTask* com_task = nullptr;
   placo::kinematics::PositionTask* trunk_task = nullptr;
-
-  bool relax_com_height = false;
-  bool relax_trunk_orientation = false;
-  bool relax_shoulder = false;
-  double relax_weight = 1e-3;
 
   void update_com_task();
 
