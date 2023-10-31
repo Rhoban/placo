@@ -4,7 +4,7 @@ import inspect
 import placo
 import os
 import glob
-from doxygen_parse import parse_directory, get_members, rewrite_types
+from doxygen_parse import parse_directory, get_members, get_metadata, rewrite_types
 
 module: str = "placo"
 
@@ -117,6 +117,9 @@ def print_class_method(class_name: str, method_name: str, doc: str, prefix: str 
             for param in member["detailed"]:
                 brief_str += f"\n{prefix}  :param {param['name']}: {param['desc']}"
 
+        if "verbatim" in member:
+            brief_str += f"\n{prefix}  {member['verbatim']}"
+
         if "returns" in member:
             brief_str += f"\n{prefix}  :return: {member['returns']}"
 
@@ -135,6 +138,12 @@ for name, object in inspect.getmembers(placo):
     if isinstance(object, type):
         class_name = object.__name__
         print(f"class {class_name}:")
+
+        if class_name in py_registry:
+            metadata = get_metadata(py_registry[class_name])
+            if metadata is not None and "brief" in metadata:
+                print(f"  \"\"\"{metadata['brief']}\"\"\"")
+
         for _name, _object in inspect.getmembers(object):
             if not _name.startswith("_") or _name == "__init__":
                 if callable(_object):

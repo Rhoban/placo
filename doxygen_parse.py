@@ -6,6 +6,7 @@ member_definitions: dict = {}
 
 # Compound members
 compound_members: dict = {}
+compound_metadata: dict = {}
 
 # Mapping compound id to name
 rewrite_types: dict = {
@@ -32,12 +33,22 @@ def resolve_type(node):
 
 
 def parse_compound(compounddef_node: ET.Element):
-    global member_definitions
+    global member_definitions, compound_metadata
+
     name = compounddef_node.find("compoundname").text
     compound_kind = compounddef_node.attrib["kind"]
     id = compounddef_node.attrib["id"]
     rewrite_types[id] = name
     compound_members[name] = []
+
+    compound_metadata[name] = {
+        "id": id,
+        "kind": compound_kind,
+        "name": name,
+        "brief": compounddef_node.find("briefdescription/para").text
+        if compounddef_node.find("briefdescription/para") is not None
+        else None,
+    }
 
     # Searching for member definitions
     for member in compounddef_node.findall("sectiondef/memberdef"):
@@ -73,11 +84,16 @@ def parse_compound(compounddef_node: ET.Element):
                 param_name = entry.find("parameternamelist/parametername").text
                 param_desc = entry.find("parameterdescription/para").text
                 member_definitions[id]["detailed"].append({"name": param_name, "desc": param_desc})
-            
+
+            # Verbatim
+            verbatim = member.find("detaileddescription/para/verbatim")
+            if verbatim is not None:
+                member_definitions[id]["verbatim"] = verbatim.text
+
             # Return type
             return_type = member.find("detaileddescription/para/simplesect[@kind='return']")
             if return_type:
-                member_definitions[id]["returns"] = return_type.find('para').text
+                member_definitions[id]["returns"] = return_type.find("para").text
 
             if compound_kind == "namespace":
                 compound_members[name].append(id)
@@ -89,6 +105,7 @@ def parse_compound(compounddef_node: ET.Element):
     kind = compounddef_node.attrib["kind"]
     for member in compounddef_node.findall("listofallmembers/member"):
         compound_members[name].append(member.attrib["refid"])
+
 
 def parse_xml(xml_file: str):
     with open(xml_file, "r") as f:
@@ -125,8 +142,15 @@ def parse_directory(directory):
             if id in member_definitions:
                 compound_members[name][member_definitions[id]["name"]] = member_definitions[id]
 
+
 def get_members(name: str):
     if name not in compound_members:
         return None
-    
+
     return compound_members[name]
+
+def get_metadata(name: str):
+    if name not in compound_metadata:
+        return None
+
+    return compound_metadata[name]
