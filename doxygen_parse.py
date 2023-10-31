@@ -116,6 +116,19 @@ def parse_xml(xml_file: str):
         for compounddef_node in xml_content.findall("compounddef"):
             parse_compound(compounddef_node)
 
+def rewrite_type(typename: str):
+    # Some heuristics to clean type names
+    if typename is not None:
+      typename = typename.replace('&', '')
+      typename = typename.replace('*', '')
+      if typename.startswith('const '):
+          typename = typename[6:]
+      typename = typename.strip()
+
+    if typename in rewrite_types:
+        return rewrite_types[typename]
+    else:
+        return typename
 
 def parse_directory(directory):
     global member_definitions, compound_members
@@ -127,12 +140,10 @@ def parse_directory(directory):
     # Resolving types
     for member in member_definitions:
         member_definition = member_definitions[member]
-        if member_definition["type"] in rewrite_types:
-            member_definition["type"] = rewrite_types[member_definition["type"]]
+        member_definition["type"] = rewrite_type(member_definition["type"])
 
         for param in member_definition["params"]:
-            if param["type"] in rewrite_types:
-                param["type"] = rewrite_types[param["type"]]
+          param["type"] = rewrite_type(param["type"])
 
     # Resolving compound members
     for name in compound_members:
