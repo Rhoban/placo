@@ -13,12 +13,12 @@ rewrite_types: dict = {
     "double": "float",
     "int": "int",
     "bool": "bool",
-    "Eigen::MatrixXd": "np.ndarray",
-    "Eigen::VectorXd": "np.ndarray",
-    "Eigen::Matrix3d": "np.ndarray",
-    "Eigen::Vector3d": "np.ndarray",
-    "Eigen::Matrix2d": "np.ndarray",
-    "Eigen::Vector2d": "np.ndarray",
+    "Eigen::MatrixXd": "numpy.ndarray",
+    "Eigen::VectorXd": "numpy.ndarray",
+    "Eigen::Matrix3d": "numpy.ndarray",
+    "Eigen::Vector3d": "numpy.ndarray",
+    "Eigen::Matrix2d": "numpy.ndarray",
+    "Eigen::Vector2d": "numpy.ndarray",
     "void": "None",
 }
 
@@ -34,16 +34,17 @@ def resolve_type(node):
 def parse_compound(compounddef_node: ET.Element):
     global member_definitions
     name = compounddef_node.find("compoundname").text
+    compound_kind = compounddef_node.attrib["kind"]
     id = compounddef_node.attrib["id"]
     rewrite_types[id] = name
+    compound_members[name] = []
 
     # Searching for member definitions
     for member in compounddef_node.findall("sectiondef/memberdef"):
         kind = member.attrib["kind"]
         id = member.attrib["id"]
 
-        if kind in ["function", "variable", "enum"]:
-
+        if kind in ["function", "variable", "enum", "namespace"]:
             member_definitions[id] = {
                 "kind": kind,
                 "name": member.find("name").text,
@@ -77,14 +78,17 @@ def parse_compound(compounddef_node: ET.Element):
             return_type = member.find("detaileddescription/para/simplesect[@kind='return']")
             if return_type:
                 member_definitions[id]["returns"] = return_type.find('para').text
+
+            if compound_kind == "namespace":
+                compound_members[name].append(id)
+
         elif kind == "typedef":
             rewrite_types[id] = resolve_type(member)
 
     # Listinf all members
-    compound_members[name] = []
+    kind = compounddef_node.attrib["kind"]
     for member in compounddef_node.findall("listofallmembers/member"):
         compound_members[name].append(member.attrib["refid"])
-
 
 def parse_xml(xml_file: str):
     with open(xml_file, "r") as f:

@@ -6,6 +6,8 @@ import os
 import glob
 from doxygen_parse import parse_directory, get_members, rewrite_types
 
+module: str = "placo"
+
 # Current script directory:
 repo_directory = os.path.dirname(os.path.realpath(__file__))
 
@@ -17,7 +19,7 @@ parse_directory(repo_directory)
 
 # Building registry and reverse registry for class names
 cxx_registry = placo.get_classes_registry()
-py_registry = {}
+py_registry = {module: module}
 for entry in cxx_registry:
     py_registry[cxx_registry[entry]] = entry
 
@@ -38,7 +40,7 @@ def cxx_type_to_py(cxx_type: str) -> str:
     elif cxx_type in rewrite_types:
         return rewrite_types[cxx_type]
     else:
-        return cxx_type.replace(":", "_")
+        return "any"
 
 
 def parse_doc(name: str, doc: str) -> dict:
@@ -91,10 +93,13 @@ def print_class_method(class_name: str, method_name: str, doc: str, prefix: str 
 
     if member is not None:
         # Method name
-        str_definition = f"  def {method_name}("
+        str_definition = f"{prefix}def {method_name}("
 
         # Method arguments
-        str_definition += ",".join([f"self: {class_name}"] + [f"{arg['name']}: {cxx_type_to_py(arg['type'])}" for arg in member["params"]])
+        params = [f"{arg['name']}: {cxx_type_to_py(arg['type'])}" for arg in member["params"]]
+        if class_name != module:
+            params = ["self: " + class_name] + params
+        str_definition += ",".join(params)
 
         # Return type
         str_definition += f")"
@@ -110,23 +115,21 @@ def print_class_method(class_name: str, method_name: str, doc: str, prefix: str 
 
         if "detailed" in member:
             for param in member["detailed"]:
-                brief_str += f"\n    :param {param['name']}: {param['desc']}"
+                brief_str += f"\n{prefix}  :param {param['name']}: {param['desc']}"
 
         if "returns" in member:
-            brief_str += f"\n    :return: {member['returns']}"
+            brief_str += f"\n{prefix}  :return: {member['returns']}"
 
         if brief_str:
-            str_definition += f'    """\n    {brief_str}\n    """\n'
-        str_definition += "    ...\n"
+            str_definition += f'{prefix}  """\n{prefix}  {brief_str}\n{prefix}  """\n'
+        str_definition += f"{prefix}  ...\n"
 
         print(str_definition)
-        # py_type = cxx_type_to_py(member['type'])
-        # print(f"  def {method_name}() -> {py_type}: ...")
     else:
         print_def(method_name, doc, prefix)
 
 
-print("import numpy as np")
+print("import numpy")
 
 for name, object in inspect.getmembers(placo):
     if isinstance(object, type):
@@ -140,7 +143,7 @@ for name, object in inspect.getmembers(placo):
                     print_class_member(class_name, _name)
         print("")
     elif callable(object):
-        print_def(name, object.__doc__)
+        print_class_method(module, name, object.__doc__)
         print("")
     else:
         ...
