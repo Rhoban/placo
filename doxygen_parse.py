@@ -1,4 +1,5 @@
 import glob
+import re
 import xml.etree.ElementTree as ET
 
 # Mapping member definitions (id) to all informations
@@ -20,6 +21,7 @@ rewrite_types: dict = {
     "Eigen::Vector3d": "numpy.ndarray",
     "Eigen::Matrix2d": "numpy.ndarray",
     "Eigen::Vector2d": "numpy.ndarray",
+    "Eigen::Affine3d": "numpy.ndarray",
     "void": "None",
 }
 
@@ -116,19 +118,28 @@ def parse_xml(xml_file: str):
         for compounddef_node in xml_content.findall("compounddef"):
             parse_compound(compounddef_node)
 
-def rewrite_type(typename: str):
-    # Some heuristics to clean type names
-    if typename is not None:
-      typename = typename.replace('&', '')
-      typename = typename.replace('*', '')
-      if typename.startswith('const '):
-          typename = typename[6:]
-      typename = typename.strip()
 
-    if typename in rewrite_types:
-        return rewrite_types[typename]
-    else:
-        return typename
+def rewrite_type(typename: str):
+    """
+    We apply here some heuristics to rewrite C++ types to Python
+    """
+    if typename is not None:
+        typename = typename.replace("&", "")
+        typename = typename.replace("*", "")
+        typename = typename.strip()
+        if typename.startswith("const "):
+            typename = typename[6:]
+
+        if typename in rewrite_types:
+            return rewrite_types[typename]
+        else:
+            if typename.startswith("std::vector"):
+                return "list[" + rewrite_type(typename[12:-1]) + "]"
+
+            return re.sub("[^a-zA-Z0-9\.]", "_", typename)
+
+    return None
+
 
 def parse_directory(directory):
     global member_definitions, compound_members
@@ -143,7 +154,7 @@ def parse_directory(directory):
         member_definition["type"] = rewrite_type(member_definition["type"])
 
         for param in member_definition["params"]:
-          param["type"] = rewrite_type(param["type"])
+            param["type"] = rewrite_type(param["type"])
 
     # Resolving compound members
     for name in compound_members:
@@ -159,6 +170,7 @@ def get_members(name: str):
         return None
 
     return compound_members[name]
+
 
 def get_metadata(name: str):
     if name not in compound_metadata:
