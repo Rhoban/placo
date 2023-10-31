@@ -24,11 +24,17 @@ public:
   placo::FrameTask right_foot_task;
   placo::OrientationTask* trunk_orientation_task;
 
-  placo::CoMTask* com_task = nullptr;
+  placo::CoMTask* com_xy_task = nullptr;
+  placo::CoMTask* com_z_task = nullptr;
   placo::CoMBoundTask* com_lb_task = nullptr;
   placo::CoMBoundTask* com_ub_task = nullptr;
 
   placo::PositionTask* trunk_task = nullptr;
+
+  bool relax_com_height = false;
+  bool relax_trunk_orientation = false;
+  bool relax_shoulder = false;
+  double relax_weight = 1e-3;
 
   void update_com_task();
 

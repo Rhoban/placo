@@ -16,7 +16,14 @@ void WalkTasks::initialize_tasks(KinematicsSolver* solver_, HumanoidRobot* robot
   right_foot_task.configure("right_foot", "soft", 1., 1.);
 
   trunk_orientation_task = &solver->add_orientation_task("trunk", robot->get_T_world_trunk().rotation());
-  trunk_orientation_task->configure("trunk", "soft", 1.);
+  if (relax_trunk_orientation)
+  {
+    trunk_orientation_task->configure("trunk", "soft", relax_weight);
+  }
+  else
+  {
+    trunk_orientation_task->configure("trunk", "soft", 1.);
+  }
 
   if (com_z_min != -1)
   {
@@ -41,10 +48,15 @@ void WalkTasks::update_com_task()
 {
   if (trunk_mode)
   {
-    if (com_task != nullptr)
+    if (com_xy_task != nullptr)
     {
-      solver->remove_task(com_task);
-      com_task = nullptr;
+      solver->remove_task(com_xy_task);
+      com_xy_task = nullptr;
+    }
+    if (com_z_task != nullptr)
+    {
+      solver->remove_task(com_z_task);
+      com_z_task = nullptr;
     }
     if (trunk_task == nullptr)
     {
@@ -59,10 +71,24 @@ void WalkTasks::update_com_task()
       solver->remove_task(trunk_task);
       trunk_task = nullptr;
     }
-    if (com_task == nullptr)
+    if (com_xy_task == nullptr)
     {
-      com_task = &solver->add_com_task(robot->com_world());
-      com_task->configure("com", "soft", 1.);
+      com_xy_task = &solver->add_com_task(robot->com_world());
+      com_xy_task->mask.set_axises("xy");
+      com_xy_task->configure("com_xy", "soft", 1.);
+    }
+    if (com_z_task == nullptr)
+    {
+      com_z_task = &solver->add_com_task(robot->com_world());
+      com_z_task->mask.set_axises("z");
+      if (relax_com_height)
+      {
+        com_z_task->configure("com_z", "soft", relax_weight);
+      }
+      else
+      {
+        com_z_task->configure("com_z", "soft", 1.);
+      }
     }
   }
 }
@@ -114,7 +140,8 @@ void WalkTasks::update_tasks(Eigen::Affine3d T_world_left, Eigen::Affine3d T_wor
   }
   else
   {
-    com_task->target_world = com_world + offset;
+    com_xy_task->target_world = com_world + offset;
+    com_z_task->target_world = com_world + offset;
   }
 
   left_foot_task.set_T_world_frame(T_world_left);
@@ -131,6 +158,11 @@ void WalkTasks::update_tasks(Eigen::Affine3d T_world_left, Eigen::Affine3d T_wor
 
     for (auto dof : robot->actuated_joint_names())
     {
+      if (relax_shoulder && (dof == "left_shoulder_roll" || dof == "right_shoulder_roll"))
+      {
+        continue;
+      }
+      
       solver->enable_velocity_limits(true);
       double expected_torque = std::abs(torques[robot->get_joint_v_offset(dof)]) + 0.1; // 0.1 is a safety margin
       double limit = velocity_limit(expected_torque, dof, use_doc_limits);
@@ -145,10 +177,15 @@ void WalkTasks::remove_tasks()
   {
     solver->remove_task(left_foot_task);
     solver->remove_task(right_foot_task);
-    if (com_task != nullptr)
+    if (com_xy_task != nullptr)
     {
-      solver->remove_task(com_task);
-      com_task = nullptr;
+      solver->remove_task(com_xy_task);
+      com_xy_task = nullptr;
+    }
+    if (com_z_task != nullptr)
+    {
+      solver->remove_task(com_z_task);
+      com_z_task = nullptr;
     }
     if (trunk_task != nullptr)
     {
@@ -174,7 +211,7 @@ std::map<std::string, Eigen::Vector3d> WalkTasks::get_tasks_error()
   }
   else
   {
-    error["com_position"] = com_task->error();
+    error["com_position"] = Eigen::Vector3d(com_xy_task->error()(0, 0), com_xy_task->error()(1, 0), com_z_task->error()(0, 0));
   }
   return error;
 }
