@@ -205,11 +205,6 @@ public:
   void enable_velocity_limits(bool enable);
 
   /**
-   * @brief Enables/disables joint velocity post limits
-   */
-  void enable_velocity_post_limits(bool enable);
-
-  /**
    * @brief Enables or disable the self collision inequalities
    * @param enable whether to enable the self collision inequalities
    * @param margin margin that will be used [m]
@@ -276,7 +271,6 @@ protected:
   // Modes to limit the DoFs
   bool joint_limits = true;
   bool velocity_limits = false;
-  bool velocity_post_limits = false;
 
   // Self collision prevention
   bool avoid_self_collisions = false;

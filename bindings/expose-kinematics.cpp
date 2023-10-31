@@ -82,7 +82,6 @@ void exposeKinematics()
 
           .def("enable_joint_limits", &KinematicsSolver::enable_joint_limits)
           .def("enable_velocity_limits", &KinematicsSolver::enable_velocity_limits)
-          .def("enable_velocity_post_limits", &KinematicsSolver::enable_velocity_post_limits)
           .def("enable_self_collision_avoidance", &KinematicsSolver::enable_self_collision_avoidance)
           .def("configure_self_collision_avoidance", &KinematicsSolver::configure_self_collision_avoidance)
           .def<void (KinematicsSolver::*)(Task&)>("remove_task", &KinematicsSolver::remove_task)

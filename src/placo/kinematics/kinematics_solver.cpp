@@ -173,11 +173,6 @@ void KinematicsSolver::enable_velocity_limits(bool enable)
   velocity_limits = enable;
 }
 
-void KinematicsSolver::enable_velocity_post_limits(bool enable)
-{
-  velocity_post_limits = enable;
-}
-
 void KinematicsSolver::enable_self_collision_avoidance(bool enable, double margin, double trigger)
 {
   avoid_self_collisions = enable;
@@ -256,7 +251,7 @@ void KinematicsSolver::compute_self_collision_inequalities()
 
 void KinematicsSolver::compute_limits_inequalities()
 {
-  if ((velocity_limits || velocity_post_limits) && dt == 0.)
+  if (velocity_limits && dt == 0.)
   {
     throw std::runtime_error("You enabled velocity limits but didn't set solver.dt");
   }
@@ -377,24 +372,6 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
   if (has_scaling)
   {
     scale = scale_variable->value(0, 0);
-  }
-
-  if (velocity_post_limits)
-  {
-    double ratio = 1.0;
-
-    for (int k = 0; k < N - 6; k++)
-    {
-      double max_variation = dt * robot.model.velocityLimit[k + 6];
-      double variation = fabs(qd_sol[k + 6]);
-
-      if (variation > max_variation)
-      {
-        ratio = std::min(ratio, max_variation / variation);
-      }
-    }
-
-    qd_sol = qd_sol * ratio;
   }
 
   if (apply)
