@@ -11,10 +11,14 @@ class CoMTask : public Task
 public:
   CoMTask(Eigen::Vector3d target_world);
 
+  /**
+   * @brief Target to reach in world frame
+   */
   Eigen::Vector3d target_world;
   Eigen::Vector3d dtarget_world = Eigen::Vector3d::Zero();
 
   void update() override;
+
   std::string type_name() override;
   std::string error_unit() override;
 
