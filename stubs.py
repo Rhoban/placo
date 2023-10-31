@@ -40,7 +40,7 @@ def cxx_type_to_py(cxx_type: str) -> str:
     elif cxx_type in rewrite_types:
         return rewrite_types[cxx_type]
     else:
-        return "any"
+        return re.sub('[^a-zA-Z0-9\.]', '_', cxx_type)
 
 
 def parse_doc(name: str, doc: str) -> dict:
