@@ -6,6 +6,7 @@
 #include "placo/trajectory/cubic_spline_3d.h"
 #include "placo/tools/axises_mask.h"
 #include "module.h"
+#include "registry.h"
 #include "placo/utils.h"
 #include "expose-utils.hpp"
 #ifdef HAVE_RHOBAN_UTILS
@@ -39,17 +40,17 @@ void exposeUtils()
 
   class_<std::map<std::string, double>>("map_string_double").def(map_indexing_suite<std::map<std::string, double>>());
 
-  class_<placo::CubicSpline>("CubicSpline", init<optional<bool>>())
+  class__<placo::CubicSpline>("CubicSpline", init<optional<bool>>())
       .def("pos", &placo::CubicSpline::pos)
       .def("vel", &placo::CubicSpline::vel)
       .def("add_point", &placo::CubicSpline::add_point);
 
-  class_<placo::CubicSpline3D>("CubicSpline3D")
+  class__<placo::CubicSpline3D>("CubicSpline3D")
       .def("pos", &placo::CubicSpline3D::pos)
       .def("vel", &placo::CubicSpline3D::vel)
       .def("add_point", &placo::CubicSpline3D::add_point);
 
-  class_<AxisesMask>("AxisesMask", init<>())
+  class__<AxisesMask>("AxisesMask", init<>())
       .def("set_axises", &AxisesMask::set_axises, set_axises_overloads())
       .def("apply", &AxisesMask::apply);
 
@@ -57,7 +58,7 @@ void exposeUtils()
   using namespace rhoban_utils;
 
   // History collection
-  class_<HistoryCollection>("HistoryCollection")
+  class__<HistoryCollection>("HistoryCollection")
       .def("loadReplays", &HistoryCollection::loadReplays, loadReplays_overloads())
       .def("smallestTimestamp", &HistoryCollection::smallestTimestamp)
       .def("biggestTimestamp", &HistoryCollection::biggestTimestamp)

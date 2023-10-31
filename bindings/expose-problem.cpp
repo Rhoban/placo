@@ -5,6 +5,7 @@
 
 #include "expose-utils.hpp"
 #include "module.h"
+#include "registry.h"
 #include "placo/problem/problem.h"
 #include "placo/problem/variable.h"
 #include "placo/problem/expression.h"
@@ -23,13 +24,13 @@ BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(expr_overloads, expr, 0, 2);
 
 void exposeProblem()
 {
-  class_<QPError>("QPError", init<std::string>()).def("what", &QPError::what);
+  class__<QPError>("QPError", init<std::string>()).def("what", &QPError::what);
 
-  class_<Sparsity::Interval>("SparsityInterval")
+  class__<Sparsity::Interval>("SparsityInterval")
       .add_property("start", &Sparsity::Interval::start, &Sparsity::Interval::start)
       .add_property("end", &Sparsity::Interval::end, &Sparsity::Interval::end);
 
-  class_<Sparsity>("Sparsity")
+  class__<Sparsity>("Sparsity")
       .add_property(
           "intervals",
           +[](const Sparsity& sparsity) {
@@ -50,7 +51,7 @@ void exposeProblem()
       .def("print_intervals", &Sparsity::print_intervals)
       .staticmethod("detect_columns_sparsity");
 
-  class_<ProblemConstraint>("ProblemConstraint")
+  class__<ProblemConstraint>("ProblemConstraint")
       .add_property("expression", &ProblemConstraint::expression)
       .add_property("inequality", &ProblemConstraint::inequality)
       .add_property(
@@ -69,11 +70,11 @@ void exposeProblem()
       .add_property("is_active", &ProblemConstraint::is_active)
       .def<void (ProblemConstraint::*)(std::string, double)>("configure", &ProblemConstraint::configure);
 
-  class_<ProblemConstraints>("ProblemConstraints")
+  class__<ProblemConstraints>("ProblemConstraints")
       .def<void (ProblemConstraints::*)(std::string, double)>("configure", &ProblemConstraints::configure)
       .def("is_active", &ProblemConstraints::is_active);
 
-  class_<PolygonConstraint>("PolygonConstraint")
+  class__<PolygonConstraint>("PolygonConstraint")
       .def("in_polygon", &PolygonConstraint::in_polygon)
       .staticmethod("in_polygon")
       .def("in_polygon_xy", &PolygonConstraint::in_polygon_xy)
@@ -81,7 +82,7 @@ void exposeProblem()
 
   exposeStdVector<ProblemConstraint>("vector_ProblemConstraint");
 
-  class_<Integrator>("Integrator", init<Variable&, Eigen::VectorXd, int, double>())
+  class__<Integrator>("Integrator", init<Variable&, Eigen::VectorXd, int, double>())
       .def(init<Variable&, Eigen::VectorXd, Eigen::MatrixXd, double>())
       .def("upper_shift_matrix", &Integrator::upper_shift_matrix)
       .staticmethod("upper_shift_matrix")
@@ -99,11 +100,11 @@ void exposeProblem()
       .def("value", &Integrator::value)
       .def("get_trajectory", &Integrator::get_trajectory);
 
-  class_<Integrator::Trajectory>("IntegratorTrajectory")
+  class__<Integrator::Trajectory>("IntegratorTrajectory")
       .def("value", &Integrator::Trajectory::value)
       .def("duration", &Integrator::Trajectory::duration);
 
-  class_<Problem>("Problem")
+  class__<Problem>("Problem")
       .def("add_variable", &Problem::add_variable, return_internal_reference<>())
       .def("add_constraint", &Problem::add_constraint, return_internal_reference<>())
       .def("add_constraints", &Problem::add_constraints)
@@ -121,14 +122,14 @@ void exposeProblem()
       .add_property(
           "slacks", +[](const Problem& problem) { return problem.slacks; });
 
-  class_<Variable>("Variable")
+  class__<Variable>("Variable")
       .add_property("k_start", &Variable::k_start)
       .add_property("k_end", &Variable::k_end)
       .add_property("name", &Variable::name, &Variable::name)
       .add_property("value", &Variable::value)
       .def("expr", &Variable::expr, expr_overloads());
 
-  class_<Expression>("Expression")
+  class__<Expression>("Expression")
       .add_property(
           "A", +[](Expression& e) { return e.A; })
       .add_property(

@@ -2,6 +2,7 @@
 
 #include "expose-utils.hpp"
 #include "module.h"
+#include "registry.h"
 #include "placo/planning/walk_pattern_generator.h"
 #include "placo/kinematics/kinematics_solver.h"
 #include "placo/footsteps/footsteps_planner.h"
@@ -19,7 +20,7 @@ using namespace placo::kinematics;
 
 void exposeWalkPatternGenerator()
 {
-  class_<WalkPatternGenerator::Trajectory>("WalkTrajectory")
+  class__<WalkPatternGenerator::Trajectory>("WalkTrajectory")
       .add_property("t_start", &WalkPatternGenerator::Trajectory::t_start)
       .add_property("t_end", &WalkPatternGenerator::Trajectory::t_end)
       .add_property("jerk_planner_timesteps", &WalkPatternGenerator::Trajectory::jerk_planner_timesteps)
@@ -41,36 +42,36 @@ void exposeWalkPatternGenerator()
       .def("get_part_t_start", &WalkPatternGenerator::Trajectory::get_part_t_start)
       .def("apply_transform", &WalkPatternGenerator::Trajectory::apply_transform);
 
-  class_<WalkPatternGenerator>("WalkPatternGenerator", init<HumanoidRobot&, HumanoidParameters&>())
+  class__<WalkPatternGenerator>("WalkPatternGenerator", init<HumanoidRobot&, HumanoidParameters&>())
       .def("plan", &WalkPatternGenerator::plan)
       .def("replan", &WalkPatternGenerator::replan)
       .def("can_replan_supports", &WalkPatternGenerator::can_replan_supports)
       .def("replan_supports", &WalkPatternGenerator::replan_supports);
 
-  class_<SwingFoot>("SwingFoot", init<>())
+  class__<SwingFoot>("SwingFoot", init<>())
       .def("make_trajectory", &SwingFoot::make_trajectory)
       .def("remake_trajectory", &SwingFoot::remake_trajectory);
 
-  class_<SwingFootCubic::Trajectory>("SwingFootCubicTrajectory", init<>())
+  class__<SwingFootCubic::Trajectory>("SwingFootCubicTrajectory", init<>())
       .def("pos", &SwingFootCubic::Trajectory::pos)
       .def("vel", &SwingFootCubic::Trajectory::vel);
 
-  class_<SwingFootCubic>("SwingFootCubic", init<>()).def("make_trajectory", &SwingFootCubic::make_trajectory);
+  class__<SwingFootCubic>("SwingFootCubic", init<>()).def("make_trajectory", &SwingFootCubic::make_trajectory);
 
-  class_<SwingFoot::Trajectory>("SwingFootTrajectory", init<>())
+  class__<SwingFoot::Trajectory>("SwingFootTrajectory", init<>())
       .def("pos", &SwingFoot::Trajectory::pos)
       .def("vel", &SwingFoot::Trajectory::vel);
 
-  class_<SwingFootQuintic>("SwingFootQuintic", init<>()).def("make_trajectory", &SwingFootQuintic::make_trajectory);
+  class__<SwingFootQuintic>("SwingFootQuintic", init<>()).def("make_trajectory", &SwingFootQuintic::make_trajectory);
 
-  class_<SwingFootQuintic::Trajectory>("SwingFootQuinticTrajectory", init<>())
+  class__<SwingFootQuintic::Trajectory>("SwingFootQuinticTrajectory", init<>())
       .def("pos", &SwingFootQuintic::Trajectory::pos)
       .def("vel", &SwingFootQuintic::Trajectory::vel);
 
-  class_<WalkTasks>("WalkTasks", init<>())
+  class__<WalkTasks>("WalkTasks", init<>())
       .def(
-          "initialize_tasks", +[](WalkTasks& tasks, KinematicsSolver& solver, HumanoidRobot& robot) 
-                                  { tasks.initialize_tasks(&solver, &robot); })
+          "initialize_tasks", +[](WalkTasks& tasks, KinematicsSolver& solver,
+                                  HumanoidRobot& robot) { tasks.initialize_tasks(&solver, &robot); })
       .def(
           "update_tasks_from_trajectory", +[](WalkTasks& tasks, WalkPatternGenerator::Trajectory& trajectory,
                                               double t) { return tasks.update_tasks(trajectory, t); })
@@ -113,7 +114,7 @@ void exposeWalkPatternGenerator()
       .add_property(
           "trunk_orientation_task", +[](WalkTasks& tasks) { return *tasks.trunk_orientation_task; });
 
-  class_<LIPM::Trajectory>("LIPMTrajectory", init<>())
+  class__<LIPM::Trajectory>("LIPMTrajectory", init<>())
       .def("pos", &LIPM::Trajectory::pos)
       .def("vel", &LIPM::Trajectory::vel)
       .def("acc", &LIPM::Trajectory::acc)
@@ -122,7 +123,7 @@ void exposeWalkPatternGenerator()
       .def("dzmp", &LIPM::Trajectory::dzmp)
       .def("dcm", &LIPM::Trajectory::dcm);
 
-  class_<LIPM>("LIPM", init<Problem&, int, double, Eigen::Vector2d, Eigen::Vector2d, Eigen::Vector2d>())
+  class__<LIPM>("LIPM", init<Problem&, int, double, Eigen::Vector2d, Eigen::Vector2d, Eigen::Vector2d>())
       .def("pos", &LIPM::pos)
       .def("vel", &LIPM::vel)
       .def("acc", &LIPM::acc)

@@ -2,6 +2,7 @@
 
 #include "expose-utils.hpp"
 #include "module.h"
+#include "registry.h"
 #include "placo/model/robot_wrapper.h"
 #include "placo/model/humanoid_robot.h"
 #include "placo/model/humanoid_parameters.h"
@@ -13,7 +14,7 @@ using namespace placo;
 
 void exposeParameters()
 {
-  class_<HumanoidParameters>("HumanoidParameters")
+  class__<HumanoidParameters>("HumanoidParameters")
       .add_property("single_support_duration", &HumanoidParameters::single_support_duration,
                     &HumanoidParameters::single_support_duration)
       .add_property("single_support_timesteps", &HumanoidParameters::single_support_timesteps,

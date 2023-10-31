@@ -2,6 +2,7 @@
 
 #include "expose-utils.hpp"
 #include "module.h"
+#include "registry.h"
 #include "placo/footsteps/footsteps_planner.h"
 #include "placo/footsteps/footsteps_planner_naive.h"
 #include "placo/footsteps/footsteps_planner_repetitive.h"
@@ -17,7 +18,7 @@ void exposeFootsteps()
       .value("left", HumanoidRobot::Side::Left)
       .value("right", HumanoidRobot::Side::Right);
 
-  class_<FootstepsPlanner::Footstep>("Footstep", init<double, double>())
+  class__<FootstepsPlanner::Footstep>("Footstep", init<double, double>())
       .def("support_polygon", &FootstepsPlanner::Footstep::support_polygon)
       .add_property("side", &FootstepsPlanner::Footstep::side, &FootstepsPlanner::Footstep::side)
       .add_property(
@@ -31,7 +32,7 @@ void exposeFootsteps()
       .staticmethod("polygon_contains")
       .add_property("kick", &FootstepsPlanner::Footstep::kick, &FootstepsPlanner::Footstep::kick);
 
-  class_<FootstepsPlanner::Support>("Support")
+  class__<FootstepsPlanner::Support>("Support")
       .def("support_polygon", &FootstepsPlanner::Support::support_polygon)
       .def("frame", &FootstepsPlanner::Support::frame)
       .def("footstep_frame", &FootstepsPlanner::Support::footstep_frame)
@@ -45,16 +46,17 @@ void exposeFootsteps()
       .add_property("start", &FootstepsPlanner::Support::start, &FootstepsPlanner::Support::start)
       .add_property("end", &FootstepsPlanner::Support::end, &FootstepsPlanner::Support::end);
 
-  class_<FootstepsPlanner, boost::noncopyable>("FootstepsPlanner", no_init)
+  class__<FootstepsPlanner, boost::noncopyable>("FootstepsPlanner", no_init)
       .def("make_supports", &FootstepsPlanner::make_supports)
       .def("add_first_support", &FootstepsPlanner::add_first_support)
       .def("opposite_footstep", &FootstepsPlanner::opposite_footstep);
 
-  class_<FootstepsPlannerNaive, bases<FootstepsPlanner>>("FootstepsPlannerNaive", init<HumanoidParameters&>())
+  class__<FootstepsPlannerNaive, bases<FootstepsPlanner>>("FootstepsPlannerNaive", init<HumanoidParameters&>())
       .def("plan", &FootstepsPlannerNaive::plan)
       .def("configure", &FootstepsPlannerNaive::configure);
 
-  class_<FootstepsPlannerRepetitive, bases<FootstepsPlanner>>("FootstepsPlannerRepetitive", init<HumanoidParameters&>())
+  class__<FootstepsPlannerRepetitive, bases<FootstepsPlanner>>("FootstepsPlannerRepetitive",
+                                                               init<HumanoidParameters&>())
       .def("plan", &FootstepsPlannerRepetitive::plan)
       .def("configure", &FootstepsPlannerRepetitive::configure);
 

@@ -131,6 +131,7 @@ add_library(placo MODULE
     bindings/expose-walk-pattern-generator.cpp
     bindings/expose-dynamics.cpp
     bindings/module.cpp
+    bindings/registry.cpp
 )
 target_link_libraries(placo ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} libplaco)
 target_include_directories(placo PRIVATE ${PYTHON_INCLUDE_DIRS})

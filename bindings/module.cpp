@@ -21,4 +21,5 @@ BOOST_PYTHON_MODULE(placo)
   exposeParameters();
   exposeKinematics();
   exposeWalkPatternGenerator();
+  exposeRegistry();
 }

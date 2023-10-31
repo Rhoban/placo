@@ -2,6 +2,7 @@
 
 #include "expose-utils.hpp"
 #include "module.h"
+#include "registry.h"
 #include "placo/model/robot_wrapper.h"
 #include "placo/model/humanoid_robot.h"
 #include "placo/kinematics/kinematics_solver.h"
@@ -115,7 +116,7 @@ void exposeRobotWrapper()
       .value("collision_as_visual", RobotWrapper::Flags::COLLISION_AS_VISUAL)
       .value("ignore_collisions", RobotWrapper::Flags::IGNORE_COLLISIONS);
 
-  class_<RobotWrapper::State>("RobotWrapper_State")
+  class__<RobotWrapper::State>("RobotWrapper_State")
       .add_property(
           "q", +[](const RobotWrapper::State& state) { return state.q; },
           +[](RobotWrapper::State& state, const Eigen::VectorXd& q) { state.q = q; })
@@ -127,7 +128,7 @@ void exposeRobotWrapper()
           +[](RobotWrapper::State& state, const Eigen::VectorXd& qdd) { state.qdd = qdd; });
   ;
 
-  class_<RobotWrapper::Collision>("Collision")
+  class__<RobotWrapper::Collision>("Collision")
       .add_property("objA", &RobotWrapper::Collision::objA)
       .add_property("objB", &RobotWrapper::Collision::objB)
       .add_property("bodyA", &RobotWrapper::Collision::bodyA)
@@ -137,7 +138,7 @@ void exposeRobotWrapper()
       .def(
           "get_contact", +[](RobotWrapper::Collision& collision, int index) { return collision.contacts[index]; });
 
-  class_<RobotWrapper::Distance>("Distance")
+  class__<RobotWrapper::Distance>("Distance")
       .add_property("objA", &RobotWrapper::Distance::objA)
       .add_property("objB", &RobotWrapper::Distance::objB)
       .add_property("parentA", &RobotWrapper::Distance::parentA)
@@ -150,11 +151,12 @@ void exposeRobotWrapper()
           "normal", +[](RobotWrapper::Distance& distance) { return distance.normal; })
       .add_property("min_distance", &RobotWrapper::Distance::min_distance);
 
-  class_<RobotWrapper> robotWrapper("RobotWrapper", init<std::string, optional<int, std::string>>());
+  class_<RobotWrapper> robotWrapper =
+      class__<RobotWrapper>("RobotWrapper", init<std::string, optional<int, std::string>>());
   exposeRobotType<RobotWrapper>(robotWrapper);
 
-  class_<HumanoidRobot, bases<RobotWrapper>> humanoidWrapper("HumanoidRobot",
-                                                             init<std::string, optional<int, std::string>>());
+  class_<HumanoidRobot, bases<RobotWrapper>> humanoidWrapper =
+      class__<HumanoidRobot, bases<RobotWrapper>>("HumanoidRobot", init<std::string, optional<int, std::string>>());
 
   exposeRobotType<HumanoidRobot>(humanoidWrapper);
   humanoidWrapper
