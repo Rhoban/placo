@@ -166,13 +166,8 @@ protected:
   // The parameters to use for planning. The values are forwarded to the relevant solvers when needed.
   HumanoidParameters& parameters;
 
-  double omega_target;
-  double omega_min;
-  double omega_max;
-
-  double omega_2_target;
-  double omega_2_min;
-  double omega_2_max;
+  double omega;
+  double omega_2;
 
   void planCoM(Trajectory& trajectory, Eigen::Vector2d initial_pos, Eigen::Vector2d initial_vel = Eigen::Vector2d::Zero(),
                Eigen::Vector2d initial_acc = Eigen::Vector2d::Zero(), Trajectory* old_trajectory = nullptr, double t_replan = 0.);

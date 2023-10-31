@@ -6,7 +6,7 @@ using namespace placo::kinematics;
 
 namespace placo
 {
-void WalkTasks::initialize_tasks(KinematicsSolver* solver_, HumanoidRobot* robot_, double com_z_min, double com_z_max)
+void WalkTasks::initialize_tasks(KinematicsSolver* solver_, HumanoidRobot* robot_)
 {
   robot = robot_;
   solver = solver_;
@@ -18,18 +18,6 @@ void WalkTasks::initialize_tasks(KinematicsSolver* solver_, HumanoidRobot* robot
   right_foot_task.configure("right_foot", "soft", 1., 1.);
 
   trunk_orientation_task = &solver->add_orientation_task("trunk", robot->get_T_world_trunk().rotation());
-  trunk_orientation_task->configure("trunk", "soft", 1.);
-
-  if (com_z_min != -1)
-  {
-    com_lb_task = &solver->add_com_lb_task(com_z_min);
-    com_lb_task->configure("com_lb", "hard", 0);
-  }
-  if (com_z_max != -1)
-  {
-    com_ub_task = &solver->add_com_ub_task(com_z_max);
-    com_ub_task->configure("com_ub", "hard", 0);
-  }
 
   update_com_task();
 
@@ -132,7 +120,7 @@ void WalkTasks::update_tasks(Eigen::Affine3d T_world_left, Eigen::Affine3d T_wor
     }
 
     for (auto dof : robot->actuated_joint_names())
-    {
+    {      
       solver->enable_velocity_limits(true);
       double expected_torque = std::abs(torques[robot->get_joint_v_offset(dof)]) + 0.1;  // 0.1 is a safety margin
       double limit = velocity_limit(expected_torque, dof, use_doc_limits);

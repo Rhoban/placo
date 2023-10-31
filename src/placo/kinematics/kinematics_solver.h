@@ -14,7 +14,6 @@
 #include "placo/kinematics/relative_orientation_task.h"
 #include "placo/kinematics/relative_frame_task.h"
 #include "placo/kinematics/com_task.h"
-#include "placo/kinematics/com_bound_task.h"
 #include "placo/kinematics/distance_task.h"
 #include "placo/kinematics/joints_task.h"
 #include "placo/kinematics/gear_task.h"
@@ -54,18 +53,6 @@ public:
    * @param targetCom_world the target position, expressed in the world (as T_world_frame)
    */
   CoMTask& add_com_task(Eigen::Vector3d targetCom_world);
-
-  /**
-   * @brief Adds a com lower bound task
-   * @param z_min lower bound for CoM z in th world
-   */
-  CoMBoundTask& add_com_lb_task(double z_min);
-
-  /**
-   * @brief Adds a com upper bound task
-   * @param z_max upper bound for CoM z in th world
-   */
-  CoMBoundTask& add_com_ub_task(double z_max);
 
   /**
    * @brief Adds an orientation task

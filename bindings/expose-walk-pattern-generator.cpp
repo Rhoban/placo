@@ -69,8 +69,8 @@ void exposeWalkPatternGenerator()
 
   class_<WalkTasks>("WalkTasks", init<>())
       .def(
-          "initialize_tasks", +[](WalkTasks& tasks, KinematicsSolver& solver, HumanoidRobot& robot, double com_z_min,
-                                  double com_z_max) { tasks.initialize_tasks(&solver, &robot, com_z_min, com_z_max); })
+          "initialize_tasks", +[](WalkTasks& tasks, KinematicsSolver& solver, HumanoidRobot& robot) 
+                                  { tasks.initialize_tasks(&solver, &robot); })
       .def(
           "update_tasks_from_trajectory", +[](WalkTasks& tasks, WalkPatternGenerator::Trajectory& trajectory,
                                               double t) { return tasks.update_tasks(trajectory, t); })

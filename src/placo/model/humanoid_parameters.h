@@ -93,17 +93,7 @@ public:
   /**
    * @brief Target CoM height while walking [m]
    */
-  double walk_target_com_height = 0.35;
-
-  /**
-   * @brief Maximum CoM height while walking [m], should be higher than walk_target_com_height
-   */
-  double walk_max_com_height = 0.4;
-
-  /**
-   * @brief Minimum CoM height while walking [m], should be lower than walk_target_com_height
-   */
-  double walk_min_com_height = 0.3;
+  double walk_com_height = 0.35;
 
   /**
    * @brief Trunk pitch while walking [rad]

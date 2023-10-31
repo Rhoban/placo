@@ -13,13 +13,8 @@ WalkPatternGenerator::Trajectory::Trajectory() : left_foot_yaw(true), right_foot
 WalkPatternGenerator::WalkPatternGenerator(HumanoidRobot& robot, HumanoidParameters& parameters)
   : robot(robot), parameters(parameters)
 {
-  omega_target = LIPM::compute_omega(parameters.walk_target_com_height);
-  omega_min = LIPM::compute_omega(parameters.walk_min_com_height);
-  omega_max = LIPM::compute_omega(parameters.walk_max_com_height);
-
-  omega_2_target = pow(omega_target, 2);
-  omega_2_min = pow(omega_min, 2);
-  omega_2_max = pow(omega_max, 2);
+  omega = LIPM::compute_omega(parameters.walk_com_height);
+  omega_2 = pow(omega, 2);
 }
 
 static Eigen::Affine3d _buildFrame(Eigen::Vector3d position, double orientation)
@@ -353,9 +348,7 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
       if (timestep > kept_timesteps)
       {
         problem.add_constraints(PolygonConstraint::in_polygon_xy(
-            lipm.zmp(timestep, omega_2_min), current_support.support_polygon(), parameters.zmp_margin));
-        problem.add_constraints(PolygonConstraint::in_polygon_xy(
-            lipm.zmp(timestep, omega_2_max), current_support.support_polygon(), parameters.zmp_margin));
+            lipm.zmp(timestep, omega_2), current_support.support_polygon(), parameters.zmp_margin));
       }
 
       // ZMP reference trajectory
@@ -397,7 +390,7 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
       }
 
       Eigen::Vector3d zmp_target = current_support.frame() * Eigen::Vector3d(x_offset, y_offset, 0);
-      problem.add_constraint(lipm.zmp(timestep, omega_2_target) == zmp_target.head(2))
+      problem.add_constraint(lipm.zmp(timestep, omega_2) == zmp_target.head(2))
           .configure(ProblemConstraint::Soft, parameters.zmp_reference_weight);
     }
 
@@ -574,7 +567,7 @@ WalkPatternGenerator::Trajectory WalkPatternGenerator::plan(std::vector<Footstep
   trajectory.t_start = t_start;
   trajectory.trunk_pitch = parameters.walk_trunk_pitch;
   trajectory.supports = supports;
-  trajectory.com_target_z = parameters.walk_target_com_height;
+  trajectory.com_target_z = parameters.walk_com_height;
 
   // Planning the center of mass trajectory
   planCoM(trajectory, initial_com_world.head(2));
@@ -597,7 +590,7 @@ WalkPatternGenerator::Trajectory WalkPatternGenerator::replan(std::vector<Footst
   // Initialization of the new trajectory
   Trajectory trajectory;
   trajectory.trunk_pitch = parameters.walk_trunk_pitch;
-  trajectory.com_target_z = parameters.walk_target_com_height;
+  trajectory.com_target_z = parameters.walk_com_height;
   trajectory.supports = supports;
   trajectory.t_start = old_trajectory.get_part_t_start(t_replan);
 
