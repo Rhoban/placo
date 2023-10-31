@@ -15,17 +15,15 @@ RelativeOrientationTask::RelativeOrientationTask(RobotWrapper::FrameIndex frame_
 void RelativeOrientationTask::update()
 {
   // Computing J and dJ
-  Eigen::MatrixXd Ja = solver->robot.frame_jacobian(frame_a_index, pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED)
-                           .block(3, 0, 3, solver->N);
-  Eigen::MatrixXd dJa =
-      solver->robot.frame_jacobian_time_variation(frame_a_index, pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED)
-          .block(3, 0, 3, solver->N);
+  Eigen::MatrixXd Ja =
+      solver->robot.frame_jacobian(frame_a_index, pinocchio::ReferenceFrame::WORLD).block(3, 0, 3, solver->N);
+  Eigen::MatrixXd dJa = solver->robot.frame_jacobian_time_variation(frame_a_index, pinocchio::ReferenceFrame::WORLD)
+                            .block(3, 0, 3, solver->N);
 
-  Eigen::MatrixXd Jb = solver->robot.frame_jacobian(frame_b_index, pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED)
-                           .block(3, 0, 3, solver->N);
-  Eigen::MatrixXd dJb =
-      solver->robot.frame_jacobian_time_variation(frame_b_index, pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED)
-          .block(3, 0, 3, solver->N);
+  Eigen::MatrixXd Jb =
+      solver->robot.frame_jacobian(frame_b_index, pinocchio::ReferenceFrame::WORLD).block(3, 0, 3, solver->N);
+  Eigen::MatrixXd dJb = solver->robot.frame_jacobian_time_variation(frame_b_index, pinocchio::ReferenceFrame::WORLD)
+                            .block(3, 0, 3, solver->N);
 
   // Computing error
   Eigen::Affine3d T_world_a = solver->robot.get_T_world_frame(frame_a_index);
@@ -43,9 +41,12 @@ void RelativeOrientationTask::update()
 
   Eigen::Vector3d desired_acceleration = kp * orientation_error_world + get_kd() * velocity_error_world;
 
+  Eigen::MatrixXd Jlog;
+  pinocchio::Jlog3(M, Jlog);
+
   // Acceleration is: J * qdd + dJ * qd
-  A = mask.apply(Jb - Ja);
-  b = mask.apply(desired_acceleration - (dJb * solver->robot.state.qd - dJa * solver->robot.state.qd));
+  A = mask.apply(Jlog * (Jb - Ja));
+  b = mask.apply(desired_acceleration - Jlog * (dJb * solver->robot.state.qd - dJa * solver->robot.state.qd));
   error = mask.apply(orientation_error_world);
   derror = mask.apply(velocity_error_world);
 }
