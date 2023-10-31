@@ -22,8 +22,13 @@ void GearTask::update()
   int k = 0;
   for (auto& entry : gears)
   {
-    A(k, entry.first) = 1;
-    A(k, entry.second.source) = -entry.second.ratio;
+    double q_target = solver->robot.state.q[entry.first + 1];
+    double q_source = solver->robot.state.q[gears[entry.first].source + 1];
+
+    A(k, entry.first) = -1;
+    A(k, entry.second.source) = entry.second.ratio;
+    b(k, 0) = q_target - q_source * entry.second.ratio;
+
     k += 1;
   }
 }
