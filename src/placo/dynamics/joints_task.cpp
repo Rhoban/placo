@@ -7,10 +7,11 @@ JointsTask::JointsTask()
 {
 }
 
-void JointsTask::set_joint(std::string joint, double target, double velocity)
+void JointsTask::set_joint(std::string joint, double target, double velocity, double acceleration)
 {
   joints[joint] = target;
   djoints[joint] = velocity;
+  ddjoints[joint] = acceleration;
 }
 
 void JointsTask::update()
