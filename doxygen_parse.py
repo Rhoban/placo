@@ -138,7 +138,7 @@ def rewrite_type(typename: str):
             if typename.startswith("std::vector"):
                 return "list[" + rewrite_type(typename[12:-1]) + "]"
 
-        return re.sub("[^a-zA-Z0-9\.\[\]]", "_", typename)
+        return re.sub("[^a-zA-Z0-9\.\[\]\:]", "_", typename)
 
     return None
 
