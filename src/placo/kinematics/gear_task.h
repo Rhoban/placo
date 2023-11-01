@@ -39,7 +39,7 @@ struct GearTask : public Task
   std::map<int, Gear> gears;
 
   /**
-   * @brief Sets a gear
+   * @brief Sets a gear constraint
    * @param target target joint
    * @param source source joint
    * @param ratio ratio

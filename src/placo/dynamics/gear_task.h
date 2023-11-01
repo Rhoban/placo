@@ -37,8 +37,17 @@ public:
    */
   GearTask();
 
+  /**
+   * @brief Gear settings
+   */
   std::map<int, Gear> gears;
 
+  /**
+   * @brief Sets a gear constraint
+   * @param target target joint
+   * @param source source joint
+   * @param ratio ratio
+   */
   void set_gear(std::string target, std::string source, double ratio);
 
   void update() override;
