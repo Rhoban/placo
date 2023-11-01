@@ -23,7 +23,7 @@ struct DistanceTask : public Task
   RobotWrapper::FrameIndex frame_b;
 
   /**
-   * @brief target distance between A and B
+   * @brief Target distance between A and B
    */
   double distance;
 

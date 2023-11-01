@@ -25,7 +25,7 @@ struct RelativeOrientationTask : public Task
   RobotWrapper::FrameIndex frame_b;
 
   /**
-   * @brief Relative orientation of b in a
+   * @brief Target relative orientation of b in a
    */
   Eigen::Matrix3d R_a_b;
 

@@ -13,7 +13,7 @@ struct JointsTask : public Task
   JointsTask();
 
   /**
-   * @brief joint names to target values mapping
+   * @brief Joint names to target values mapping
    */
   std::map<std::string, double> joints;
 

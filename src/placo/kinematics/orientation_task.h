@@ -19,7 +19,7 @@ struct OrientationTask : public Task
   RobotWrapper::FrameIndex frame_index;
 
   /**
-   * @brief Desired frame orientation in the world
+   * @brief Target frame orientation in the world
    */
   Eigen::Matrix3d R_world_frame;
 
