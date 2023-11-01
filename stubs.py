@@ -167,7 +167,7 @@ def print_class_method(class_name: str, method_name: str, doc: str, prefix: str 
 
         # Brief
         doc = ""
-        if "brief" in member:
+        if "brief" in member and member["brief"] is not None:
             doc = member["brief"] + "\n"
 
         if "detailed" in member:
