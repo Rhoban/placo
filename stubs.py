@@ -122,7 +122,8 @@ def print_def_prototype(
     for arg_name, arg_type, defvalue, comment in args:
         str_definition += f"{prefix}  {arg_name}: {arg_type}"
         if defvalue is not None:
-            str_definition += f" = {defvalue}"
+            if arg_type in ["str", "float", "int", "bool"]:
+                str_definition += f" = {defvalue.capitalize()}"
         str_definition += ","
         if comment is not None:
             str_definition += f" # {comment}"
