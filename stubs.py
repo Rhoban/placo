@@ -106,7 +106,12 @@ def parse_doc(name: str, doc: str) -> dict:
 
 
 def print_def_prototype(
-    method_name: str, args: list, return_type: str = "any", doc="", prefix: str = "", static: bool = False
+    method_name: str,
+    args: list,
+    return_type: str = "any",
+    doc="",
+    prefix: str = "",
+    static: bool = False,
 ):
     str_definition = ""
 
@@ -132,7 +137,12 @@ def print_def_prototype(
 def print_def(name: str, doc: str, prefix: str = ""):
     definition = parse_doc(name, doc)
 
-    print_def_prototype(definition["name"], [[arg_name, arg_type, None, None] for arg_type, arg_name in definition["args"]], prefix=prefix)
+    print_def_prototype(
+        definition["name"],
+        [[arg_name, arg_type, None, None] for arg_type, arg_name in definition["args"]],
+        definition["returns"],
+        prefix=prefix,
+    )
 
 
 def print_class_member(class_name: str, member_name: str):
@@ -145,7 +155,7 @@ def print_class_member(class_name: str, member_name: str):
             print(f'  """{member["brief"]}"""')
     else:
         print(f"  {member_name}: any")
-    
+
     print("")
 
 
@@ -159,7 +169,10 @@ def print_class_method(class_name: str, method_name: str, doc: str, prefix: str 
         static = member["static"]
 
         # Method arguments
-        args = [[arg["name"], cxx_type_to_py(arg["type"]), arg["default"], arg["type"]] for arg in member["params"]]
+        args = [
+            [arg["name"], cxx_type_to_py(arg["type"]), arg["default"], arg["type"]]
+            for arg in member["params"]
+        ]
         if class_name != module and not member["static"]:
             args = [["self", class_name, None, None]] + args
 
@@ -183,7 +196,9 @@ def print_class_method(class_name: str, method_name: str, doc: str, prefix: str 
         if "returns" in member:
             doc += f"\n{prefix}  :return: {member['returns']}"
 
-        print_def_prototype(method_name, args, return_type, doc=doc, prefix=prefix, static=static)
+        print_def_prototype(
+            method_name, args, return_type, doc=doc, prefix=prefix, static=static
+        )
     else:
         print_def(method_name, doc, prefix)
 
@@ -197,7 +212,11 @@ for name, object in inspect.getmembers(placo):
 
         if class_name in py_registry:
             metadata = get_metadata(py_registry[class_name])
-            if metadata is not None and "brief" in metadata and metadata["brief"] is not None:
+            if (
+                metadata is not None
+                and "brief" in metadata
+                and metadata["brief"] is not None
+            ):
                 print(f"  \"\"\"{metadata['brief']}\"\"\"")
 
         for _name, _object in inspect.getmembers(object):
