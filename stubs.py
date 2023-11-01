@@ -110,7 +110,7 @@ def print_def_prototype(
     for arg_name, arg_type, comment in args:
         str_definition += f"{prefix}  {arg_name}: {arg_type},"
         if comment != "":
-            str_definition += f" # {comment}\n"
+            str_definition += f" # {comment}"
         str_definition += "\n"
     str_definition += f"\n{prefix}) -> {return_type}:\n"
     if doc != "":

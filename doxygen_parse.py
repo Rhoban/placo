@@ -12,11 +12,10 @@ compound_metadata: dict = {}
 # Mapping doxygen IDs to C++ compound names
 doxygen_id_to_name: dict = {}
 
-# Typedefs
-typedefs: dict = {}
 
 def resolve_type(node):
     type_node = node.find("type")
+
     if type_node.find("ref") is not None:
         return type_node.find("ref").attrib["refid"]
     else:
@@ -47,7 +46,7 @@ def parse_compound(compounddef_node: ET.Element):
         id = member.attrib["id"]
         static = member.attrib["static"] == "yes"
 
-        if kind in ["function", "variable", "enum", "namespace"]:
+        if kind in ["function", "variable", "namespace"]:
             member_definitions[id] = {
                 "kind": kind,
                 "name": member.find("name").text,
@@ -92,7 +91,9 @@ def parse_compound(compounddef_node: ET.Element):
                 compound_members[name].append(id)
 
         elif kind == "typedef":
-            typedefs[id] = resolve_type(member)
+            doxygen_id_to_name[id] = resolve_type(member)
+        elif kind == "enum":
+            doxygen_id_to_name[id] = name + "::" + member.find("name").text
 
     # Listinf all members
     kind = compounddef_node.attrib["kind"]
@@ -108,6 +109,7 @@ def parse_xml(xml_file: str):
         # Searching for compounddef nodes (classs & struct)
         for compounddef_node in xml_content.findall("compounddef"):
             parse_compound(compounddef_node)
+
 
 def resolve_doxygen_id(id: str):
     if id in doxygen_id_to_name:
