@@ -4,7 +4,7 @@ import inspect
 import placo
 import os
 import glob
-from doxygen_parse import parse_directory, get_members, get_metadata, rewrite_types
+from doxygen_parse import parse_directory, get_members, get_metadata
 
 module: str = "placo"
 
@@ -17,10 +17,27 @@ os.system(f"cd {repo_directory} && doxygen 1>&2")
 # Read the Doxygen XML file
 parse_directory(repo_directory)
 
+# Translation for types from C++ to python
+rewrite_types: dict = {
+    "std::string": "str",
+    "double": "float",
+    "int": "int",
+    "bool": "bool",
+    "void": "None",
+    "Eigen::MatrixXd": "numpy.ndarray",
+    "Eigen::VectorXd": "numpy.ndarray",
+    "Eigen::Matrix3d": "numpy.ndarray",
+    "Eigen::Vector3d": "numpy.ndarray",
+    "Eigen::Matrix2d": "numpy.ndarray",
+    "Eigen::Vector2d": "numpy.ndarray",
+    "Eigen::Affine3d": "numpy.ndarray",
+}
+
 # Building registry and reverse registry for class names
 cxx_registry = placo.get_classes_registry()
 py_registry = {module: module}
 for entry in cxx_registry:
+    rewrite_types[entry] = cxx_registry[entry]
     py_registry[cxx_registry[entry]] = entry
 
 
@@ -34,19 +51,36 @@ def get_member(class_name: str, member_name: str):
     return None
 
 
-def cxx_type_to_py(cxx_type: str) -> str:
-    if cxx_type in cxx_registry:
-        return cxx_registry[cxx_type]
-    elif cxx_type in rewrite_types:
-        return rewrite_types[cxx_type]
-    else:
-        return re.sub("[^a-zA-Z0-9\.]", "_", cxx_type)
+def cxx_type_to_py(typename: str):
+    """
+    We apply here some heuristics to rewrite C++ types to Python
+    """
+    typename_raw = typename
+    if typename is not None:
+        typename = typename.replace("&", "")
+        typename = typename.replace("*", "")
+        typename = typename.strip()
+        if typename.startswith("const "):
+            typename = typename[6:]
+
+        if typename in rewrite_types:
+            return rewrite_types[typename]
+        elif typename.startswith("std::vector"):
+            return "list[" + cxx_type_to_py(typename[12:-1]) + "]"
+        else:
+            return f"any"
+
+    return None
 
 
 def parse_doc(name: str, doc: str) -> dict:
+    """
+    Parses the docstring prototypes produced by Boost.Python to infer types
+    """
     definition = {"name": name, "args": [], "returns": "any"}
 
     prototype = doc.strip().split("\n")[0].strip()
+    prototype = prototype.replace("[", "").replace("]", "")
 
     result = re.fullmatch(r"^(.*?)\((.+)\) -> (.+) :$", prototype)
     if result:
@@ -64,13 +98,31 @@ def parse_doc(name: str, doc: str) -> dict:
     return definition
 
 
+def print_def_prototype(
+    method_name: str, args: list, return_type: str = "any", doc="", prefix: str = "", static: bool = False
+):
+    str_definition = ""
+
+    if static:
+        str_definition += f"{prefix}@staticmethod\n"
+
+    str_definition += f"{prefix}def {method_name}(\n"
+    for arg_name, arg_type, comment in args:
+        str_definition += f"{prefix}  {arg_name}: {arg_type},"
+        if comment != "":
+            str_definition += f" # {comment}\n"
+        str_definition += "\n"
+    str_definition += f"\n{prefix}) -> {return_type}:\n"
+    if doc != "":
+        str_definition += f'{prefix}  """{doc.strip()}"""\n'
+    str_definition += f"{prefix}  ...\n"
+    print(str_definition)
+
+
 def print_def(name: str, doc: str, prefix: str = ""):
     definition = parse_doc(name, doc)
-    str_definition = prefix
-    str_definition += f"def {definition['name']}("
-    str_definition += ",".join([f"{arg_name}: {arg_type}" for arg_type, arg_name in definition["args"]])
-    str_definition += f") -> {definition['returns']}: ..."
-    print(str_definition)
+
+    print_def_prototype(definition["name"], [[arg_name, arg_type, ""] for arg_type, arg_name in definition["args"]], prefix=prefix)
 
 
 def print_class_member(class_name: str, member_name: str):
@@ -78,11 +130,13 @@ def print_class_member(class_name: str, member_name: str):
 
     if member is not None:
         py_type = cxx_type_to_py(member["type"])
-        print(f"  {member_name}: {py_type}")
+        print(f"  {member_name}: {py_type} # {member['type']}")
         if "brief" in member:
-            print(f"  \"\"\"{member['brief']}\"\"\"")
+            print(f'  """{member["brief"]}"""')
     else:
         print(f"  {member_name}: any")
+    
+    print("")
 
 
 def print_class_method(class_name: str, method_name: str, doc: str, prefix: str = ""):
@@ -92,47 +146,34 @@ def print_class_method(class_name: str, method_name: str, doc: str, prefix: str 
         member = get_member(class_name, method_name)
 
     if member is not None:
-        str_definition = ""
-        
-        if member["static"]:
-            str_definition += f"{prefix}@staticmethod\n"
-
-        # Method name
-        str_definition += f"{prefix}def {method_name}("
+        static = member["static"]
 
         # Method arguments
-        params = [f"{arg['name']}: {cxx_type_to_py(arg['type'])}" for arg in member["params"]]
+        args = [[arg["name"], cxx_type_to_py(arg["type"]), arg["type"]] for arg in member["params"]]
         if class_name != module and not member["static"]:
-            params = ["self: " + class_name] + params
-        str_definition += ",".join(params)
+            args = [["self", class_name, ""]] + args
 
         # Return type
-        str_definition += f")"
+        return_type = "any"
         if member["type"]:
-            py_type = cxx_type_to_py(member["type"])
-            str_definition += f" -> {py_type}"
-        str_definition += ":\n"
+            return_type = cxx_type_to_py(member["type"])
 
         # Brief
-        brief_str = ""
+        doc = ""
         if "brief" in member:
-            brief_str = member["brief"] + "\n"
+            doc = member["brief"] + "\n"
 
         if "detailed" in member:
             for param in member["detailed"]:
-                brief_str += f"\n{prefix}  :param {param['name']}: {param['desc']}"
+                doc += f"\n{prefix}  :param {param['name']}: {param['desc']}"
 
         if "verbatim" in member:
-            brief_str += f"\n{prefix}  {member['verbatim']}"
+            doc += f"\n{prefix}  {member['verbatim']}"
 
         if "returns" in member:
-            brief_str += f"\n{prefix}  :return: {member['returns']}"
+            doc += f"\n{prefix}  :return: {member['returns']}"
 
-        if brief_str:
-            str_definition += f'{prefix}  """\n{prefix}  {brief_str}\n{prefix}  """\n'
-        str_definition += f"{prefix}  ...\n"
-
-        print(str_definition)
+        print_def_prototype(method_name, args, return_type, doc=doc, prefix=prefix, static=static)
     else:
         print_def(method_name, doc, prefix)
 
@@ -146,7 +187,7 @@ for name, object in inspect.getmembers(placo):
 
         if class_name in py_registry:
             metadata = get_metadata(py_registry[class_name])
-            if metadata is not None and "brief" in metadata:
+            if metadata is not None and "brief" in metadata and metadata["brief"] is not None:
                 print(f"  \"\"\"{metadata['brief']}\"\"\"")
 
         for _name, _object in inspect.getmembers(object):

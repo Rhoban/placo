@@ -9,22 +9,11 @@ member_definitions: dict = {}
 compound_members: dict = {}
 compound_metadata: dict = {}
 
-# Mapping compound id to name
-rewrite_types: dict = {
-    "std::string": "str",
-    "double": "float",
-    "int": "int",
-    "bool": "bool",
-    "Eigen::MatrixXd": "numpy.ndarray",
-    "Eigen::VectorXd": "numpy.ndarray",
-    "Eigen::Matrix3d": "numpy.ndarray",
-    "Eigen::Vector3d": "numpy.ndarray",
-    "Eigen::Matrix2d": "numpy.ndarray",
-    "Eigen::Vector2d": "numpy.ndarray",
-    "Eigen::Affine3d": "numpy.ndarray",
-    "void": "None",
-}
+# Mapping doxygen IDs to C++ compound names
+doxygen_id_to_name: dict = {}
 
+# Typedefs
+typedefs: dict = {}
 
 def resolve_type(node):
     type_node = node.find("type")
@@ -40,7 +29,7 @@ def parse_compound(compounddef_node: ET.Element):
     name = compounddef_node.find("compoundname").text
     compound_kind = compounddef_node.attrib["kind"]
     id = compounddef_node.attrib["id"]
-    rewrite_types[id] = name
+    doxygen_id_to_name[id] = name
     compound_members[name] = []
 
     compound_metadata[name] = {
@@ -103,7 +92,7 @@ def parse_compound(compounddef_node: ET.Element):
                 compound_members[name].append(id)
 
         elif kind == "typedef":
-            rewrite_types[id] = resolve_type(member)
+            typedefs[id] = resolve_type(member)
 
     # Listinf all members
     kind = compounddef_node.attrib["kind"]
@@ -120,27 +109,11 @@ def parse_xml(xml_file: str):
         for compounddef_node in xml_content.findall("compounddef"):
             parse_compound(compounddef_node)
 
-
-def rewrite_type(typename: str):
-    """
-    We apply here some heuristics to rewrite C++ types to Python
-    """
-    if typename is not None:
-        typename = typename.replace("&", "")
-        typename = typename.replace("*", "")
-        typename = typename.strip()
-        if typename.startswith("const "):
-            typename = typename[6:]
-
-        if typename in rewrite_types:
-            typename = rewrite_types[typename]
-        else:
-            if typename.startswith("std::vector"):
-                return "list[" + rewrite_type(typename[12:-1]) + "]"
-
-        return re.sub("[^a-zA-Z0-9\.\[\]\:]", "_", typename)
-
-    return None
+def resolve_doxygen_id(id: str):
+    if id in doxygen_id_to_name:
+        return doxygen_id_to_name[id]
+    else:
+        return id
 
 
 def parse_directory(directory):
@@ -153,10 +126,10 @@ def parse_directory(directory):
     # Resolving types
     for member in member_definitions:
         member_definition = member_definitions[member]
-        member_definition["type"] = rewrite_type(member_definition["type"])
+        member_definition["type"] = resolve_doxygen_id(member_definition["type"])
 
         for param in member_definition["params"]:
-            param["type"] = rewrite_type(param["type"])
+            param["type"] = resolve_doxygen_id(param["type"])
 
     # Resolving compound members
     for name in compound_members:
