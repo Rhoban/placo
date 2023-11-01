@@ -29,6 +29,11 @@ public:
    */
   Eigen::Vector3d omega_world = Eigen::Vector3d::Zero();
 
+  /**
+   * @brief Target angular acceleration
+   */
+  Eigen::Vector3d domega_world = Eigen::Vector3d::Zero();
+
   void update() override;
   std::string type_name() override;
   std::string error_unit() override;

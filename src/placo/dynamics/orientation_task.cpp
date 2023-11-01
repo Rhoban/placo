@@ -41,7 +41,7 @@ void OrientationTask::update()
   Eigen::MatrixXd Jlog;
   pinocchio::Jlog3(M, Jlog);
 
-  Eigen::Vector3d desired_acceleration = kp * orientation_error + get_kd() * velocity_error;
+  Eigen::Vector3d desired_acceleration = kp * orientation_error + get_kd() * velocity_error + domega_world;
 
   A = mask.apply(Jlog * J);
   b = mask.apply(desired_acceleration - Jlog * dJ * solver->robot.state.qd);

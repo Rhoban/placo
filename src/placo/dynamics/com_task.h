@@ -24,6 +24,11 @@ public:
    */
   Eigen::Vector3d dtarget_world = Eigen::Vector3d::Zero();
 
+  /**
+   * @brief Target acceleration in the world
+   */
+  Eigen::Vector3d ddtarget_world = Eigen::Vector3d::Zero();
+
   void update() override;
   std::string type_name() override;
   std::string error_unit() override;

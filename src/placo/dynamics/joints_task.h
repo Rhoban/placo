@@ -27,12 +27,18 @@ public:
   std::map<std::string, double> djoints;
 
   /**
+   * @brief Maps joints to acceleration targets
+   */
+  std::map<std::string, double> ddjoints;
+
+  /**
    * @brief Sets the target for a given joint
    * @param joint joint name
    * @param target target position
    * @param velocity target velocity
+   * @param acceleration target acceleration
    */
-  void set_joint(std::string joint, double target, double velocity = 0.);
+  void set_joint(std::string joint, double target, double velocity = 0., double acceleration = 0.);
 
   void update() override;
   std::string type_name() override;

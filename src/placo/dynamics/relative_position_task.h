@@ -32,6 +32,11 @@ public:
    */
   Eigen::Vector3d dtarget = Eigen::Vector3d::Zero();
 
+  /**
+   * @brief Target relative velocity
+   */
+  Eigen::Vector3d ddtarget = Eigen::Vector3d::Zero();
+
   void update() override;
   std::string type_name() override;
   std::string error_unit() override;

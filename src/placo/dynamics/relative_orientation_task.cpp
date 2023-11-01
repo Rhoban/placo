@@ -39,7 +39,7 @@ void RelativeOrientationTask::update()
   Eigen::Vector3d world_omega_a_b_real = world_omega_b - world_omega_a;
   Eigen::Vector3d velocity_error_world = R_world_a * omega_a_b - world_omega_a_b_real;
 
-  Eigen::Vector3d desired_acceleration = kp * orientation_error_world + get_kd() * velocity_error_world;
+  Eigen::Vector3d desired_acceleration = kp * orientation_error_world + get_kd() * velocity_error_world + domega_a_b;
 
   Eigen::MatrixXd Jlog;
   pinocchio::Jlog3(M, Jlog);

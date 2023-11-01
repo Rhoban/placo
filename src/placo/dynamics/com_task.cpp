@@ -22,7 +22,7 @@ void CoMTask::update()
   Eigen::Vector3d velocity_world = J * solver->robot.state.qd;
   Eigen::Vector3d velocity_error = dtarget_world - velocity_world;
 
-  Eigen::Vector3d desired_acceleration = kp * position_error + get_kd() * velocity_error;
+  Eigen::Vector3d desired_acceleration = kp * position_error + get_kd() * velocity_error + ddtarget_world;
 
   // Acceleration is: J * qdd + dJ * qd
   A = mask.apply(J);

@@ -32,6 +32,11 @@ public:
    */
   Eigen::Vector3d omega_a_b = Eigen::Vector3d::Zero();
 
+  /**
+   * @brief Target relative angular velocity
+   */
+  Eigen::Vector3d domega_a_b = Eigen::Vector3d::Zero();
+
   void update() override;
   std::string type_name() override;
   std::string error_unit() override;

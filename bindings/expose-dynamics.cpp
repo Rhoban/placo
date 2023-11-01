@@ -162,6 +162,8 @@ void exposeDynamics()
           "target_world", +[](const CoMTask& task) { return task.target_world; }, &CoMTask::target_world)
       .add_property(
           "dtarget_world", +[](const CoMTask& task) { return task.dtarget_world; }, &CoMTask::dtarget_world)
+      .add_property(
+          "ddtarget_world", +[](const CoMTask& task) { return task.dtarget_world; }, &CoMTask::ddtarget_world)
       .add_property("mask", &CoMTask::mask, &CoMTask::mask);
 
   class__<RelativePositionTask, bases<Task>>(
@@ -170,6 +172,8 @@ void exposeDynamics()
           "target", +[](const RelativePositionTask& task) { return task.target; }, &RelativePositionTask::target)
       .add_property(
           "dtarget", +[](const RelativePositionTask& task) { return task.dtarget; }, &RelativePositionTask::dtarget)
+      .add_property(
+          "ddtarget", +[](const RelativePositionTask& task) { return task.ddtarget; }, &RelativePositionTask::ddtarget)
       .add_property("mask", &RelativePositionTask::mask, &RelativePositionTask::mask);
 
   class__<RelativeOrientationTask, bases<Task>>(
@@ -179,6 +183,9 @@ void exposeDynamics()
       .add_property(
           "omega_a_b", +[](const RelativeOrientationTask& task) { return task.omega_a_b; },
           &RelativeOrientationTask::omega_a_b)
+      .add_property(
+          "domega_a_b", +[](const RelativeOrientationTask& task) { return task.domega_a_b; },
+          &RelativeOrientationTask::domega_a_b)
       .add_property("mask", &RelativeOrientationTask::mask, &RelativeOrientationTask::mask);
 
   class__<OrientationTask, bases<Task>>("DynamicsOrientationTask", init<RobotWrapper::FrameIndex, Eigen::Matrix3d>())
@@ -187,6 +194,9 @@ void exposeDynamics()
           &OrientationTask::R_world_frame)
       .add_property(
           "omega_world", +[](const OrientationTask& task) { return task.omega_world; }, &OrientationTask::omega_world)
+      .add_property(
+          "domega_world", +[](const OrientationTask& task) { return task.domega_world; },
+          &OrientationTask::domega_world)
       .add_property("mask", &OrientationTask::mask, &OrientationTask::mask);
 
   class__<FrameTask>("DynamicsFrameTask", init<>())
