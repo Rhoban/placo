@@ -33,9 +33,9 @@ RelativePointContact& DynamicsSolver::add_relative_point_contact(RelativePositio
   return add_contact(new RelativePointContact(position_task));
 }
 
-RelativeFixedContact& DynamicsSolver::add_relative_fixed_contact(RelativeFrameTask& frame_task)
+Relative6DContact& DynamicsSolver::add_relative_fixed_contact(RelativeFrameTask& frame_task)
 {
-  return add_contact(new RelativeFixedContact(frame_task));
+  return add_contact(new Relative6DContact(frame_task));
 }
 
 PlanarContact& DynamicsSolver::add_planar_contact(FrameTask& frame_task)
