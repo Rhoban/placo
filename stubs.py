@@ -3,7 +3,7 @@ import re
 import inspect
 import placo
 import os
-import glob
+import sys
 from doxygen_parse import parse_directory, get_members, get_metadata
 
 module: str = "placo"
@@ -12,7 +12,14 @@ module: str = "placo"
 repo_directory = os.path.dirname(os.path.realpath(__file__))
 
 # Ensure Doxygen is run
-os.system(f"cd {repo_directory} && doxygen 1>&2")
+if not os.path.exists(f"/usr/bin/doxygen"):
+    sys.stderr.write("\n-----------------------\n")
+    sys.stderr.write("WARNING: Doxygen is not installed\n")
+    sys.stderr.write("         you should run: sudo apt install doxygen\n")
+    sys.stderr.write("-----------------------\n\n")
+    exit(1)
+
+result = os.system(f"cd {repo_directory} && doxygen 1>&2")
 
 # Read the Doxygen XML file
 parse_directory(repo_directory)
