@@ -7,26 +7,61 @@
 
 namespace placo
 {
+/**
+ * @brief Integrator can be used to efficiently build expressions and values over a decision variable that
+ * is integrated over time with a given linear system.
+ */
 class Integrator
 {
 public:
+  /**
+   * @brief The trajectory can be detached after a solve to retrieve the continuous trajectory produced by
+   * the solver.
+   */
   struct Trajectory
   {
+    /**
+     * @brief Gets the value of the trajectory at a given time and differentiation
+     * @param t time
+     * @param diff differentiation
+     * @return the value
+     */
     double value(double t, int diff);
 
-    // A copy of the variable value
+    /**
+     * @brief A copy of the variable value after solve
+     */
     Eigen::VectorXd variable_value;
 
-    // (continous) system matrix so that dX = M X
+    /**
+     * @brief A copy of the (continuous) system matrix
+     */
     Eigen::MatrixXd M;
 
-    // Caching the keyframes for integration
+    /**
+     * @brief Keyframes of the trajectory for each step
+     */
     std::map<int, Eigen::VectorXd> keyframes;
 
+    /**
+     * @brief Trajectory duration
+     * @return duration
+     */
     double duration();
 
+    /**
+     * @brief order (size of the system matrix)
+     */
     int order;
+
+    /**
+     * @brief step duration
+     */
     double dt;
+
+    /**
+     * @brief time offset
+     */
     double t_start = 0.;
   };
 
@@ -60,13 +95,15 @@ public:
 
   /**
    * @brief Builds a matrix M so that the system differential equation is dX = M X
-   *        The "X" here also includes the command.
-   *
-   *        For example, for order 2, this will look like:
-   *
-   *             [ dx   ]   [ 0 1 0 ]
-   *        dX = [ ddx  ] = [ 0 0 1 ] X
-   *             [ dddx ]   [ 0 0 0 ]
+   * 
+   * The "X" here also includes the command.
+   * 
+   * For example, for order 2, this will look like:
+   * ```text
+   *      [ dx   ]   [ 0 1 0 ]
+   * dX = [ ddx  ] = [ 0 0 1 ] X
+   *      [ dddx ]   [ 0 0 0 ]
+   * ```
    *
    * @return the matrix M
    */
@@ -107,47 +144,89 @@ public:
    */
   double value(double t, int diff);
 
-  // Decision variable
+  /**
+   * @brief Decision variable
+   */
   Variable* variable;
 
-  // System steps (variable size)
+  /**
+   * @brief Number of steps (variable size)
+   */
   int N;
 
-  // (continous) system matrix so that dX = M X
+  /**
+   * @brief The continuous system matrix
+   */
   Eigen::MatrixXd M;
 
-  // System matrix for the given dt, as in X_{k+1} = Ak X_k + Bk u_k
+  /**
+   * @brief The discrete system matrix such that \f$X_{k+1} = A X_k + B u_k\f$
+   */
   Eigen::MatrixXd A;
+
+  /**
+   * @brief The discrete system matrix such that \f$X_{k+1} = A X_k + B u_k\f$
+   */
   Eigen::MatrixXd B;
 
-  // X0
+  /**
+   * @brief Initial state
+   */
   Eigen::VectorXd X0;
 
-  // Caching some computations
+  /**
+   * @brief Caching the discrete matrix for the last step
+   */
   Eigen::MatrixXd final_transition_matrix;
+
+  /**
+   * @brief Caching the powers of A
+   */
   std::map<int, Eigen::MatrixXd> a_powers;
 
-  // Integrator order
+  /**
+   * @brief Integrator order (size of the system matrix)
+   */
   int order;
 
-  // Time step
+  /**
+   * @brief Integrator time step duration
+   */
   double dt;
 
+  /**
+   * @brief Retrieve a trajectory after a solve
+   * @return trajectory
+   */
   Trajectory get_trajectory();
 
+  /**
+   * @brief Helpers to check if a requested differentiation is valid
+   * @param order order
+   * @param diff requested differentiation
+   * @param allow_all if true, -1 is allowed
+   */
   static void check_diff(int order, int diff, bool allow_all = false);
 
-  // Time offset for output trajectory
+  /**
+   * @brief Time offset for the trajectory
+   */
   double t_start = 0.;
 
 protected:
-  // Keeping track of the variable version
+  /**
+   * @brief The last variable version that was used to build the internal trajectory
+   */
   int version = 0;
 
-  // Internal trajectory
+  /**
+   * @brief Last built trajectory
+   */
   Trajectory trajectory;
 
-  // Update the internal trajectory
+  /**
+   * @brief Updates the internal trajectory
+   */
   void update_trajectory();
 };
 }  // namespace placo

@@ -21,8 +21,6 @@ void Sparsity::add_interval(int start, int end)
   std::vector<Interval> old_intervals = intervals;
   intervals.clear();
 
-  // [0, 3], [5, 12], [14, 16]
-
   bool inserted = false;
   for (Interval old_interval : old_intervals)
   {

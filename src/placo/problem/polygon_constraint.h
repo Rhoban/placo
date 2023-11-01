@@ -6,6 +6,9 @@
 
 namespace placo
 {
+/**
+ * @brief Provides convenient helpers to build 2D polygon belonging constraints
+ */
 class PolygonConstraint
 {
 public:
@@ -14,17 +17,22 @@ public:
    * WARNING: Polygon must be clockwise (meaning that the exterior of the shape is on the trigonometric normal of
    * the vertices)
    *
-   *             B
-   *             X
-   *           . .
-   *         .   . ---> normal
-   *       .     .
-   *     X.......X
-   *     A       C
+   * ```text
+   *          B
+   *          X
+   *        . .
+   *      .   . ---> normal
+   *    .     .
+   *  X.......X
+   *  A       C
+   * ```
    */
   static std::vector<ProblemConstraint> in_polygon_xy(const Expression& expression_xy,
                                                       std::vector<Eigen::Vector2d> polygon, double margin = 0.);
 
+  /**
+   * See \ref in_polygon_xy
+   */
   static std::vector<ProblemConstraint> in_polygon(const Expression& expression_x, const Expression& expression_y,
                                                    std::vector<Eigen::Vector2d> polygon, double margin = 0.);
 };
