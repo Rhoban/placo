@@ -114,9 +114,12 @@ def print_def_prototype(
         str_definition += f"{prefix}@staticmethod\n"
 
     str_definition += f"{prefix}def {method_name}(\n"
-    for arg_name, arg_type, comment in args:
-        str_definition += f"{prefix}  {arg_name}: {arg_type},"
-        if comment != "":
+    for arg_name, arg_type, defvalue, comment in args:
+        str_definition += f"{prefix}  {arg_name}: {arg_type}"
+        if defvalue is not None:
+            str_definition += f" = {defvalue}"
+        str_definition += ","
+        if comment is not None:
             str_definition += f" # {comment}"
         str_definition += "\n"
     str_definition += f"\n{prefix}) -> {return_type}:\n"
@@ -129,7 +132,7 @@ def print_def_prototype(
 def print_def(name: str, doc: str, prefix: str = ""):
     definition = parse_doc(name, doc)
 
-    print_def_prototype(definition["name"], [[arg_name, arg_type, ""] for arg_type, arg_name in definition["args"]], prefix=prefix)
+    print_def_prototype(definition["name"], [[arg_name, arg_type, None, None] for arg_type, arg_name in definition["args"]], prefix=prefix)
 
 
 def print_class_member(class_name: str, member_name: str):
@@ -156,9 +159,9 @@ def print_class_method(class_name: str, method_name: str, doc: str, prefix: str 
         static = member["static"]
 
         # Method arguments
-        args = [[arg["name"], cxx_type_to_py(arg["type"]), arg["type"]] for arg in member["params"]]
+        args = [[arg["name"], cxx_type_to_py(arg["type"]), arg["default"], arg["type"]] for arg in member["params"]]
         if class_name != module and not member["static"]:
-            args = [["self", class_name, ""]] + args
+            args = [["self", class_name, None, None]] + args
 
         # Return type
         return_type = "any"
