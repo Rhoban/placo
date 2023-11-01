@@ -38,14 +38,14 @@ Relative6DContact& DynamicsSolver::add_relative_fixed_contact(RelativeFrameTask&
   return add_contact(new Relative6DContact(frame_task));
 }
 
-PlanarContact& DynamicsSolver::add_planar_contact(FrameTask& frame_task)
+Contact6D& DynamicsSolver::add_planar_contact(FrameTask& frame_task)
 {
-  return add_contact(new PlanarContact(frame_task, true));
+  return add_contact(new Contact6D(frame_task, true));
 }
 
-PlanarContact& DynamicsSolver::add_fixed_contact(FrameTask& frame_task)
+Contact6D& DynamicsSolver::add_fixed_contact(FrameTask& frame_task)
 {
-  return add_contact(new PlanarContact(frame_task, false));
+  return add_contact(new Contact6D(frame_task, false));
 }
 
 ExternalWrenchContact& DynamicsSolver::add_external_wrench_contact(pinocchio::FrameIndex frame_index)
