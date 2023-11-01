@@ -250,7 +250,7 @@ ProblemConstraint Expression::operator>=(const Expression& other) const
   ProblemConstraint constraint;
 
   constraint.expression = *this - other;
-  constraint.inequality = true;
+  constraint.type = ProblemConstraint::Inequality;
 
   return constraint;
 }
@@ -260,7 +260,7 @@ ProblemConstraint Expression::operator<=(const Expression& other) const
   ProblemConstraint constraint;
 
   constraint.expression = -(*this - other);
-  constraint.inequality = true;
+  constraint.type = ProblemConstraint::Inequality;
 
   return constraint;
 }

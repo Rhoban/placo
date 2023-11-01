@@ -50,9 +50,9 @@ void exposeUtils()
       .def("vel", &placo::CubicSpline3D::vel)
       .def("add_point", &placo::CubicSpline3D::add_point);
 
-  class__<AxisesMask>("AxisesMask", init<>())
-      .def("set_axises", &AxisesMask::set_axises, set_axises_overloads())
-      .def("apply", &AxisesMask::apply);
+  class__<placo::AxisesMask>("AxisesMask", init<>())
+      .def("set_axises", &placo::AxisesMask::set_axises, set_axises_overloads())
+      .def("apply", &placo::AxisesMask::apply);
 
 #ifdef HAVE_RHOBAN_UTILS
   using namespace rhoban_utils;

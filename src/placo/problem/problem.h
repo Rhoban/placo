@@ -12,7 +12,7 @@
 namespace placo
 {
 /**
- * @brief A problem is an object that has variables and constraints to be solved by a QP solver
+ * @brief A problem is an object that has variables and constraints to be solved by a QP solver.
  */
 class Problem
 {
@@ -20,6 +20,11 @@ public:
   Problem();
   virtual ~Problem();
 
+  /**
+   * @brief Adds a n-dimensional variable to a problem
+   * @param size dimension of the variable
+   * @return variable
+   */
   Variable& add_variable(int size = 1);
 
   /**
@@ -54,42 +59,100 @@ public:
    */
   void clear_variables();
 
+  /**
+   * @brief Solves the problem, raises \ref QPError in case of failure
+   */
   void solve();
 
-  std::vector<Variable*> variables;
-
-  // Problem variables (real)
+  /**
+   * @brief Number of problem variables that need to be solved
+   */
   int n_variables = 0;
+
+  /**
+   * @brief Number of inequality constraints
+   */
   int n_inequalities = 0;
+
+  /**
+   * @brief Number of equalities
+   */
   int n_equalities = 0;
 
-  // Number of QP variables used
-  int qp_variables = 0;
+  /**
+   * @brief Number of free variables to solve.
+   *
+   * If \ref rewrite_equalities is true, this should be equals to \ref n_variable.
+   */
+  int free_variables = 0;
 
-  // Number of determined variables
+  /**
+   * @brief Number of slack variables in the solver.
+   */
+  int slack_variables = 0;
+
+  /**
+   * @brief Number of determined variables
+   *
+   * If \ref rewrite_equalities is true, this should be equals to 0.
+   */
   int determined_variables = 0;
 
-  // Result
+  /**
+   * @brief Computed result
+   */
   Eigen::VectorXd x;
+
+  /**
+   * @brief Computed slack variables
+   */
   Eigen::VectorXd slacks;
 
-  // Should sparsity be used ?
+  /**
+   * @brief If set to true, some sparsity optimizations will be performed when building the problem Hessian.
+   * This optimization is generally not useful for small problems.
+   */
   bool use_sparsity = true;
 
-  // Should the equalities be rewritten using the QR decomposition ?
+  /**
+   * @brief If set to true, a QR factorization will be performed on the equality constraints, and the QP will be
+   * called with free variables only.
+   *
+   * The number of free variables will be available in \ref free_variables, and the number of determined variables
+   * in \ref determined_variables.
+   */
   bool rewrite_equalities = true;
-
-  std::vector<ProblemConstraint*> constraints;
 
   void dump_status();
 
 protected:
-  // QR decomposition for equality constraints
+  /**
+   * @brief Internal object to store the QR decomposition
+   */
   Eigen::ColPivHouseholderQR<Eigen::Matrix<double, -1, -1, 1, -1, -1>> QR;
 
-  // Determined variables values
+  /**
+   * @brief Internal vector of determined values (in the Q basis)
+   */
   Eigen::MatrixXd y;
 
+  /**
+   * @brief Problem variables
+   */
+  std::vector<Variable*> variables;
+
+  /**
+   * @brief Problem constraints
+   */
+  std::vector<ProblemConstraint*> constraints;
+
+  /**
+   * @brief Used internally to access a constraint expression, optionally applying the change of basis imposed by
+   * the QR decomposition, see \ref rewrite_equalities.
+   * @param constraint constraint
+   * @param A output matrix A
+   * @param b output vector b
+   */
   void get_constraint_expressions(ProblemConstraint* constraint, Eigen::MatrixXd& A, Eigen::MatrixXd& b);
 };
 }  // namespace placo

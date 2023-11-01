@@ -17,6 +17,6 @@ void ProblemConstraint::configure(ProblemConstraint::Priority priority_, double 
 bool ProblemConstraint::operator==(const ProblemConstraint& other) const
 {
   return (expression.A == other.expression.A) && (expression.b == other.expression.b) && (priority == other.priority) &&
-         (weight == other.weight) && (inequality == other.inequality);
+         (weight == other.weight) && (type == other.type);
 }
 }  // namespace placo

@@ -94,7 +94,7 @@ void Problem::get_constraint_expressions(ProblemConstraint* constraint, Eigen::M
     full_A.block(0, 0, constraint->expression.A.rows(), constraint->expression.A.cols()) = constraint->expression.A;
     QR.matrixQ().applyThisOnTheRight(full_A);
 
-    A = full_A.rightCols(qp_variables);
+    A = full_A.rightCols(free_variables);
     b = constraint->expression.b + full_A.leftCols(determined_variables) * y;
   }
   else
@@ -108,11 +108,11 @@ void Problem::solve()
 {
   n_equalities = 0;
   n_inequalities = 0;
-  int slack_variables = 0;
+  slack_variables = 0;
 
   for (auto constraint : constraints)
   {
-    if (constraint->inequality)
+    if (constraint->type == ProblemConstraint::Inequality)
     {
       constraint->is_active = false;
       if (constraint->priority == ProblemConstraint::Soft)
@@ -140,7 +140,7 @@ void Problem::solve()
 
   for (auto constraint : constraints)
   {
-    if (!constraint->inequality && constraint->priority == ProblemConstraint::Hard)
+    if (constraint->type == ProblemConstraint::Equality && constraint->priority == ProblemConstraint::Hard)
     {
       // Ax + b = 0
       A.block(k_equality, 0, constraint->expression.rows(), constraint->expression.cols()) = constraint->expression.A;
@@ -149,7 +149,7 @@ void Problem::solve()
     }
   }
 
-  qp_variables = n_variables;
+  free_variables = n_variables;
   determined_variables = 0;
 
   if (rewrite_equalities && A.rows() > 0)
@@ -171,7 +171,7 @@ void Problem::solve()
 
     y = R.triangularView<Eigen::Lower>().solve(-b2);
 
-    qp_variables = n_variables - determined_variables;
+    free_variables = n_variables - determined_variables;
 
     // Removing equality constraints
     n_equalities = 0.;
@@ -179,16 +179,16 @@ void Problem::solve()
     b.resize(0);
   }
 
-  Eigen::MatrixXd P(qp_variables + slack_variables, qp_variables + slack_variables);
-  Eigen::VectorXd q(qp_variables + slack_variables);
+  Eigen::MatrixXd P(free_variables + slack_variables, free_variables + slack_variables);
+  Eigen::VectorXd q(free_variables + slack_variables);
 
   P.setZero();
   q.setZero();
 
   // Adding regularization
   double epsilon = 1e-8;
-  P.block(0, 0, qp_variables, qp_variables).setIdentity();
-  P.block(0, 0, qp_variables, qp_variables) *= epsilon;
+  P.block(0, 0, free_variables, free_variables).setIdentity();
+  P.block(0, 0, free_variables, free_variables) *= epsilon;
 
   // Scanning the constraints (counting inequalities and equalities, building objectif function)
   for (auto constraint : constraints)
@@ -206,7 +206,7 @@ void Problem::solve()
       throw QPError("Problem: A.rows() != b.rows()");
     }
 
-    if (constraint->inequality)
+    if (constraint->type == ProblemConstraint::Inequality)
     {
       // If the constraint is hard, this will be the true inequality, else, this will be the inequality
       // enforcing the slack variable to be >= 0
@@ -248,7 +248,7 @@ void Problem::solve()
   }
 
   // Inequality constraints
-  Eigen::MatrixXd G(n_inequalities, qp_variables + slack_variables);
+  Eigen::MatrixXd G(n_inequalities, free_variables + slack_variables);
   Eigen::VectorXd h(n_inequalities);
   G.setZero();
   h.setZero();
@@ -266,13 +266,13 @@ void Problem::solve()
   for (int slack = 0; slack < slack_variables; slack += 1)
   {
     // s_i >= 0
-    G(k_inequality, qp_variables + slack) = 1;
+    G(k_inequality, free_variables + slack) = 1;
     k_inequality += 1;
   }
 
   for (auto constraint : constraints)
   {
-    if (constraint->inequality)
+    if (constraint->type == ProblemConstraint::Inequality)
     {
       Eigen::MatrixXd expression_A;
       Eigen::MatrixXd expression_b;
@@ -294,14 +294,14 @@ void Problem::solve()
       {
         // min(Ax + b - s)
         // A slack variable is assigend with all "soft" inequality and a minimization is added to the problem
-        Eigen::MatrixXd As(expression_A.rows(), qp_variables + slack_variables);
+        Eigen::MatrixXd As(expression_A.rows(), free_variables + slack_variables);
         As.setZero();
         As.block(0, 0, expression_A.rows(), expression_A.cols()) = expression_A;
 
         for (int k = 0; k < expression_A.rows(); k++)
         {
           soft_inequalities_mapping[k_slack] = constraint;
-          As(k, qp_variables + k_slack) = -1;
+          As(k, free_variables + k_slack) = -1;
           k_slack += 1;
         }
 
@@ -314,7 +314,7 @@ void Problem::solve()
   Eigen::VectorXi active_set;
   size_t active_set_size;
 
-  Eigen::VectorXd qp_x(qp_variables + slack_variables);
+  Eigen::VectorXd qp_x(free_variables + slack_variables);
   qp_x.setZero();
   double result =
       eiquadprog::solvers::solve_quadprog(P, q, A.transpose(), b, G.transpose(), h, qp_x, active_set, active_set_size);
@@ -324,7 +324,7 @@ void Problem::solve()
     Eigen::VectorXd u(n_variables, 1);
     u.setZero();
     u.topRows(determined_variables) = y;
-    u.bottomRows(qp_variables) = qp_x.topRows(qp_variables);
+    u.bottomRows(free_variables) = qp_x.topRows(free_variables);
     QR.matrixQ().applyThisOnTheLeft(u);
     x = u;
   }
@@ -369,7 +369,7 @@ void Problem::solve()
     }
   }
 
-  slacks = qp_x.block(qp_variables, 0, slack_variables, 1);
+  slacks = qp_x.block(free_variables, 0, slack_variables, 1);
   for (int k = 0; k < slacks.rows(); k++)
   {
     if (slacks[k] <= 1e-6 && soft_inequalities_mapping.count(k))
@@ -392,10 +392,11 @@ void Problem::dump_status()
   std::cout << "  - Variables: " << n_variables << std::endl;
   std::cout << "  - Inequalities: " << n_inequalities << std::endl;
   std::cout << "  - Equalities: " << n_equalities << std::endl;
+  std::cout << "  - Slack variables: " << slack_variables << std::endl;
   if (rewrite_equalities)
   {
     std::cout << "  - Determined variables: " << determined_variables << std::endl;
-    std::cout << "  - QP variables: " << qp_variables << std::endl;
+    std::cout << "  - Free variables: " << free_variables << std::endl;
   }
   else
   {

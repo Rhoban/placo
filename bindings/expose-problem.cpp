@@ -53,7 +53,6 @@ void exposeProblem()
 
   class__<ProblemConstraint>("ProblemConstraint")
       .add_property("expression", &ProblemConstraint::expression)
-      .add_property("inequality", &ProblemConstraint::inequality)
       .add_property(
           "priority",
           +[](const ProblemConstraint& constraint) {
@@ -116,7 +115,9 @@ void exposeProblem()
       .add_property("n_variables", &Problem::n_variables, &Problem::n_variables)
       .add_property("n_inequalities", &Problem::n_inequalities, &Problem::n_inequalities)
       .add_property("n_equalities", &Problem::n_equalities, &Problem::n_equalities)
-      .add_property("qp_variables", &Problem::qp_variables, &Problem::qp_variables)
+      .add_property("free_variables", &Problem::free_variables, &Problem::free_variables)
+      .add_property("determined_variables", &Problem::determined_variables, &Problem::determined_variables)
+      .add_property("slack_variables", &Problem::slack_variables, &Problem::slack_variables)
       .add_property("use_sparsity", &Problem::use_sparsity, &Problem::use_sparsity)
       .add_property("rewrite_equalities", &Problem::rewrite_equalities, &Problem::rewrite_equalities)
       .add_property(

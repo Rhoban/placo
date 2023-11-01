@@ -330,14 +330,7 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
       e.b = -task->b;
     }
 
-    if (task->type == Task::Type::Equality)
-    {
-      problem.add_constraint(e == 0).configure(task_priority, task->weight);
-    }
-    else
-    {
-      problem.add_constraint(e <= 0).configure(task_priority, task->weight);
-    }
+    problem.add_constraint(e == 0).configure(task_priority, task->weight);
   }
 
   // Masked DoFs are hard equality constraints enforcing no deltas

@@ -1,6 +1,8 @@
 #include "placo/tools/axises_mask.h"
 #include <stdexcept>
 
+namespace placo
+{
 AxisesMask::AxisesMask()
 {
   indices = { 0, 1, 2 };
@@ -51,3 +53,4 @@ Eigen::MatrixXd AxisesMask::apply(Eigen::MatrixXd M)
 
   return M_masked(indices, Eigen::all);
 }
+}  // namespace placo
