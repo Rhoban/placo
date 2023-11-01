@@ -121,29 +121,6 @@ bool RobotWrapper::Distance::operator==(const Distance& other)
   return (objA == other.objA && objB == other.objB);
 }
 
-void RobotWrapper::check_expected()
-{
-  // Ensuring expected DOFs are present
-  auto _expected_dofs = expected_dofs();
-  for (auto& dof : expected_dofs())
-  {
-    get_joint_offset(dof);
-  }
-
-  if (_expected_dofs.size() > 0 && _expected_dofs.size() + 7 != model.nq)
-  {
-    std::ostringstream oss;
-    oss << "Found " << model.nq << " DOFs, expected " << (_expected_dofs.size() + 7) << std::endl;
-    throw std::runtime_error(oss.str());
-  }
-
-  // Ensuring expected frames are present
-  for (auto& frame : expected_frames())
-  {
-    get_frame_index(frame);
-  }
-}
-
 void RobotWrapper::reset()
 {
   state = neutral_state();
@@ -441,7 +418,6 @@ std::vector<RobotWrapper::Distance> RobotWrapper::distances()
     distance.pointB = dr.nearest_points[1];
     distance.parentA = collision_model.geometryObjects[cp.first].parentJoint;
     distance.parentB = collision_model.geometryObjects[cp.second].parentJoint;
-    distance.normal = dr.normal;
     distances.push_back(distance);
   }
 
@@ -686,15 +662,5 @@ double RobotWrapper::total_mass()
   }
 
   return mass;
-}
-
-std::vector<std::string> RobotWrapper::expected_dofs()
-{
-  return {};
-}
-
-std::vector<std::string> RobotWrapper::expected_frames()
-{
-  return {};
 }
 }  // namespace placo
