@@ -13,10 +13,14 @@ namespace placo
  *
  * ```cpp
  * // Will only keep the x and y axises
- * someTask.mask.set_axises("xy");
+ * someTask.mask.set_axises("xy", "task");
  *
  * // Will only keep the x and y axises, but in the local frame
- * someTask.mask.set_axises("xy", true);
+ * someTask.mask.set_axises("xy", "local");
+ *
+ * // Will only keep the x and y axises, in a custom frame
+ * someTask.mask.set_axises("xy", "custom");
+ * someTask.mask.R_custom_world = R_table_world;
  * ```
  */
 struct AxisesMask
