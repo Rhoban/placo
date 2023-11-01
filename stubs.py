@@ -92,12 +92,17 @@ def print_class_method(class_name: str, method_name: str, doc: str, prefix: str 
         member = get_member(class_name, method_name)
 
     if member is not None:
+        str_definition = ""
+        
+        if member["static"]:
+            str_definition += f"{prefix}@staticmethod\n"
+
         # Method name
-        str_definition = f"{prefix}def {method_name}("
+        str_definition += f"{prefix}def {method_name}("
 
         # Method arguments
         params = [f"{arg['name']}: {cxx_type_to_py(arg['type'])}" for arg in member["params"]]
-        if class_name != module:
+        if class_name != module and not member["static"]:
             params = ["self: " + class_name] + params
         str_definition += ",".join(params)
 

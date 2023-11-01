@@ -56,12 +56,14 @@ def parse_compound(compounddef_node: ET.Element):
     for member in compounddef_node.findall("sectiondef/memberdef"):
         kind = member.attrib["kind"]
         id = member.attrib["id"]
+        static = member.attrib["static"] == "yes"
 
         if kind in ["function", "variable", "enum", "namespace"]:
             member_definitions[id] = {
                 "kind": kind,
                 "name": member.find("name").text,
                 "params": [],
+                "static": static,
             }
             member_definitions[id]["type"] = resolve_type(member)
 
@@ -131,12 +133,12 @@ def rewrite_type(typename: str):
             typename = typename[6:]
 
         if typename in rewrite_types:
-            return rewrite_types[typename]
+            typename = rewrite_types[typename]
         else:
             if typename.startswith("std::vector"):
                 return "list[" + rewrite_type(typename[12:-1]) + "]"
 
-            return re.sub("[^a-zA-Z0-9\.]", "_", typename)
+        return re.sub("[^a-zA-Z0-9\.\[\]]", "_", typename)
 
     return None
 
