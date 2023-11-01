@@ -14,6 +14,13 @@ struct RelativeFrameTask
    */
   RelativeFrameTask(RelativePositionTask& position, RelativeOrientationTask& orientation);
 
+  /**
+   * @brief Configures the relative frame task
+   * @param name task name
+   * @param priority task priority
+   * @param position_weight weight for the position task
+   * @param orientation_weight weight for the orientation task
+   */
   void configure(std::string name, std::string priority = "soft", double position_weight = 1.0,
                  double orientation_weight = 1.0);
 

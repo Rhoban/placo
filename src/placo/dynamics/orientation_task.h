@@ -9,16 +9,33 @@ namespace placo::dynamics
 class OrientationTask : public Task
 {
 public:
+  /**
+   * @brief see \ref placo::dynamics::DynamicSolver::add_orientation_task
+   */
   OrientationTask(RobotWrapper::FrameIndex frame_index, Eigen::Matrix3d target_world);
 
+  /**
+   * @brief frame
+   */
   RobotWrapper::FrameIndex frame_index;
+
+  /**
+   * @brief Target orientation
+   */
   Eigen::Matrix3d R_world_frame;
+
+  /**
+   * @brief Target angular velocity
+   */
   Eigen::Vector3d omega_world = Eigen::Vector3d::Zero();
 
   void update() override;
   std::string type_name() override;
   std::string error_unit() override;
 
+  /**
+   * @brief Mask
+   */
   AxisesMask mask;
 };
 }  // namespace placo::dynamics

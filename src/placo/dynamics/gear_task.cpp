@@ -9,7 +9,10 @@ GearTask::GearTask()
 
 void GearTask::set_gear(std::string target, std::string source, double ratio)
 {
-  gears[solver->robot.get_joint_v_offset(target)] = { solver->robot.get_joint_v_offset(source), ratio };
+  int target_id = solver->robot.get_joint_v_offset(target);
+  int source_id = solver->robot.get_joint_v_offset(source);
+
+  gears[target_id] = { target_id, source_id, ratio };
 }
 
 void GearTask::update()
@@ -24,16 +27,17 @@ void GearTask::update()
   int k = 0;
   for (auto& entry : gears)
   {
-    double q_target = solver->robot.state.q[entry.first + 1];
-    double qd_target = solver->robot.state.qd[entry.first];
-    double q_source = solver->robot.state.q[gears[entry.first].source + 1];
-    double qd_source = solver->robot.state.qd[gears[entry.first].source];
-    double ratio = gears[entry.first].ratio;
+    auto& gear = entry.second;
+    double q_target = solver->robot.state.q[gear.target + 1];
+    double qd_target = solver->robot.state.qd[gear.target];
+    double q_source = solver->robot.state.q[gear.source + 1];
+    double qd_source = solver->robot.state.qd[gear.source];
+    double ratio = gear.ratio;
 
     double desired_ddq = kp * (q_target - q_source * ratio) + get_kd() * (qd_target - qd_source * ratio);
 
-    A(k, entry.first) = -1;
-    A(k, gears[entry.first].source) = ratio;
+    A(k, gear.target) = -1;
+    A(k, gear.source) = ratio;
     b(k, 0) = desired_ddq;
 
     error(k, 0) = q_target - q_source;

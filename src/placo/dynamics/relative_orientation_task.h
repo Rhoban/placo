@@ -12,15 +12,33 @@ public:
   RelativeOrientationTask(RobotWrapper::FrameIndex frame_a_index, RobotWrapper::FrameIndex frame_b_index,
                           Eigen::Matrix3d R_a_b);
 
+  /**
+   * @brief Frame A
+   */
   RobotWrapper::FrameIndex frame_a_index;
+
+  /**
+   * @brief Frame B
+   */
   RobotWrapper::FrameIndex frame_b_index;
+
+  /**
+   * @brief Target relative orientation
+   */
   Eigen::Matrix3d R_a_b;
+
+  /**
+   * @brief Target relative angular velocity
+   */
   Eigen::Vector3d omega_a_b = Eigen::Vector3d::Zero();
 
   void update() override;
   std::string type_name() override;
   std::string error_unit() override;
 
+  /**
+   * @brief Mask
+   */
   AxisesMask mask;
 };
 }  // namespace placo::dynamics

@@ -10,8 +10,7 @@ class CoMTask : public Task
 {
 public:
   /**
-   * @brief CoM task
-   * @param target_world target for the world CoM
+   * @brief see \ref placo::dynamics::DynamicSolver::add_com_task
    */
   CoMTask(Eigen::Vector3d target_world);
 

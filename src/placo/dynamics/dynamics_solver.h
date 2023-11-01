@@ -74,16 +74,32 @@ public:
    * @brief Adds a position (in the world) task
    * @param frame_index target frame
    * @param target_world target position in the world
+   * @return position task
    */
-  PositionTask& add_position_task(pinocchio::FrameIndex frame_index, Eigen::Vector3d target_world);
+  PositionTask& add_position_task(RobotWrapper::FrameIndex frame_index, Eigen::Vector3d target_world);
+
+  /**
+   * @brief Adds a position (in the world) task
+   * @param frame_index target frame
+   * @param target_world target position in the world
+   * @return position task
+   */
   PositionTask& add_position_task(std::string frame_name, Eigen::Vector3d target_world);
 
   /**
    * @brief Adds an orientation (in the world) task
    * @param frame_index target frame
    * @param R_world_frame target world orientation
+   * @return orientation task
    */
-  OrientationTask& add_orientation_task(pinocchio::FrameIndex frame_index, Eigen::Matrix3d R_world_frame);
+  OrientationTask& add_orientation_task(RobotWrapper::FrameIndex frame_index, Eigen::Matrix3d R_world_frame);
+
+  /**
+   * @brief Adds an orientation (in the world) task
+   * @param frame_index target frame
+   * @param R_world_frame target world orientation
+   * @return orientation task
+   */
   OrientationTask& add_orientation_task(std::string frame_name, Eigen::Matrix3d R_world_frame);
 
   /**
@@ -91,8 +107,17 @@ public:
    *        decoupled task
    * @param frame_index target frame
    * @param T_world_frame target transformation in the world
+   * @return frame task
    */
-  FrameTask add_frame_task(pinocchio::FrameIndex frame_index, Eigen::Affine3d T_world_frame);
+  FrameTask add_frame_task(RobotWrapper::FrameIndex frame_index, Eigen::Affine3d T_world_frame);
+
+  /**
+   * @brief Adds a frame task, which is a pseudo-task packaging position and orientation, resulting in a
+   *        decoupled task
+   * @param frame_index target frame
+   * @param T_world_frame target transformation in the world
+   * @return frame task
+   */
   FrameTask add_frame_task(std::string frame_name, Eigen::Affine3d T_world_frame);
 
   /**
@@ -100,9 +125,18 @@ public:
    * @param frame_a_index frame a
    * @param frame_b_index  frame b
    * @param target target value for AB vector, expressed in A
+   * @return relative position task
    */
-  RelativePositionTask& add_relative_position_task(pinocchio::FrameIndex frame_a_index,
-                                                   pinocchio::FrameIndex frame_b_index, Eigen::Vector3d target);
+  RelativePositionTask& add_relative_position_task(RobotWrapper::FrameIndex frame_a_index,
+                                                   RobotWrapper::FrameIndex frame_b_index, Eigen::Vector3d target);
+
+  /**
+   * @brief Adds a relative position task
+   * @param frame_a_index frame a
+   * @param frame_b_index  frame b
+   * @param target target value for AB vector, expressed in A
+   * @return relative position task
+   */
   RelativePositionTask& add_relative_position_task(std::string frame_a_name, std::string frame_b_name,
                                                    Eigen::Vector3d target_world);
 
@@ -111,9 +145,18 @@ public:
    * @param frame_a_index frame a
    * @param frame_b_index frame b
    * @param R_a_b target value for the orientation of b frame in a
+   * @return relative orientation task
    */
-  RelativeOrientationTask& add_relative_orientation_task(pinocchio::FrameIndex frame_a_index,
-                                                         pinocchio::FrameIndex frame_b_index, Eigen::Matrix3d R_a_b);
+  RelativeOrientationTask& add_relative_orientation_task(RobotWrapper::FrameIndex frame_a_index,
+                                                         RobotWrapper::FrameIndex frame_b_index, Eigen::Matrix3d R_a_b);
+
+  /**
+   * @brief Adds a relative orientation task
+   * @param frame_a_index frame a
+   * @param frame_b_index frame b
+   * @param R_a_b target value for the orientation of b frame in a
+   * @return relative orientation task
+   */
   RelativeOrientationTask& add_relative_orientation_task(std::string frame_a_name, std::string frame_b_name,
                                                          Eigen::Matrix3d R_a_b);
 
@@ -122,20 +165,31 @@ public:
    * @param frame_a_index frame a
    * @param frame_b_index frame b
    * @param T_a_b target transformation value for b frame in a
+   * @return relative frame task
    */
-  RelativeFrameTask add_relative_frame_task(pinocchio::FrameIndex frame_a_index, pinocchio::FrameIndex frame_b_index,
-                                            Eigen::Affine3d T_a_b);
+  RelativeFrameTask add_relative_frame_task(RobotWrapper::FrameIndex frame_a_index,
+                                            RobotWrapper::FrameIndex frame_b_index, Eigen::Affine3d T_a_b);
+
+  /**
+   * @brief Adds a relative frame task, which is a pseudo-task packaging relative position and orientation tasks
+   * @param frame_a_index frame a
+   * @param frame_b_index frame b
+   * @param T_a_b target transformation value for b frame in a
+   * @return relative frame task
+   */
   RelativeFrameTask add_relative_frame_task(std::string frame_a_name, std::string frame_b_name, Eigen::Affine3d T_a_b);
 
   /**
    * @brief Adds a center of mass (in the world) task
    * @param target_world target (in the world)
+   * @return center of mass task
    */
   CoMTask& add_com_task(Eigen::Vector3d target_world);
 
   /**
    * @brief Adds a joints task
    * @param target target joints values
+   * @return joints task
    */
   JointsTask& add_joints_task();
 

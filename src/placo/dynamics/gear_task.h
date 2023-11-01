@@ -11,11 +11,30 @@ namespace placo::dynamics
 class GearTask : public Task
 {
 public:
+  /**
+   * @brief A gear entry configures a joint-mimic with ratio
+   */
   struct Gear
   {
+    /**
+     * @brief Target joint
+     */
+    int target;
+
+    /**
+     * @brief Source joint
+     */
     int source;
+
+    /**
+     * @brief Ratio
+     */
     double ratio;
   };
+
+  /**
+   * @brief see \ref placo::dynamics::DynamicSolver::add_gear_task
+   */
   GearTask();
 
   std::map<int, Gear> gears;
