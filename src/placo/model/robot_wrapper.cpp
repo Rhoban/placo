@@ -6,7 +6,7 @@
 #include "pinocchio/algorithm/rnea.hpp"
 #include "pinocchio/algorithm/crba.hpp"
 #include "pinocchio/algorithm/centroidal.hpp"
-#include "placo/utils.h"
+#include "placo/tools/utils.h"
 #include <jsoncpp/json/json.h>
 #include <filesystem>
 #include <algorithm>
@@ -71,7 +71,7 @@ RobotWrapper::RobotWrapper(std::string model_directory, int flags, std::string u
   // Load collisions pairs
   if (!(flags & IGNORE_COLLISIONS))
   {
-    if (file_exists(model_directory + "/collisions.json"))
+    if (tools::file_exists(model_directory + "/collisions.json"))
     {
       load_collisions_pairs(model_directory + "/collisions.json");
     }
@@ -329,7 +329,7 @@ Eigen::Affine3d RobotWrapper::get_T_world_frame(const std::string& frame)
 
 Eigen::Affine3d RobotWrapper::get_T_world_frame(pinocchio::FrameIndex index)
 {
-  return pin_se3_to_eigen(data->oMf[index]);
+  return tools::pin_se3_to_eigen(data->oMf[index]);
 }
 
 Eigen::Affine3d RobotWrapper::get_T_a_b(const std::string& frame_a, const std::string& frame_b)

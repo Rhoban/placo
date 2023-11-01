@@ -9,4 +9,5 @@ void exposeRobotWrapper();
 void exposeParameters();
 void exposeKinematics();
 void exposeWalkPatternGenerator();
+void exposeTrajectory();
 void exposeRegistry();

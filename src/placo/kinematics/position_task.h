@@ -30,6 +30,6 @@ struct PositionTask : public Task
   /**
    * @brief Mask
    */
-  AxisesMask mask;
+  tools::AxisesMask mask;
 };
 }  // namespace placo::kinematics

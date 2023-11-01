@@ -3,7 +3,7 @@
 #include "pinocchio/multibody/geometry.hpp"
 #include <Eigen/Dense>
 
-namespace placo
+namespace placo::tools
 {
 /**
  * @brief Interpolate between two frames
@@ -73,4 +73,4 @@ bool file_exists(const std::string& name);
 double velocity_limit(double torque, std::string dof, bool use_doc_limits = false);
 
 extern std::map<std::string, std::string> dof_to_motors;
-}  // namespace placo
+}  // namespace placo::tools

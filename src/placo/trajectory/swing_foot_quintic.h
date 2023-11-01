@@ -3,7 +3,7 @@
 #include <Eigen/Dense>
 #include "placo/model/humanoid_parameters.h"
 
-namespace placo
+namespace placo::trajectory
 {
 /**
  * @brief A quintic fitting of the swing foot
@@ -25,4 +25,4 @@ public:
   static Trajectory make_trajectory(double t_start, double t_end, double height, Eigen::Vector3d start,
                                     Eigen::Vector3d target);
 };
-}  // namespace placo
+}  // namespace placo::trajectory

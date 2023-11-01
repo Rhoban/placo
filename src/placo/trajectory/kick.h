@@ -9,7 +9,7 @@
 // #include "placo/footsteps/footsteps_planner.h"
 // #include "placo/planning/lipm.h"
 
-namespace placo
+namespace placo::trajectory
 {
 class Kick
 {
@@ -30,4 +30,4 @@ public:
   // double feet_spacing = 0.12;
   // double com_support_offset = 0.02;
 };
-}  // namespace placo
+}  // namespace placo::trajectory

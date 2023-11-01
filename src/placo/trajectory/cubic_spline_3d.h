@@ -5,7 +5,7 @@
 #include <algorithm>
 #include "placo/trajectory/cubic_spline.h"
 
-namespace placo
+namespace placo::trajectory
 {
 class CubicSpline3D
 {
@@ -40,4 +40,4 @@ private:
   CubicSpline zSpline;
 };
 
-}  // namespace placo
+}  // namespace placo::trajectory

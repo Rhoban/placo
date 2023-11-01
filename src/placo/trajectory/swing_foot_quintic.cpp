@@ -1,7 +1,7 @@
 #include "placo/trajectory/swing_foot_quintic.h"
 #include "eiquadprog/eiquadprog.hpp"
 
-namespace placo
+namespace placo::trajectory
 {
 Eigen::VectorXd quintic_pos_times(double t)
 {
@@ -106,4 +106,4 @@ Eigen::Vector3d SwingFootQuintic::Trajectory::vel(double t)
 
   return 5 * a * t_4 + 4 * b * t_3 + 3 * c * t_2 + 2 * d * t + e;
 }
-}  // namespace placo
+}  // namespace placo::trajectory

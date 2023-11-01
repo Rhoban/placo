@@ -26,12 +26,12 @@ public:
     double t_end;
 
     bool kick_part = false;
-    SwingFootCubic::Trajectory swing_trajectory;
-    Kick::KickTrajectory kick_trajectory;
+    trajectory::SwingFootCubic::Trajectory swing_trajectory;
+    trajectory::Kick::KickTrajectory kick_trajectory;
 
     FootstepsPlanner::Support support;
   };
- 
+
   struct Trajectory
   {
     Trajectory();
@@ -94,7 +94,7 @@ public:
     /**
      * @brief Retrieves the yaw value
      */
-    placo::CubicSpline& yaw(HumanoidRobot::Side side);
+    trajectory::CubicSpline& yaw(HumanoidRobot::Side side);
 
     // Planned supports
     std::vector<FootstepsPlanner::Support> supports;
@@ -106,9 +106,9 @@ public:
     LIPM::Trajectory com;
 
     // Feet trajectory
-    placo::CubicSpline left_foot_yaw;
-    placo::CubicSpline right_foot_yaw;
-    placo::CubicSpline trunk_yaw;
+    trajectory::CubicSpline left_foot_yaw;
+    trajectory::CubicSpline right_foot_yaw;
+    trajectory::CubicSpline trunk_yaw;
 
     void add_supports(double t, FootstepsPlanner::Support& support);
 
@@ -169,8 +169,10 @@ protected:
   double omega;
   double omega_2;
 
-  void planCoM(Trajectory& trajectory, Eigen::Vector2d initial_pos, Eigen::Vector2d initial_vel = Eigen::Vector2d::Zero(),
-               Eigen::Vector2d initial_acc = Eigen::Vector2d::Zero(), Trajectory* old_trajectory = nullptr, double t_replan = 0.);
+  void planCoM(Trajectory& trajectory, Eigen::Vector2d initial_pos,
+               Eigen::Vector2d initial_vel = Eigen::Vector2d::Zero(),
+               Eigen::Vector2d initial_acc = Eigen::Vector2d::Zero(), Trajectory* old_trajectory = nullptr,
+               double t_replan = 0.);
 
   void planFeetTrajectories(Trajectory& trajectory, Trajectory* old_trajectory = nullptr, double t_replan = 0.);
 

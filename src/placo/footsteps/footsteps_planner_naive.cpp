@@ -1,5 +1,5 @@
 #include "placo/footsteps/footsteps_planner_naive.h"
-#include "placo/utils.h"
+#include "placo/tools/utils.h"
 #include <boost/geometry.hpp>
 #include <boost/geometry/geometries/adapted/boost_tuple.hpp>
 #include <boost/geometry/geometries/polygon.hpp>
@@ -24,7 +24,7 @@ void FootstepsPlannerNaive::plan_impl(std::vector<FootstepsPlanner::Footstep>& f
                                       HumanoidRobot::Side flying_side, Eigen::Affine3d T_world_left,
                                       Eigen::Affine3d T_world_right)
 {
-  Eigen::Affine3d T_world_target = placo::interpolate_frames(T_world_targetLeft, T_world_targetRight, 0.5);
+  Eigen::Affine3d T_world_target = tools::interpolate_frames(T_world_targetLeft, T_world_targetRight, 0.5);
 
   auto T_world_currentLeft = T_world_left;
   auto T_world_currentRight = T_world_right;
@@ -106,7 +106,7 @@ void FootstepsPlannerNaive::plan_impl(std::vector<FootstepsPlanner::Footstep>& f
     }
     else
     {
-      error_yaw = placo::frame_yaw(T_support_target.rotation());
+      error_yaw = tools::frame_yaw(T_support_target.rotation());
     }
 
     if (error_yaw < -accessibility_yaw)

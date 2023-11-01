@@ -1,8 +1,8 @@
-#include "placo/utils.h"
+#include "placo/tools/utils.h"
 #include <sys/stat.h>
 #include <iostream>
 
-namespace placo
+namespace placo::tools
 {
 Eigen::Affine3d interpolate_frames(Eigen::Affine3d frameA, Eigen::Affine3d frameB, double AtoB)
 {
@@ -165,4 +165,4 @@ std::map<std::string, std::string> dof_to_motors = { { "left_hip_yaw", "mx_64" }
                                                      { "right_elbow", "mx_64" },
                                                      { "head_yaw", "mx_64" },
                                                      { "head_pitch", "mx_64" } };
-}  // namespace placo
+}  // namespace placo::tools

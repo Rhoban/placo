@@ -17,6 +17,7 @@
 using namespace boost::python;
 using namespace placo;
 using namespace placo::kinematics;
+using namespace placo::trajectory;
 
 void exposeWalkPatternGenerator()
 {

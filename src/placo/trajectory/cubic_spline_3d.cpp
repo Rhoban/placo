@@ -4,7 +4,7 @@
 #include <iostream>
 #include <vector>
 
-namespace placo
+namespace placo::trajectory
 {
 void CubicSpline3D::clear()
 {
@@ -35,4 +35,4 @@ Eigen::Vector3d CubicSpline3D::vel(double x)
   return Eigen::Vector3d(xSpline.vel(x), ySpline.vel(x), zSpline.vel(x));
 }
 
-}  // namespace placo
+}  // namespace placo::trajectory

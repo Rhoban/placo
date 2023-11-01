@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 
-namespace placo
+namespace placo::tools
 {
 /**
  * @brief Used to mask some task axises
@@ -88,4 +88,4 @@ struct AxisesMask
    */
   ReferenceFrame frame;
 };
-}  // namespace placo
+}  // namespace placo::tools

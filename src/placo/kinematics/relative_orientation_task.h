@@ -36,6 +36,6 @@ struct RelativeOrientationTask : public Task
   /**
    * @brief Mask
    */
-  AxisesMask mask;
+  tools::AxisesMask mask;
 };
 }  // namespace placo::kinematics

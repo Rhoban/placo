@@ -3,7 +3,7 @@
 #include <Eigen/Dense>
 #include "placo/model/humanoid_parameters.h"
 
-namespace placo
+namespace placo::trajectory
 {
 struct FootTrajectory
 {
@@ -14,4 +14,4 @@ public:
 
   double t_start, t_end;
 };
-}  // namespace placo
+}  // namespace placo::trajectory

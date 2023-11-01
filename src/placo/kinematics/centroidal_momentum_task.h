@@ -27,6 +27,6 @@ struct CentroidalMomentumTask : public Task
   /**
    * @brief Axises mask
    */
-  AxisesMask mask;
+  tools::AxisesMask mask;
 };
 }  // namespace placo::kinematics

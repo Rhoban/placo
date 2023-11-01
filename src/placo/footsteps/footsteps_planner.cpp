@@ -1,5 +1,5 @@
 #include "placo/footsteps/footsteps_planner.h"
-#include "placo/utils.h"
+#include "placo/tools/utils.h"
 #include <boost/geometry.hpp>
 #include <boost/geometry/geometries/adapted/boost_tuple.hpp>
 #include <boost/geometry/geometries/polygon.hpp>
@@ -144,7 +144,7 @@ Eigen::Affine3d FootstepsPlanner::Support::frame()
     }
     else
     {
-      f = interpolate_frames(f, footstep.frame, 1. / n);
+      f = tools::interpolate_frames(f, footstep.frame, 1. / n);
     }
 
     n += 1;

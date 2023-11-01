@@ -4,7 +4,7 @@
 #include "placo/model/humanoid_parameters.h"
 #include "placo/trajectory/foot_trajectory.h"
 
-namespace placo
+namespace placo::trajectory
 {
 /**
  * @brief A cubic fitting of swing foot, see:
@@ -27,4 +27,4 @@ public:
 
   static Trajectory remake_trajectory(Trajectory& old_trajectory, double t, Eigen::Vector3d target);
 };
-}  // namespace placo
+}  // namespace placo::trajectory

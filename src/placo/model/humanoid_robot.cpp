@@ -1,5 +1,5 @@
 #include "placo/model/humanoid_robot.h"
-#include "placo/utils.h"
+#include "placo/tools/utils.h"
 #include "pinocchio/math/rpy.hpp"
 #include "pinocchio/spatial/explog.hpp"
 
@@ -75,7 +75,7 @@ void HumanoidRobot::update_support_side(HumanoidRobot::Side new_side)
     support_side = new_side;
     update_kinematics();
 
-    T_world_support = flatten_on_floor(get_T_world_frame(support_frame()));
+    T_world_support = tools::flatten_on_floor(get_T_world_frame(support_frame()));
   }
 }
 

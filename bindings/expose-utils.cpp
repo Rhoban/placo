@@ -2,18 +2,17 @@
 
 #include <Eigen/Dense>
 #include <boost/python.hpp>
-#include "placo/trajectory/cubic_spline.h"
-#include "placo/trajectory/cubic_spline_3d.h"
 #include "placo/tools/axises_mask.h"
 #include "module.h"
 #include "registry.h"
-#include "placo/utils.h"
+#include "placo/tools/utils.h"
 #include "expose-utils.hpp"
 #ifdef HAVE_RHOBAN_UTILS
 #include "rhoban_utils/history/history.h"
 #endif
 
 using namespace boost::python;
+using namespace placo::tools;
 
 #ifdef HAVE_RHOBAN_UTILS
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(loadReplays_overloads, loadReplays, 1, 2);
@@ -21,13 +20,13 @@ BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(loadReplays_overloads, loadReplays, 1, 2)
 
 void exposeUtils()
 {
-  def("interpolate_frames", &placo::interpolate_frames);
-  def("wrap_angle", &placo::wrap_angle);
-  def("rotation_from_axis", &placo::rotation_from_axis);
-  def("frame_yaw", &placo::frame_yaw);
-  def("frame", &placo::frame);
-  def("flatten_on_floor", &placo::flatten_on_floor);
-  def("velocity_limit", &placo::velocity_limit);
+  def("interpolate_frames", &interpolate_frames);
+  def("wrap_angle", &wrap_angle);
+  def("rotation_from_axis", &rotation_from_axis);
+  def("frame_yaw", &frame_yaw);
+  def("frame", &frame);
+  def("flatten_on_floor", &flatten_on_floor);
+  def("velocity_limit", &velocity_limit);
 
   exposeStdVector<int>("vector_int");
   exposeStdVector<double>("vector_double");
@@ -38,25 +37,15 @@ void exposeUtils()
 
   class_<std::map<std::string, double>>("map_string_double").def(map_indexing_suite<std::map<std::string, double>>());
 
-  class__<placo::CubicSpline>("CubicSpline", init<optional<bool>>())
-      .def("pos", &placo::CubicSpline::pos)
-      .def("vel", &placo::CubicSpline::vel)
-      .def("add_point", &placo::CubicSpline::add_point);
-
-  class__<placo::CubicSpline3D>("CubicSpline3D")
-      .def("pos", &placo::CubicSpline3D::pos)
-      .def("vel", &placo::CubicSpline3D::vel)
-      .def("add_point", &placo::CubicSpline3D::add_point);
-
-  class__<placo::AxisesMask>("AxisesMask", init<>())
-      .def<void (placo::AxisesMask::*)(std::string, std::string)>("set_axises", &placo::AxisesMask::set_axises)
+  class__<AxisesMask>("AxisesMask", init<>())
+      .def<void (AxisesMask::*)(std::string, std::string)>("set_axises", &AxisesMask::set_axises)
       .add_property(
-          "R_local_world", +[](placo::AxisesMask& mask) { return mask.R_local_world; },
-          +[](placo::AxisesMask& mask, Eigen::Matrix3d R) { mask.R_local_world = R; })
+          "R_local_world", +[](AxisesMask& mask) { return mask.R_local_world; },
+          +[](AxisesMask& mask, Eigen::Matrix3d R) { mask.R_local_world = R; })
       .add_property(
-          "R_custom_world", +[](placo::AxisesMask& mask) { return mask.R_custom_world; },
-          +[](placo::AxisesMask& mask, Eigen::Matrix3d R) { mask.R_custom_world = R; })
-      .def("apply", &placo::AxisesMask::apply);
+          "R_custom_world", +[](AxisesMask& mask) { return mask.R_custom_world; },
+          +[](AxisesMask& mask, Eigen::Matrix3d R) { mask.R_custom_world = R; })
+      .def("apply", &AxisesMask::apply);
 
 #ifdef HAVE_RHOBAN_UTILS
   using namespace rhoban_utils;

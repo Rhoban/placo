@@ -3,7 +3,7 @@
 #include <vector>
 #include <algorithm>
 
-namespace placo
+namespace placo::trajectory
 {
 class CubicSpline
 {
@@ -108,4 +108,4 @@ private:
   void compute_splines();
 };
 
-}  // namespace placo
+}  // namespace placo::trajectory

@@ -1,6 +1,5 @@
 #include <pinocchio/fwd.hpp>
 
-#include "placo/utils.h"
 #include <Eigen/Dense>
 #include <boost/python.hpp>
 #include <ostream>
@@ -21,5 +20,6 @@ BOOST_PYTHON_MODULE(placo)
   exposeParameters();
   exposeKinematics();
   exposeWalkPatternGenerator();
+  exposeTrajectory();
   exposeRegistry();
 }

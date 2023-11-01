@@ -5,7 +5,7 @@
 #include "placo/trajectory/cubic_spline.h"
 #include "placo/trajectory/foot_trajectory.h"
 
-namespace placo
+namespace placo::trajectory
 {
 /**
  * @brief Cubic swing foot
@@ -28,4 +28,4 @@ public:
   static Trajectory make_trajectory(double t_start, double t_end, double height, double rise_ratio,
                                     Eigen::Vector3d start, Eigen::Vector3d target);
 };
-}  // namespace placo
+}  // namespace placo::trajectory

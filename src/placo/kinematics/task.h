@@ -3,7 +3,7 @@
 #include <string>
 #include <Eigen/Dense>
 #include "placo/model/robot_wrapper.h"
-#include "placo/utils.h"
+#include "placo/tools/utils.h"
 
 namespace placo::kinematics
 {

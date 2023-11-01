@@ -1,12 +1,12 @@
 #include "placo/trajectory/cubic_spline.h"
-#include "placo/utils.h"
+#include "placo/tools/utils.h"
 #include <Eigen/Dense>
 #include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <vector>
 
-namespace placo
+namespace placo::trajectory
 {
 CubicSpline::CubicSpline(bool angular) : angular(angular)
 {
@@ -17,7 +17,7 @@ void CubicSpline::add_point(double t, double x, double dx)
   // Discontinuity of angle
   if (angular && _points.size() > 0)
   {
-    x = _points.back().x + wrap_angle(x - _points.back().x);
+    x = _points.back().x + tools::wrap_angle(x - _points.back().x);
   }
   struct Point point = { t, x, dx };
 
@@ -173,4 +173,4 @@ void CubicSpline::compute_splines()
   }
 }
 
-}  // namespace placo
+}  // namespace placo::trajectory

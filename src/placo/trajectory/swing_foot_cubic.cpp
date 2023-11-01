@@ -1,7 +1,7 @@
 #include "placo/trajectory/swing_foot_cubic.h"
 #include "eiquadprog/eiquadprog.hpp"
 
-namespace placo
+namespace placo::trajectory
 {
 
 Eigen::Vector3d SwingFootCubic::Trajectory::pos(double t)
@@ -42,4 +42,4 @@ SwingFootCubic::Trajectory SwingFootCubic::make_trajectory(double t_start, doubl
   return trajectory;
 }
 
-}  // namespace placo
+}  // namespace placo::trajectory

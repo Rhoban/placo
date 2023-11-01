@@ -4,7 +4,7 @@
 #include "placo/model/robot_wrapper.h"
 #include "placo/model/humanoid_robot.h"
 #include "placo/problem/problem.h"
-#include "placo/utils.h"
+#include "placo/tools/utils.h"
 
 namespace placo::kinematics
 {

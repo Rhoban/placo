@@ -1,8 +1,8 @@
 #include "placo/trajectory/foot_trajectory.h"
 
-namespace placo
+namespace placo::trajectory
 {
 FootTrajectory::~FootTrajectory()
 {
 }
-}  // namespace placo
+}  // namespace placo::trajectory

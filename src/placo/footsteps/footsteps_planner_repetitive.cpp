@@ -1,5 +1,5 @@
 #include "footsteps_planner_repetitive.h"
-#include "placo/utils.h"
+#include "placo/tools/utils.h"
 
 namespace placo
 {

@@ -1,7 +1,7 @@
 #include "placo/trajectory/kick.h"
-#include "placo/utils.h"
+#include "placo/tools/utils.h"
 
-namespace placo
+namespace placo::trajectory
 {
 Eigen::Vector3d Kick::KickTrajectory::pos(double t)
 {
@@ -41,4 +41,4 @@ Kick::KickTrajectory Kick::make_trajectory(HumanoidRobot::Side kicking_side, dou
 
   return trajectory;
 }
-}  // namespace placo
+}  // namespace placo::trajectory

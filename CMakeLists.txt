@@ -20,8 +20,10 @@ add_library(libplaco
     # Wrappers and basic utils
     src/placo/model/robot_wrapper.cpp
     src/placo/model/humanoid_robot.cpp
+
+    # Tools
     src/placo/tools/axises_mask.cpp
-    src/placo/utils.cpp
+    src/placo/tools/utils.cpp
 
     # Trajectories
     src/placo/trajectory/foot_trajectory.cpp
@@ -123,6 +125,7 @@ ADD_CUSTOM_TARGET(native_python_files ALL
 add_library(placo MODULE 
     bindings/expose-eigen.cpp
     bindings/expose-utils.cpp
+    bindings/expose-trajectory.cpp
     bindings/expose-problem.cpp
     bindings/expose-footsteps.cpp
     bindings/expose-robot-wrapper.cpp

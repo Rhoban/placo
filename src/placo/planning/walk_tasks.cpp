@@ -1,11 +1,12 @@
 #include "placo/planning/walk_tasks.h"
 #include "placo/model/humanoid_robot.h"
-#include "placo/utils.h"
-
-using namespace placo::kinematics;
+#include "placo/tools/utils.h"
 
 namespace placo
 {
+using namespace placo::kinematics;
+using namespace placo::tools;
+
 void WalkTasks::initialize_tasks(KinematicsSolver* solver_, HumanoidRobot* robot_)
 {
   robot = robot_;
@@ -120,7 +121,7 @@ void WalkTasks::update_tasks(Eigen::Affine3d T_world_left, Eigen::Affine3d T_wor
     }
 
     for (auto dof : robot->actuated_joint_names())
-    {      
+    {
       solver->enable_velocity_limits(true);
       double expected_torque = std::abs(torques[robot->get_joint_v_offset(dof)]) + 0.1;  // 0.1 is a safety margin
       double limit = velocity_limit(expected_torque, dof, use_doc_limits);

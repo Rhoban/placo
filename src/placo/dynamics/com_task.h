@@ -36,6 +36,6 @@ public:
   /**
    * @brief Axises mask
    */
-  AxisesMask mask;
+  tools::AxisesMask mask;
 };
 }  // namespace placo::dynamics

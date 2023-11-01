@@ -1,11 +1,13 @@
 #include "placo/planning/walk_pattern_generator.h"
 #include "placo/footsteps/footsteps_planner.h"
 #include "placo/problem/polygon_constraint.h"
-#include "placo/utils.h"
+#include "placo/tools/utils.h"
 
 namespace placo
 {
 using namespace placo::problem;
+using namespace placo::trajectory;
+using namespace placo::tools;
 
 WalkPatternGenerator::Trajectory::Trajectory() : left_foot_yaw(true), right_foot_yaw(true), trunk_yaw(true)
 {

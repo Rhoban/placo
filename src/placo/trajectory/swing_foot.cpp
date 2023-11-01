@@ -1,7 +1,7 @@
 #include "placo/trajectory/swing_foot.h"
 #include "eiquadprog/eiquadprog.hpp"
 
-namespace placo
+namespace placo::trajectory
 {
 Eigen::VectorXd position_coefficients(double t)
 {
@@ -117,4 +117,4 @@ Eigen::Vector3d SwingFoot::Trajectory::vel(double t)
 
   return 3 * a * t_2 + 2 * b * t + c;
 }
-}  // namespace placo
+}  // namespace placo::trajectory
