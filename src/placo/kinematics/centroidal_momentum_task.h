@@ -1,28 +1,32 @@
 #pragma once
 
 #include "placo/kinematics/task.h"
+#include "placo/tools/axises_mask.h"
 
 namespace placo::kinematics
 {
 class KinematicsSolver;
-
 struct CentroidalMomentumTask : public Task
 {
+  /**
+   * @brief See \ref KinematicsSolver::add_centroidal_momentum_task
+   */
   CentroidalMomentumTask(Eigen::Vector3d L_world);
 
   std::set<int> active_axises;
 
   /**
-   * @brief Can be used to "mask" (disable) an axis. For instance, if you mask axis 2, the task will not be imposed
-   *        to centroidal momentum around z axis
-   * @param axis 0, 1 or 2 (will be x, y, or z in the world)
+   * @brief Target centroidal angular momentum in the world
    */
-  void mask_axis(int axis);
-
   Eigen::Vector3d L_world;
 
   virtual void update();
   virtual std::string type_name();
   virtual std::string error_unit();
+
+  /**
+   * @brief Axises mask
+   */
+  AxisesMask mask;
 };
 }  // namespace placo::kinematics

@@ -225,7 +225,12 @@ public:
   Eigen::Affine3d get_T_world_frame(FrameIndex index);
 
   /**
-   * \overload
+   * @brief Gets the frame to world transformation matrix for a given frame
+   *
+   * Be sure you called \ref update_kinematics before calling this method if your state has changed
+   *
+   * @param frame frame
+   * @return transformation
    */
   Eigen::Affine3d get_T_world_frame(const std::string& frame);
 
@@ -241,7 +246,13 @@ public:
   Eigen::Affine3d get_T_a_b(FrameIndex index_a, FrameIndex index_b);
 
   /**
-   * \overload
+   * @brief Gets the transformation matrix from frame b to a
+   *
+   * Be sure you called \ref update_kinematics before calling this method if your state has changed
+   *
+   * @param frame_a frame a
+   * @param frame_b frame b
+   * @return transformation
    */
   Eigen::Affine3d get_T_a_b(const std::string& frame_a, const std::string& frame_b);
 
@@ -269,7 +280,12 @@ public:
   void set_T_world_frame(FrameIndex frame, Eigen::Affine3d T_world_frameTarget);
 
   /**
-   * \overload
+   * @brief Updates the floating base status so that the given frame has the given transformation matrix.
+   *
+   * This method is convenient to place the robot in a given position in the world.
+   *
+   * @param frame frame to update
+   * @param T_world_frameTarget transformation matrix
    */
   void set_T_world_frame(const std::string& frame, Eigen::Affine3d T_world_frameTarget);
 
@@ -389,7 +405,12 @@ public:
                                  pinocchio::ReferenceFrame ref = pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED);
 
   /**
-   * \overload
+   * @brief Frame jacobian, default reference is LOCAL_WORLD_ALIGNED
+   *
+   * Be sure you called \ref update_kinematics before calling this method if your state has changed
+   *
+   * @param frame the frame for which we want the jacobian
+   * @return jacobian (6 x nv matrix), where nv is the size of ``qd``
    */
   Eigen::MatrixXd frame_jacobian(const std::string& frame, const std::string& reference = "local_world_aligned");
 
@@ -406,7 +427,13 @@ public:
       FrameIndex frame, pinocchio::ReferenceFrame ref = pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED);
 
   /**
-   * \overload
+   * @brief Jacobian time variation \f$\dot J\f$, default reference is LOCAL_WORLD_ALIGNED
+   *
+   * Be sure you called \ref update_kinematics before calling this method if your state has changed
+   *
+   * @param frame the frame for which we want the jacobian time variation
+   * @param reference the reference frame
+   * @return jacobian time variation (6 x nv matrix), where nv is the size of ``qd``
    */
   Eigen::MatrixXd frame_jacobian_time_variation(const std::string& frame, const std::string& reference = "local_world_"
                                                                                                          "aligned");
@@ -429,14 +456,22 @@ public:
    *
    * Be sure you called \ref update_kinematics before calling this method if your state has changed
    *
-   * @param frame the frame for which we want the jacobian time variation
+   * @param joint the joint for which we want the jacobian time variation
+   * @param ref the reference frame
    * @return jacobian time variation (6xn matrix)
    */
   Eigen::MatrixXd joint_jacobian_time_variation(
       pinocchio::JointIndex joint, pinocchio::ReferenceFrame ref = pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED);
 
   /**
-   * \overload
+   * @brief Joint jacobian time variation \f$\dot J\f$, default reference is LOCAL_WORLD_ALIGNED
+   *
+   * Be sure you called \ref update_kinematics before calling this method if your state has changed
+   *
+   * 
+   * @param joint the joint for which we want the jacobian time variation
+   * @param ref the reference frame
+   * @return jacobian time variation (6xn matrix)
    */
   Eigen::MatrixXd joint_jacobian_time_variation(const std::string& joint, const std::string& reference = "local_world_"
                                                                                                          "aligned");
@@ -453,7 +488,13 @@ public:
   Eigen::MatrixXd relative_position_jacobian(FrameIndex frame_a, FrameIndex frame_b);
 
   /**
-   * \overload
+   * @brief Jacobian of the relative position of the position of b expressed in a
+   *
+   * Be sure you called \ref update_kinematics before calling this method if your state has changed
+   *
+   * @param frame_a frame A
+   * @param frame_b frame B
+   * @return relative position jacobian of b expressed in a (3 x n matrix)
    */
   Eigen::MatrixXd relative_position_jacobian(const std::string& frame_a, const std::string& frame_b);
 
@@ -517,7 +558,10 @@ public:
   Eigen::VectorXd static_gravity_compensation_torques(FrameIndex frame);
 
   /**
-   * \overload
+   * @brief Computes torques needed by the robot to compensate for the generalized gravity, assuming that the given
+   * frame is the (only) contact supporting the robot
+   *
+   * @param frame frame
    */
   Eigen::VectorXd static_gravity_compensation_torques(std::string frame);
 
@@ -531,7 +575,11 @@ public:
   Eigen::VectorXd torques_from_acceleration_with_fixed_frame(Eigen::VectorXd qdd_a, FrameIndex fixed_frame);
 
   /**
-   * \overload
+   * @brief Computes required torques in the robot DOFs for a given acceleration of the actuated DOFs, assuming
+   * that the given frame is fixed
+   *
+   * @param qdd_a acceleration of the actuated DOFs
+   * @param fixed_frame frame 
    */
   Eigen::VectorXd torques_from_acceleration_with_fixed_frame(Eigen::VectorXd qdd_a, std::string fixed_frame);
 

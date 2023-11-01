@@ -175,7 +175,7 @@ void exposeKinematics()
       .add_property("distance", &DistanceTask::distance, &DistanceTask::distance);
 
   class__<CentroidalMomentumTask, bases<Task>>("CentroidalMomentumTask", init<Eigen::Vector3d>())
-      .def("mask_axis", &CentroidalMomentumTask::mask_axis)
+      .add_property("mask", &CentroidalMomentumTask::mask)
       .add_property("L_world", &CentroidalMomentumTask::L_world, &CentroidalMomentumTask::L_world);
 
   class__<RegularizationTask, bases<Task>>("RegularizationTask");

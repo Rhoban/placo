@@ -26,7 +26,7 @@
 namespace placo::kinematics
 {
 /**
- * @brief Kinematics QP solver
+ * @brief Inverse Kinematics solver
  */
 class KinematicsSolver
 {
@@ -37,8 +37,16 @@ public:
    * @brief Adds a position task
    * @param frame the robot frame we want to control
    * @param target_world the target position, expressed in the world (as T_world_frame)
+   * @return position task
    */
   PositionTask& add_position_task(RobotWrapper::FrameIndex frame, Eigen::Vector3d target_world);
+
+  /**
+   * @brief Adds a position task
+   * @param frame the robot frame we want to control
+   * @param target_world the target position, expressed in the world (as T_world_frame)
+   * @return position task
+   */
   PositionTask& add_position_task(std::string frame, Eigen::Vector3d target_world);
 
   /**
@@ -46,14 +54,24 @@ public:
    * @param frame_a frame a
    * @param frame_b frame b
    * @param target the target vector between frame a and b (expressed in world)
+   * @return relative position task
    */
   RelativePositionTask& add_relative_position_task(RobotWrapper::FrameIndex frame_a, RobotWrapper::FrameIndex frame_b,
                                                    Eigen::Vector3d target);
+
+  /**
+   * @brief Adds a relative position task
+   * @param frame_a frame a
+   * @param frame_b frame b
+   * @param target the target vector between frame a and b (expressed in world)
+   * @return relative position task
+   */
   RelativePositionTask& add_relative_position_task(std::string frame_a, std::string frame_b, Eigen::Vector3d target);
 
   /**
    * @brief Adds a com position task
    * @param targetCom_world the target position, expressed in the world (as T_world_frame)
+   * @return com task
    */
   CoMTask& add_com_task(Eigen::Vector3d targetCom_world);
 
@@ -61,8 +79,16 @@ public:
    * @brief Adds an orientation task
    * @param frame the robot frame we want to control
    * @param R_world_frame the target orientation we want to achieve, expressed in the world (as T_world_frame)
+   * @return orientation task
    */
   OrientationTask& add_orientation_task(RobotWrapper::FrameIndex frame, Eigen::Matrix3d R_world_frame);
+
+  /**
+   * @brief Adds an orientation task
+   * @param frame the robot frame we want to control
+   * @param R_world_frame the target orientation we want to achieve, expressed in the world (as T_world_frame)
+   * @return orientation task
+   */
   OrientationTask& add_orientation_task(std::string frame, Eigen::Matrix3d R_world_frame);
 
   /**
@@ -70,20 +96,39 @@ public:
    * @param frame_a frame a
    * @param frame_b frame b
    * @param R_a_b the desired orientation
+   * @return relative orientation task
    */
   RelativeOrientationTask& add_relative_orientation_task(RobotWrapper::FrameIndex frame_a,
                                                          RobotWrapper::FrameIndex frame_b, Eigen::Matrix3d R_a_b);
+
+  /**
+   * @brief Adds a relative orientation task
+   * @param frame_a frame a
+   * @param frame_b frame b
+   * @param R_a_b the desired orientation
+   * @return relative orientation task
+   */
   RelativeOrientationTask& add_relative_orientation_task(std::string frame_a, std::string frame_b,
                                                          Eigen::Matrix3d R_a_b);
 
   /**
-   * @brief Adds a frame task, this is equivalent to a position + orientation task, resulting in a "decoupled" style
-   * control of a given frame
+   * @brief Adds a frame task, this is equivalent to a position + orientation task, resulting in decoupled tasks for
+   * a given frame
    * @param frame the robot frame we want to control
    * @param T_world_frame the target for the frame we want to control, expressed in the world (as T_world_frame)
    * @param priority task priority (hard: equality constraint, soft: objective function)
+   * @return frame task
    */
   FrameTask add_frame_task(RobotWrapper::FrameIndex frame, Eigen::Affine3d T_world_frame = Eigen::Affine3d::Identity());
+
+  /**
+   * @brief Adds a frame task, this is equivalent to a position + orientation task, resulting in decoupled tasks for
+   * a given frame
+   * @param frame the robot frame we want to control
+   * @param T_world_frame the target for the frame we want to control, expressed in the world (as T_world_frame)
+   * @param priority task priority (hard: equality constraint, soft: objective function)
+   * @return frame task
+   */
   FrameTask add_frame_task(std::string frame, Eigen::Affine3d T_world_frame = Eigen::Affine3d::Identity());
 
   /**
@@ -91,20 +136,36 @@ public:
    * @param frame_a frame a
    * @param frame_b frame b
    * @param T_a_b desired transformation
+   * @return relative frame task
    */
   RelativeFrameTask add_relative_frame_task(RobotWrapper::FrameIndex frame_a, RobotWrapper::FrameIndex frame_b,
                                             Eigen::Affine3d T_a_b);
+
+  /**
+   * @brief Adds a relative frame task
+   * @param frame_a frame a
+   * @param frame_b frame b
+   * @param T_a_b desired transformation
+   * @return relative frame task
+   */
   RelativeFrameTask add_relative_frame_task(std::string frame_a, std::string frame_b, Eigen::Affine3d T_a_b);
 
   /**
    * @brief Adds joints task
    * @param joints value for the joints
+   * @return joints task
    */
   JointsTask& add_joints_task(std::map<std::string, double>& joints);
+
+  /**
+   * @brief Adds joints task
+   * @return joints task
+   */
   JointsTask& add_joints_task();
 
   /**
    * @brief Adds a gear task, allowing replication of joints
+   * @return gear task
    */
   GearTask& add_gear_task();
 
@@ -113,20 +174,30 @@ public:
    * @param frame_a frame a
    * @param frame_b frame b
    * @param distance distance to maintain
+   * @return distance task
    */
   DistanceTask& add_distance_task(RobotWrapper::FrameIndex frame_a, RobotWrapper::FrameIndex frame_b, double distance);
+
+  /**
+   * @brief Adds a distance task to be maintained between two frames
+   * @param frame_a frame a
+   * @param frame_b frame b
+   * @param distance distance to maintain
+   * @return distance task
+   */
   DistanceTask& add_distance_task(std::string frame_a, std::string frame_b, double distance);
 
   /**
    * @brief Adding a centroidal momentum task
-   * @param L_world
-   * @return desired centroidal angular momentum in the world
+   * @param L_world desired centroidal angular momentum in the world
+   * @return centroidal task
    */
   CentroidalMomentumTask& add_centroidal_momentum_task(Eigen::Vector3d L_world);
 
   /**
    * @brief Adds a regularization task for a given magnitude
    * @param magnitude regularization magnitude
+   * @return regularization task
    */
   RegularizationTask& add_regularization_task(double magnitude = 1e-6);
 

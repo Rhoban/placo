@@ -6,9 +6,6 @@
 
 namespace placo::dynamics
 {
-/**
- * @brief CoM task (expressed in the world)
- */
 class CoMTask : public Task
 {
 public:

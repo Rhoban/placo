@@ -8,15 +8,28 @@ namespace placo::kinematics
 class KinematicsSolver;
 struct PositionTask : public Task
 {
+  /**
+   * @brief See \ref KinematicsSolver::add_position_task
+   */
   PositionTask(RobotWrapper::FrameIndex frame_index, Eigen::Vector3d target_world);
 
+  /**
+   * @brief Frame
+   */
   RobotWrapper::FrameIndex frame_index;
+
+  /**
+   * @brief Target position in the world
+   */
   Eigen::Vector3d target_world;
 
   virtual void update();
   virtual std::string type_name();
   virtual std::string error_unit();
 
+  /**
+   * @brief Mask
+   */
   AxisesMask mask;
 };
 }  // namespace placo::kinematics

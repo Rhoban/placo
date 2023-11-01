@@ -76,7 +76,9 @@ public:
   void configure(Priority priority, double weight);
 
   /**
-   * \overload
+   * @brief Configures the constraint
+   * @param priority priority
+   * @param weight weight
    */
   void configure(std::string type, double weight);
 
