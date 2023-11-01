@@ -176,7 +176,7 @@ def contacts_viz(solver: placo.DynamicsSolver, ratio=0.1, radius=0.005):
             frame_name = frames[contact.position_task().frame_index]
             T_world_frame = robot.get_T_world_frame(frame_name)
             arrow_viz(f"contact_{k}", T_world_frame[:3, 3], T_world_frame[:3, 3] + contact.wrench * ratio, color=0x00FF00, radius=radius)
-        elif isinstance(contact, placo.PlanarContact):
+        elif isinstance(contact, placo.Contact6D):
             frame_name = frames[contact.position_task().frame_index]
             T_world_frame = robot.get_T_world_frame(frame_name)
             wrench = T_world_frame[:3, :3] @ contact.wrench[:3]
