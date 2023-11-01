@@ -25,6 +25,9 @@
 
 namespace placo::kinematics
 {
+/**
+ * @brief Kinematics QP solver
+ */
 class KinematicsSolver
 {
 public:

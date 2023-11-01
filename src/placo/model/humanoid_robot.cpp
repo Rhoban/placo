@@ -26,7 +26,6 @@ HumanoidRobot::HumanoidRobot(std::string model_directory, int flags, std::string
 
 void HumanoidRobot::initialize()
 {
-  check_expected();
   init_config();
 }
 

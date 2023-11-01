@@ -11,6 +11,9 @@
 
 namespace placo
 {
+/**
+ * @brief A problem is an object that has variables and constraints to be solved by a QP solver
+ */
 class Problem
 {
 public:

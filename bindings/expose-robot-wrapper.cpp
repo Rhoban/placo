@@ -147,8 +147,6 @@ void exposeRobotWrapper()
           "pointA", +[](RobotWrapper::Distance& distance) { return distance.pointA; })
       .add_property(
           "pointB", +[](RobotWrapper::Distance& distance) { return distance.pointB; })
-      .add_property(
-          "normal", +[](RobotWrapper::Distance& distance) { return distance.normal; })
       .add_property("min_distance", &RobotWrapper::Distance::min_distance);
 
   class_<RobotWrapper> robotWrapper =
