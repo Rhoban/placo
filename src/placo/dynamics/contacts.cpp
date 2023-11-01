@@ -98,13 +98,13 @@ void RelativePointContact::add_constraints(Problem& problem)
   }
 }
 
-RelativeFixedContact::RelativeFixedContact(RelativeFrameTask& relative_frame_task)
+Relative6DContact::Relative6DContact(RelativeFrameTask& relative_frame_task)
 {
   this->relative_position_task = relative_frame_task.position;
   this->relative_orientation_task = relative_frame_task.orientation;
 }
 
-void RelativeFixedContact::update()
+void Relative6DContact::update()
 {
   J = Eigen::MatrixXd::Zero(6, solver->N);
   J.block(0, 0, 3, solver->N) =
@@ -116,7 +116,7 @@ void RelativeFixedContact::update()
                                     .block(3, 0, 3, solver->N);
 }
 
-bool RelativeFixedContact::is_internal()
+bool Relative6DContact::is_internal()
 {
   return true;
 }
