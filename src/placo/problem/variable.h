@@ -5,23 +5,44 @@
 
 namespace placo
 {
+/**
+ * @brief Represents a variable in a \ref Problem
+ */
 class Variable
 {
 public:
-  std::string name;
-
+  /**
+   * @brief Builds an expression from a variable
+   * @param start start row (default: 0)
+   * @param rows number of rows (default: -1, all rows)
+   * @return expression
+   */
   Expression expr(int start = -1, int rows = -1);
 
-  // Variable offsets in the problem
+  /**
+   * @brief Start offset in the \ref Problem
+   */
   int k_start;
+
+  /**
+   * @brief End offset in the \ref Problem
+   */
   int k_end;
 
+  /**
+   * @brief Variable size
+   * @return size
+   */
   int size();
 
-  // Value (after the problem solved the optimisation problem)
+  /**
+   * @brief Variable value, populated by \ref Problem after a solve
+   */
   Eigen::VectorXd value;
 
-  // Variable version (incremented on each solver update)
+  /**
+   * @brief Variable version, incremented by \ref Problem after a solve
+   */
   int version = 0;
 };
 };  // namespace placo
