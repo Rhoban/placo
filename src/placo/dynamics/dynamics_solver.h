@@ -196,50 +196,64 @@ public:
   /**
    * @brief Adds a gear task, allowing replication of a joint. This can be used to implement timing belt, if coupled
    *        with an internal force.
+   * @return gear task
    */
   GearTask& add_gear_task();
 
   /**
    * @brief Adds a point contact
    * @param position_task the associated position task
+   * @return point contact
    */
   PointContact& add_point_contact(PositionTask& position_task);
 
   /**
    * @brief Adds an unilateral point contact, in the sense of the world z-axis
    * @param position_task the associated position task
+   * @return unilateral point contact
    */
   PointContact& add_unilateral_point_contact(PositionTask& position_task);
 
   /**
    * @brief Adds a relative point contact, which can be typically used for internal forces like loop-closing
    * @param position_task associated relative position task
+   * @return relative point contact
    */
   RelativePointContact& add_relative_point_contact(RelativePositionTask& position_task);
 
   /**
    * @brief Adds a relative fixed contact, can be used for fixed closed loops
    * @param frame_task the associated relative frame task
+   * @return relative fixed contact
    */
-  RelativeFixedContact& add_relative_fixed_contact(RelativeFrameTask& frame_task);
+  Relative6DContact& add_relative_fixed_contact(RelativeFrameTask& frame_task);
 
   /**
    * @brief Adds a fixed contact
    * @param frame_task the associated frame task
+   * @return fixed contact
    */
-  PlanarContact& add_fixed_contact(FrameTask& frame_task);
+  Contact6D& add_fixed_contact(FrameTask& frame_task);
 
   /**
    * @brief Adds a planar contact, which is unilateral in the sense of the local body z-axis
    * @param frame_task associated frame task
+   * @return planar contact
    */
-  PlanarContact& add_planar_contact(FrameTask& frame_task);
+  Contact6D& add_planar_contact(FrameTask& frame_task);
 
   /**
    * @brief Adds an external wrench
    * @param frame_index
+   * @return external wrench contact
    */
   ExternalWrenchContact& add_external_wrench_contact(RobotWrapper::FrameIndex frame_index);
+
+  /**
+   * @brief Adds an external wrench
+   * @param frame_index
+   * @return external wrench contact
+   */
   ExternalWrenchContact& add_external_wrench_contact(std::string frame_name);
 
   /**

@@ -20,55 +20,128 @@ public:
   Contact();
   virtual ~Contact();
 
-  // Friction coefficient
+  /**
+   * @brief Coefficient of friction (if relevant)
+   */
   double mu = 1.;
 
-  // Weights for optimization
+  /**
+   * @brief Weight of forces for the optimization (if relevant)
+   */
   double weight_forces = 0.;
+
+  /**
+   * @brief Weight of moments for optimization (if relevant)
+   */
   double weight_moments = 0.;
 
+  /**
+   * @brief Can be used to force the ratio to be lower than a given value for a given contact
+   */
   double reaction_ratio = -1;
 
+  /**
+   * @brief Returns the size of the contact (number of forces added to the problem)
+   */
   int size();
 
+  /**
+   * @brief Contact constraint jacobian
+   */
   Eigen::MatrixXd J;
+
+  /**
+   * @brief Computes the constraint jacobian
+   */
   virtual void update() = 0;
+
+  /**
+   * @brief Adds contact constraints on the f expression
+   * @param problem problem to which the constraints are added
+   */
   virtual void add_constraints(Problem& problem);
+
+  /**
+   * @brief Is it an internal contact ?
+   * @return true if the contact is internal
+   */
   virtual bool is_internal();
 
-  // Wrench variable for the solver
-  Eigen::VectorXd wrench;
+  /**
+   * @brief Expression of the forces applied on the contact, created by the \ref DynamicsSolver::solve call
+   */
   Expression f;
 
+  /**
+   * @brief Wrench populated after the \ref DynamicsSolver::solve call
+   */
+  Eigen::VectorXd wrench;
+
+  /**
+   * @brief Dynamics solver associated with this contact
+   */
   DynamicsSolver* solver = nullptr;
 };
 
 class PointContact : public Contact
 {
 public:
+  /**
+   * @brief see \ref DynamicsSolver::add_point_contact and \ref DynamicsSolver::add_unilateral_point_contact
+   */
   PointContact(PositionTask& position_task, bool unilateral);
 
+  /**
+   * @brief associated position task
+   */
   PositionTask* position_task;
+
+  /**
+   * @brief true for unilateral contact with the ground
+   */
   bool unilateral;
 
   virtual void update();
   virtual void add_constraints(Problem& problem);
 };
 
-class PlanarContact : public Contact
+class Contact6D : public Contact
 {
 public:
-  PlanarContact(FrameTask& frame_task, bool unilateral);
+  /**
+   * @brief see \ref DynamicsSolver::add_fixed_planar_contact and \ref DynamicsSolver::add_unilateral_planar_contact
+   */
+  Contact6D(FrameTask& frame_task, bool unilateral);
 
+  /**
+   * @brief Associated position task
+   */
   PositionTask* position_task;
+
+  /**
+   * @brief Associated orientation task
+   */
   OrientationTask* orientation_task;
+
+  /**
+   * @brief true for unilateral contact with the ground
+   */
   bool unilateral;
 
-  // Length is along x axis in local frame, and width along y axis
+  /**
+   * @brief Rectangular contact length along local x-axis
+   */
   double length = 0.;
+
+  /**
+   * @brief Rectangular contact width along local y-axis
+   */
   double width = 0.;
 
-  // Returns the ZMP of the contact expressed in the local frame
+  /**
+   * @brief Returns the contact ZMP in the local frame
+   * @return zmp
+   */
   Eigen::Vector3d zmp();
 
   virtual void update();
@@ -78,8 +151,14 @@ public:
 class RelativePointContact : public Contact
 {
 public:
+  /**
+   * @brief see \ref DynamicsSolver::add_relative_point_contact
+   */
   RelativePointContact(RelativePositionTask& position_task);
 
+  /**
+   * @brief Associated relative position task
+   */
   RelativePositionTask* relative_position_task;
 
   virtual void update();
@@ -87,10 +166,13 @@ public:
   virtual bool is_internal();
 };
 
-class RelativeFixedContact : public Contact
+class Relative6DContact : public Contact
 {
 public:
-  RelativeFixedContact(RelativeFrameTask& frame_task);
+  /**
+   * @brief see \ref DynamicsSolver::add_relative_fixed_contact
+   */
+  Relative6DContact(RelativeFrameTask& frame_task);
 
   RelativePositionTask* relative_position_task;
   RelativeOrientationTask* relative_orientation_task;
@@ -102,6 +184,9 @@ public:
 class ExternalWrenchContact : public Contact
 {
 public:
+  /**
+   * @brief see \ref DynamicsSolver::add_external_wrench_contact
+   */
   ExternalWrenchContact(RobotWrapper::FrameIndex frame_index);
 
   RobotWrapper::FrameIndex frame_index;
@@ -113,6 +198,9 @@ public:
 class PuppetContact : public Contact
 {
 public:
+  /**
+   * @brief see \ref DynamicsSolver::add_puppet_contact
+   */
   PuppetContact();
 
   virtual void update();
@@ -121,6 +209,9 @@ public:
 class TaskContact : public Contact
 {
 public:
+  /**
+   * @brief see \ref DynamicsSolver::add_task_contact
+   */
   TaskContact(Task& task);
 
   Task* task;

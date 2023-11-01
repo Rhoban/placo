@@ -36,7 +36,7 @@ bool Contact::is_internal()
   return false;
 }
 
-Eigen::Vector3d PlanarContact::zmp()
+Eigen::Vector3d Contact6D::zmp()
 {
   return Eigen::Vector3d(-wrench(M_Y, 0) / wrench(F_Z, 0), wrench(M_X, 0) / wrench(F_Z, 0), 0);
 }
@@ -121,14 +121,14 @@ bool RelativeFixedContact::is_internal()
   return true;
 }
 
-PlanarContact::PlanarContact(FrameTask& frame_task, bool unilateral)
+Contact6D::Contact6D(FrameTask& frame_task, bool unilateral)
 {
   this->position_task = frame_task.position;
   this->orientation_task = frame_task.orientation;
   this->unilateral = unilateral;
 }
 
-void PlanarContact::update()
+void Contact6D::update()
 {
   J = Eigen::MatrixXd::Zero(6, solver->N);
   J.block(0, 0, 3, solver->N) =
@@ -137,7 +137,7 @@ void PlanarContact::update()
       solver->robot.frame_jacobian(orientation_task->frame_index, pinocchio::LOCAL).block(3, 0, 3, solver->N);
 }
 
-void PlanarContact::add_constraints(Problem& problem)
+void Contact6D::add_constraints(Problem& problem)
 {
   if (unilateral)
   {

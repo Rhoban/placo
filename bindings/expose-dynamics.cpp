@@ -45,21 +45,21 @@ void exposeDynamics()
           return_internal_reference<>())
       .def_readwrite("unilateral", &PointContact::unilateral);
 
-  class__<PlanarContact, bases<Contact>>("PlanarContact", init<FrameTask&, bool>())
+  class__<Contact6D, bases<Contact>>("Contact6D", init<FrameTask&, bool>())
       .def(
-          "position_task", +[](PlanarContact& contact) -> PositionTask& { return *contact.position_task; },
+          "position_task", +[](Contact6D& contact) -> PositionTask& { return *contact.position_task; },
           return_internal_reference<>())
       .def(
-          "orientation_task", +[](PlanarContact& contact) -> OrientationTask& { return *contact.orientation_task; },
+          "orientation_task", +[](Contact6D& contact) -> OrientationTask& { return *contact.orientation_task; },
           return_internal_reference<>())
-      .def_readwrite("unilateral", &PlanarContact::unilateral)
-      .def_readwrite("length", &PlanarContact::length)
-      .def_readwrite("width", &PlanarContact::width)
-      .def("zmp", &PlanarContact::zmp);
+      .def_readwrite("unilateral", &Contact6D::unilateral)
+      .def_readwrite("length", &Contact6D::length)
+      .def_readwrite("width", &Contact6D::width)
+      .def("zmp", &Contact6D::zmp);
 
   class__<RelativePointContact, bases<Contact>>("RelativePointContact", init<RelativePositionTask&>());
 
-  class__<RelativeFixedContact, bases<Contact>>("RelativeFixedContact", init<RelativeFrameTask&>());
+  class__<Relative6DContact, bases<Contact>>("Relative6DContact", init<RelativeFrameTask&>());
 
   class__<ExternalWrenchContact, bases<Contact>>("ExternalWrenchContact", init<RobotWrapper::FrameIndex>())
       .add_property("frame_index", &ExternalWrenchContact::frame_index)
