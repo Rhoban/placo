@@ -19,8 +19,6 @@ using namespace boost::python;
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(loadReplays_overloads, loadReplays, 1, 2);
 #endif
 
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(set_axises_overloads, set_axises, 1, 2);
-
 void exposeUtils()
 {
   def("interpolate_frames", &placo::interpolate_frames);
@@ -51,7 +49,13 @@ void exposeUtils()
       .def("add_point", &placo::CubicSpline3D::add_point);
 
   class__<placo::AxisesMask>("AxisesMask", init<>())
-      .def("set_axises", &placo::AxisesMask::set_axises, set_axises_overloads())
+      .def<void (placo::AxisesMask::*)(std::string, std::string)>("set_axises", &placo::AxisesMask::set_axises)
+      .add_property(
+          "R_local_world", +[](placo::AxisesMask& mask) { return mask.R_local_world; },
+          +[](placo::AxisesMask& mask, Eigen::Matrix3d R) { mask.R_local_world = R; })
+      .add_property(
+          "R_custom_world", +[](placo::AxisesMask& mask) { return mask.R_custom_world; },
+          +[](placo::AxisesMask& mask, Eigen::Matrix3d R) { mask.R_custom_world = R; })
       .def("apply", &placo::AxisesMask::apply);
 
 #ifdef HAVE_RHOBAN_UTILS

@@ -6,14 +6,15 @@ namespace placo
 AxisesMask::AxisesMask()
 {
   indices = { 0, 1, 2 };
-  local = false;
+  frame = ReferenceFrame::TaskFrame;
   R_local_world = Eigen::Matrix3d::Identity();
+  R_custom_world = Eigen::Matrix3d::Identity();
 }
 
-void AxisesMask::set_axises(std::string axises, bool local_)
+void AxisesMask::set_axises(std::string axises, AxisesMask::ReferenceFrame frame_)
 {
   indices.clear();
-  local = local_;
+  frame = frame_;
 
   for (char& c : axises)
   {
@@ -38,11 +39,35 @@ void AxisesMask::set_axises(std::string axises, bool local_)
   }
 }
 
+void AxisesMask::set_axises(std::string axises, std::string frame_)
+{
+  if (frame_ == "task" || frame_ == "world")
+  {
+    set_axises(axises, ReferenceFrame::TaskFrame);
+  }
+  else if (frame_ == "local")
+  {
+    set_axises(axises, ReferenceFrame::LocalFrame);
+  }
+  else if (frame_ == "custom")
+  {
+    set_axises(axises, ReferenceFrame::CustomFrame);
+  }
+  else
+  {
+    throw std::runtime_error("Invalid frame: " + frame_);
+  }
+}
+
 Eigen::MatrixXd AxisesMask::apply(Eigen::MatrixXd M)
 {
   Eigen::MatrixXd M_masked;
 
-  if (local)
+  if (frame == ReferenceFrame::CustomFrame)
+  {
+    M_masked = R_custom_world * M;
+  }
+  else if (frame == ReferenceFrame::LocalFrame)
   {
     M_masked = R_local_world * M;
   }

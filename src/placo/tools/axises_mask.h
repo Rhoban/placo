@@ -21,16 +21,42 @@ namespace placo
  */
 struct AxisesMask
 {
+  /**
+   * @brief The reference frame where the masking is done
+   */
+  enum ReferenceFrame
+  {
+    /**
+     * @brief Use the (usually world) frame provided by the task
+     */
+    TaskFrame = 0,
+    /**
+     * @brief Use the local frame provided by the task in \ref R_local_world
+     */
+    LocalFrame = 1,
+    /**
+     * @brief Use the custom frame provided by the user in \ref R_custom_world
+     */
+    CustomFrame = 2
+  };
+
   AxisesMask();
 
   /**
    * @brief Sets the axises to be masked (kept), for example "xy"
    *
    * @param axises axises to be kept
-   * @param local true if the axises should be masked in the local frame (false by default). Note that some tasks
-   * (like relative ones) have only local representation, and this flag will have no effect on them.
+   * @param frame the reference frame where the masking is done (task, local or custom)
    */
-  void set_axises(std::string axises, bool local = false);
+  void set_axises(std::string axises, ReferenceFrame frame = TaskFrame);
+
+  /**
+   * @brief Sets the axises to be masked (kept), for example "xy"
+   *
+   * @param axises axises to be kept
+   * @param frame the reference frame where the masking is done (task, local or custom)
+   */
+  void set_axises(std::string axises, std::string frame = "task");
 
   /**
    * @brief Apply the masking to a given matrix
@@ -39,9 +65,14 @@ struct AxisesMask
   Eigen::MatrixXd apply(Eigen::MatrixXd M);
 
   /**
-   * @brief Transformation from local frame to the world used with the local flag
+   * @brief Rotation from world to local frame (provided by task)
    */
   Eigen::Matrix3d R_local_world;
+
+  /**
+   * @brief ROtation from world to custom rotation (provided by the user)
+   */
+  Eigen::Matrix3d R_custom_world;
 
   /**
    * @brief Indices that should be kept, see \ref set_axises
@@ -49,8 +80,8 @@ struct AxisesMask
   std::vector<int> indices;
 
   /**
-   * @brief whether to express the masking in local frame, see \ref set_axises
+   * @brief The reference frame where the masking is done, see \ref set_axises
    */
-  bool local;
+  ReferenceFrame frame;
 };
 }  // namespace placo
