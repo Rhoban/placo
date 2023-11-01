@@ -46,7 +46,7 @@ struct AxisesMask
    * @brief Sets the axises to be masked (kept), for example "xy"
    *
    * @param axises axises to be kept
-   * @param frame the reference frame where the masking is done (task, local or custom)
+   * @param frame_ the reference frame where the masking is done (task, local or custom)
    */
   void set_axises(std::string axises, ReferenceFrame frame = TaskFrame);
 
