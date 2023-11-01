@@ -4,7 +4,7 @@
 #include "placo/problem/expression.h"
 #include "placo/problem/constraint.h"
 
-namespace placo
+namespace placo::problem
 {
 Expression::Expression()
 {
@@ -338,4 +338,4 @@ ProblemConstraint operator==(double f, const Expression& e)
   return e == f;
 }
 
-};  // namespace placo
+};  // namespace placo::problem

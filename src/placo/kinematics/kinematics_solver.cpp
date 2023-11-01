@@ -8,6 +8,8 @@
 
 namespace placo::kinematics
 {
+using namespace placo::problem;
+
 KinematicsSolver::KinematicsSolver(RobotWrapper& robot_) : robot(robot_), masked_fbase(false)
 {
   N = robot.model.nv;

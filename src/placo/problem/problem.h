@@ -9,7 +9,7 @@
 #include "placo/problem/constraints.h"
 #include "placo/problem/qp_error.h"
 
-namespace placo
+namespace placo::problem
 {
 /**
  * @brief A problem is an object that has variables and constraints to be solved by a QP solver.
@@ -155,4 +155,4 @@ protected:
    */
   void get_constraint_expressions(ProblemConstraint* constraint, Eigen::MatrixXd& A, Eigen::MatrixXd& b);
 };
-}  // namespace placo
+}  // namespace placo::problem

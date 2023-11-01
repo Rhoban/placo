@@ -5,7 +5,7 @@
 #include "placo/problem/variable.h"
 #include "placo/problem/expression.h"
 
-namespace placo
+namespace placo::problem
 {
 /**
  * @brief Integrator can be used to efficiently build expressions and values over a decision variable that
@@ -95,9 +95,9 @@ public:
 
   /**
    * @brief Builds a matrix M so that the system differential equation is dX = M X
-   * 
+   *
    * The "X" here also includes the command.
-   * 
+   *
    * For example, for order 2, this will look like:
    * ```text
    *      [ dx   ]   [ 0 1 0 ]
@@ -229,4 +229,4 @@ protected:
    */
   void update_trajectory();
 };
-}  // namespace placo
+}  // namespace placo::problem

@@ -3,7 +3,7 @@
 #include <vector>
 #include <Eigen/Dense>
 
-namespace placo
+namespace placo::problem
 {
 /**
  * @brief Internal helper to check the column sparsity of a matrix
@@ -68,4 +68,4 @@ public:
    */
   static Sparsity detect_columns_sparsity(const Eigen::MatrixXd M);
 };
-}  // namespace placo
+}  // namespace placo::problem

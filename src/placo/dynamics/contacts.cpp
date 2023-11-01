@@ -14,6 +14,8 @@
 
 namespace placo::dynamics
 {
+using namespace placo::problem;
+
 Contact::Contact()
 {
 }

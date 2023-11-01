@@ -3,11 +3,11 @@
 #include <Eigen/Dense>
 #include "placo/problem/expression.h"
 
-namespace placo
+namespace placo::problem
 {
 /**
  * @brief Represents a constraint to be enforced by a \ref Problem
- * 
+ *
  * Mostly, to build a constraint, you can use \ref Expression operators (like ``e1 == e2`` or ``e1 <= e2``)
  */
 class ProblemConstraint
@@ -84,4 +84,4 @@ public:
 
   bool operator==(const ProblemConstraint& other) const;
 };
-}  // namespace placo
+}  // namespace placo::problem

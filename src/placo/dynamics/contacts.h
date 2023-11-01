@@ -59,7 +59,7 @@ public:
    * @brief Adds contact constraints on the f expression
    * @param problem problem to which the constraints are added
    */
-  virtual void add_constraints(Problem& problem);
+  virtual void add_constraints(problem::Problem& problem);
 
   /**
    * @brief Is it an internal contact ?
@@ -70,7 +70,7 @@ public:
   /**
    * @brief Expression of the forces applied on the contact, created by the \ref DynamicsSolver::solve call
    */
-  Expression f;
+  problem::Expression f;
 
   /**
    * @brief Wrench populated after the \ref DynamicsSolver::solve call
@@ -102,7 +102,7 @@ public:
   bool unilateral;
 
   virtual void update();
-  virtual void add_constraints(Problem& problem);
+  virtual void add_constraints(problem::Problem& problem);
 };
 
 class Contact6D : public Contact
@@ -145,7 +145,7 @@ public:
   Eigen::Vector3d zmp();
 
   virtual void update();
-  virtual void add_constraints(Problem& problem);
+  virtual void add_constraints(problem::Problem& problem);
 };
 
 class RelativePointContact : public Contact
@@ -162,7 +162,7 @@ public:
   RelativePositionTask* relative_position_task;
 
   virtual void update();
-  virtual void add_constraints(Problem& problem);
+  virtual void add_constraints(problem::Problem& problem);
   virtual bool is_internal();
 };
 

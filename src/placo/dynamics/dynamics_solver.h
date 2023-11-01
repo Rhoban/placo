@@ -301,7 +301,7 @@ public:
   void enable_torque_limits(bool enable);
 
   void compute_reaction_ratio_inequalities();
-  void compute_limits_inequalities(Expression& tau);
+  void compute_limits_inequalities(problem::Expression& tau);
   void compute_self_collision_inequalities();
 
   /**
@@ -354,7 +354,7 @@ public:
   bool optimize_contact_forces = false;
 
   // The problem instance is kept alive by the solver (so that variables etc. are available)
-  Problem problem;
+  problem::Problem problem;
 
 protected:
   // Masked DoFs (enforce zero acceleration)

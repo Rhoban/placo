@@ -3,7 +3,7 @@
 #include "placo/problem/expression.h"
 #include <string>
 
-namespace placo
+namespace placo::problem
 {
 /**
  * @brief Represents a variable in a \ref Problem
@@ -45,4 +45,4 @@ public:
    */
   int version = 0;
 };
-};  // namespace placo
+};  // namespace placo::problem

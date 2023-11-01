@@ -1,6 +1,6 @@
 #include "placo/problem/variable.h"
 
-namespace placo
+namespace placo::problem
 {
 Expression Variable::expr(int start, int rows)
 {
@@ -31,4 +31,4 @@ int Variable::size()
 {
   return k_end - k_start;
 }
-};  // namespace placo
+};  // namespace placo::problem

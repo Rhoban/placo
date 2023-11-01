@@ -316,11 +316,11 @@ public:
   /**
    * @brief The underlying QP problem
    */
-  placo::Problem problem;
+  problem::Problem problem;
 
 protected:
-  placo::Variable* qd = nullptr;
-  placo::Variable* scale_variable = nullptr;
+  problem::Variable* qd = nullptr;
+  problem::Variable* scale_variable = nullptr;
 
   std::set<int> masked_dof;
   bool masked_fbase;

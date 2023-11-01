@@ -4,7 +4,7 @@
 #include "placo/problem/qp_error.h"
 #include "eiquadprog/eiquadprog.hpp"
 
-namespace placo
+namespace placo::problem
 {
 Problem::Problem()
 {
@@ -412,4 +412,4 @@ void Problem::dump_status()
   }
 }
 
-};  // namespace placo
+};  // namespace placo::problem

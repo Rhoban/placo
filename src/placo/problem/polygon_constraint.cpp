@@ -1,7 +1,7 @@
 #include <iostream>
 #include "placo/problem/polygon_constraint.h"
 
-namespace placo
+namespace placo::problem
 {
 std::vector<ProblemConstraint> PolygonConstraint::in_polygon_xy(const Expression& expression_xy,
                                                                 std::vector<Eigen::Vector2d> polygon, double margin)
@@ -40,4 +40,4 @@ std::vector<ProblemConstraint> PolygonConstraint::in_polygon(const Expression& e
   Expression e = expression_x / expression_y;
   return in_polygon_xy(e, polygon, margin);
 }
-};  // namespace placo
+};  // namespace placo::problem

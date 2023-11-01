@@ -1,7 +1,7 @@
 #include <iostream>
 #include "placo/problem/sparsity.h"
 
-namespace placo
+namespace placo::problem
 {
 Sparsity::Interval::Interval()
 {
@@ -125,4 +125,4 @@ Sparsity Sparsity::detect_columns_sparsity(const Eigen::MatrixXd M)
 
   return sparsity;
 }
-};  // namespace placo
+};  // namespace placo::problem

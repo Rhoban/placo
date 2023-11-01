@@ -1,6 +1,6 @@
 #include "placo/problem/constraint.h"
 
-namespace placo
+namespace placo::problem
 {
 void ProblemConstraint::configure(std::string type, double weight_)
 {
@@ -19,4 +19,4 @@ bool ProblemConstraint::operator==(const ProblemConstraint& other) const
   return (expression.A == other.expression.A) && (expression.b == other.expression.b) && (priority == other.priority) &&
          (weight == other.weight) && (type == other.type);
 }
-}  // namespace placo
+}  // namespace placo::problem

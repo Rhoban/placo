@@ -5,6 +5,8 @@
 
 namespace placo
 {
+using namespace placo::problem;
+
 WalkPatternGenerator::Trajectory::Trajectory() : left_foot_yaw(true), right_foot_yaw(true), trunk_yaw(true)
 {
   T.setIdentity();

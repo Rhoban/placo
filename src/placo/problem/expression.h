@@ -3,7 +3,7 @@
 #include <Eigen/Dense>
 #include "placo/problem/sparsity.h"
 
-namespace placo
+namespace placo::problem
 {
 class ProblemConstraint;
 
@@ -159,4 +159,4 @@ public:
   ProblemConstraint operator==(double f) const;
   friend ProblemConstraint operator==(double f, const Expression& e);
 };
-}  // namespace placo
+}  // namespace placo::problem

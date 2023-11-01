@@ -1,6 +1,6 @@
 #include "placo/problem/constraints.h"
 
-namespace placo
+namespace placo::problem
 {
 ProblemConstraints::ProblemConstraints()
 {
@@ -35,4 +35,4 @@ bool ProblemConstraints::is_active()
 
   return false;
 }
-}  // namespace placo
+}  // namespace placo::problem

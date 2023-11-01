@@ -4,7 +4,7 @@
 #include "placo/problem/problem.h"
 #include "placo/problem/constraints.h"
 
-namespace placo
+namespace placo::problem
 {
 /**
  * @brief Provides convenient helpers to build 2D polygon belonging constraints
@@ -36,4 +36,4 @@ public:
   static std::vector<ProblemConstraint> in_polygon(const Expression& expression_x, const Expression& expression_y,
                                                    std::vector<Eigen::Vector2d> polygon, double margin = 0.);
 };
-}  // namespace placo
+}  // namespace placo::problem

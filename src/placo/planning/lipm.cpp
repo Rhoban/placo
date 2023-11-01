@@ -3,6 +3,8 @@
 
 namespace placo
 {
+using namespace placo::problem;
+
 Eigen::VectorXd LIPM::Trajectory::pos(double t)
 {
   return Eigen::Vector2d(x.value(t, 0), y.value(t, 0));
@@ -38,8 +40,8 @@ Eigen::VectorXd LIPM::Trajectory::dzmp(double t, double omega_2)
   return vel(t) + (1 / omega_2) * jerk(t);
 }
 
-LIPM::LIPM(Problem& problem, int timesteps, double dt, Eigen::Vector2d initial_pos,
-           Eigen::Vector2d initial_vel, Eigen::Vector2d initial_acc)
+LIPM::LIPM(Problem& problem, int timesteps, double dt, Eigen::Vector2d initial_pos, Eigen::Vector2d initial_vel,
+           Eigen::Vector2d initial_acc)
   : timesteps(timesteps), dt(dt)
 {
   x_var = &problem.add_variable(timesteps);

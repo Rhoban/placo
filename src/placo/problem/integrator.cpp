@@ -3,7 +3,7 @@
 #include <unsupported/Eigen/MatrixFunctions>
 #include "placo/problem/integrator.h"
 
-namespace placo
+namespace placo::problem
 {
 double Integrator::Trajectory::value(double t, int diff)
 {
@@ -235,4 +235,4 @@ void Integrator::update_trajectory()
   }
 }
 
-}  // namespace placo
+}  // namespace placo::problem

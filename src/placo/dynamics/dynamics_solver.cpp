@@ -3,6 +3,8 @@
 
 namespace placo::dynamics
 {
+using namespace placo::problem;
+
 void DynamicsSolver::set_passive(const std::string& joint_name, bool is_passive, double kp, double kd)
 {
   if (!is_passive)

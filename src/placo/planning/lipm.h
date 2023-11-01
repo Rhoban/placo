@@ -24,36 +24,36 @@ public:
     Eigen::VectorXd zmp(double t, double omega_2);
     Eigen::VectorXd dzmp(double t, double omega_2);
 
-    Integrator::Trajectory x;
-    Integrator::Trajectory y;
+    problem::Integrator::Trajectory x;
+    problem::Integrator::Trajectory y;
   };
 
-  LIPM(Problem& problem, int timesteps, double dt, Eigen::Vector2d initial_pos,
+  LIPM(problem::Problem& problem, int timesteps, double dt, Eigen::Vector2d initial_pos,
        Eigen::Vector2d initial_vel = Eigen::Vector2d(0., 0.), Eigen::Vector2d initial_acc = Eigen::Vector2d(0., 0.));
 
   Trajectory get_trajectory();
 
-  Expression pos(int timestep);
-  Expression vel(int timestep);
-  Expression acc(int timestep);
-  Expression jerk(int timestep);
+  problem::Expression pos(int timestep);
+  problem::Expression vel(int timestep);
+  problem::Expression acc(int timestep);
+  problem::Expression jerk(int timestep);
 
-  Expression dcm(int timestep, double omega);
-  Expression zmp(int timestep, double omega_2);
-  Expression dzmp(int timestep, double omega_2);
+  problem::Expression dcm(int timestep, double omega);
+  problem::Expression zmp(int timestep, double omega_2);
+  problem::Expression dzmp(int timestep, double omega_2);
 
   /**
    * @brief Compute the natural frequency of a LIPM given its height (omega = sqrt(g / h))
-  */
+   */
   static double compute_omega(double com_height);
 
   // x and y integrators
-  Integrator x;
-  Integrator y;
+  problem::Integrator x;
+  problem::Integrator y;
 
   // Variables
-  Variable* x_var;
-  Variable* y_var;
+  problem::Variable* x_var;
+  problem::Variable* y_var;
 
   int timesteps;
   double dt;

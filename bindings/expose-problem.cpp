@@ -19,6 +19,7 @@
 
 using namespace boost::python;
 using namespace placo;
+using namespace placo::problem;
 
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(expr_overloads, expr, 0, 2);
 
