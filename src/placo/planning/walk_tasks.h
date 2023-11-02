@@ -35,7 +35,6 @@ public:
 
   bool relax_com_height = false;
   bool relax_trunk_orientation = false;
-  bool relax_shoulder = false;
   double relax_weight = 1e-3;
 
   void update_com_task();

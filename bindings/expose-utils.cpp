@@ -28,7 +28,6 @@ void exposeUtils()
   def("frame_yaw", &placo::frame_yaw);
   def("frame", &placo::frame);
   def("flatten_on_floor", &placo::flatten_on_floor);
-  def("velocity_limit", &placo::velocity_limit);
 
   exposeStdVector<int>("vector_int");
   exposeStdVector<double>("vector_double");

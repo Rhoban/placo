@@ -1,6 +1,5 @@
 #include "placo/planning/walk_tasks.h"
 #include "placo/model/humanoid_robot.h"
-#include "placo/utils.h"
 
 using namespace placo::kinematics;
 
@@ -39,11 +38,6 @@ void WalkTasks::initialize_tasks(KinematicsSolver* solver_, HumanoidRobot* robot
   }
 
   update_com_task();
-
-  if (adaptative_velocity_limits)
-  {
-    solver->enable_velocity_limits(true);
-  }
 }
 
 void WalkTasks::update_com_task()
@@ -149,28 +143,6 @@ void WalkTasks::update_tasks(Eigen::Affine3d T_world_left, Eigen::Affine3d T_wor
   left_foot_task.set_T_world_frame(T_world_left);
   right_foot_task.set_T_world_frame(T_world_right);
   trunk_orientation_task->R_world_frame = R_world_trunk;
-
-  if (adaptative_velocity_limits)
-  {
-    Eigen::VectorXd torques = Eigen::VectorXd::Zero(solver->N + 6);
-    if (!robot->support_is_both)
-    {
-      torques = robot->static_gravity_compensation_torques(robot->support_frame());
-    }
-
-    for (auto dof : robot->actuated_joint_names())
-    {
-      if (relax_shoulder && (dof == "left_shoulder_roll" || dof == "right_shoulder_roll"))
-      {
-        continue;
-      }
-      
-      solver->enable_velocity_limits(true);
-      double expected_torque = std::abs(torques[robot->get_joint_v_offset(dof)]) + 0.1;  // 0.1 is a safety margin
-      double limit = velocity_limit(expected_torque, dof, use_doc_limits);
-      robot->set_velocity_limit(dof, limit);
-    }
-  }
 }
 
 void WalkTasks::remove_tasks()
