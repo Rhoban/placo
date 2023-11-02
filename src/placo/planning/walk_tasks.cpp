@@ -149,6 +149,5 @@ std::map<std::string, Eigen::Vector3d> WalkTasks::get_tasks_error()
 
 WalkTasks::~WalkTasks()
 {
-  remove_tasks();
 }
 };  // namespace placo
