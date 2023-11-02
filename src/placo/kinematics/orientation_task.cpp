@@ -18,11 +18,8 @@ void OrientationTask::update()
   error = pinocchio::log3(M);
   J = solver->robot.frame_jacobian(frame_index, pinocchio::WORLD);
 
-  Eigen::MatrixXd Jlog;
-  pinocchio::Jlog3(M, Jlog);
-
-  mask.R_local_world = T_world_frame.linear().transpose();
-  A = mask.apply(Jlog * J.block(3, 0, 3, solver->N));
+  mask.R_local_world = R_world_frame.transpose();
+  A = mask.apply(J.block(3, 0, 3, solver->N));
   b = mask.apply(error);
 }
 
