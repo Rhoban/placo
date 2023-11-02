@@ -10,7 +10,7 @@ class PositionTask : public Task
 {
 public:
   /**
-   * @brief see \ref placo::dynamics::DynamicSolver::add_position_task
+   * @brief see \ref placo::dynamics::DynamicsSolver::add_position_task
    */
   PositionTask(RobotWrapper::FrameIndex frame_index, Eigen::Vector3d target_world);
 

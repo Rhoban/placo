@@ -9,12 +9,12 @@ namespace placo::dynamics
 struct RelativeFrameTask
 {
   /**
-   * @brief see \ref placo::dynamics::DynamicSolver::add_relative_frame_task
+   * @brief see \ref placo::dynamics::DynamicsSolver::add_relative_frame_task
    */
   RelativeFrameTask();
 
   /**
-   * @brief see \ref placo::dynamics::DynamicSolver::add_relative_frame_task
+   * @brief see \ref placo::dynamics::DynamicsSolver::add_relative_frame_task
    */
   RelativeFrameTask(RelativePositionTask* position, RelativeOrientationTask* orientation);
 

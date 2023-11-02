@@ -8,12 +8,12 @@ namespace placo::dynamics
 struct FrameTask
 {
   /**
-   * @brief see \ref placo::dynamics::DynamicSolver::add_frame_task
+   * @brief see \ref placo::dynamics::DynamicsSolver::add_frame_task
    */
   FrameTask();
 
   /**
-   * @brief see \ref placo::dynamics::DynamicSolver::add_frame_task
+   * @brief see \ref placo::dynamics::DynamicsSolver::add_frame_task
    */
   FrameTask(PositionTask* position, OrientationTask* orientation);
 

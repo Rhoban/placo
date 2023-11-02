@@ -12,7 +12,7 @@ class JointsTask : public Task
 {
 public:
   /**
-   * @brief see \ref placo::dynamics::DynamicSolver::add_gear_task
+   * @brief see \ref placo::dynamics::DynamicsSolver::add_gear_task
    */
   JointsTask();
 
