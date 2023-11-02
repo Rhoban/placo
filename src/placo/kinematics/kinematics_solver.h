@@ -23,6 +23,7 @@
 // Constraints
 #include "placo/kinematics/constraint.h"
 #include "placo/kinematics/avoid_self_collisions_constraint.h"
+#include "placo/kinematics/com_polygon_constraint.h"
 
 // Problem formulation
 #include "placo/problem/problem.h"
@@ -211,6 +212,14 @@ public:
    * @return constraint
    */
   AvoidSelfCollisionsConstraint& add_avoid_self_collisions_constraint();
+
+  /**
+   * @brief Adds a CoM polygon constraint
+   * @param polygon clockwise polygon
+   * @param margin margin
+   * @return constraint
+   */
+  CoMPolygonConstraint& add_com_polygon_constraint(std::vector<Eigen::Vector2d> polygon, double margin = 0.);
 
   /**
    * @brief Constructs the QP problem and solves it

@@ -150,6 +150,11 @@ AvoidSelfCollisionsConstraint& KinematicsSolver::add_avoid_self_collisions_const
   return add_constraint(new AvoidSelfCollisionsConstraint());
 }
 
+CoMPolygonConstraint& KinematicsSolver::add_com_polygon_constraint(std::vector<Eigen::Vector2d> polygon, double margin)
+{
+  return add_constraint(new CoMPolygonConstraint(polygon, margin));
+}
+
 void KinematicsSolver::mask_dof(std::string dof)
 {
   masked_dof.insert(robot.get_joint_v_offset(dof));

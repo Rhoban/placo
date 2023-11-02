@@ -70,6 +70,10 @@ void exposeKinematics()
           .def("add_avoid_self_collisions_constraint", &KinematicsSolver::add_avoid_self_collisions_constraint,
                return_internal_reference<>())
 
+          // CoM polygon
+          .def("add_com_polygon_constraint", &KinematicsSolver::add_com_polygon_constraint,
+               return_internal_reference<>())
+
           // Masking/unmasking DoFs
           .def("mask_dof", &KinematicsSolver::mask_dof)
           .def("unmask_dof", &KinematicsSolver::unmask_dof)
@@ -178,4 +182,8 @@ void exposeKinematics()
   class__<AvoidSelfCollisionsConstraint, bases<Constraint>>("KinematicsAvoidSelfCollisionsConstraint", init<>())
       .def_readwrite("self_collisions_margin", &AvoidSelfCollisionsConstraint::self_collisions_margin)
       .def_readwrite("self_collisions_trigger", &AvoidSelfCollisionsConstraint::self_collisions_trigger);
+
+  class__<CoMPolygonConstraint, bases<Constraint>>("CoMPolygonConstraint", init<std::vector<Eigen::Vector2d>, double>())
+      .def_readwrite("polygon", &CoMPolygonConstraint::polygon)
+      .def_readwrite("margin", &CoMPolygonConstraint::margin);
 }

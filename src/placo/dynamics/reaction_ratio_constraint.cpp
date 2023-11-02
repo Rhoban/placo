@@ -24,6 +24,7 @@ void ReactionRatioConstraint::add_constraint(problem::Problem& problem, problem:
     }
   }
 
-  problem.add_constraint(e >= 0);
+  problem.add_constraint(e >= 0).configure(
+      priority == Priority::Soft ? problem::ProblemConstraint::Soft : problem::ProblemConstraint::Hard, weight);
 }
 };  // namespace placo::dynamics

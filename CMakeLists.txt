@@ -63,6 +63,7 @@ add_library(libplaco
     src/placo/kinematics/regularization_task.cpp
     src/placo/kinematics/constraint.cpp
     src/placo/kinematics/avoid_self_collisions_constraint.cpp
+    src/placo/kinematics/com_polygon_constraint.cpp
 
     # Dynamics QP solver
     src/placo/dynamics/task.cpp

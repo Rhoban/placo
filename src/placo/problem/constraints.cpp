@@ -19,7 +19,7 @@ void ProblemConstraints::configure(bool hard, double weight)
 {
   for (auto& constraint : constraints)
   {
-    configure(hard, weight);
+    constraint->configure(hard ? ProblemConstraint::Hard : ProblemConstraint::Soft, weight);
   }
 }
 
