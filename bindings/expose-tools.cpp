@@ -27,7 +27,6 @@ void exposeTools()
   def("frame_yaw", &frame_yaw);
   def("frame", &frame);
   def("flatten_on_floor", &flatten_on_floor);
-  def("velocity_limit", &velocity_limit);
 
   exposeStdVector<int>("vector_int");
   exposeStdVector<double>("vector_double");
