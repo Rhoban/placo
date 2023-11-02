@@ -79,6 +79,7 @@ add_library(libplaco
     src/placo/dynamics/dynamics_solver.cpp
     src/placo/dynamics/constraint.cpp
     src/placo/dynamics/avoid_self_collisions_constraint.cpp
+    src/placo/dynamics/reaction_ratio_constraint.cpp
 
     # Walking
     src/placo/footsteps/footsteps_planner.cpp

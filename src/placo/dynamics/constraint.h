@@ -14,6 +14,11 @@ public:
    */
   DynamicsSolver* solver = nullptr;
 
-  virtual void add_constraint(placo::problem::Problem& problem) = 0;
+  /**
+   * @brief Allows the specific constraint implementation to be added to the problem
+   * @param problem problem
+   * @param tau expression for tau
+   */
+  virtual void add_constraint(problem::Problem& problem, problem::Expression& tau) = 0;
 };
 }  // namespace placo::dynamics

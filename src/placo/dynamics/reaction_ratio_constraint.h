@@ -2,22 +2,25 @@
 
 #include "placo/problem/problem.h"
 #include "placo/dynamics/constraint.h"
+#include "placo/dynamics/contacts.h"
 
 namespace placo::dynamics
 {
 class DynamicsSolver;
-class AvoidSelfCollisionsConstraint : public Constraint
+class ReactionRatioConstraint : public Constraint
 {
 public:
-  /**
-   * @brief Margin for self collisions [m]
-   */
-  double self_collisions_margin = 0.005;
+  ReactionRatioConstraint(Contact& contact, double reaction_ratio);
 
   /**
-   * @brief Distance that triggers the constraint [m]
+   * @brief Contact
    */
-  double self_collisions_trigger = 0.01;
+  Contact& contact;
+
+  /**
+   * @brief Reaction ratio to be enforced
+   */
+  double reaction_ratio;
 
   virtual void add_constraint(problem::Problem& problem, problem::Expression& tau) override;
 };

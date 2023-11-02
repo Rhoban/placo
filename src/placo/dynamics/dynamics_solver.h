@@ -22,6 +22,7 @@
 // Constraints
 #include "placo/dynamics/constraint.h"
 #include "placo/dynamics/avoid_self_collisions_constraint.h"
+#include "placo/dynamics/reaction_ratio_constraint.h"
 
 // Problem formulation
 #include "placo/problem/problem.h"
@@ -281,6 +282,14 @@ public:
   AvoidSelfCollisionsConstraint& add_avoid_self_collisions_constraint();
 
   /**
+   * @brief Adds a constraint enforce reaction ratio
+   * @param contact contact
+   * @param reaction_ratio reaction ratio to enforce
+   * @return reaction ratio constraint
+   */
+  ReactionRatioConstraint& add_reaction_ratio_constraint(Contact& contact, double reaction_ratio);
+
+  /**
    * @brief Enables/disables joint limits inequalities
    */
   void enable_joint_limits(bool enable);
@@ -300,7 +309,10 @@ public:
    */
   void enable_torque_limits(bool enable);
 
-  void compute_reaction_ratio_inequalities();
+  /**
+   * @brief Computes the joint limits inequalities
+   * @param tau the torque expression
+   */
   void compute_limits_inequalities(problem::Expression& tau);
 
   /**

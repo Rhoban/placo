@@ -3,7 +3,7 @@
 
 namespace placo::dynamics
 {
-void AvoidSelfCollisionsConstraint::add_constraint(placo::problem::Problem& problem)
+void AvoidSelfCollisionsConstraint::add_constraint(problem::Problem& problem, problem::Expression& tau)
 {
   if (solver->dt == 0.)
   {

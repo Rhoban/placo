@@ -75,6 +75,11 @@ AvoidSelfCollisionsConstraint& DynamicsSolver::add_avoid_self_collisions_constra
   return add_constraint(new AvoidSelfCollisionsConstraint());
 }
 
+ReactionRatioConstraint& DynamicsSolver::add_reaction_ratio_constraint(Contact& contact, double reaction_ratio)
+{
+  return add_constraint(new ReactionRatioConstraint(contact, reaction_ratio));
+}
+
 PositionTask& DynamicsSolver::add_position_task(pinocchio::FrameIndex frame_index, Eigen::Vector3d target_world)
 {
   return add_task(new PositionTask(frame_index, target_world));
@@ -337,34 +342,6 @@ void DynamicsSolver::compute_limits_inequalities(Expression& tau)
   }
 }
 
-void DynamicsSolver::compute_reaction_ratio_inequalities()
-{
-  // If a contact has a reaction ratio constraint, we want:
-  // (f_z_1) / (f_z_1 + f_z_2 + ...) <= lambda
-  // 0 <= - (f_z_1) ( 1 - lambda) + lambda * (f_z_2 + ...)
-  for (auto& contact : contacts)
-  {
-    if (!contact->is_internal())
-    {
-      if (contact->reaction_ratio >= 0)
-      {
-        double lambda = contact->reaction_ratio;
-        Expression e = -contact->f.slice(2, 1) * (1 - lambda);
-
-        for (auto& other_contact : contacts)
-        {
-          if (!other_contact->is_internal())
-          {
-            e = e + lambda * other_contact->f.slice(2, 1);
-          }
-        }
-
-        problem.add_constraint(e >= 0);
-      }
-    }
-  }
-}
-
 void DynamicsSolver::clear_tasks()
 {
   for (auto& task : tasks)
@@ -576,16 +553,13 @@ DynamicsSolver::Result DynamicsSolver::solve()
     tau = tau - Jd * fd;
   }
 
-  // Reaction ratio
-  compute_reaction_ratio_inequalities();
-
   // Computing limit inequalitie
   compute_limits_inequalities(tau);
 
   // Add constraints
   for (auto constraint : constraints)
   {
-    constraint->add_constraint(problem);
+    constraint->add_constraint(problem, tau);
   }
 
   // Floating base has no torque
