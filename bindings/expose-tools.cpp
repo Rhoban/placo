@@ -98,10 +98,10 @@ void exposeTools()
           +[](HistoryCollection& collection, std::vector<std::string> entries, double start_t, double dt, int length) {
             Eigen::MatrixXd result(length, entries.size());
 
-            for (int i = 0; i < length; i++)
+            for (unsigned int i = 0; i < length; i++)
             {
               double t = start_t + i * dt;
-              for (int j = 0; j < entries.size(); j++)
+              for (unsigned int j = 0; j < entries.size(); j++)
               {
                 result(i, j) = collection.number(entries[j])->interpolate(t);
               }
