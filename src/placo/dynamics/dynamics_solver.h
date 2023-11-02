@@ -19,6 +19,10 @@
 #include "placo/dynamics/gear_task.h"
 #include "placo/dynamics/com_task.h"
 
+// Constraints
+#include "placo/dynamics/constraint.h"
+#include "placo/dynamics/avoid_self_collisions_constraint.h"
+
 // Problem formulation
 #include "placo/problem/problem.h"
 
@@ -251,7 +255,7 @@ public:
 
   /**
    * @brief Adds an external wrench
-   * @param frame_index
+   * @param frame_name frame
    * @return external wrench contact
    */
   ExternalWrenchContact& add_external_wrench_contact(std::string frame_name);
@@ -259,13 +263,22 @@ public:
   /**
    * @brief Adds a puppet contact, this will add some free contact forces for the whole system, allowing it
    *        to be controlled freely
+   * @return puppet contact
    */
   PuppetContact& add_puppet_contact();
 
   /**
    * @brief Adds contact forces associated with any given task
+   * @param task task
+   * @return task contact
    */
   TaskContact& add_task_contact(Task& task);
+
+  /**
+   * @brief Adds a constraint to the solver
+   * @return constraint
+   */
+  AvoidSelfCollisionsConstraint& add_avoid_self_collisions_constraint();
 
   /**
    * @brief Enables/disables joint limits inequalities
@@ -283,26 +296,12 @@ public:
   void enable_velocity_vs_torque_limits(bool enable);
 
   /**
-   * @brief Enables or disable the self collision inequalities
-   * @param enable whether to enable the self collision inequalities
-   * @param margin margin that will be used [m]
-   * @param trigger the trigger distance at which the inequalities are enabled [m]
-   */
-  void enable_self_collision_avoidance(bool enable, double margin = 0.005, double trigger = 0.01);
-
-  /**
-   * @brief Changes the self collision configuration
-   */
-  void configure_self_collision_avoidance(bool soft, double weight);
-
-  /**
    * @brief Enables/disables torque limits inequalities
    */
   void enable_torque_limits(bool enable);
 
   void compute_reaction_ratio_inequalities();
   void compute_limits_inequalities(problem::Expression& tau);
-  void compute_self_collision_inequalities();
 
   /**
    * @brief Clears the internal tasks
@@ -359,6 +358,12 @@ public:
   void remove_contact(Contact& contact);
 
   /**
+   * @brief Removes a constraint from the solver
+   * @param constraint constraint
+   */
+  void remove_constraint(Constraint& constraint);
+
+  /**
    * @brief Global friction that is added to all the joints
    */
   double friction = 1e-3;
@@ -407,6 +412,24 @@ public:
   }
 
   /**
+   * @brief Adds a constraint to the solver
+   * @param constraint constraint
+   * @return reference to internal constraint
+   */
+  template <typename T>
+  T& add_constraint(T* constraint)
+  {
+    constraint_id += 1;
+    constraint->solver = this;
+    std::ostringstream oss;
+    oss << "Constraint_" << constraint_id;
+    constraint->name = oss.str();
+    constraints.insert(constraint);
+
+    return *constraint;
+  }
+
+  /**
    * @brief  Adds a contact to the solver
    * @param contact contact
    * @return reference to internal contact
@@ -428,23 +451,18 @@ protected:
   // Tasks
   std::set<Task*> tasks;
 
+  // Constraints
+  std::set<Constraint*> constraints;
+
   // Task id (this is only useful when task names are not specified, each task will have an unique ID)
   int task_id = 0;
+  int constraint_id = 0;
 
   // Limits
   bool torque_limits = false;
   bool joint_limits = false;
   bool velocity_vs_torque_limits = false;
   bool velocity_limits = false;
-
-  // Self collision prevention
-  bool avoid_self_collisions = false;
-  double self_collisions_margin = 0.005;  // [m]
-  double self_collisions_trigger = 0.01;  // [m]
-
-  // Self collisions configuration
-  bool self_collisions_soft = false;
-  double self_collisions_weight = 1.;
 
   // If true, the solver will assume qdd = 0
   bool is_static = false;

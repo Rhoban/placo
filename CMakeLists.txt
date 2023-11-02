@@ -61,6 +61,8 @@ add_library(libplaco
     src/placo/kinematics/joints_task.cpp
     src/placo/kinematics/gear_task.cpp
     src/placo/kinematics/regularization_task.cpp
+    src/placo/kinematics/constraint.cpp
+    src/placo/kinematics/avoid_self_collisions_constraint.cpp
 
     # Dynamics QP solver
     src/placo/dynamics/task.cpp
@@ -75,6 +77,8 @@ add_library(libplaco
     src/placo/dynamics/com_task.cpp
     src/placo/dynamics/contacts.cpp
     src/placo/dynamics/dynamics_solver.cpp
+    src/placo/dynamics/constraint.cpp
+    src/placo/dynamics/avoid_self_collisions_constraint.cpp
 
     # Walking
     src/placo/footsteps/footsteps_planner.cpp

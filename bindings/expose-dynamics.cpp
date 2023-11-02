@@ -86,19 +86,20 @@ void exposeDynamics()
           "add_external_wrench_contact", &DynamicsSolver::add_external_wrench_contact, return_internal_reference<>())
       .def("add_puppet_contact", &DynamicsSolver::add_puppet_contact, return_internal_reference<>())
       .def("add_task_contact", &DynamicsSolver::add_task_contact, return_internal_reference<>())
+      .def("add_avoid_self_collisions_constraint", &DynamicsSolver::add_avoid_self_collisions_constraint,
+           return_internal_reference<>())
       .def("set_passive", &DynamicsSolver::set_passive)
       .def("enable_velocity_limits", &DynamicsSolver::enable_velocity_limits)
       .def("enable_velocity_vs_torque_limits", &DynamicsSolver::enable_velocity_vs_torque_limits)
       .def("enable_joint_limits", &DynamicsSolver::enable_joint_limits)
       .def("enable_torque_limits", &DynamicsSolver::enable_torque_limits)
-      .def("enable_self_collision_avoidance", &DynamicsSolver::enable_self_collision_avoidance)
-      .def("configure_self_collision_avoidance", &DynamicsSolver::configure_self_collision_avoidance)
       .def("dump_status", &DynamicsSolver::dump_status)
       .def("set_static", &DynamicsSolver::set_static)
       .def("solve", &DynamicsSolver::solve)
       .def<void (DynamicsSolver::*)(Task&)>("remove_task", &DynamicsSolver::remove_task)
       .def<void (DynamicsSolver::*)(FrameTask&)>("remove_task", &DynamicsSolver::remove_task)
       .def("remove_contact", &DynamicsSolver::remove_contact)
+      .def("remove_constraint", &DynamicsSolver::remove_constraint)
       .add_property(
           "robot", +[](const DynamicsSolver& solver) { return solver.robot; })
       .def(
@@ -219,4 +220,10 @@ void exposeDynamics()
           });
 
   class__<GearTask, bases<Task>>("DynamicsGearTask", init<>()).def("set_gear", &GearTask::set_gear);
+
+  class__<Constraint, bases<tools::Prioritized>, boost::noncopyable>("DynamicsConstraint", no_init);
+
+  class__<AvoidSelfCollisionsConstraint, bases<Constraint>>("DynamicsAvoidSelfCollisionsConstraint", init<>())
+      .def_readwrite("self_collisions_margin", &AvoidSelfCollisionsConstraint::self_collisions_margin)
+      .def_readwrite("self_collisions_trigger", &AvoidSelfCollisionsConstraint::self_collisions_trigger);
 }

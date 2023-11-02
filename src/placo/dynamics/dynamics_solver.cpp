@@ -70,6 +70,11 @@ TaskContact& DynamicsSolver::add_task_contact(Task& task)
   return add_contact(new TaskContact(task));
 }
 
+AvoidSelfCollisionsConstraint& DynamicsSolver::add_avoid_self_collisions_constraint()
+{
+  return add_constraint(new AvoidSelfCollisionsConstraint());
+}
+
 PositionTask& DynamicsSolver::add_position_task(pinocchio::FrameIndex frame_index, Eigen::Vector3d target_world)
 {
   return add_task(new PositionTask(frame_index, target_world));
@@ -206,19 +211,6 @@ void DynamicsSolver::enable_torque_limits(bool enable)
   torque_limits = enable;
 }
 
-void DynamicsSolver::enable_self_collision_avoidance(bool enable, double margin, double trigger)
-{
-  avoid_self_collisions = enable;
-  self_collisions_margin = margin;
-  self_collisions_trigger = trigger;
-}
-
-void DynamicsSolver::configure_self_collision_avoidance(bool soft, double weight)
-{
-  self_collisions_soft = soft;
-  self_collisions_weight = weight;
-}
-
 void DynamicsSolver::compute_limits_inequalities(Expression& tau)
 {
   if ((joint_limits || velocity_limits) && dt == 0.)
@@ -342,101 +334,6 @@ void DynamicsSolver::compute_limits_inequalities(Expression& tau)
     }
 
     problem.add_constraint(e <= 0);
-  }
-}
-
-void DynamicsSolver::compute_self_collision_inequalities()
-{
-  if (avoid_self_collisions)
-  {
-    std::vector<RobotWrapper::Distance> distances = robot.distances();
-
-    int constraints = 0;
-
-    for (auto& distance : distances)
-    {
-      if (distance.min_distance < self_collisions_trigger)
-      {
-        constraints += 1;
-      }
-    }
-
-    if (constraints == 0)
-    {
-      return;
-    }
-
-    Expression e;
-    e.A = Eigen::MatrixXd(constraints, N);
-    e.b = Eigen::VectorXd(constraints);
-    int constraint = 0;
-
-    for (auto& distance : distances)
-    {
-      if (distance.min_distance < self_collisions_trigger)
-      {
-        Eigen::Vector3d v = distance.pointB - distance.pointA;
-        Eigen::Vector3d n = v.normalized();
-
-        if (distance.min_distance < 0)
-        {
-          // If the distance is negative, the points "cross" and this vector should point the other way around
-          n = -n;
-        }
-
-        Eigen::MatrixXd X_A_world = pinocchio::SE3(Eigen::Matrix3d::Identity(), -distance.pointA).toActionMatrix();
-        Eigen::MatrixXd JA = X_A_world * robot.joint_jacobian(distance.parentA, pinocchio::ReferenceFrame::WORLD);
-        Eigen::MatrixXd dJA =
-            X_A_world * robot.joint_jacobian_time_variation(distance.parentA, pinocchio::ReferenceFrame::WORLD);
-
-        Eigen::MatrixXd X_B_world = pinocchio::SE3(Eigen::Matrix3d::Identity(), -distance.pointB).toActionMatrix();
-        Eigen::MatrixXd JB = X_B_world * robot.joint_jacobian(distance.parentB, pinocchio::ReferenceFrame::WORLD);
-        Eigen::MatrixXd dJB =
-            X_B_world * robot.joint_jacobian_time_variation(distance.parentB, pinocchio::ReferenceFrame::WORLD);
-
-        // We want: current_distance + J dq >= margin
-        Eigen::MatrixXd J = n.transpose() * (JB - JA).block(0, 0, 3, N);
-        Eigen::VectorXd dJ = n.transpose() * (dJB - dJA).block(0, 0, 3, N) * robot.state.qd;
-
-        // Computing xdd_safe from qdd_safe
-        double lambda = -1;
-        for (int k = 6; k < N; k++)
-        {
-          if (fabs(J(1, k)) > 1e-6)
-          {
-            double lambda_i = fabs(qdd_safe / J(1, k));
-            if (lambda < 0 || lambda_i < lambda)
-            {
-              lambda = lambda_i;
-            }
-          }
-        }
-
-        double xdd_safe = (lambda * (J * J.transpose()) + dJ * robot.state.qd)(0, 0);
-
-        if (distance.min_distance >= self_collisions_margin)
-        {
-          // We prevent excessive velocity towards the collision
-          double error = distance.min_distance - self_collisions_margin;
-          double xd = (J * robot.state.qd)(0, 0);
-          double xd_max = sqrt(2. * error * xdd_safe);
-
-          e.A.block(constraint, 0, 1, N) = dt * J;
-          e.b[constraint] = dJ[0] + xd + xd_max;
-        }
-        else
-        {
-          // We push outward the collision
-          e.A.block(constraint, 0, 1, N) = J;
-          e.b[constraint] = -xdd_safe;
-        }
-
-        constraint += 1;
-      }
-    }
-
-    problem.add_constraint(e >= 0).configure(self_collisions_soft ? ProblemConstraint::Soft : ProblemConstraint::Hard,
-                                             self_collisions_weight);
   }
 }
 
@@ -684,7 +581,12 @@ DynamicsSolver::Result DynamicsSolver::solve()
 
   // Computing limit inequalitie
   compute_limits_inequalities(tau);
-  compute_self_collision_inequalities();
+
+  // Add constraints
+  for (auto constraint : constraints)
+  {
+    constraint->add_constraint(problem);
+  }
 
   // Floating base has no torque
   problem.add_constraint(tau.slice(0, 6) == 0);
@@ -759,5 +661,12 @@ void DynamicsSolver::remove_contact(Contact& contact)
   contacts.erase(std::remove(contacts.begin(), contacts.end(), &contact), contacts.end());
 
   delete &contact;
+}
+
+void DynamicsSolver::remove_constraint(Constraint& constraint)
+{
+  constraints.erase(&constraint);
+
+  delete &constraint;
 }
 }  // namespace placo::dynamics

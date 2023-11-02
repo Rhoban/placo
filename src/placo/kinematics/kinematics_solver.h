@@ -20,6 +20,10 @@
 #include "placo/kinematics/regularization_task.h"
 #include "placo/kinematics/centroidal_momentum_task.h"
 
+// Constraints
+#include "placo/kinematics/constraint.h"
+#include "placo/kinematics/avoid_self_collisions_constraint.h"
+
 // Problem formulation
 #include "placo/problem/problem.h"
 
@@ -202,6 +206,12 @@ public:
   RegularizationTask& add_regularization_task(double magnitude = 1e-6);
 
   /**
+   * @brief Adds a self collision avoidance constraint
+   * @return constraint
+   */
+  AvoidSelfCollisionsConstraint& add_avoid_self_collisions_constraint();
+
+  /**
    * @brief Constructs the QP problem and solves it
    * @param apply apply the solution to the robot model
    * @return the vector containing delta q, which are target variations for the robot degrees of freedom.
@@ -237,13 +247,21 @@ public:
 
   /**
    * @brief Removes a task from the solver
+   * @param task task
    */
   void remove_task(Task& task);
 
   /**
    * @brief Removes a frame task from the solver
+   * @param task task
    */
   void remove_task(FrameTask& task);
+
+  /**
+   * @brief Removes aconstraint from the solver
+   * @param constraint constraint
+   */
+  void remove_constraint(Constraint& constraint);
 
   /**
    * @brief Dumps the status to a given stream
@@ -264,19 +282,6 @@ public:
    * @brief Enables/disables joint velocity inequalities
    */
   void enable_velocity_limits(bool enable);
-
-  /**
-   * @brief Enables or disable the self collision inequalities
-   * @param enable whether to enable the self collision inequalities
-   * @param margin margin that will be used [m]
-   * @param trigger the trigger distance at which the inequalities are enabled [m]
-   */
-  void enable_self_collision_avoidance(bool enable, double margin = 0.005, double trigger = 0.01);
-
-  /**
-   * @brief Changes the self collision configuration
-   */
-  void configure_self_collision_avoidance(bool soft, double weight);
 
   /**
    * @brief Number of tasks
@@ -331,6 +336,19 @@ public:
     return *task;
   }
 
+  template <typename T>
+  T& add_constraint(T* constraint)
+  {
+    constraint_id += 1;
+    constraint->solver = this;
+    std::ostringstream oss;
+    oss << "Constraint_" << constraint_id;
+    constraint->name = oss.str();
+    constraints.insert(constraint);
+
+    return *constraint;
+  }
+
 protected:
   problem::Variable* qd = nullptr;
   problem::Variable* scale_variable = nullptr;
@@ -338,6 +356,7 @@ protected:
   std::set<int> masked_dof;
   bool masked_fbase;
   std::set<Task*> tasks;
+  std::set<Constraint*> constraints;
 
   Eigen::VectorXi activeSet;
   size_t activeSetSize;
@@ -346,19 +365,10 @@ protected:
   bool joint_limits = true;
   bool velocity_limits = false;
 
-  // Self collision prevention
-  bool avoid_self_collisions = false;
-  double self_collisions_margin = 0.005;  // [m]
-  double self_collisions_trigger = 0.01;  // [m]
-
-  // Self collisions configuration
-  bool self_collisions_soft = false;
-  double self_collisions_weight = 1.;
-
   void compute_limits_inequalities();
-  void compute_self_collision_inequalities();
 
   // Task id (this is only useful when task names are not specified, each task will have an unique ID)
   int task_id = 0;
+  int constraint_id = 0;
 };
 }  // namespace placo::kinematics

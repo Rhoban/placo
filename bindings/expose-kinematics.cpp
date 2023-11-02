@@ -66,6 +66,10 @@ void exposeKinematics()
           // Regularization task
           .def("add_regularization_task", &KinematicsSolver::add_regularization_task, return_internal_reference<>())
 
+          // Avoid self collisions constraint
+          .def("add_avoid_self_collisions_constraint", &KinematicsSolver::add_avoid_self_collisions_constraint,
+               return_internal_reference<>())
+
           // Masking/unmasking DoFs
           .def("mask_dof", &KinematicsSolver::mask_dof)
           .def("unmask_dof", &KinematicsSolver::unmask_dof)
@@ -79,10 +83,9 @@ void exposeKinematics()
 
           .def("enable_joint_limits", &KinematicsSolver::enable_joint_limits)
           .def("enable_velocity_limits", &KinematicsSolver::enable_velocity_limits)
-          .def("enable_self_collision_avoidance", &KinematicsSolver::enable_self_collision_avoidance)
-          .def("configure_self_collision_avoidance", &KinematicsSolver::configure_self_collision_avoidance)
           .def<void (KinematicsSolver::*)(Task&)>("remove_task", &KinematicsSolver::remove_task)
           .def<void (KinematicsSolver::*)(FrameTask&)>("remove_task", &KinematicsSolver::remove_task)
+          .def("remove_constraint", &KinematicsSolver::remove_constraint)
           .def("solve", &KinematicsSolver::solve);
 
   class__<Task, bases<tools::Prioritized>, boost::noncopyable>("Task", no_init)
@@ -167,4 +170,10 @@ void exposeKinematics()
       .add_property("L_world", &CentroidalMomentumTask::L_world, &CentroidalMomentumTask::L_world);
 
   class__<RegularizationTask, bases<Task>>("RegularizationTask");
+
+  class__<Constraint, bases<tools::Prioritized>, boost::noncopyable>("KinematicsConstraint", no_init);
+
+  class__<AvoidSelfCollisionsConstraint, bases<Constraint>>("KinematicsAvoidSelfCollisionsConstraint", init<>())
+      .def_readwrite("self_collisions_margin", &AvoidSelfCollisionsConstraint::self_collisions_margin)
+      .def_readwrite("self_collisions_trigger", &AvoidSelfCollisionsConstraint::self_collisions_trigger);
 }

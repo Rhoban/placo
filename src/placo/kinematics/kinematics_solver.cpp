@@ -140,6 +140,11 @@ RegularizationTask& KinematicsSolver::add_regularization_task(double magnitude)
   return task;
 }
 
+AvoidSelfCollisionsConstraint& KinematicsSolver::add_avoid_self_collisions_constraint()
+{
+  return add_constraint(new AvoidSelfCollisionsConstraint());
+}
+
 void KinematicsSolver::mask_dof(std::string dof)
 {
   masked_dof.insert(robot.get_joint_v_offset(dof));
@@ -165,80 +170,9 @@ void KinematicsSolver::enable_velocity_limits(bool enable)
   velocity_limits = enable;
 }
 
-void KinematicsSolver::enable_self_collision_avoidance(bool enable, double margin, double trigger)
-{
-  avoid_self_collisions = enable;
-  self_collisions_margin = margin;
-  self_collisions_trigger = trigger;
-}
-
-void KinematicsSolver::configure_self_collision_avoidance(bool soft, double weight)
-{
-  self_collisions_soft = soft;
-  self_collisions_weight = weight;
-}
-
 int KinematicsSolver::tasks_count()
 {
   return tasks.size();
-}
-
-void KinematicsSolver::compute_self_collision_inequalities()
-{
-  if (avoid_self_collisions)
-  {
-    std::vector<RobotWrapper::Distance> distances = robot.distances();
-
-    int constraints = 0;
-
-    for (auto& distance : distances)
-    {
-      if (distance.min_distance < self_collisions_trigger)
-      {
-        constraints += 1;
-      }
-    }
-
-    if (constraints == 0)
-    {
-      return;
-    }
-
-    Expression e;
-    e.A = Eigen::MatrixXd(constraints, N);
-    e.b = Eigen::VectorXd(constraints);
-    int constraint = 0;
-
-    for (auto& distance : distances)
-    {
-      if (distance.min_distance < self_collisions_trigger)
-      {
-        Eigen::Vector3d v = distance.pointB - distance.pointA;
-        Eigen::Vector3d n = v.normalized();
-
-        if (distance.min_distance < 0)
-        {
-          // If the distance is negative, the points "cross" and this vector should point the other way around
-          n = -n;
-        }
-
-        Eigen::MatrixXd X_A_world = pinocchio::SE3(Eigen::Matrix3d::Identity(), -distance.pointA).toActionMatrix();
-        Eigen::MatrixXd JA = X_A_world * robot.joint_jacobian(distance.parentA, pinocchio::ReferenceFrame::WORLD);
-
-        Eigen::MatrixXd X_B_world = pinocchio::SE3(Eigen::Matrix3d::Identity(), -distance.pointB).toActionMatrix();
-        Eigen::MatrixXd JB = X_B_world * robot.joint_jacobian(distance.parentB, pinocchio::ReferenceFrame::WORLD);
-
-        // We want: current_distance + J dq >= margin
-        e.A.block(constraint, 0, 1, N) = n.transpose() * (JB - JA).block(0, 0, 3, N);
-        e.b[constraint] = distance.min_distance - self_collisions_margin;
-
-        constraint += 1;
-      }
-    }
-
-    problem.add_constraint(e >= 0).configure(self_collisions_soft ? ProblemConstraint::Soft : ProblemConstraint::Hard,
-                                             self_collisions_weight);
-  }
 }
 
 void KinematicsSolver::compute_limits_inequalities()
@@ -347,7 +281,11 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
   }
 
   compute_limits_inequalities();
-  compute_self_collision_inequalities();
+
+  for (auto constraint : constraints)
+  {
+    constraint->add_constraint(problem);
+  }
 
   problem.solve();
 
@@ -404,6 +342,13 @@ void KinematicsSolver::remove_task(FrameTask& task)
 
   delete task.position;
   delete task.orientation;
+}
+
+void KinematicsSolver::remove_constraint(Constraint& constraint)
+{
+  constraints.erase(&constraint);
+
+  delete &constraint;
 }
 
 void KinematicsSolver::dump_status_stream(std::ostream& stream)

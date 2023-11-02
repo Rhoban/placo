@@ -3,17 +3,17 @@
 #include "placo/problem/problem.h"
 #include "placo/tools/prioritized.h"
 
-namespace placo::kinematics
+namespace placo::dynamics
 {
-class KinematicsSolver;
+class DynamicsSolver;
 class Constraint : public tools::Prioritized
 {
 public:
   /**
-   * @brief Reference to the kinematics solver
+   * @brief Reference to the dynamics solver
    */
-  KinematicsSolver* solver = nullptr;
+  DynamicsSolver* solver = nullptr;
 
   virtual void add_constraint(placo::problem::Problem& problem) = 0;
 };
-}  // namespace placo::kinematics
+}  // namespace placo::dynamics
