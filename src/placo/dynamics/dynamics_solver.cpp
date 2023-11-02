@@ -566,6 +566,10 @@ DynamicsSolver::Result DynamicsSolver::solve()
       {
         task_priority = ProblemConstraint::Soft;
       }
+      else if (task->priority == Task::Priority::Scaled)
+      {
+        throw std::runtime_error("DynamicsSolver::solve: Scaled priority is not supported");
+      }
 
       Expression e;
       e.A = task->A;

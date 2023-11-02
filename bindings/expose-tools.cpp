@@ -18,7 +18,7 @@ using namespace placo::tools;
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(loadReplays_overloads, loadReplays, 1, 2);
 #endif
 
-void exposeUtils()
+void exposeTools()
 {
   def("interpolate_frames", &interpolate_frames);
   def("wrap_angle", &wrap_angle);

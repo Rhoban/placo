@@ -12,7 +12,7 @@ BOOST_PYTHON_MODULE(placo)
   using namespace boost::python;
 
   exposeEigen();
-  exposeUtils();
+  exposeTools();
   exposeDynamics();
   exposeFootsteps();
   exposeProblem();

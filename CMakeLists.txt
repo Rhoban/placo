@@ -24,6 +24,7 @@ add_library(libplaco
     # Tools
     src/placo/tools/axises_mask.cpp
     src/placo/tools/utils.cpp
+    src/placo/tools/prioritized.cpp
 
     # Trajectories
     src/placo/trajectory/foot_trajectory.cpp
@@ -124,7 +125,7 @@ ADD_CUSTOM_TARGET(native_python_files ALL
 
 add_library(placo MODULE 
     bindings/expose-eigen.cpp
-    bindings/expose-utils.cpp
+    bindings/expose-tools.cpp
     bindings/expose-trajectory.cpp
     bindings/expose-problem.cpp
     bindings/expose-footsteps.cpp

@@ -4,54 +4,75 @@
 #include <Eigen/Dense>
 #include "placo/model/robot_wrapper.h"
 #include "placo/tools/utils.h"
+#include "placo/tools/prioritized.h"
 
 namespace placo::dynamics
 {
 class DynamicsSolver;
-class Task
+class Task : public tools::Prioritized
 {
 public:
-  enum Priority
-  {
-    Hard = 0,
-    Soft = 1
-  };
+  /**
+   * @brief Reference to the dynamics solver
+   */
+  DynamicsSolver* solver = nullptr;
 
-  Task();
-  virtual ~Task();
-
-  DynamicsSolver* solver;
-  std::string name;
-
-  void set_priority_value(Priority priority);
-  void set_priority(std::string priority);
-  void set_weight(double weight);
-  void set_name(std::string name);
-
-  void configure(std::string name, std::string priority = "soft", double weight = 1.0);
-  void configure(std::string name, Priority priority = Soft, double weight = 1.0);
-
-  // Task priority (hard: equality constraint, soft: objective function)
-  Priority priority;
-  std::string priority_name();
-
-  // If the task is "soft", this is its weight
-  double weight;
-
+  /**
+   * @brief A matrix in Ax = b, where x is the accelerations
+   */
   Eigen::MatrixXd A;
+
+  /**
+   * @brief b vector in Ax = b, where x is the accelerations
+   */
   Eigen::MatrixXd b;
+
+  /**
+   * @brief Current error vector
+   */
   Eigen::MatrixXd error;
+
+  /**
+   * @brief Current velocity error vector
+   */
   Eigen::MatrixXd derror;
 
+  /**
+   * @brief Update the task matrices
+   */
   virtual void update() = 0;
+
+  /**
+   * @brief Type name
+   * @return string representation of the task type
+   */
   virtual std::string type_name() = 0;
+
+  /**
+   * @brief Error unit
+   * @return string representation of the error unit
+   */
   virtual std::string error_unit() = 0;
 
-  // Gains for PD control
+  /**
+   * @brief K gain for position control
+   */
   double kp = 1e3;
+
+  /**
+   * @brief D gain for position control
+   */
   double kd = 0.;
+
+  /**
+   * @brief If this is true, kd will be computed from kp to have a critically damped system
+   */
   bool critically_damped = true;
 
+  /**
+   * @brief Gets the kd to actually use
+   * @return if critically_damped, kd will be computed from kp, otherwise kd will be returned
+   */
   virtual double get_kd();
 };
 }  // namespace placo::dynamics

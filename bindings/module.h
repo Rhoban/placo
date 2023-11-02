@@ -1,6 +1,6 @@
 #pragma once
 
-void exposeUtils();
+void exposeTools();
 void exposeDynamics();
 void exposeEigen();
 void exposeFootsteps();
