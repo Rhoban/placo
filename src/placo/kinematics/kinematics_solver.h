@@ -318,6 +318,19 @@ public:
    */
   problem::Problem problem;
 
+  template <typename T>
+  T& add_task(T* task)
+  {
+    task_id += 1;
+    task->solver = this;
+    std::ostringstream oss;
+    oss << "Task_" << task_id;
+    task->name = oss.str();
+    tasks.insert(task);
+
+    return *task;
+  }
+
 protected:
   problem::Variable* qd = nullptr;
   problem::Variable* scale_variable = nullptr;
@@ -347,18 +360,5 @@ protected:
 
   // Task id (this is only useful when task names are not specified, each task will have an unique ID)
   int task_id = 0;
-
-  template <typename T>
-  T& add_task(T* task)
-  {
-    task_id += 1;
-    task->solver = this;
-    std::ostringstream oss;
-    oss << "Task_" << task_id;
-    task->name = oss.str();
-    tasks.insert(task);
-
-    return *task;
-  }
 };
 }  // namespace placo::kinematics

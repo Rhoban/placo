@@ -340,21 +340,85 @@ public:
 
   RobotWrapper& robot;
 
+  /**
+   * @brief Removes a task from the solver
+   * @param task task
+   */
   void remove_task(Task& task);
+
+  /**
+   * @brief Removes a frame task from the solver
+   * @param task frame task
+   */
   void remove_task(FrameTask& task);
+
+  /**
+   * @brief Removes a contact from the solver
+   * @param contact
+   */
   void remove_contact(Contact& contact);
 
+  /**
+   * @brief Global friction that is added to all the joints
+   */
   double friction = 1e-3;
+
+  /**
+   * @brief Solver dt (seconds)
+   */
   double dt = 0.;
+
+  /**
+   * @brief Number of variables (size of qd and qdd)
+   */
   int N;
 
+  /**
+   * @brief The value of qdd safe
+   */
   double qdd_safe = 1.;
 
-  // Try to remove contact forces that can be deduces from passive joint equations
+  /**
+   * @brief If true, the solver will try to optimize the contact forces by removing variables
+   */
   bool optimize_contact_forces = false;
 
-  // The problem instance is kept alive by the solver (so that variables etc. are available)
+  /**
+   * @brief Instance of the problem
+   */
   problem::Problem problem;
+
+  /**
+   * @brief Adds a task to the solver
+   * @param task task
+   * @return reference to internal task
+   */
+  template <typename T>
+  T& add_task(T* task)
+  {
+    task_id += 1;
+    task->solver = this;
+    std::ostringstream oss;
+    oss << "Task_" << task_id;
+    task->name = oss.str();
+    tasks.insert(task);
+
+    return *task;
+  }
+
+  /**
+   * @brief  Adds a contact to the solver
+   * @param contact contact
+   * @return reference to internal contact
+   */
+  template <typename T>
+  T& add_contact(T* contact)
+  {
+    contact->solver = this;
+    contacts.push_back(contact);
+
+    return *contact;
+  }
 
 protected:
   // Masked DoFs (enforce zero acceleration)
@@ -384,27 +448,5 @@ protected:
 
   // If true, the solver will assume qdd = 0
   bool is_static = false;
-
-  template <typename T>
-  T& add_task(T* task)
-  {
-    task_id += 1;
-    task->solver = this;
-    std::ostringstream oss;
-    oss << "Task_" << task_id;
-    task->name = oss.str();
-    tasks.insert(task);
-
-    return *task;
-  }
-
-  template <typename T>
-  T& add_contact(T* contact)
-  {
-    contact->solver = this;
-    contacts.push_back(contact);
-
-    return *contact;
-  }
 };
 }  // namespace placo::dynamics
