@@ -16,6 +16,11 @@ KinematicsSolver::KinematicsSolver(RobotWrapper& robot_) : robot(robot_), masked
   problem.use_sparsity = false;
 }
 
+KinematicsSolver::~KinematicsSolver()
+{
+  clear();
+}
+
 PositionTask& KinematicsSolver::add_position_task(RobotWrapper::FrameIndex frame, Eigen::Vector3d target_world)
 {
   return add_task(new PositionTask(frame, target_world));
@@ -313,14 +318,27 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
   return qd_sol;
 }
 
-void KinematicsSolver::clear_tasks()
+void KinematicsSolver::clear()
 {
   for (auto& task : tasks)
   {
-    delete task;
+    if (task->solver_memory)
+    {
+      delete task;
+    }
   }
 
   tasks.clear();
+
+  for (auto& constraint : constraints)
+  {
+    if (constraint->solver_memory)
+    {
+      delete constraint;
+    }
+  }
+
+  constraints.clear();
 }
 
 std::set<Task*> KinematicsSolver::get_tasks()
@@ -332,7 +350,10 @@ void KinematicsSolver::remove_task(Task& task)
 {
   tasks.erase(&task);
 
-  delete &task;
+  if (task.solver_memory)
+  {
+    delete &task;
+  }
 }
 
 void KinematicsSolver::remove_task(FrameTask& task)
@@ -340,15 +361,24 @@ void KinematicsSolver::remove_task(FrameTask& task)
   tasks.erase(task.position);
   tasks.erase(task.orientation);
 
-  delete task.position;
-  delete task.orientation;
+  if (task.position->solver_memory)
+  {
+    delete task.position;
+  }
+  if (task.orientation->solver_memory)
+  {
+    delete task.orientation;
+  }
 }
 
 void KinematicsSolver::remove_constraint(Constraint& constraint)
 {
   constraints.erase(&constraint);
 
-  delete &constraint;
+  if (constraint.solver_memory)
+  {
+    delete &constraint;
+  }
 }
 
 void KinematicsSolver::dump_status_stream(std::ostream& stream)
@@ -380,6 +410,18 @@ void KinematicsSolver::dump_status_stream(std::ostream& stream)
     sprintf(buffer, "    - Error: %.06f [%s]\n", task->error_norm(), task->error_unit().c_str());
     stream << buffer << std::endl;
   }
+}
+
+void KinematicsSolver::add_task(Task& task)
+{
+  task.solver = this;
+  tasks.insert(&task);
+}
+
+void KinematicsSolver::add_constraint(Constraint& constraint)
+{
+  constraint.solver = this;
+  constraints.insert(&constraint);
 }
 
 void KinematicsSolver::dump_status()

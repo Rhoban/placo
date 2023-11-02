@@ -185,14 +185,7 @@ DynamicsSolver::DynamicsSolver(RobotWrapper& robot) : robot(robot)
 
 DynamicsSolver::~DynamicsSolver()
 {
-  for (auto& contact : contacts)
-  {
-    delete contact;
-  }
-  for (auto& task : tasks)
-  {
-    delete task;
-  }
+  clear();
 }
 
 void DynamicsSolver::enable_joint_limits(bool enable)
@@ -342,13 +335,34 @@ void DynamicsSolver::compute_limits_inequalities(Expression& tau)
   }
 }
 
-void DynamicsSolver::clear_tasks()
+void DynamicsSolver::clear()
 {
   for (auto& task : tasks)
   {
-    delete task;
+    if (task->solver_memory)
+    {
+      delete task;
+    }
   }
   tasks.clear();
+
+  for (auto& constraint : constraints)
+  {
+    if (constraint->solver_memory)
+    {
+      delete constraint;
+    }
+  }
+  constraints.clear();
+
+  for (auto& contact : contacts)
+  {
+    if (contact->solver_memory)
+    {
+      delete contact;
+    }
+  }
+  contacts.clear();
 }
 
 void DynamicsSolver::dump_status_stream(std::ostream& stream)
@@ -634,13 +648,38 @@ void DynamicsSolver::remove_contact(Contact& contact)
   // Removing the contact from the vector
   contacts.erase(std::remove(contacts.begin(), contacts.end(), &contact), contacts.end());
 
-  delete &contact;
+  if (contact.solver_memory)
+  {
+    delete &contact;
+  }
 }
 
 void DynamicsSolver::remove_constraint(Constraint& constraint)
 {
   constraints.erase(&constraint);
 
-  delete &constraint;
+  if (constraint.solver_memory)
+  {
+    delete &constraint;
+  }
 }
+
+void DynamicsSolver::add_task(Task& task)
+{
+  task.solver = this;
+  tasks.insert(&task);
+}
+
+void DynamicsSolver::add_constraint(Constraint& constraint)
+{
+  constraint.solver = this;
+  constraints.insert(&constraint);
+}
+
+void DynamicsSolver::add_contact(Contact& contact)
+{
+  contact.solver = this;
+  contacts.push_back(&contact);
+}
+
 }  // namespace placo::dynamics

@@ -15,6 +15,11 @@ public:
   DynamicsSolver* solver = nullptr;
 
   /**
+   * @brief true if this object memory is in the solver (it will be deleted by the solver)
+   */
+  bool solver_memory = false;
+
+  /**
    * @brief Allows the specific constraint implementation to be added to the problem
    * @param problem problem
    * @param tau expression for tau

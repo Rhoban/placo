@@ -36,6 +36,7 @@ class KinematicsSolver
 {
 public:
   KinematicsSolver(RobotWrapper& robot_);
+  virtual ~KinematicsSolver();
 
   /**
    * @brief Adds a position task
@@ -238,7 +239,7 @@ public:
   /**
    * @brief Clears the internal tasks
    */
-  void clear_tasks();
+  void clear();
 
   /**
    * @brief Retrieve a copy of the set of tasks
@@ -323,11 +324,24 @@ public:
    */
   problem::Problem problem;
 
+  /**
+   * @brief Adds a custom task to the solver
+   * @param task
+   */
+  void add_task(Task& task);
+
+  /**
+   * @brief Adds a custom constraint to the solver
+   * @param constraint
+   */
+  void add_constraint(Constraint& constraint);
+
   template <typename T>
   T& add_task(T* task)
   {
     task_id += 1;
     task->solver = this;
+    task->solver_memory = true;
     std::ostringstream oss;
     oss << "Task_" << task_id;
     task->name = oss.str();
@@ -341,6 +355,7 @@ public:
   {
     constraint_id += 1;
     constraint->solver = this;
+    constraint->solver_memory = true;
     std::ostringstream oss;
     oss << "Constraint_" << constraint_id;
     constraint->name = oss.str();

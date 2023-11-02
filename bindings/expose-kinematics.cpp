@@ -76,13 +76,15 @@ void exposeKinematics()
           .def("mask_fbase", &KinematicsSolver::mask_fbase)
 
           // Clearing the tasks
-          .def("clear_tasks", &KinematicsSolver::clear_tasks)
+          .def("clear", &KinematicsSolver::clear)
           .def("dump_status", &KinematicsSolver::dump_status)
 
           .def("tasks_count", &KinematicsSolver::tasks_count)
 
           .def("enable_joint_limits", &KinematicsSolver::enable_joint_limits)
           .def("enable_velocity_limits", &KinematicsSolver::enable_velocity_limits)
+          .def<void (KinematicsSolver::*)(Task&)>("add_task", &KinematicsSolver::add_task)
+          .def<void (KinematicsSolver::*)(Constraint&)>("add_constraint", &KinematicsSolver::add_constraint)
           .def<void (KinematicsSolver::*)(Task&)>("remove_task", &KinematicsSolver::remove_task)
           .def<void (KinematicsSolver::*)(FrameTask&)>("remove_task", &KinematicsSolver::remove_task)
           .def("remove_constraint", &KinematicsSolver::remove_constraint)

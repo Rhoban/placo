@@ -18,6 +18,11 @@ public:
   DynamicsSolver* solver = nullptr;
 
   /**
+   * @brief true if this object memory is in the solver (it will be deleted by the solver)
+   */
+  bool solver_memory = false;
+
+  /**
    * @brief A matrix in Ax = b, where x is the accelerations
    */
   Eigen::MatrixXd A;

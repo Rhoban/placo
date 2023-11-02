@@ -29,6 +29,11 @@ public:
   KinematicsSolver* solver = nullptr;
 
   /**
+   * @brief true if this object memory is in the solver (it will be deleted by the solver)
+   */
+  bool solver_memory = false;
+
+  /**
    * @brief Matrix A in the task Ax = b, where x are the joint delta positions
    */
   Eigen::MatrixXd A;

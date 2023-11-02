@@ -318,7 +318,7 @@ public:
   /**
    * @brief Clears the internal tasks
    */
-  void clear_tasks();
+  void clear();
 
   /**
    * @brief Dumps the status to a given stream
@@ -406,6 +406,24 @@ public:
   problem::Problem problem;
 
   /**
+   * @brief Adds a custom task to the solver
+   * @param task task
+   */
+  void add_task(Task& task);
+
+  /**
+   * @brief Adds a custom constraint to the solver
+   * @param constraint constraint
+   */
+  void add_constraint(Constraint& constraint);
+
+  /**
+   * @brief Adds a custom contact to the solver
+   * @param contact contact
+   */
+  void add_contact(Contact& contact);
+
+  /**
    * @brief Adds a task to the solver
    * @param task task
    * @return reference to internal task
@@ -415,6 +433,7 @@ public:
   {
     task_id += 1;
     task->solver = this;
+    task->solver_memory = true;
     std::ostringstream oss;
     oss << "Task_" << task_id;
     task->name = oss.str();
@@ -433,6 +452,7 @@ public:
   {
     constraint_id += 1;
     constraint->solver = this;
+    constraint->solver_memory = true;
     std::ostringstream oss;
     oss << "Constraint_" << constraint_id;
     constraint->name = oss.str();
@@ -450,6 +470,7 @@ public:
   T& add_contact(T* contact)
   {
     contact->solver = this;
+    contact->solver_memory = true;
     contacts.push_back(contact);
 
     return *contact;

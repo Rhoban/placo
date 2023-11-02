@@ -21,6 +21,11 @@ public:
   virtual ~Contact();
 
   /**
+   * @brief true if this object memory is in the solver (it will be deleted by the solver)
+   */
+  bool solver_memory = false;
+
+  /**
    * @brief Coefficient of friction (if relevant)
    */
   double mu = 1.;
@@ -34,11 +39,6 @@ public:
    * @brief Weight of moments for optimization (if relevant)
    */
   double weight_moments = 0.;
-
-  /**
-   * @brief Can be used to force the ratio to be lower than a given value for a given contact
-   */
-  double reaction_ratio = -1;
 
   /**
    * @brief Returns the size of the contact (number of forces added to the problem)
