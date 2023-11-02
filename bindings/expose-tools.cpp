@@ -2,10 +2,11 @@
 
 #include <Eigen/Dense>
 #include <boost/python.hpp>
-#include "placo/tools/axises_mask.h"
 #include "module.h"
 #include "registry.h"
 #include "placo/tools/utils.h"
+#include "placo/tools/axises_mask.h"
+#include "placo/tools/prioritized.h"
 #include "expose-utils.hpp"
 #ifdef HAVE_RHOBAN_UTILS
 #include "rhoban_utils/history/history.h"
@@ -46,6 +47,18 @@ void exposeTools()
           "R_custom_world", +[](AxisesMask& mask) { return mask.R_custom_world; },
           +[](AxisesMask& mask, Eigen::Matrix3d R) { mask.R_custom_world = R; })
       .def("apply", &AxisesMask::apply);
+
+  class__<Prioritized, boost::noncopyable>("Prioritized", no_init)
+      .add_property("name", &Prioritized::name)
+      .add_property(
+          "priority", +[](Prioritized& pri) { return pri.priority_name(); })
+      .def("set_priority", &Prioritized::set_priority)
+      .def("set_weight", &Prioritized::set_weight)
+      .def("set_name", &Prioritized::set_name)
+      .def(
+          "configure", +[](Prioritized& pri, std::string name, std::string priority, double weight) {
+            pri.configure(name, priority, weight);
+          });
 
 #ifdef HAVE_RHOBAN_UTILS
   using namespace rhoban_utils;

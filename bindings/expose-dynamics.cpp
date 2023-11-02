@@ -127,27 +127,14 @@ void exposeDynamics()
       .def<FrameTask (DynamicsSolver::*)(std::string, Eigen::Affine3d)>("add_frame_task",
                                                                         &DynamicsSolver::add_frame_task);
 
-  class__<Task, boost::noncopyable>("DynamicsTask", no_init)
-      .add_property("name", &Task::name)
-      .add_property("solver", &Task::solver)
-      .add_property("weight", &Task::weight)
-      .add_property(
-          "priority", +[](Task& task) { return task.priority_name(); })
+  class__<Task, bases<tools::Prioritized>, boost::noncopyable>("DynamicsTask", no_init)
       .add_property("A", &Task::A)
       .add_property("b", &Task::b)
       .add_property("kp", &Task::kp, &Task::kp)
       .add_property("kd", &Task::kd, &Task::kd)
       .add_property("critically_damped", &Task::critically_damped, &Task::critically_damped)
       .add_property("error", &Task::error)
-      .add_property("derror", &Task::derror)
-      .def("update", &Task::update)
-      .def("set_priority", &Task::set_priority)
-      .def("set_weight", &Task::set_weight)
-      .def("set_name", &Task::set_name)
-      .def(
-          "configure", +[](Task& task, std::string name, std::string priority, double weight) {
-            task.configure(name, priority, weight);
-          });
+      .add_property("derror", &Task::derror);
 
   class__<PositionTask, bases<Task>>("DynamicsPositionTask", init<RobotWrapper::FrameIndex, Eigen::Vector3d>())
       .add_property("frame_index", &PositionTask::frame_index)

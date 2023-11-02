@@ -85,24 +85,12 @@ void exposeKinematics()
           .def<void (KinematicsSolver::*)(FrameTask&)>("remove_task", &KinematicsSolver::remove_task)
           .def("solve", &KinematicsSolver::solve);
 
-  class__<Task, boost::noncopyable>("Task", no_init)
-      .add_property("name", &Task::name)
-      .add_property("solver", &Task::solver)
-      .add_property("weight", &Task::weight)
-      .add_property(
-          "priority", +[](Task& task) { return task.priority_name(); })
+  class__<Task, bases<tools::Prioritized>, boost::noncopyable>("Task", no_init)
       .add_property("A", &Task::A)
       .add_property("b", &Task::b)
       .def("error", &Task::error)
       .def("error_norm", &Task::error_norm)
-      .def("update", &Task::update)
-      .def("set_priority", &Task::set_priority)
-      .def("set_weight", &Task::set_weight)
-      .def("set_name", &Task::set_name)
-      .def(
-          "configure", +[](Task& task, std::string name, std::string priority, double weight) {
-            task.configure(name, priority, weight);
-          });
+      .def("update", &Task::update);
 
   class__<PositionTask, bases<Task>>("PositionTask", init<RobotWrapper::FrameIndex, Eigen::Vector3d>())
       .add_property("frame_index", &PositionTask::frame_index)
