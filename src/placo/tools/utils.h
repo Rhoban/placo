@@ -67,10 +67,5 @@ double safe_acos(double v);
  */
 bool file_exists(const std::string& name);
 
-/**
- * @brief Return the velocity limit for a given torque and dof
- */
-double velocity_limit(double torque, std::string dof, bool use_doc_limits = false);
-
 extern std::map<std::string, std::string> dof_to_motors;
 }  // namespace placo::tools
