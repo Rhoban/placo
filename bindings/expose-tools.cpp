@@ -19,6 +19,8 @@ using namespace placo::tools;
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(loadReplays_overloads, loadReplays, 1, 2);
 #endif
 
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(set_axises_overloads, set_axises, 1, 2);
+
 void exposeTools()
 {
   def("interpolate_frames", &interpolate_frames);
@@ -38,7 +40,8 @@ void exposeTools()
   class_<std::map<std::string, double>>("map_string_double").def(map_indexing_suite<std::map<std::string, double>>());
 
   class__<AxisesMask>("AxisesMask", init<>())
-      .def<void (AxisesMask::*)(std::string, std::string)>("set_axises", &AxisesMask::set_axises)
+      .def<void (AxisesMask::*)(std::string, std::string)>("set_axises", &AxisesMask::set_axises,
+                                                           set_axises_overloads())
       .add_property(
           "R_local_world", +[](AxisesMask& mask) { return mask.R_local_world; },
           +[](AxisesMask& mask, Eigen::Matrix3d R) { mask.R_local_world = R; })

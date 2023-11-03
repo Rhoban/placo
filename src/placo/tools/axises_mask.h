@@ -60,7 +60,7 @@ struct AxisesMask
    * @param axises axises to be kept
    * @param frame the reference frame where the masking is done (task, local or custom)
    */
-  void set_axises(std::string axises, std::string frame = "task");
+  void set_axises(std::string axises, std::string frame);
 
   /**
    * @brief Apply the masking to a given matrix
