@@ -20,6 +20,7 @@ BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(loadReplays_overloads, loadReplays, 1, 2)
 #endif
 
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(set_axises_overloads, set_axises, 1, 2);
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(configure_overloads, configure, 2, 3);
 
 void exposeTools()
 {
@@ -57,10 +58,8 @@ void exposeTools()
       .def("set_priority", &Prioritized::set_priority)
       .def("set_weight", &Prioritized::set_weight)
       .def("set_name", &Prioritized::set_name)
-      .def(
-          "configure", +[](Prioritized& pri, std::string name, std::string priority, double weight) {
-            pri.configure(name, priority, weight);
-          });
+      .def<void (Prioritized::*)(std::string, std::string, double)>("configure", &Prioritized::configure,
+                                                                    configure_overloads());
 
 #ifdef HAVE_RHOBAN_UTILS
   using namespace rhoban_utils;
