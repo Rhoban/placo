@@ -18,7 +18,7 @@ struct FrameTask
   FrameTask(PositionTask* position, OrientationTask* orientation);
 
   /**
-   * @brief Configures the relative frame task
+   * @brief Configures the frame task
    * @param name task name
    * @param priority task priority
    * @param position_weight weight for the position task
