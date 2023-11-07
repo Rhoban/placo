@@ -16,7 +16,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 
 find_package (Eigen3 3 REQUIRED NO_MODULE)
 
-add_library(libplaco
+add_library(libplaco SHARED
     # Wrappers and basic utils
     src/placo/model/robot_wrapper.cpp
     src/placo/model/humanoid_robot.cpp
@@ -106,7 +106,7 @@ target_link_libraries(libplaco PUBLIC
     pinocchio::pinocchio
     eigenpy::eigenpy
     eiquadprog::eiquadprog
-    jsoncpp_lib
+    jsoncpp
     ${PROTOBUF_LIBRARIES}
   ${PROTOBUF_LIBRARIES}
 )
@@ -123,12 +123,6 @@ set(CMAKE_SHARED_MODULE_PREFIX "")
 find_package(Python3 REQUIRED)
 find_package(Boost COMPONENTS python REQUIRED)
 
-ADD_CUSTOM_TARGET(native_python_files ALL
-                  COMMAND ${CMAKE_COMMAND} -E create_symlink 
-                  ${CMAKE_CURRENT_SOURCE_DIR}/python/placo_utils
-                  ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/placo_utils
-                  )
-
 add_library(placo MODULE 
     bindings/expose-eigen.cpp
     bindings/expose-tools.cpp
@@ -143,8 +137,19 @@ add_library(placo MODULE
     bindings/module.cpp
     bindings/registry.cpp
 )
+
 target_link_libraries(placo ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} libplaco)
 target_include_directories(placo PRIVATE ${PYTHON_INCLUDE_DIRS})
+
+if ("${CMAKE_LIBRARY_OUTPUT_DIRECTORY}" STREQUAL "")
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ".")
+endif()
+
+ADD_CUSTOM_TARGET(native_python_files ALL
+                  COMMAND ${CMAKE_COMMAND} -E copy
+                  ${CMAKE_CURRENT_SOURCE_DIR}/python/placo_utils
+                  ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/placo_utils
+                  )
 
 add_custom_command(TARGET placo POST_BUILD
     COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/stubs.py > placo.pyi
