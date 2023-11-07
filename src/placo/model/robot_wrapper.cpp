@@ -7,7 +7,7 @@
 #include "pinocchio/algorithm/crba.hpp"
 #include "pinocchio/algorithm/centroidal.hpp"
 #include "placo/tools/utils.h"
-#include <jsoncpp/json/json.h>
+#include <json/json.h>
 #include <filesystem>
 #include <algorithm>
 
