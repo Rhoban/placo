@@ -5,6 +5,7 @@ find_package(Threads)
 find_package(pinocchio REQUIRED)
 find_package(eiquadprog REQUIRED)
 find_package(eigenpy REQUIRED)
+find_package(jsoncpp REQUIRED)
 
 # Enable C++17
 set(CMAKE_CXX_STANDARD 17)
