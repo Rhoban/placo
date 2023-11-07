@@ -14,6 +14,10 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # Maybe this should not be done globally but only for placo's targets
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 
+if ("${CMAKE_LIBRARY_OUTPUT_DIRECTORY}" STREQUAL "")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
+endif()
+
 find_package (Eigen3 3 REQUIRED NO_MODULE)
 
 add_library(libplaco SHARED
@@ -140,10 +144,6 @@ add_library(placo MODULE
 
 target_link_libraries(placo ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} libplaco)
 target_include_directories(placo PRIVATE ${PYTHON_INCLUDE_DIRS})
-
-if ("${CMAKE_LIBRARY_OUTPUT_DIRECTORY}" STREQUAL "")
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ".")
-endif()
 
 ADD_CUSTOM_TARGET(native_python_files ALL
                   COMMAND ${CMAKE_COMMAND} -E copy
