@@ -156,3 +156,8 @@ add_custom_command(TARGET placo POST_BUILD
     WORKING_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
     COMMENT "Generating stubs..."
 )
+
+install(TARGETS libplaco DESTINATION lib)
+install(TARGETS placo DESTINATION lib)
+install(FILES ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/placo.pyi DESTINATION lib)
+
