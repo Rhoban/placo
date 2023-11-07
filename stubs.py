@@ -1,9 +1,13 @@
 #!/usr/bin/env python
 import re
 import inspect
-import placo
-import os
 import sys
+import os
+
+# Prepending current directory to PYTHONPATH
+sys.path = ["."] + sys.path
+
+import placo
 from doxygen_parse import parse_directory, get_members, get_metadata
 
 module: str = "placo"
