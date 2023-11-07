@@ -1,5 +1,4 @@
-deps:
-  - rhobandeps/jsoncpp#cmake_only
+deps: ~
 
 optional:
   - rhoban/utils
