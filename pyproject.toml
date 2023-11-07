@@ -1,0 +1,30 @@
+[build-system]
+build-backend = "cmeel"
+requires = ["cmeel[build]", "eiquadprog >= 1.2.6, < 2", "pin[build] >= 2.6.18, < 3", "rhoban-cmeel-jsoncpp"]
+
+[project]
+authors = [{email = "team@rhoban.com", name = "Rhoban team"}]
+classifiers = []
+dependencies = ["eiquadprog >= 1.2.6, < 2", "pin >= 2.6.18, < 3, rhoban-cmeel-jsoncpp"]
+description = "PlaCo: Rhoban Planning and Control"
+license = "MIT"
+name = "placo"
+requires-python = ">= 3.8"
+version = "0.2.0"
+
+[project.urls]
+changelog = "https://github.com/rhoban/placo/blob/main/CHANGELOG.md"
+homepage = "https://github.com/rhoban/placo"
+repository = "https://github.com/rhoban/placo.git"
+
+[tool.isort]
+profile = "black"
+
+[tool.ruff]
+target-version = "py38"
+
+[tool.tomlsort]
+all = true
+
+[tool.cmeel]
+run-tests = false
