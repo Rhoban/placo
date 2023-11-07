@@ -5,7 +5,7 @@ requires = ["cmeel[build]", "eiquadprog >= 1.2.6, < 2", "pin[build] >= 2.6.18, <
 [project]
 authors = [{email = "team@rhoban.com", name = "Rhoban team"}]
 classifiers = []
-dependencies = ["eiquadprog >= 1.2.6, < 2", "pin >= 2.6.18, < 3, rhoban-cmeel-jsoncpp"]
+dependencies = ["eiquadprog >= 1.2.6, < 2", "pin >= 2.6.18, < 3", "rhoban-cmeel-jsoncpp"]
 description = "PlaCo: Rhoban Planning and Control"
 license = "MIT"
 name = "placo"
