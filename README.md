@@ -15,7 +15,7 @@ To build, you will need:
   * `robotpkg-eiquadprog`
   * `robotpkg-hpp-fcl`
 * The following apt repositories:
-  * `python3-dev libpython3-dev libboost-python1.71.0 doxygen`
+  * `python3-dev libpython3-dev libboost-python1.71.0 doxygen libjsoncpp-dev`
 
 ## Running the build
 
