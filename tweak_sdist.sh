@@ -11,7 +11,7 @@ echo ${package}
 wheel unpack *.whl
 
 # Retrieving the placo.pyi produced in the wheel and copying it to the root
-placo_pyi=`find placo-0.2.8/ -name "placo.pyi"`
+placo_pyi=`find ${package}/ -name "placo.pyi"`
 cp ${placo_pyi} ${package}/
 
 # Adding it to the tar.gz
