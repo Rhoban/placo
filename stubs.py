@@ -3,6 +3,17 @@ import re
 import inspect
 import sys
 import os
+import argparse
+
+# Current script directory:
+repo_directory = os.path.dirname(os.path.realpath(__file__))
+
+# If placo.pyi file already exists next to stubs.py, we read it directly. This is a way to
+# avoid running Doxygen when building placo sdist release.
+if os.path.exists(f"{repo_directory}/placo.pyi"):
+    with open(f"{repo_directory}/placo.pyi", "r") as f:
+        print(f.read())
+    exit(0)
 
 # Prepending current directory to PYTHONPATH
 sys.path = ["."] + sys.path
@@ -11,9 +22,6 @@ import placo
 from doxygen_parse import parse_directory, get_members, get_metadata
 
 module: str = "placo"
-
-# Current script directory:
-repo_directory = os.path.dirname(os.path.realpath(__file__))
 
 # Ensure Doxygen is run
 if not os.path.exists(f"/usr/bin/doxygen"):
