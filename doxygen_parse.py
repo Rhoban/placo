@@ -1,5 +1,4 @@
 import glob
-import re
 import xml.etree.ElementTree as ET
 
 # Mapping member definitions (id) to all informations
@@ -45,6 +44,16 @@ def parse_compound(compounddef_node: ET.Element):
         kind = member.attrib["kind"]
         id = member.attrib["id"]
         static = member.attrib["static"] == "yes"
+
+        # PyIgnore ?
+        ignore = False
+        sects = member.findall('detaileddescription/para/xrefsect')
+        if sects:
+          for sect in sects:
+              if 'pyignore' in sect.attrib['id']:
+                  ignore = True
+        if ignore:
+            continue
 
         if kind in ["function", "variable", "namespace"]:
             member_definitions[id] = {
