@@ -44,6 +44,7 @@ public:
    * @param frame the robot frame we want to control
    * @param target_world the target position, expressed in the world (as T_world_frame)
    * @return position task
+   * @pyignore
    */
   PositionTask& add_position_task(RobotWrapper::FrameIndex frame, Eigen::Vector3d target_world);
 
@@ -61,6 +62,7 @@ public:
    * @param frame_b frame b
    * @param target the target vector between frame a and b (expressed in world)
    * @return relative position task
+   * @pyignore
    */
   RelativePositionTask& add_relative_position_task(RobotWrapper::FrameIndex frame_a, RobotWrapper::FrameIndex frame_b,
                                                    Eigen::Vector3d target);
@@ -86,6 +88,7 @@ public:
    * @param frame the robot frame we want to control
    * @param R_world_frame the target orientation we want to achieve, expressed in the world (as T_world_frame)
    * @return orientation task
+   * @pyignore
    */
   OrientationTask& add_orientation_task(RobotWrapper::FrameIndex frame, Eigen::Matrix3d R_world_frame);
 
@@ -103,6 +106,7 @@ public:
    * @param frame_b frame b
    * @param R_a_b the desired orientation
    * @return relative orientation task
+   * @pyignore
    */
   RelativeOrientationTask& add_relative_orientation_task(RobotWrapper::FrameIndex frame_a,
                                                          RobotWrapper::FrameIndex frame_b, Eigen::Matrix3d R_a_b);
@@ -124,6 +128,7 @@ public:
    * @param T_world_frame the target for the frame we want to control, expressed in the world (as T_world_frame)
    * @param priority task priority (hard: equality constraint, soft: objective function)
    * @return frame task
+   * @pyignore
    */
   FrameTask add_frame_task(RobotWrapper::FrameIndex frame, Eigen::Affine3d T_world_frame = Eigen::Affine3d::Identity());
 
@@ -143,6 +148,7 @@ public:
    * @param frame_b frame b
    * @param T_a_b desired transformation
    * @return relative frame task
+   * @pyignore
    */
   RelativeFrameTask add_relative_frame_task(RobotWrapper::FrameIndex frame_a, RobotWrapper::FrameIndex frame_b,
                                             Eigen::Affine3d T_a_b);
@@ -181,6 +187,7 @@ public:
    * @param frame_b frame b
    * @param distance distance to maintain
    * @return distance task
+   * @pyignore
    */
   DistanceTask& add_distance_task(RobotWrapper::FrameIndex frame_a, RobotWrapper::FrameIndex frame_b, double distance);
 

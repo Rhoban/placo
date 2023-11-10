@@ -88,6 +88,7 @@ public:
    * @param X0 x0 (initial state)
    * @param system_matrix custom continuous sytem matrix dX = MX
    * @param dt delta time
+   * @pyignore
    */
   Integrator(Variable& variable, Eigen::VectorXd X0, Eigen::MatrixXd system_matrix, double dt);
 
