@@ -20,8 +20,10 @@ void CoMPolygonConstraint::add_constraint(placo::problem::Problem& problem)
   com_xy.b = com;
 
   // Adding constraints
-  problem.add_constraints(problem::PolygonConstraint::in_polygon_xy(com_xy, polygon, margin))
-      .configure(priority == Prioritized::Priority::Hard, weight);
+  problem.add_constraint(problem::PolygonConstraint::in_polygon_xy(com_xy, polygon, margin))
+      .configure(priority == Prioritized::Priority::Hard ? problem::ProblemConstraint::Hard :
+                                                           problem::ProblemConstraint::Soft,
+                 weight);
 }
 
 }  // namespace placo::kinematics

@@ -172,7 +172,7 @@ class TestProblem(unittest.TestCase):
 
         x = problem.add_variable(1)
         y = problem.add_variable(1)
-        problem.add_constraints(placo.PolygonConstraint.in_polygon(x.expr(), y.expr(), polygon, 0.0))
+        problem.add_constraint(placo.PolygonConstraint.in_polygon(x.expr(), y.expr(), polygon, 0.0))
         problem.solve()
 
         self.assertNumpyEqual(

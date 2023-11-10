@@ -351,7 +351,7 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
       // Ensuring ZMP remains in the support polygon
       if (timestep > kept_timesteps)
       {
-        problem.add_constraints(PolygonConstraint::in_polygon_xy(
+        problem.add_constraint(PolygonConstraint::in_polygon_xy(
             lipm.zmp(timestep, omega_2), current_support.support_polygon(), parameters.zmp_margin));
       }
 

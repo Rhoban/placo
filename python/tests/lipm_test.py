@@ -26,7 +26,7 @@ class TestLIPM(unittest.TestCase):
         polygon = np.array([[1.0, 1.0], [1.0, 2.0], [2.0, 2.0], [2.0, 1.0]])
 
         for k in range(32, 33):
-            problem.add_constraints(placo.PolygonConstraint.in_polygon_xy(lipm.pos(k), polygon, 0.0))
+            problem.add_constraint(placo.PolygonConstraint.in_polygon_xy(lipm.pos(k), polygon, 0.0))
 
         problem.solve()
         trajectory = lipm.get_trajectory()

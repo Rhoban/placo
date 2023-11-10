@@ -2,7 +2,6 @@
 
 #include "placo/problem/problem.h"
 #include "placo/problem/integrator.h"
-#include "placo/problem/constraints.h"
 
 namespace placo
 {

@@ -70,17 +70,11 @@ void exposeProblem()
       .add_property("is_active", &ProblemConstraint::is_active)
       .def<void (ProblemConstraint::*)(std::string, double)>("configure", &ProblemConstraint::configure);
 
-  class__<ProblemConstraints>("ProblemConstraints")
-      .def<void (ProblemConstraints::*)(std::string, double)>("configure", &ProblemConstraints::configure)
-      .def("is_active", &ProblemConstraints::is_active);
-
   class__<PolygonConstraint>("PolygonConstraint")
       .def("in_polygon", &PolygonConstraint::in_polygon)
       .staticmethod("in_polygon")
       .def("in_polygon_xy", &PolygonConstraint::in_polygon_xy)
       .staticmethod("in_polygon_xy");
-
-  exposeStdVector<ProblemConstraint>("vector_ProblemConstraint");
 
   class__<Integrator>("Integrator", init<Variable&, Eigen::VectorXd, int, double>())
       .def(init<Variable&, Eigen::VectorXd, Eigen::MatrixXd, double>())
@@ -107,7 +101,6 @@ void exposeProblem()
   class__<Problem>("Problem")
       .def("add_variable", &Problem::add_variable, return_internal_reference<>())
       .def("add_constraint", &Problem::add_constraint, return_internal_reference<>())
-      .def("add_constraints", &Problem::add_constraints)
       .def("add_limit", &Problem::add_limit)
       .def("solve", &Problem::solve)
       .def("clear_variables", &Problem::clear_variables)

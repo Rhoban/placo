@@ -52,7 +52,6 @@ add_library(libplaco SHARED
     src/placo/problem/expression.cpp
     src/placo/problem/integrator.cpp
     src/placo/problem/constraint.cpp
-    src/placo/problem/constraints.cpp
     src/placo/problem/polygon_constraint.cpp
     src/placo/problem/sparsity.cpp
 
