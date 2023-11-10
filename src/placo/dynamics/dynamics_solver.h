@@ -80,6 +80,7 @@ public:
    * @param frame_index target frame
    * @param target_world target position in the world
    * @return position task
+   * @pyignore
    */
   PositionTask& add_position_task(RobotWrapper::FrameIndex frame_index, Eigen::Vector3d target_world);
 
@@ -96,6 +97,7 @@ public:
    * @param frame_index target frame
    * @param R_world_frame target world orientation
    * @return orientation task
+   * @pyignore
    */
   OrientationTask& add_orientation_task(RobotWrapper::FrameIndex frame_index, Eigen::Matrix3d R_world_frame);
 
@@ -113,6 +115,7 @@ public:
    * @param frame_index target frame
    * @param T_world_frame target transformation in the world
    * @return frame task
+   * @pyignore
    */
   FrameTask add_frame_task(RobotWrapper::FrameIndex frame_index, Eigen::Affine3d T_world_frame);
 
@@ -131,6 +134,7 @@ public:
    * @param frame_b_index  frame b
    * @param target target value for AB vector, expressed in A
    * @return relative position task
+   * @pyignore
    */
   RelativePositionTask& add_relative_position_task(RobotWrapper::FrameIndex frame_a_index,
                                                    RobotWrapper::FrameIndex frame_b_index, Eigen::Vector3d target);
@@ -151,6 +155,7 @@ public:
    * @param frame_b_index frame b
    * @param R_a_b target value for the orientation of b frame in a
    * @return relative orientation task
+   * @pyignore
    */
   RelativeOrientationTask& add_relative_orientation_task(RobotWrapper::FrameIndex frame_a_index,
                                                          RobotWrapper::FrameIndex frame_b_index, Eigen::Matrix3d R_a_b);
@@ -171,6 +176,7 @@ public:
    * @param frame_b_index frame b
    * @param T_a_b target transformation value for b frame in a
    * @return relative frame task
+   * @pyignore
    */
   RelativeFrameTask add_relative_frame_task(RobotWrapper::FrameIndex frame_a_index,
                                             RobotWrapper::FrameIndex frame_b_index, Eigen::Affine3d T_a_b);

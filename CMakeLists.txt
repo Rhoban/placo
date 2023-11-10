@@ -15,9 +15,18 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # Maybe this should not be done globally but only for placo's targets
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 
+if (NOT PYTHON_SITELIB)
+set(PYTHON_SITELIB "lib")
+endif()
+
+if ("${CMAKE_LIBRARY_OUTPUT_DIRECTORY}" STREQUAL "")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
+endif()
+
+
 find_package (Eigen3 3 REQUIRED NO_MODULE)
 
-add_library(libplaco
+add_library(libplaco SHARED
     # Wrappers and basic utils
     src/placo/model/robot_wrapper.cpp
     src/placo/model/humanoid_robot.cpp
@@ -124,12 +133,6 @@ set(CMAKE_SHARED_MODULE_PREFIX "")
 find_package(Python3 REQUIRED)
 find_package(Boost COMPONENTS python REQUIRED)
 
-ADD_CUSTOM_TARGET(native_python_files ALL
-                  COMMAND ${CMAKE_COMMAND} -E create_symlink 
-                  ${CMAKE_CURRENT_SOURCE_DIR}/python/placo_utils
-                  ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/placo_utils
-                  )
-
 add_library(placo MODULE 
     bindings/expose-eigen.cpp
     bindings/expose-tools.cpp
@@ -144,11 +147,26 @@ add_library(placo MODULE
     bindings/module.cpp
     bindings/registry.cpp
 )
+set_target_properties(placo PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${PYTHON_SITELIB})
+
 target_link_libraries(placo ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} libplaco)
 target_include_directories(placo PRIVATE ${PYTHON_INCLUDE_DIRS})
 
 add_custom_command(TARGET placo POST_BUILD
     COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/stubs.py > placo.pyi
-    WORKING_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${PYTHON_SITELIB}
     COMMENT "Generating stubs..."
 )
+
+ADD_CUSTOM_TARGET(placo_utils_files ALL
+                  COMMAND ${CMAKE_COMMAND} -E copy_directory
+                  ${CMAKE_CURRENT_SOURCE_DIR}/python/placo_utils
+                  ${CMAKE_BINARY_DIR}/${PYTHON_SITELIB}/placo_utils
+                  )
+
+set_target_properties(placo PROPERTIES INSTALL_RPATH "\$ORIGIN/../..")
+set_target_properties(libplaco PROPERTIES INSTALL_RPATH "\$ORIGIN")
+install(TARGETS libplaco DESTINATION lib)
+install(TARGETS placo DESTINATION ${PYTHON_SITELIB})
+install(FILES ${CMAKE_BINARY_DIR}/${PYTHON_SITELIB}/placo.pyi DESTINATION ${PYTHON_SITELIB})
+install(DIRECTORY ${CMAKE_BINARY_DIR}/${PYTHON_SITELIB}/placo_utils DESTINATION ${PYTHON_SITELIB})
