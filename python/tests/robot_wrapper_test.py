@@ -2,7 +2,7 @@ import unittest
 import placo
 import numpy as np
 from pathlib import Path
-from tf import translation, rotation
+from placo_utils.tf import tf
 
 this_dir = Path(globals().get("__file__", "./_")).absolute().parent
 
@@ -97,7 +97,7 @@ class TestWrapper(unittest.TestCase):
         """
         We set the floating base to one target frame and check that the frame is indeed where we wanted it to be
         """
-        T_world_body = translation((0.1, 0.2, 0.3)) @ rotation([0.0, 0.0, 1.0], 1.0)
+        T_world_body = tf.translation_matrix((0.1, 0.2, 0.3)) @ tf.rotation_matrix(1.0, [0.0, 0.0, 1.0])
 
         self.assertNotAlmostEqual(
             np.linalg.norm(self.robot.get_T_world_frame("body") - T_world_body), 0.0, msg="Body frame should be identity"

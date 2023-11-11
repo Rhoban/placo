@@ -1,9 +1,7 @@
 import unittest
 import placo
 import numpy as np
-import matplotlib.pyplot as plt
-from tf import translation, rotation
-import time
+from placo_utils.tf import tf
 
 
 class TestLIPM(unittest.TestCase):
@@ -33,10 +31,10 @@ class TestLIPM(unittest.TestCase):
         footstep1.frame = np.eye(4)
 
         footstep2 = placo.Footstep(0.05, 0.1)
-        footstep2.frame = translation((0.01, 0.01, 0.))
+        footstep2.frame = tf.translation_matrix((0.01, 0.01, 0.))
 
         footstep3 = placo.Footstep(0.05, 0.1)
-        footstep3.frame = translation((0.2, 0.2, 0.))
+        footstep3.frame = tf.translation_matrix((0.2, 0.2, 0.))
 
         self.assertTrue(footstep1.overlap(footstep2, 0.))
         self.assertFalse(footstep1.overlap(footstep3, 0.))

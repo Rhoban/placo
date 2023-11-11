@@ -2,7 +2,6 @@ import unittest
 import placo
 import numpy as np
 from pathlib import Path
-from tf import translation, rotation
 
 this_dir = Path(globals().get("__file__", "./_")).absolute().parent
 
