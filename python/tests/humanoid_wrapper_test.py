@@ -1,9 +1,9 @@
 import unittest
 import placo
 import numpy as np
-from pathlib import Path
+import os
 
-this_dir = Path(globals().get("__file__", "./_")).absolute().parent
+this_dir = os.path.dirname(os.path.realpath(__file__))
 
 
 class TestHumanoidWrapper(unittest.TestCase):

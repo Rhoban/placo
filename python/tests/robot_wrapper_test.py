@@ -1,10 +1,10 @@
 import unittest
 import placo
+import os
 import numpy as np
-from pathlib import Path
 from placo_utils.tf import tf
 
-this_dir = Path(globals().get("__file__", "./_")).absolute().parent
+this_dir = os.path.dirname(os.path.realpath(__file__))
 
 
 class TestWrapper(unittest.TestCase):
