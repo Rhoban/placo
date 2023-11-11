@@ -70,17 +70,18 @@ public:
 
   /**
    * @brief Configures the constraint
-   * @param priority priority
+   * @param priority_ priority
    * @param weight weight
+   * @pyignore
    */
-  void configure(Priority priority, double weight);
+  void configure(Priority priority_, double weight = 1.0);
 
   /**
    * @brief Configures the constraint
    * @param priority priority
    * @param weight weight
    */
-  void configure(std::string type, double weight);
+  void configure(std::string type, double weight = 1.0);
 
   bool operator==(const ProblemConstraint& other) const;
 };

@@ -32,7 +32,7 @@ public:
    * @param target
    * @return The constraint
    */
-  void add_limit(Expression expression, Eigen::VectorXd target);
+  ProblemConstraint& add_limit(Expression expression, Eigen::VectorXd target);
 
   /**
    * @brief Adds a given constraint to the problem

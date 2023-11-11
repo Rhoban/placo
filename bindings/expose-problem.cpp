@@ -22,6 +22,7 @@ using namespace placo;
 using namespace placo::problem;
 
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(expr_overloads, expr, 0, 2);
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(configure_overloads, configure, 1, 2);
 
 void exposeProblem()
 {
@@ -68,7 +69,8 @@ void exposeProblem()
           })
       .add_property("weight", &ProblemConstraint::weight)
       .add_property("is_active", &ProblemConstraint::is_active)
-      .def<void (ProblemConstraint::*)(std::string, double)>("configure", &ProblemConstraint::configure);
+      .def<void (ProblemConstraint::*)(std::string, double)>("configure", &ProblemConstraint::configure,
+                                                             configure_overloads());
 
   class__<PolygonConstraint>("PolygonConstraint")
       .def("in_polygon", &PolygonConstraint::in_polygon)
@@ -101,7 +103,7 @@ void exposeProblem()
   class__<Problem>("Problem")
       .def("add_variable", &Problem::add_variable, return_internal_reference<>())
       .def("add_constraint", &Problem::add_constraint, return_internal_reference<>())
-      .def("add_limit", &Problem::add_limit)
+      .def("add_limit", &Problem::add_limit, return_internal_reference<>())
       .def("solve", &Problem::solve)
       .def("clear_variables", &Problem::clear_variables)
       .def("clear_constraints", &Problem::clear_constraints)

@@ -38,11 +38,26 @@ Variable& Problem::add_variable(int size)
   return *variable;
 }
 
-void Problem::add_limit(Expression expression, Eigen::VectorXd target)
+ProblemConstraint& Problem::add_limit(Expression expression, Eigen::VectorXd target)
 {
   // -target <= expression <= target
-  add_constraint(-target <= expression);
-  add_constraint(expression <= target);
+  Eigen::VectorXd targets(target.rows() * 2);
+  problem::Expression e;
+  e.A.resize(expression.A.rows() * 2, expression.A.cols());
+  e.b.resize(expression.b.rows() * 2, expression.b.cols());
+
+  // Ax + b <= target
+  e.A.block(0, 0, expression.A.rows(), expression.A.cols()) = expression.A;
+  e.b.block(0, 0, expression.b.rows(), expression.b.cols()) = expression.b;
+
+  // Ax + b >= -taget  =>   -Ax -b <= target
+  e.A.block(expression.A.rows(), 0, expression.A.rows(), expression.A.cols()) = -expression.A;
+  e.b.block(expression.b.rows(), 0, expression.b.rows(), expression.b.cols()) = -expression.b;
+
+  targets.block(0, 0, target.rows(), 1) = target;
+  targets.block(target.rows(), 0, target.rows(), 1) = target;
+
+  return add_constraint(e <= targets);
 }
 
 ProblemConstraint& Problem::add_constraint(const ProblemConstraint& constraint_)
