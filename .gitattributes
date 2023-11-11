@@ -1,2 +1,2 @@
-python/tests/ export-ignore
-python/examples/ export-ignore
+python/tests export-ignore
+python/examples export-ignore
