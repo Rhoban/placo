@@ -31,6 +31,9 @@ def robot_viz(robot: placo.RobotWrapper, name: str = "robot") -> pin.visualize.M
     The robot can further be displayed using:
 
     > viz.display(q)
+
+    :param robot: robot instance
+    :param name: name of the robot
     """
     global robot_names
 
@@ -48,6 +51,10 @@ cylinders: dict = {}
 def frame_viz(name: str, T: np.ndarray, opacity: float = 1.0) -> None:
     """
     Visualizes a given frame
+
+    :param name: name of the frame
+    :param T: transformation of the frame to the world
+    :param opacity: opacity of the frame
     """
     global cylinders
     vis = get_viewer()
@@ -75,6 +82,12 @@ def frame_viz(name: str, T: np.ndarray, opacity: float = 1.0) -> None:
 def point_viz(name: str, point: np.ndarray, radius: float = 0.01, color: float = 0xFF0000, opacity: float = 1.0) -> None:
     """
     Prints a point (sphere)
+
+    :param name: name of the point
+    :param point: point to print
+    :param radius: radius of the point
+    :param color: color of the point
+    :param opacity: opacity of the point
     """
     vis = get_viewer()
     vis["points"][name].set_object(g.Sphere(radius), g.MeshPhongMaterial(color=color, opacity=opacity))
@@ -83,7 +96,10 @@ def point_viz(name: str, point: np.ndarray, radius: float = 0.01, color: float =
 
 def robot_frame_viz(robot: placo.RobotWrapper, frame: str) -> None:
     """
-    Draw a frame from the robot
+    Draw a frame attached to the robot
+
+    :param robot: robot instance
+    :param frame: frame name
     """
     node_name = f"{robot_names[robot]}_{frame}"
     frame_viz(node_name, robot.get_T_world_frame(frame))
@@ -93,6 +109,12 @@ steps: int = 0
 
 
 def footsteps_viz(footsteps: placo.Footsteps, T: np.ndarray = np.eye(4)) -> None:
+    """
+    Visualizes humanoid footsteps
+
+    :param footsteps: footsteps to visualize
+    :param T: left transformation to apply to the footsteps
+    """    
     global steps
     vis = get_viewer()
 
@@ -120,6 +142,10 @@ def footsteps_viz(footsteps: placo.Footsteps, T: np.ndarray = np.eye(4)) -> None
 def line_viz(name: str, points: np.ndarray, color: float = 0xFF0000) -> None:
     """
     Prints a line
+
+    :param name: name of the line
+    :param points: points of the line
+    :param color: color of the line
     """
     vis = get_viewer()
     vis["lines"][name].set_object(g.LineSegments(g.PointsGeometry(points.T), g.LineBasicMaterial(color=color)))
@@ -134,6 +160,12 @@ def arrow_viz(
 ) -> None:
     """
     Prints an arrow
+
+    :param name: name of the arrow
+    :param point_from: origin of the arrow
+    :param point_to: end of the arrow
+    :param color: color of the arrow
+    :param radius: radius of the arrow
     """
     head_length = radius*3
     vis = get_viewer()
@@ -165,6 +197,13 @@ def arrow_viz(
 previous_contacts: int = 0
 
 def contacts_viz(solver: placo.DynamicsSolver, ratio=0.1, radius=0.005):
+    """
+    Draws the contacts produced by a dynamics solver
+
+    :param solver: solver instance
+    :param ratio: ratio of the wrench to display
+    :param radius: radius of the arrows
+    """    
     global previous_contacts
     robot = solver.robot
     frames = robot.frame_names()
