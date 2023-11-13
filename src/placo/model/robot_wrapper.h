@@ -6,7 +6,7 @@
 #include "pinocchio/parsers/urdf.hpp"
 #include <pinocchio/container/boost-container-limits.hpp>
 
-namespace placo
+namespace placo::model
 {
 /**
  * @brief This class contains the robot model, state, and all convenient methods. All the rigid body algorithms
@@ -468,7 +468,7 @@ public:
    *
    * Be sure you called \ref update_kinematics before calling this method if your state has changed
    *
-   * 
+   *
    * @param joint the joint for which we want the jacobian time variation
    * @param ref the reference frame
    * @return jacobian time variation (6xn matrix)
@@ -579,7 +579,7 @@ public:
    * that the given frame is fixed
    *
    * @param qdd_a acceleration of the actuated DOFs
-   * @param fixed_frame frame 
+   * @param fixed_frame frame
    */
   Eigen::VectorXd torques_from_acceleration_with_fixed_frame(Eigen::VectorXd qdd_a, std::string fixed_frame);
 
@@ -634,4 +634,4 @@ protected:
    */
   pinocchio::JointModelFreeFlyer root_joint;
 };
-}  // namespace placo
+}  // namespace placo::model

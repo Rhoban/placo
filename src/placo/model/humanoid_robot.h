@@ -5,7 +5,7 @@
 #include "rhoban_utils/history/history.h"
 #endif
 
-namespace placo
+namespace placo::model
 {
 class HumanoidRobot : public RobotWrapper
 {
@@ -121,4 +121,4 @@ public:
   double dist_z_pan_camera;  // Distance along z between the pan DoF and the camera in the head
   double dist_y_trunk_foot;  // Distance along y between the trunk and the left_foot frame in model
 };
-}  // namespace placo
+}  // namespace placo::model

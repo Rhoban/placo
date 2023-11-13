@@ -19,7 +19,7 @@ public:
     Footstep(double foot_width, double foot_length);
     double foot_width;
     double foot_length;
-    HumanoidRobot::Side side;
+    model::HumanoidRobot::Side side;
     Eigen::Affine3d frame;
     std::vector<Eigen::Vector2d> polygon;
     bool computed_polygon = false;
@@ -61,14 +61,14 @@ public:
      * @param side the side we want the frame (left or right foot)
      * @return a frame
      */
-    Eigen::Affine3d footstep_frame(HumanoidRobot::Side side);
+    Eigen::Affine3d footstep_frame(model::HumanoidRobot::Side side);
 
     bool operator==(const Support& other);
 
     /**
      * @brief The support side (you should call is_both() to be sure it's not a double support before)
      */
-    HumanoidRobot::Side side();
+    model::HumanoidRobot::Side side();
 
     /**
      * @brief Checks whether this support is a double support
@@ -85,7 +85,7 @@ public:
    * @brief Initializes the solver
    * @param parameters Parameters of the walk
    */
-  FootstepsPlanner(HumanoidParameters& parameters);
+  FootstepsPlanner(model::HumanoidParameters& parameters);
 
   /**
    * @brief Generate the footsteps
@@ -93,7 +93,7 @@ public:
    * @param T_world_left frame of the initial left foot
    * @param T_world_right frame of the initial right foot
    */
-  std::vector<Footstep> plan(HumanoidRobot::Side flying_side, Eigen::Affine3d T_world_left,
+  std::vector<Footstep> plan(model::HumanoidRobot::Side flying_side, Eigen::Affine3d T_world_left,
                              Eigen::Affine3d T_world_right);
 
   /**
@@ -120,13 +120,13 @@ public:
    */
   Footstep clipped_opposite_footstep(Footstep footstep, double d_x = 0., double d_y = 0., double d_theta = 0.);
 
-  Footstep create_footstep(HumanoidRobot::Side side, Eigen::Affine3d T_world_foot);
+  Footstep create_footstep(model::HumanoidRobot::Side side, Eigen::Affine3d T_world_foot);
 
   // Humanoid parameters for planning and control
-  HumanoidParameters& parameters;
+  model::HumanoidParameters& parameters;
 
 protected:
-  virtual void plan_impl(std::vector<Footstep>&, HumanoidRobot::Side flying_side, Eigen::Affine3d T_world_left,
+  virtual void plan_impl(std::vector<Footstep>&, model::HumanoidRobot::Side flying_side, Eigen::Affine3d T_world_left,
                          Eigen::Affine3d T_world_right) = 0;
 };
 }  // namespace placo

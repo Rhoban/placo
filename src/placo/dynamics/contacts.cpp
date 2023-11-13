@@ -174,7 +174,7 @@ void Contact6D::add_constraints(Problem& problem)
   }
 }
 
-ExternalWrenchContact::ExternalWrenchContact(RobotWrapper::FrameIndex frame_index) : frame_index(frame_index)
+ExternalWrenchContact::ExternalWrenchContact(model::RobotWrapper::FrameIndex frame_index) : frame_index(frame_index)
 {
 }
 

@@ -10,7 +10,7 @@ namespace placo::kinematics
 {
 using namespace placo::problem;
 
-KinematicsSolver::KinematicsSolver(RobotWrapper& robot_) : robot(robot_), masked_fbase(false)
+KinematicsSolver::KinematicsSolver(model::RobotWrapper& robot_) : robot(robot_), masked_fbase(false)
 {
   N = robot.model.nv;
   problem.use_sparsity = false;
@@ -21,7 +21,7 @@ KinematicsSolver::~KinematicsSolver()
   clear();
 }
 
-PositionTask& KinematicsSolver::add_position_task(RobotWrapper::FrameIndex frame, Eigen::Vector3d target_world)
+PositionTask& KinematicsSolver::add_position_task(model::RobotWrapper::FrameIndex frame, Eigen::Vector3d target_world)
 {
   return add_task(new PositionTask(frame, target_world));
 }
@@ -31,8 +31,8 @@ PositionTask& KinematicsSolver::add_position_task(std::string frame, Eigen::Vect
   return add_position_task(robot.get_frame_index(frame), target_world);
 }
 
-RelativePositionTask& KinematicsSolver::add_relative_position_task(RobotWrapper::FrameIndex frame_a,
-                                                                   RobotWrapper::FrameIndex frame_b,
+RelativePositionTask& KinematicsSolver::add_relative_position_task(model::RobotWrapper::FrameIndex frame_a,
+                                                                   model::RobotWrapper::FrameIndex frame_b,
                                                                    Eigen::Vector3d target)
 {
   return add_task(new RelativePositionTask(frame_a, frame_b, target));
@@ -49,7 +49,8 @@ CoMTask& KinematicsSolver::add_com_task(Eigen::Vector3d targetCom_world)
   return add_task(new CoMTask(targetCom_world));
 }
 
-OrientationTask& KinematicsSolver::add_orientation_task(RobotWrapper::FrameIndex frame, Eigen::Matrix3d R_world_frame)
+OrientationTask& KinematicsSolver::add_orientation_task(model::RobotWrapper::FrameIndex frame,
+                                                        Eigen::Matrix3d R_world_frame)
 {
   return add_task(new OrientationTask(frame, R_world_frame));
 }
@@ -59,8 +60,8 @@ OrientationTask& KinematicsSolver::add_orientation_task(std::string frame, Eigen
   return add_orientation_task(robot.get_frame_index(frame), R_world_frame);
 }
 
-RelativeOrientationTask& KinematicsSolver::add_relative_orientation_task(RobotWrapper::FrameIndex frame_a,
-                                                                         RobotWrapper::FrameIndex frame_b,
+RelativeOrientationTask& KinematicsSolver::add_relative_orientation_task(model::RobotWrapper::FrameIndex frame_a,
+                                                                         model::RobotWrapper::FrameIndex frame_b,
                                                                          Eigen::Matrix3d R_a_b)
 {
   return add_task(new RelativeOrientationTask(frame_a, frame_b, R_a_b));
@@ -72,7 +73,7 @@ RelativeOrientationTask& KinematicsSolver::add_relative_orientation_task(std::st
   return add_relative_orientation_task(robot.get_frame_index(frame_a), robot.get_frame_index(frame_b), R_a_b);
 }
 
-FrameTask KinematicsSolver::add_frame_task(RobotWrapper::FrameIndex frame, Eigen::Affine3d T_world_frame)
+FrameTask KinematicsSolver::add_frame_task(model::RobotWrapper::FrameIndex frame, Eigen::Affine3d T_world_frame)
 {
   PositionTask& position = add_position_task(frame, T_world_frame.translation());
   OrientationTask& orientation = add_orientation_task(frame, T_world_frame.rotation());
@@ -85,8 +86,9 @@ FrameTask KinematicsSolver::add_frame_task(std::string frame, Eigen::Affine3d T_
   return add_frame_task(robot.get_frame_index(frame), T_world_frame);
 }
 
-RelativeFrameTask KinematicsSolver::add_relative_frame_task(RobotWrapper::FrameIndex frame_a,
-                                                            RobotWrapper::FrameIndex frame_b, Eigen::Affine3d T_a_b)
+RelativeFrameTask KinematicsSolver::add_relative_frame_task(model::RobotWrapper::FrameIndex frame_a,
+                                                            model::RobotWrapper::FrameIndex frame_b,
+                                                            Eigen::Affine3d T_a_b)
 {
   RelativePositionTask& position = add_relative_position_task(frame_a, frame_b, T_a_b.translation());
   RelativeOrientationTask& orientation = add_relative_orientation_task(frame_a, frame_b, T_a_b.rotation());
@@ -110,8 +112,8 @@ JointsTask& KinematicsSolver::add_joints_task(std::map<std::string, double>& joi
   return task;
 }
 
-DistanceTask& KinematicsSolver::add_distance_task(RobotWrapper::FrameIndex frame_a, RobotWrapper::FrameIndex frame_b,
-                                                  double distance)
+DistanceTask& KinematicsSolver::add_distance_task(model::RobotWrapper::FrameIndex frame_a,
+                                                  model::RobotWrapper::FrameIndex frame_b, double distance)
 {
   return add_task(new DistanceTask(frame_a, frame_b, distance));
 }

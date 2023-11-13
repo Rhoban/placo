@@ -9,18 +9,18 @@ namespace placo::dynamics
 class RelativeOrientationTask : public Task
 {
 public:
-  RelativeOrientationTask(RobotWrapper::FrameIndex frame_a_index, RobotWrapper::FrameIndex frame_b_index,
+  RelativeOrientationTask(model::RobotWrapper::FrameIndex frame_a_index, model::RobotWrapper::FrameIndex frame_b_index,
                           Eigen::Matrix3d R_a_b);
 
   /**
    * @brief Frame A
    */
-  RobotWrapper::FrameIndex frame_a_index;
+  model::RobotWrapper::FrameIndex frame_a_index;
 
   /**
    * @brief Frame B
    */
-  RobotWrapper::FrameIndex frame_b_index;
+  model::RobotWrapper::FrameIndex frame_b_index;
 
   /**
    * @brief Target relative orientation

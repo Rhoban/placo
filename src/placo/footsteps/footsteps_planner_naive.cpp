@@ -16,6 +16,8 @@ typedef boost::geometry::model::polygon<b_point> b_polygon;
 
 namespace placo
 {
+using namespace placo::model;
+
 FootstepsPlannerNaive::FootstepsPlannerNaive(HumanoidParameters& parameters) : FootstepsPlanner(parameters)
 {
 }

@@ -11,12 +11,12 @@ struct OrientationTask : public Task
   /**
    * @brief See \ref KinematicsSolver::add_orientation_task
    */
-  OrientationTask(RobotWrapper::FrameIndex frame_index, Eigen::Matrix3d R_world_frame);
+  OrientationTask(model::RobotWrapper::FrameIndex frame_index, Eigen::Matrix3d R_world_frame);
 
   /**
    * @brief Frame
    */
-  RobotWrapper::FrameIndex frame_index;
+  model::RobotWrapper::FrameIndex frame_index;
 
   /**
    * @brief Target frame orientation in the world

@@ -3,7 +3,7 @@
 
 namespace placo::dynamics
 {
-OrientationTask::OrientationTask(RobotWrapper::FrameIndex frame_index, Eigen::Matrix3d R_world_frame)
+OrientationTask::OrientationTask(model::RobotWrapper::FrameIndex frame_index, Eigen::Matrix3d R_world_frame)
 {
   this->frame_index = frame_index;
   this->R_world_frame = R_world_frame;

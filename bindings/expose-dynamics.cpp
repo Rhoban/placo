@@ -10,6 +10,7 @@
 
 using namespace placo;
 using namespace placo::dynamics;
+using namespace placo::model;
 
 void exposeDynamics()
 {

@@ -11,6 +11,7 @@
 using namespace boost::python;
 using namespace placo;
 using namespace placo::kinematics;
+using namespace placo::model;
 
 void exposeKinematics()
 {

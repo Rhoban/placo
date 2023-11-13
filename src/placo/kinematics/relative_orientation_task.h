@@ -12,17 +12,18 @@ struct RelativeOrientationTask : public Task
   /**
    * @brief See \ref KinematicsSolver::add_relative_orientation_task
    */
-  RelativeOrientationTask(RobotWrapper::FrameIndex frame_a, RobotWrapper::FrameIndex frame_b, Eigen::Matrix3d R_a_b);
+  RelativeOrientationTask(model::RobotWrapper::FrameIndex frame_a, model::RobotWrapper::FrameIndex frame_b,
+                          Eigen::Matrix3d R_a_b);
 
   /**
    * @brief Frame A
    */
-  RobotWrapper::FrameIndex frame_a;
+  model::RobotWrapper::FrameIndex frame_a;
 
   /**
    * @brief Frame B
    */
-  RobotWrapper::FrameIndex frame_b;
+  model::RobotWrapper::FrameIndex frame_b;
 
   /**
    * @brief Target relative orientation of b in a

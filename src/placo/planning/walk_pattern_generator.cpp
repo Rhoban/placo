@@ -8,6 +8,7 @@ namespace placo
 using namespace placo::problem;
 using namespace placo::trajectory;
 using namespace placo::tools;
+using namespace placo::model;
 
 WalkPatternGenerator::Trajectory::Trajectory() : left_foot_yaw(true), right_foot_yaw(true), trunk_yaw(true)
 {

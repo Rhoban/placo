@@ -1,7 +1,7 @@
 #include <cmath>
 #include "placo/model/humanoid_parameters.h"
 
-namespace placo
+namespace placo::model
 {
 double HumanoidParameters::dt()
 {
@@ -133,4 +133,4 @@ double HumanoidParameters::ratio_duration(double ratio)
 {
   return ratio_timesteps(ratio) * dt();
 }
-}  // namespace placo
+}  // namespace placo::model

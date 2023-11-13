@@ -50,7 +50,7 @@ public:
     double kd;
   };
 
-  DynamicsSolver(RobotWrapper& robot);
+  DynamicsSolver(model::RobotWrapper& robot);
   virtual ~DynamicsSolver();
 
   // Contacts
@@ -82,7 +82,7 @@ public:
    * @return position task
    * @pyignore
    */
-  PositionTask& add_position_task(RobotWrapper::FrameIndex frame_index, Eigen::Vector3d target_world);
+  PositionTask& add_position_task(model::RobotWrapper::FrameIndex frame_index, Eigen::Vector3d target_world);
 
   /**
    * @brief Adds a position (in the world) task
@@ -99,7 +99,7 @@ public:
    * @return orientation task
    * @pyignore
    */
-  OrientationTask& add_orientation_task(RobotWrapper::FrameIndex frame_index, Eigen::Matrix3d R_world_frame);
+  OrientationTask& add_orientation_task(model::RobotWrapper::FrameIndex frame_index, Eigen::Matrix3d R_world_frame);
 
   /**
    * @brief Adds an orientation (in the world) task
@@ -117,7 +117,7 @@ public:
    * @return frame task
    * @pyignore
    */
-  FrameTask add_frame_task(RobotWrapper::FrameIndex frame_index, Eigen::Affine3d T_world_frame);
+  FrameTask add_frame_task(model::RobotWrapper::FrameIndex frame_index, Eigen::Affine3d T_world_frame);
 
   /**
    * @brief Adds a frame task, which is a pseudo-task packaging position and orientation, resulting in a
@@ -136,8 +136,9 @@ public:
    * @return relative position task
    * @pyignore
    */
-  RelativePositionTask& add_relative_position_task(RobotWrapper::FrameIndex frame_a_index,
-                                                   RobotWrapper::FrameIndex frame_b_index, Eigen::Vector3d target);
+  RelativePositionTask& add_relative_position_task(model::RobotWrapper::FrameIndex frame_a_index,
+                                                   model::RobotWrapper::FrameIndex frame_b_index,
+                                                   Eigen::Vector3d target);
 
   /**
    * @brief Adds a relative position task
@@ -157,8 +158,9 @@ public:
    * @return relative orientation task
    * @pyignore
    */
-  RelativeOrientationTask& add_relative_orientation_task(RobotWrapper::FrameIndex frame_a_index,
-                                                         RobotWrapper::FrameIndex frame_b_index, Eigen::Matrix3d R_a_b);
+  RelativeOrientationTask& add_relative_orientation_task(model::RobotWrapper::FrameIndex frame_a_index,
+                                                         model::RobotWrapper::FrameIndex frame_b_index,
+                                                         Eigen::Matrix3d R_a_b);
 
   /**
    * @brief Adds a relative orientation task
@@ -178,8 +180,8 @@ public:
    * @return relative frame task
    * @pyignore
    */
-  RelativeFrameTask add_relative_frame_task(RobotWrapper::FrameIndex frame_a_index,
-                                            RobotWrapper::FrameIndex frame_b_index, Eigen::Affine3d T_a_b);
+  RelativeFrameTask add_relative_frame_task(model::RobotWrapper::FrameIndex frame_a_index,
+                                            model::RobotWrapper::FrameIndex frame_b_index, Eigen::Affine3d T_a_b);
 
   /**
    * @brief Adds a relative frame task, which is a pseudo-task packaging relative position and orientation tasks
@@ -258,7 +260,7 @@ public:
    * @param frame_index
    * @return external wrench contact
    */
-  ExternalWrenchContact& add_external_wrench_contact(RobotWrapper::FrameIndex frame_index);
+  ExternalWrenchContact& add_external_wrench_contact(model::RobotWrapper::FrameIndex frame_index);
 
   /**
    * @brief Adds an external wrench
@@ -355,7 +357,7 @@ public:
    */
   void mask_fbase(bool masked);
 
-  RobotWrapper& robot;
+  model::RobotWrapper& robot;
 
   /**
    * @brief Removes a task from the solver

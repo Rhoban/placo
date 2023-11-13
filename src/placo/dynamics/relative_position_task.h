@@ -9,18 +9,18 @@ namespace placo::dynamics
 class RelativePositionTask : public Task
 {
 public:
-  RelativePositionTask(RobotWrapper::FrameIndex frame_a_index, RobotWrapper::FrameIndex frame_b_index,
+  RelativePositionTask(model::RobotWrapper::FrameIndex frame_a_index, model::RobotWrapper::FrameIndex frame_b_index,
                        Eigen::Vector3d target_world);
 
   /**
    * @brief Frame A
    */
-  RobotWrapper::FrameIndex frame_a_index;
+  model::RobotWrapper::FrameIndex frame_a_index;
 
   /**
    * @brief Frame B
    */
-  RobotWrapper::FrameIndex frame_b_index;
+  model::RobotWrapper::FrameIndex frame_b_index;
 
   /**
    * @brief Target relative position

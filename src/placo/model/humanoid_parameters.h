@@ -3,7 +3,7 @@
 #include <Eigen/Dense>
 #include "placo/model/humanoid_robot.h"
 
-namespace placo
+namespace placo::model
 {
 /**
  * @brief A collection of parameters that can be used to define the capabilities and the constants behind
@@ -211,4 +211,4 @@ protected:
    */
   double ratio_duration(double ratio);
 };
-}  // namespace placo
+}  // namespace placo::model

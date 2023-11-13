@@ -3,6 +3,8 @@
 
 namespace placo
 {
+using namespace placo::model;
+
 FootstepsPlannerRepetitive::FootstepsPlannerRepetitive(HumanoidParameters& parameters) : FootstepsPlanner(parameters)
 {
 }

@@ -4,7 +4,7 @@
 
 namespace placo::kinematics
 {
-OrientationTask::OrientationTask(RobotWrapper::FrameIndex frame_index, Eigen::Matrix3d R_world_frame)
+OrientationTask::OrientationTask(model::RobotWrapper::FrameIndex frame_index, Eigen::Matrix3d R_world_frame)
   : frame_index(frame_index), R_world_frame(R_world_frame)
 {
 }

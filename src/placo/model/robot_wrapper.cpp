@@ -13,7 +13,7 @@
 
 namespace fs = std::filesystem;
 
-namespace placo
+namespace placo::model
 {
 RobotWrapper::RobotWrapper(std::string model_directory, int flags, std::string urdf_content)
   : model_directory(model_directory)
@@ -663,4 +663,4 @@ double RobotWrapper::total_mass()
 
   return mass;
 }
-}  // namespace placo
+}  // namespace placo::model

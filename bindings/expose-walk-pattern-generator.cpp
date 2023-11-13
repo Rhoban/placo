@@ -14,10 +14,11 @@
 #include <Eigen/Dense>
 #include <boost/python.hpp>
 
-using namespace boost::python;
 using namespace placo;
+using namespace boost::python;
 using namespace placo::kinematics;
 using namespace placo::trajectory;
+using namespace placo::model;
 
 void exposeWalkPatternGenerator()
 {

@@ -45,7 +45,7 @@ public:
     Eigen::Affine3d get_T_world_right(double t);
     Eigen::Vector3d get_v_world_left(double t);
     Eigen::Vector3d get_v_world_right(double t);
-    Eigen::Affine3d get_T_world_foot(HumanoidRobot::Side side, double t);
+    Eigen::Affine3d get_T_world_foot(model::HumanoidRobot::Side side, double t);
 
     Eigen::Vector3d get_p_world_CoM(double t);
     Eigen::Vector3d get_v_world_CoM(double t);
@@ -57,9 +57,9 @@ public:
 
     Eigen::Matrix3d get_R_world_trunk(double t);
 
-    HumanoidRobot::Side support_side(double t);
+    model::HumanoidRobot::Side support_side(double t);
     bool support_is_both(double t);
-    bool is_flying(HumanoidRobot::Side side, double t);
+    bool is_flying(model::HumanoidRobot::Side side, double t);
 
     FootstepsPlanner::Support get_support(double t);
     FootstepsPlanner::Support get_next_support(double t);
@@ -94,7 +94,7 @@ public:
     /**
      * @brief Retrieves the yaw value
      */
-    trajectory::CubicSpline& yaw(HumanoidRobot::Side side);
+    trajectory::CubicSpline& yaw(model::HumanoidRobot::Side side);
 
     // Planned supports
     std::vector<FootstepsPlanner::Support> supports;
@@ -123,7 +123,7 @@ public:
     friend class WalkPatternGenerator;
   };
 
-  WalkPatternGenerator(HumanoidRobot& robot, HumanoidParameters& parameters);
+  WalkPatternGenerator(model::HumanoidRobot& robot, model::HumanoidParameters& parameters);
 
   /**
    * @brief Plan a walk trajectory following given footsteps based on the parameters of the WPG
@@ -161,10 +161,10 @@ public:
 
 protected:
   // Robot associated to the WPG
-  HumanoidRobot& robot;
+  model::HumanoidRobot& robot;
 
   // The parameters to use for planning. The values are forwarded to the relevant solvers when needed.
-  HumanoidParameters& parameters;
+  model::HumanoidParameters& parameters;
 
   double omega;
   double omega_2;

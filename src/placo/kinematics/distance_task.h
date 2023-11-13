@@ -10,17 +10,17 @@ struct DistanceTask : public Task
   /**
    * @brief see \ref KinematicsSolver::add_distance_task
    */
-  DistanceTask(RobotWrapper::FrameIndex frame_a, RobotWrapper::FrameIndex frame_b, double distance);
+  DistanceTask(model::RobotWrapper::FrameIndex frame_a, model::RobotWrapper::FrameIndex frame_b, double distance);
 
   /**
    * @brief Frame A
    */
-  RobotWrapper::FrameIndex frame_a;
+  model::RobotWrapper::FrameIndex frame_a;
 
   /**
    * @brief Frame B
    */
-  RobotWrapper::FrameIndex frame_b;
+  model::RobotWrapper::FrameIndex frame_b;
 
   /**
    * @brief Target distance between A and B

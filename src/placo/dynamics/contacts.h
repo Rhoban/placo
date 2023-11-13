@@ -187,9 +187,9 @@ public:
   /**
    * @brief see \ref DynamicsSolver::add_external_wrench_contact
    */
-  ExternalWrenchContact(RobotWrapper::FrameIndex frame_index);
+  ExternalWrenchContact(model::RobotWrapper::FrameIndex frame_index);
 
-  RobotWrapper::FrameIndex frame_index;
+  model::RobotWrapper::FrameIndex frame_index;
   Eigen::VectorXd w_ext = Eigen::VectorXd::Zero(6);
 
   virtual void update();

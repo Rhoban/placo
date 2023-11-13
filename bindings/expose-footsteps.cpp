@@ -10,6 +10,7 @@
 #include <boost/python.hpp>
 
 using namespace boost::python;
+using namespace placo::model;
 using namespace placo;
 
 void exposeFootsteps()

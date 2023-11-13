@@ -3,8 +3,8 @@
 
 namespace placo::kinematics
 {
-RelativeOrientationTask::RelativeOrientationTask(RobotWrapper::FrameIndex frame_a, RobotWrapper::FrameIndex frame_b,
-                                                 Eigen::Matrix3d R_a_b)
+RelativeOrientationTask::RelativeOrientationTask(model::RobotWrapper::FrameIndex frame_a,
+                                                 model::RobotWrapper::FrameIndex frame_b, Eigen::Matrix3d R_a_b)
   : frame_a(frame_a), frame_b(frame_b), R_a_b(R_a_b)
 {
 }

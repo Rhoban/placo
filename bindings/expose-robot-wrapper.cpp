@@ -11,6 +11,7 @@
 
 using namespace boost::python;
 using namespace placo;
+using namespace placo::model;
 
 #ifdef HAVE_RHOBAN_UTILS
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(read_from_histories_overloads, read_from_histories, 2, 4);

@@ -5,7 +5,7 @@ namespace placo::kinematics
 {
 void AvoidSelfCollisionsConstraint::add_constraint(placo::problem::Problem& problem)
 {
-  std::vector<RobotWrapper::Distance> distances = solver->robot.distances();
+  std::vector<model::RobotWrapper::Distance> distances = solver->robot.distances();
 
   int constraints = 0;
 

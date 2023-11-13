@@ -10,6 +10,8 @@ typedef boost::geometry::model::polygon<b_point> b_polygon;
 
 namespace placo
 {
+using namespace placo::model;
+
 FootstepsPlanner::Footstep::Footstep(double foot_width, double foot_length)
   : foot_width(foot_width), foot_length(foot_length)
 {

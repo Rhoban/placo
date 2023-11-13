@@ -12,12 +12,12 @@ public:
   /**
    * @brief see \ref placo::dynamics::DynamicsSolver::add_position_task
    */
-  PositionTask(RobotWrapper::FrameIndex frame_index, Eigen::Vector3d target_world);
+  PositionTask(model::RobotWrapper::FrameIndex frame_index, Eigen::Vector3d target_world);
 
   /**
    * @brief Frame
    */
-  RobotWrapper::FrameIndex frame_index;
+  model::RobotWrapper::FrameIndex frame_index;
 
   /**
    * @brief Target position in the world

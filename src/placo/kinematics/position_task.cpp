@@ -3,7 +3,7 @@
 
 namespace placo::kinematics
 {
-PositionTask::PositionTask(RobotWrapper::FrameIndex frame_index, Eigen::Vector3d target_world)
+PositionTask::PositionTask(model::RobotWrapper::FrameIndex frame_index, Eigen::Vector3d target_world)
   : frame_index(frame_index), target_world(target_world)
 {
 }

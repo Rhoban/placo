@@ -50,7 +50,7 @@ Contact6D& DynamicsSolver::add_fixed_contact(FrameTask& frame_task)
   return add_contact(new Contact6D(frame_task, false));
 }
 
-ExternalWrenchContact& DynamicsSolver::add_external_wrench_contact(pinocchio::FrameIndex frame_index)
+ExternalWrenchContact& DynamicsSolver::add_external_wrench_contact(model::RobotWrapper::FrameIndex frame_index)
 {
   return add_contact(new ExternalWrenchContact(frame_index));
 }
@@ -80,7 +80,8 @@ ReactionRatioConstraint& DynamicsSolver::add_reaction_ratio_constraint(Contact& 
   return add_constraint(new ReactionRatioConstraint(contact, reaction_ratio));
 }
 
-PositionTask& DynamicsSolver::add_position_task(pinocchio::FrameIndex frame_index, Eigen::Vector3d target_world)
+PositionTask& DynamicsSolver::add_position_task(model::RobotWrapper::FrameIndex frame_index,
+                                                Eigen::Vector3d target_world)
 {
   return add_task(new PositionTask(frame_index, target_world));
 }
@@ -90,8 +91,8 @@ PositionTask& DynamicsSolver::add_position_task(std::string frame_name, Eigen::V
   return add_position_task(robot.get_frame_index(frame_name), target_world);
 }
 
-RelativePositionTask& DynamicsSolver::add_relative_position_task(pinocchio::FrameIndex frame_a_index,
-                                                                 pinocchio::FrameIndex frame_b_index,
+RelativePositionTask& DynamicsSolver::add_relative_position_task(model::RobotWrapper::FrameIndex frame_a_index,
+                                                                 model::RobotWrapper::FrameIndex frame_b_index,
                                                                  Eigen::Vector3d target)
 {
   return add_task(new RelativePositionTask(frame_a_index, frame_b_index, target));
@@ -103,8 +104,8 @@ RelativePositionTask& DynamicsSolver::add_relative_position_task(std::string fra
   return add_relative_position_task(robot.get_frame_index(frame_a_name), robot.get_frame_index(frame_b_name), target);
 }
 
-RelativeOrientationTask& DynamicsSolver::add_relative_orientation_task(pinocchio::FrameIndex frame_a_index,
-                                                                       pinocchio::FrameIndex frame_b_index,
+RelativeOrientationTask& DynamicsSolver::add_relative_orientation_task(model::RobotWrapper::FrameIndex frame_a_index,
+                                                                       model::RobotWrapper::FrameIndex frame_b_index,
                                                                        Eigen::Matrix3d R_a_b)
 {
   return add_task(new RelativeOrientationTask(frame_a_index, frame_b_index, R_a_b));
@@ -116,8 +117,9 @@ RelativeOrientationTask& DynamicsSolver::add_relative_orientation_task(std::stri
   return add_relative_orientation_task(robot.get_frame_index(frame_a_name), robot.get_frame_index(frame_b_name), R_a_b);
 }
 
-RelativeFrameTask DynamicsSolver::add_relative_frame_task(pinocchio::FrameIndex frame_a_index,
-                                                          pinocchio::FrameIndex frame_b_index, Eigen::Affine3d T_a_b)
+RelativeFrameTask DynamicsSolver::add_relative_frame_task(model::RobotWrapper::FrameIndex frame_a_index,
+                                                          model::RobotWrapper::FrameIndex frame_b_index,
+                                                          Eigen::Affine3d T_a_b)
 {
   RelativePositionTask& position = add_relative_position_task(frame_a_index, frame_b_index, T_a_b.translation());
   RelativeOrientationTask& orientation = add_relative_orientation_task(frame_a_index, frame_b_index, T_a_b.rotation());
@@ -152,7 +154,8 @@ GearTask& DynamicsSolver::add_gear_task()
   return add_task(new GearTask());
 }
 
-OrientationTask& DynamicsSolver::add_orientation_task(pinocchio::FrameIndex frame_index, Eigen::Matrix3d R_world_frame)
+OrientationTask& DynamicsSolver::add_orientation_task(model::RobotWrapper::FrameIndex frame_index,
+                                                      Eigen::Matrix3d R_world_frame)
 {
   return add_task(new OrientationTask(frame_index, R_world_frame));
 }
@@ -162,7 +165,7 @@ OrientationTask& DynamicsSolver::add_orientation_task(std::string frame_name, Ei
   return add_orientation_task(robot.get_frame_index(frame_name), R_world_frame);
 }
 
-FrameTask DynamicsSolver::add_frame_task(pinocchio::FrameIndex frame_index, Eigen::Affine3d T_world_frame)
+FrameTask DynamicsSolver::add_frame_task(model::RobotWrapper::FrameIndex frame_index, Eigen::Affine3d T_world_frame)
 {
   PositionTask& position = add_position_task(frame_index, T_world_frame.translation());
   OrientationTask& orientation = add_orientation_task(frame_index, T_world_frame.rotation());
@@ -175,7 +178,7 @@ FrameTask DynamicsSolver::add_frame_task(std::string frame_name, Eigen::Affine3d
   return add_frame_task(robot.get_frame_index(frame_name), T_world_frame);
 }
 
-DynamicsSolver::DynamicsSolver(RobotWrapper& robot) : robot(robot)
+DynamicsSolver::DynamicsSolver(model::RobotWrapper& robot) : robot(robot)
 {
   N = robot.model.nv;
   masked_fbase = false;

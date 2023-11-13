@@ -36,7 +36,7 @@ namespace placo::kinematics
 class KinematicsSolver
 {
 public:
-  KinematicsSolver(RobotWrapper& robot_);
+  KinematicsSolver(model::RobotWrapper& robot_);
   virtual ~KinematicsSolver();
 
   /**
@@ -46,7 +46,7 @@ public:
    * @return position task
    * @pyignore
    */
-  PositionTask& add_position_task(RobotWrapper::FrameIndex frame, Eigen::Vector3d target_world);
+  PositionTask& add_position_task(model::RobotWrapper::FrameIndex frame, Eigen::Vector3d target_world);
 
   /**
    * @brief Adds a position task
@@ -64,8 +64,8 @@ public:
    * @return relative position task
    * @pyignore
    */
-  RelativePositionTask& add_relative_position_task(RobotWrapper::FrameIndex frame_a, RobotWrapper::FrameIndex frame_b,
-                                                   Eigen::Vector3d target);
+  RelativePositionTask& add_relative_position_task(model::RobotWrapper::FrameIndex frame_a,
+                                                   model::RobotWrapper::FrameIndex frame_b, Eigen::Vector3d target);
 
   /**
    * @brief Adds a relative position task
@@ -90,7 +90,7 @@ public:
    * @return orientation task
    * @pyignore
    */
-  OrientationTask& add_orientation_task(RobotWrapper::FrameIndex frame, Eigen::Matrix3d R_world_frame);
+  OrientationTask& add_orientation_task(model::RobotWrapper::FrameIndex frame, Eigen::Matrix3d R_world_frame);
 
   /**
    * @brief Adds an orientation task
@@ -108,8 +108,9 @@ public:
    * @return relative orientation task
    * @pyignore
    */
-  RelativeOrientationTask& add_relative_orientation_task(RobotWrapper::FrameIndex frame_a,
-                                                         RobotWrapper::FrameIndex frame_b, Eigen::Matrix3d R_a_b);
+  RelativeOrientationTask& add_relative_orientation_task(model::RobotWrapper::FrameIndex frame_a,
+                                                         model::RobotWrapper::FrameIndex frame_b,
+                                                         Eigen::Matrix3d R_a_b);
 
   /**
    * @brief Adds a relative orientation task
@@ -130,7 +131,8 @@ public:
    * @return frame task
    * @pyignore
    */
-  FrameTask add_frame_task(RobotWrapper::FrameIndex frame, Eigen::Affine3d T_world_frame = Eigen::Affine3d::Identity());
+  FrameTask add_frame_task(model::RobotWrapper::FrameIndex frame,
+                           Eigen::Affine3d T_world_frame = Eigen::Affine3d::Identity());
 
   /**
    * @brief Adds a frame task, this is equivalent to a position + orientation task, resulting in decoupled tasks for
@@ -150,8 +152,8 @@ public:
    * @return relative frame task
    * @pyignore
    */
-  RelativeFrameTask add_relative_frame_task(RobotWrapper::FrameIndex frame_a, RobotWrapper::FrameIndex frame_b,
-                                            Eigen::Affine3d T_a_b);
+  RelativeFrameTask add_relative_frame_task(model::RobotWrapper::FrameIndex frame_a,
+                                            model::RobotWrapper::FrameIndex frame_b, Eigen::Affine3d T_a_b);
 
   /**
    * @brief Adds a relative frame task
@@ -189,7 +191,8 @@ public:
    * @return distance task
    * @pyignore
    */
-  DistanceTask& add_distance_task(RobotWrapper::FrameIndex frame_a, RobotWrapper::FrameIndex frame_b, double distance);
+  DistanceTask& add_distance_task(model::RobotWrapper::FrameIndex frame_a, model::RobotWrapper::FrameIndex frame_b,
+                                  double distance);
 
   /**
    * @brief Adds a distance task to be maintained between two frames
@@ -308,7 +311,7 @@ public:
   /**
    * @brief The robot controlled by this solver
    */
-  RobotWrapper& robot;
+  model::RobotWrapper& robot;
 
   /**
    * @brief Size of the problem (number of variables)

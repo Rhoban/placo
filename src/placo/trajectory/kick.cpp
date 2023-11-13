@@ -3,6 +3,8 @@
 
 namespace placo::trajectory
 {
+using namespace placo::model;
+
 Eigen::Vector3d Kick::KickTrajectory::pos(double t)
 {
   return foot_trajectory.pos(t);

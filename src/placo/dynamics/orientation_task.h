@@ -12,12 +12,12 @@ public:
   /**
    * @brief see \ref placo::dynamics::DynamicsSolver::add_orientation_task
    */
-  OrientationTask(RobotWrapper::FrameIndex frame_index, Eigen::Matrix3d target_world);
+  OrientationTask(model::RobotWrapper::FrameIndex frame_index, Eigen::Matrix3d target_world);
 
   /**
    * @brief frame
    */
-  RobotWrapper::FrameIndex frame_index;
+  model::RobotWrapper::FrameIndex frame_index;
 
   /**
    * @brief Target orientation

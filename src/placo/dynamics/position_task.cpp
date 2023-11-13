@@ -3,7 +3,7 @@
 
 namespace placo::dynamics
 {
-PositionTask::PositionTask(RobotWrapper::FrameIndex frame_index, Eigen::Vector3d target_world)
+PositionTask::PositionTask(model::RobotWrapper::FrameIndex frame_index, Eigen::Vector3d target_world)
 {
   this->frame_index = frame_index;
   this->target_world = target_world;

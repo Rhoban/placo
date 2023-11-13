@@ -3,7 +3,7 @@
 #include "pinocchio/math/rpy.hpp"
 #include "pinocchio/spatial/explog.hpp"
 
-namespace placo
+namespace placo::model
 {
 HumanoidRobot::HumanoidRobot(std::string model_directory, int flags, std::string urdf_content)
   : RobotWrapper(model_directory, flags, urdf_content)
@@ -121,8 +121,8 @@ Eigen::Vector3d HumanoidRobot::get_com_velocity(Side support, Eigen::Vector3d om
   Eigen::Matrix3Xd J_a_C = J_C.rightCols(20);
 
   // Support foot
-  Eigen::MatrixXd J_contact = support == placo::HumanoidRobot::Left ? frame_jacobian("left_foot", "local") :
-                                                                      frame_jacobian("right_foot", "local");
+  Eigen::MatrixXd J_contact =
+      support == Left ? frame_jacobian("left_foot", "local") : frame_jacobian("right_foot", "local");
 
   // IMU body Jacobian
   Eigen::MatrixXd J_IMU = frame_jacobian("trunk", "local");
@@ -215,4 +215,4 @@ void HumanoidRobot::read_from_histories(rhoban_utils::HistoryCollection& histori
   }
 }
 #endif
-}  // namespace placo
+}  // namespace placo::model

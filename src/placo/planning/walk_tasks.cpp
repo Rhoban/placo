@@ -5,6 +5,7 @@ namespace placo
 {
 using namespace placo::kinematics;
 using namespace placo::tools;
+using namespace placo::model;
 
 void WalkTasks::initialize_tasks(KinematicsSolver* solver_, HumanoidRobot* robot_)
 {

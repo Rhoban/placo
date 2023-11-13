@@ -10,7 +10,7 @@ void AvoidSelfCollisionsConstraint::add_constraint(problem::Problem& problem, pr
     throw std::runtime_error("AvoidSelfCollisionsConstraint::add_constraint: dt is not set");
   }
 
-  std::vector<RobotWrapper::Distance> distances = solver->robot.distances();
+  std::vector<model::RobotWrapper::Distance> distances = solver->robot.distances();
 
   int constraints = 0;
 

@@ -4,8 +4,8 @@
 namespace placo::dynamics
 {
 
-RelativeOrientationTask::RelativeOrientationTask(RobotWrapper::FrameIndex frame_a_index,
-                                                 RobotWrapper::FrameIndex frame_b_index, Eigen::Matrix3d R_a_b)
+RelativeOrientationTask::RelativeOrientationTask(model::RobotWrapper::FrameIndex frame_a_index,
+                                                 model::RobotWrapper::FrameIndex frame_b_index, Eigen::Matrix3d R_a_b)
 {
   this->frame_a_index = frame_a_index;
   this->frame_b_index = frame_b_index;

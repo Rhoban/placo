@@ -10,7 +10,7 @@ namespace placo
 class FootstepsPlannerRepetitive : public FootstepsPlanner
 {
 public:
-  FootstepsPlannerRepetitive(HumanoidParameters& parameters);
+  FootstepsPlannerRepetitive(model::HumanoidParameters& parameters);
 
   /**
    * @brief Compute the next footsteps based on coordinates expressed in the support frame
@@ -37,7 +37,7 @@ protected:
    * @param T_world_left frame of the initial left foot
    * @param T_world_right frame of the initial right foot
    */
-  void plan_impl(std::vector<Footstep>& footsteps, HumanoidRobot::Side flying_side, Eigen::Affine3d T_world_left,
+  void plan_impl(std::vector<Footstep>& footsteps, model::HumanoidRobot::Side flying_side, Eigen::Affine3d T_world_left,
                  Eigen::Affine3d T_world_right);
 };
 }  // namespace placo

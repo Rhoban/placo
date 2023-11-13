@@ -1,4 +1,5 @@
 import glob
+import re
 import xml.etree.ElementTree as ET
 
 # Mapping member definitions (id) to all informations
@@ -21,6 +22,14 @@ def resolve_type(node):
         return type_node.text
 
 
+def element_to_string(element):
+    s = element.text or ""
+    for sub_element in element:
+        s += ET.tostring(sub_element).decode("utf-8")
+    s += element.tail
+    return re.sub('<[^<]+?>', '', s)
+
+
 def parse_compound(compounddef_node: ET.Element):
     global member_definitions, compound_metadata, compound_members
 
@@ -32,13 +41,13 @@ def parse_compound(compounddef_node: ET.Element):
     doxygen_id_to_name[id] = name
 
     if name not in compound_members:
-      compound_members[name] = []
+        compound_members[name] = []
 
     compound_metadata[name] = {
         "id": id,
         "kind": compound_kind,
         "name": name,
-        "brief": compounddef_node.find("briefdescription/para").text
+        "brief": element_to_string(compounddef_node.find("briefdescription/para"))
         if compounddef_node.find("briefdescription/para") is not None
         else None,
     }
@@ -51,11 +60,11 @@ def parse_compound(compounddef_node: ET.Element):
 
         # PyIgnore ?
         ignore = False
-        sects = member.findall('detaileddescription/para/xrefsect')
+        sects = member.findall("detaileddescription/para/xrefsect")
         if sects:
-          for sect in sects:
-              if 'pyignore' in sect.attrib['id']:
-                  ignore = True
+            for sect in sects:
+                if "pyignore" in sect.attrib["id"]:
+                    ignore = True
         if ignore:
             continue
 
@@ -75,20 +84,30 @@ def parse_compound(compounddef_node: ET.Element):
                     param_name = param.find("declname").text
                 if param.find("defname") is not None:
                     param_name = param.find("defname").text
-                def_val = param.find("defval").text if param.find("defval") is not None else None
-                member_definitions[id]["params"].append({"type": param_type, "name": param_name, "default": def_val})
+                def_val = (
+                    param.find("defval").text
+                    if param.find("defval") is not None
+                    else None
+                )
+                member_definitions[id]["params"].append(
+                    {"type": param_type, "name": param_name, "default": def_val}
+                )
 
             # Brief description
             brief = member.find("briefdescription/para")
             if brief is not None:
-                member_definitions[id]["brief"] = brief.text
+                member_definitions[id]["brief"] = element_to_string(brief)
 
             # Detailed description
             member_definitions[id]["detailed"] = []
-            for entry in member.findall("detaileddescription/para/parameterlist/parameteritem"):
+            for entry in member.findall(
+                "detaileddescription/para/parameterlist/parameteritem"
+            ):
                 param_name = entry.find("parameternamelist/parametername").text
                 param_desc = entry.find("parameterdescription/para").text
-                member_definitions[id]["detailed"].append({"name": param_name, "desc": param_desc})
+                member_definitions[id]["detailed"].append(
+                    {"name": param_name, "desc": param_desc}
+                )
 
             # Verbatim
             verbatim = member.find("detaileddescription/para/verbatim")
@@ -96,7 +115,9 @@ def parse_compound(compounddef_node: ET.Element):
                 member_definitions[id]["verbatim"] = verbatim.text
 
             # Return type
-            return_type = member.find("detaileddescription/para/simplesect[@kind='return']")
+            return_type = member.find(
+                "detaileddescription/para/simplesect[@kind='return']"
+            )
             if return_type:
                 member_definitions[id]["returns"] = return_type.find("para").text
 
@@ -152,7 +173,9 @@ def parse_directory(directory):
         compound_members[name] = {}
         for id in temp:
             if id in member_definitions:
-                compound_members[name][member_definitions[id]["name"]] = member_definitions[id]
+                compound_members[name][
+                    member_definitions[id]["name"]
+                ] = member_definitions[id]
 
 
 def get_members(name: str):

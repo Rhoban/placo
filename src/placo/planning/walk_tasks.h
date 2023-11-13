@@ -8,7 +8,7 @@ namespace placo
 class WalkTasks
 {
 public:
-  void initialize_tasks(placo::kinematics::KinematicsSolver* solver, HumanoidRobot* robot);
+  void initialize_tasks(placo::kinematics::KinematicsSolver* solver, placo::model::HumanoidRobot* robot);
   void remove_tasks();
   virtual ~WalkTasks();
 
@@ -19,7 +19,7 @@ public:
   std::map<std::string, Eigen::Vector3d> get_tasks_error();
 
   placo::kinematics::KinematicsSolver* solver = nullptr;
-  HumanoidRobot* robot = nullptr;
+  placo::model::HumanoidRobot* robot = nullptr;
 
   placo::kinematics::FrameTask left_foot_task;
   placo::kinematics::FrameTask right_foot_task;
