@@ -11,28 +11,37 @@ class CubicSpline3D
 {
 public:
   /**
-   * Add a point with its x position, y value and its derivative slope
+   * @brief Adds a point
+   * @param t time
+   * @param x value (3D vector)
+   * @param dx velocity (3D vector)
    */
-  void add_point(double pos, Eigen::Vector3d val, Eigen::Vector3d delta);
+  void add_point(double t, Eigen::Vector3d x, Eigen::Vector3d dx);
 
+  /**
+   * @brief Clears the spline
+   */
   void clear();
 
   /**
-   * Spline duration
+   * @brief Spline duration
+   * @return spline duration in seconds
    */
   double duration() const;
 
   /**
-   * Return the spline interpolation
-   * for given x position
+   * @brief Returns the spline value at time t
+   * @param t time
+   * @return position (3D vector)
    */
-  Eigen::Vector3d pos(double x);
+  Eigen::Vector3d pos(double t);
 
   /**
-   * Returns the spline speed interpolation
-   * for given x position
+   * @brief Returns the spline velocity at time t
+   * @param t time
+   * @return velocity (3D vector)
    */
-  Eigen::Vector3d vel(double x);
+  Eigen::Vector3d vel(double t);
 
 private:
   CubicSpline xSpline;

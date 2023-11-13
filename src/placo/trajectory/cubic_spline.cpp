@@ -97,14 +97,14 @@ double CubicSpline::interpolation(double t, CubicSpline::ValueType type)
   }
 }
 
-double CubicSpline::pos(double x)
+double CubicSpline::pos(double t)
 {
-  return interpolation(x, Value);
+  return interpolation(t, Value);
 }
 
-double CubicSpline::vel(double x)
+double CubicSpline::vel(double t)
 {
-  return interpolation(x, Speed);
+  return interpolation(t, Speed);
 }
 
 /**

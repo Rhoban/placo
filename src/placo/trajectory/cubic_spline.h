@@ -20,26 +20,35 @@ public:
   typedef std::vector<Point> Points;
 
   /**
-   * Spline duration
+   * @brief Spline duration
+   * @return duration in seconds
    */
   double duration() const;
 
   /**
-   * Add a point with its time, x and dx
+   * @brief Adds a point in the spline
+   * @param t time
+   * @param x value
+   * @param dx speed
    */
   void add_point(double t, double x, double dx);
 
+  /**
+   * @brief Clears the spline
+   */
   void clear();
 
   /**
-   * Return the spline interpolation
-   * for given x position
+   * @brief Retrieve the position at a given time
+   * @param t time
+   * @return position
    */
-  double pos(double x);
+  double pos(double t);
 
   /**
-   * Returns the spline speed interpolation
-   * for given x position
+   * @brief Retrieve velocity at a given time
+   * @param t time
+   * @return velocity
    */
   double vel(double x);
 
@@ -51,7 +60,8 @@ public:
   double interpolation(double x, ValueType type);
 
   /**
-   * Access to internal Points container
+   * @brief Access internal points container
+   * @return points
    */
   const Points& points() const;
 
