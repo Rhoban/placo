@@ -223,6 +223,8 @@ for name, object in inspect.getmembers(placo):
         class_name = object.__name__
         print(f"{class_name} = typing.NewType(\"{class_name}\", None)")
 
+groups = {}
+
 for name, object in inspect.getmembers(placo):
     if isinstance(object, type):
         class_name = object.__name__
@@ -230,6 +232,13 @@ for name, object in inspect.getmembers(placo):
 
         if class_name in py_registry:
             metadata = get_metadata(py_registry[class_name])
+
+            if metadata is not None:
+              namespace = "::".join(metadata['name'].split("::")[:-1][:2])
+              if namespace not in groups:
+                  groups[namespace] = []
+              groups[namespace].append(class_name)
+
             if (
                 metadata is not None
                 and "brief" in metadata
@@ -249,3 +258,5 @@ for name, object in inspect.getmembers(placo):
         print("")
     else:
         ...
+
+print(f"__groups__ = {groups}")
