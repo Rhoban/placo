@@ -22,13 +22,17 @@ def resolve_type(node):
 
 
 def parse_compound(compounddef_node: ET.Element):
-    global member_definitions, compound_metadata
+    global member_definitions, compound_metadata, compound_members
 
     name = compounddef_node.find("compoundname").text
     compound_kind = compounddef_node.attrib["kind"]
+    if compound_kind == "namespace":
+        name = "root"
     id = compounddef_node.attrib["id"]
     doxygen_id_to_name[id] = name
-    compound_members[name] = []
+
+    if name not in compound_members:
+      compound_members[name] = []
 
     compound_metadata[name] = {
         "id": id,

@@ -54,11 +54,10 @@ rewrite_types: dict = {
 
 # Building registry and reverse registry for class names
 cxx_registry = placo.get_classes_registry()
-py_registry = {module: module}
+py_registry = {"root": "root"}
 for entry in cxx_registry:
     rewrite_types[entry] = cxx_registry[entry]
     py_registry[cxx_registry[entry]] = entry
-
 
 def get_member(class_name: str, member_name: str):
     if class_name in py_registry:
@@ -186,7 +185,7 @@ def print_class_method(class_name: str, method_name: str, doc: str, prefix: str 
             [arg["name"], cxx_type_to_py(arg["type"]), arg["default"], arg["type"]]
             for arg in member["params"]
         ]
-        if class_name != module and not member["static"]:
+        if class_name != "root" and not member["static"]:
             args = [["self", class_name, None, None]] + args
 
         # Return type
@@ -246,7 +245,7 @@ for name, object in inspect.getmembers(placo):
                     print_class_member(class_name, _name)
         print("")
     elif callable(object):
-        print_class_method(module, name, object.__doc__)
+        print_class_method("root", name, object.__doc__)
         print("")
     else:
         ...
