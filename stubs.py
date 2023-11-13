@@ -201,7 +201,7 @@ def print_class_method(class_name: str, method_name: str, doc: str, prefix: str 
 
         if "detailed" in member:
             for param in member["detailed"]:
-                doc += f"\n{prefix}  :param ``{param['name']}`` {param['desc']}"
+                doc += f"\n{prefix}  :param {param['name']}: {param['desc']}"
 
         if "verbatim" in member:
             doc += f"\n{prefix}  {member['verbatim']}"
@@ -217,6 +217,12 @@ def print_class_method(class_name: str, method_name: str, doc: str, prefix: str 
 
 
 print("import numpy")
+print("import typing")
+
+for name, object in inspect.getmembers(placo):
+    if isinstance(object, type):
+        class_name = object.__name__
+        print(f"{class_name} = typing.NewType(\"{class_name}\", None)")
 
 for name, object in inspect.getmembers(placo):
     if isinstance(object, type):
