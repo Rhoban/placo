@@ -18,10 +18,14 @@ void exposeTrajectory()
   class__<CubicSpline>("CubicSpline", init<optional<bool>>())
       .def("pos", &CubicSpline::pos)
       .def("vel", &CubicSpline::vel)
-      .def("add_point", &CubicSpline::add_point);
+      .def("add_point", &CubicSpline::add_point)
+      .def("clear", &CubicSpline::clear)
+      .def("duration", &CubicSpline::duration);
 
   class__<CubicSpline3D>("CubicSpline3D")
       .def("pos", &CubicSpline3D::pos)
       .def("vel", &CubicSpline3D::vel)
-      .def("add_point", &CubicSpline3D::add_point);
+      .def("add_point", &CubicSpline3D::add_point)
+      .def("clear", &CubicSpline3D::clear)
+      .def("duration", &CubicSpline3D::duration);
 }
