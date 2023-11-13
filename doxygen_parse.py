@@ -129,7 +129,7 @@ def parse_compound(compounddef_node: ET.Element):
         elif kind == "enum":
             doxygen_id_to_name[id] = name + "::" + member.find("name").text
 
-    # Listinf all members
+    # Listing all members
     kind = compounddef_node.attrib["kind"]
     for member in compounddef_node.findall("listofallmembers/member"):
         compound_members[name].append(member.attrib["refid"])
