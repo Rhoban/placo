@@ -34,6 +34,7 @@ Code reference
 .. toctree::
 
   methods
+  ../placo_utils
 """
 
 for name, object in inspect.getmembers(placo):

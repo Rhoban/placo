@@ -10,4 +10,6 @@ Welcome to PlaCo's documentation!
   :maxdepth: 1
   :caption: Contents:
 
+  installation
+  robot_wrapper
   placo/summary
