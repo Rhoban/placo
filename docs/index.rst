@@ -12,4 +12,6 @@ Welcome to PlaCo's documentation!
 
   installation
   robot_wrapper
+  kinematics
   placo/summary
+  dev
