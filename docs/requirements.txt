@@ -1,4 +1,4 @@
 pydata-sphinx-theme
 meshcat
-pinocchio
+pin
 numpy
