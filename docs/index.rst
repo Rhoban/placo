@@ -10,8 +10,7 @@ Welcome to PlaCo's documentation!
   :maxdepth: 1
   :caption: Contents:
 
-  installation
-  robot_wrapper
+  getting_started/index
   kinematics
   placo/summary
   dev
