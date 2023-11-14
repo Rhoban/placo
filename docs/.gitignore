@@ -2,3 +2,4 @@
 _build
 module/placo.py
 placo/
+!placo/placo_utils
