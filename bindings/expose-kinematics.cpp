@@ -180,7 +180,7 @@ void exposeKinematics()
 
   class__<Constraint, bases<tools::Prioritized>, boost::noncopyable>("KinematicsConstraint", no_init);
 
-  class__<AvoidSelfCollisionsConstraint, bases<Constraint>>("KinematicsAvoidSelfCollisionsConstraint", init<>())
+  class__<AvoidSelfCollisionsConstraint, bases<Constraint>>("AvoidSelfCollisionsKinematicsConstraint", init<>())
       .def_readwrite("self_collisions_margin", &AvoidSelfCollisionsConstraint::self_collisions_margin)
       .def_readwrite("self_collisions_trigger", &AvoidSelfCollisionsConstraint::self_collisions_trigger);
 

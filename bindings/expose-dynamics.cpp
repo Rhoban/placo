@@ -229,7 +229,7 @@ void exposeDynamics()
 
   class__<Constraint, bases<tools::Prioritized>, boost::noncopyable>("DynamicsConstraint", no_init);
 
-  class__<AvoidSelfCollisionsConstraint, bases<Constraint>>("DynamicsAvoidSelfCollisionsConstraint", init<>())
+  class__<AvoidSelfCollisionsConstraint, bases<Constraint>>("AvoidSelfCollisionsDynamicsConstraint", init<>())
       .def_readwrite("self_collisions_margin", &AvoidSelfCollisionsConstraint::self_collisions_margin)
       .def_readwrite("self_collisions_trigger", &AvoidSelfCollisionsConstraint::self_collisions_trigger);
 
