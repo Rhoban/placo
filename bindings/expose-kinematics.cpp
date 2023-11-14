@@ -96,8 +96,8 @@ void exposeKinematics()
           .def("solve", &KinematicsSolver::solve);
 
   class__<Task, bases<tools::Prioritized>, boost::noncopyable>("Task", no_init)
-      .add_property("A", &Task::A)
-      .add_property("b", &Task::b)
+      .add_property("A", +[](const Task& task) { return task.A; })
+      .add_property("b", +[](const Task& task) { return task.b; })
       .def("error", &Task::error)
       .def("error_norm", &Task::error_norm)
       .def("update", &Task::update);
