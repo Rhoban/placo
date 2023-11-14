@@ -14,3 +14,8 @@ Welcome to PlaCo's documentation!
   kinematics
   placo/summary
   dev
+
+Links
+-----
+
+* `GitHub repository <https://github.com/rhoban/placo>`_
