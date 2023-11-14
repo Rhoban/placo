@@ -22,6 +22,7 @@ this_dir = os.path.dirname(__file__)
 os.system("rm -rf module/placo_utils")
 os.system(f"ln -sf {this_dir}/../python/placo_utils ./module/placo_utils")
 
+os.system("ls -lAh ./module/")
 sys.path.insert(0, os.path.abspath('./module/'))
 
 import placo
