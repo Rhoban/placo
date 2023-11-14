@@ -15,7 +15,6 @@ if not os.path.islink("module/placo.py"):
           os.system(f"wget {url} -O sdist.tar.gz >/dev/null")
           os.system(f"tar xvf sdist.tar.gz >/dev/null")
           os.system(f"cp {name}/placo.pyi module/placo.py")
-          os.system(f"cp -R {name}/python/placo_utils module/placo_utils")
           os.system(f"rm -rf sdist.tar.gz {name}")
 
 this_dir = os.path.dirname(__file__)
