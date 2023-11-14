@@ -2,6 +2,9 @@ import os
 import sys
 import requests
 
+os.makedirs("module", exist_ok=True)
+
+# We retrieve placo.py from the latest sdist placo.pyi file
 if not os.path.islink("module/placo.py"):
   infos = requests.get('https://pypi.org/pypi/placo/json').json()
   print(f"No placo.py file found, downloading version {infos['info']['version']}")
@@ -13,6 +16,11 @@ if not os.path.islink("module/placo.py"):
           os.system(f"tar xvf sdist.tar.gz >/dev/null")
           os.system(f"cp {name}/placo.pyi module/placo.py")
           os.system(f"rm -rf sdist.tar.gz {name}")
+
+# We create a symbolic link to placo_utils
+this_dir = os.path.dirname(__file__)
+os.system("rm -rf module/placo_utils")
+os.system(f"ln -sf {this_dir}/../python/placo_utils ./module/placo_utils")
 
 sys.path.insert(0, os.path.abspath('./module/'))
 
