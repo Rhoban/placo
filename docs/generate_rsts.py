@@ -15,18 +15,10 @@ if not os.path.islink("module/placo.py"):
           os.system(f"wget {url} -O sdist.tar.gz >/dev/null")
           os.system(f"tar xvf sdist.tar.gz >/dev/null")
           os.system(f"cp {name}/placo.pyi module/placo.py")
+          os.system(f"cp -R {name}/python/placo_utils module/placo_utils")
           os.system(f"rm -rf sdist.tar.gz {name}")
 
-# We create a symbolic link to placo_utils
 this_dir = os.path.dirname(__file__)
-os.system("rm -rf module/placo_utils")
-os.system(f"ln -sf {this_dir}/../python/placo_utils ./module/placo_utils")
-
-print("ls -lAh ./")
-os.system("ls -lAh ./")
-
-print("ls -lAh ../")
-os.system("ls -lAh ../")
 sys.path.insert(0, this_dir + "/module/")
 
 import placo
