@@ -1,2 +1,3 @@
 pydata-sphinx-theme
+meshcat
 numpy
