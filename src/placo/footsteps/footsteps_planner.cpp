@@ -239,7 +239,6 @@ FootstepsPlanner::make_supports(std::vector<FootstepsPlanner::Footstep> footstep
     else
     {
       Support support;
-      support.start = true;
       support.footsteps = { footsteps[0] };
       supports.push_back(support);
 

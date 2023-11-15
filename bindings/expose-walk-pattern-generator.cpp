@@ -20,6 +20,7 @@ using namespace placo::kinematics;
 void exposeWalkPatternGenerator()
 {
   class_<WalkPatternGenerator::Trajectory>("WalkTrajectory")
+      .add_property("kept_ts", &WalkPatternGenerator::Trajectory::kept_ts)
       .add_property("t_start", &WalkPatternGenerator::Trajectory::t_start)
       .add_property("t_end", &WalkPatternGenerator::Trajectory::t_end)
       .add_property("jerk_planner_timesteps", &WalkPatternGenerator::Trajectory::jerk_planner_timesteps)
@@ -133,6 +134,7 @@ void exposeWalkPatternGenerator()
       .def("zmp", &LIPM::zmp)
       .def("dzmp", &LIPM::dzmp)
       .def("dcm", &LIPM::dcm)
+      .def("compute_omega", &LIPM::compute_omega)
       .def("get_trajectory", &LIPM::get_trajectory)
       .add_property("x", &LIPM::x)
       .add_property("y", &LIPM::y);

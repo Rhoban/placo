@@ -41,6 +41,8 @@ public:
 
     double com_target_z;
 
+    int kept_ts = 0;
+
     Eigen::Affine3d get_T_world_left(double t);
     Eigen::Affine3d get_T_world_right(double t);
     Eigen::Vector3d get_v_world_left(double t);
@@ -61,9 +63,20 @@ public:
     bool support_is_both(double t);
     bool is_flying(HumanoidRobot::Side side, double t);
 
+    /**
+     * @brief Returns the support corresponding to the given time in the trajectory
+    */
     FootstepsPlanner::Support get_support(double t);
-    FootstepsPlanner::Support get_next_support(double t);
-    FootstepsPlanner::Support get_prev_support(double t);
+
+    /**
+     * @brief Returns the nth next support corresponding to the given time in the trajectory
+     */
+    FootstepsPlanner::Support get_next_support(double t, int n=1);
+
+    /**
+     * @brief Returns the nth previous support corresponding to the given time in the trajectory
+     */
+    FootstepsPlanner::Support get_prev_support(double t, int n=1);
 
     std::vector<FootstepsPlanner::Support> get_supports();
     int remaining_supports(double t);
@@ -153,11 +166,6 @@ public:
    */
   std::vector<FootstepsPlanner::Support> replan_supports(FootstepsPlanner& planner, Trajectory& trajectory,
                                                          double t_replan);
-
-  /**
-   * @brief Get the supports of a trajectory and remove the already past ones
-   */
-  std::vector<FootstepsPlanner::Support> trim_supports(Trajectory& trajectory, double t_replan);
 
 protected:
   // Robot associated to the WPG

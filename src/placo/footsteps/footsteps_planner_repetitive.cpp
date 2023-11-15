@@ -7,6 +7,11 @@ FootstepsPlannerRepetitive::FootstepsPlannerRepetitive(HumanoidParameters& param
 {
 }
 
+std::string FootstepsPlannerRepetitive::name()
+{
+  return "repetitive";
+}
+
 void FootstepsPlannerRepetitive::plan_impl(std::vector<FootstepsPlanner::Footstep>& footsteps,
                                            HumanoidRobot::Side flying_side, Eigen::Affine3d T_world_left,
                                            Eigen::Affine3d T_world_right)
