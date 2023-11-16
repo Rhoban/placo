@@ -11,30 +11,30 @@ void WalkTasks::initialize_tasks(KinematicsSolver* solver_, HumanoidRobot* robot
   solver = solver_;
 
   left_foot_task = solver->add_frame_task("left_foot", robot->get_T_world_left());
-  left_foot_task.configure("left_foot", "soft", 1., 1.);
+  left_foot_task.configure("left_foot", scaled?"scaled":"soft", 1., 1.);
 
   right_foot_task = solver->add_frame_task("right_foot", robot->get_T_world_right());
-  right_foot_task.configure("right_foot", "soft", 1., 1.);
+  right_foot_task.configure("right_foot", scaled?"scaled":"soft", 1., 1.);
 
   trunk_orientation_task = &solver->add_orientation_task("trunk", robot->get_T_world_trunk().rotation());
   if (relax_trunk_orientation)
   {
-    trunk_orientation_task->configure("trunk", "soft", relax_weight);
+    trunk_orientation_task->configure("trunk", scaled?"scaled":"soft", relax_weight);
   }
   else
   {
-    trunk_orientation_task->configure("trunk", "soft", 1.);
+    trunk_orientation_task->configure("trunk", scaled?"scaled":"soft", 1.);
   }
 
   if (com_z_min != -1)
   {
     com_lb_task = &solver->add_com_lb_task(com_z_min);
-    com_lb_task->configure("com_lb", "hard", 0);
+    com_lb_task->configure("com_lb", scaled?"scaled":"hard", 0);
   }
   if (com_z_max != -1)
   {
     com_ub_task = &solver->add_com_ub_task(com_z_max);
-    com_ub_task->configure("com_ub", "hard", 0);
+    com_ub_task->configure("com_ub", scaled?"scaled":"hard", 0);
   }
 
   update_com_task();
@@ -57,7 +57,7 @@ void WalkTasks::update_com_task()
     if (trunk_task == nullptr)
     {
       trunk_task = &solver->add_position_task("trunk", robot->get_T_world_frame("trunk").translation());
-      trunk_task->configure("trunk", "soft", 1.);
+      trunk_task->configure("trunk", scaled?"scaled":"soft", 1.);
     }
   }
   else
@@ -71,7 +71,7 @@ void WalkTasks::update_com_task()
     {
       com_xy_task = &solver->add_com_task(robot->com_world());
       com_xy_task->mask.set_axises("xy");
-      com_xy_task->configure("com_xy", "soft", 1.);
+      com_xy_task->configure("com_xy", scaled?"scaled":"soft", 1.);
     }
     if (com_z_task == nullptr)
     {
@@ -79,11 +79,11 @@ void WalkTasks::update_com_task()
       com_z_task->mask.set_axises("z");
       if (relax_com_height)
       {
-        com_z_task->configure("com_z", "soft", relax_weight);
+        com_z_task->configure("com_z", scaled?"scaled":"soft", relax_weight);
       }
       else
       {
-        com_z_task->configure("com_z", "soft", 1.);
+        com_z_task->configure("com_z", scaled?"scaled":"soft", 1.);
       }
     }
   }

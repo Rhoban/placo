@@ -37,6 +37,8 @@ public:
   bool relax_trunk_orientation = false;
   double relax_weight = 1e-3;
 
+  bool scaled = false;
+
   void update_com_task();
 
   void reach_initial_pose(Eigen::Affine3d T_world_left, double feet_spacing, double com_height, double trunk_pitch);

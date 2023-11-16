@@ -103,6 +103,7 @@ void exposeWalkPatternGenerator()
           })
       .add_property(
           "solver", +[](WalkTasks& tasks) { return *tasks.solver; })
+      .add_property("scaled", &WalkTasks::scaled, &WalkTasks::scaled)
       .add_property("relax_weight", &WalkTasks::relax_weight, &WalkTasks::relax_weight)
       .add_property("relax_com_height", &WalkTasks::relax_com_height, &WalkTasks::relax_com_height)
       .add_property("relax_trunk_orientation", &WalkTasks::relax_trunk_orientation, &WalkTasks::relax_trunk_orientation)
