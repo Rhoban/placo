@@ -9,7 +9,7 @@ Getting started
     installation_source
 
 .. toctree::
-    :caption: First steps
+    :caption: Robot model
     :maxdepth: 2
 
     load_robots
@@ -17,3 +17,8 @@ Getting started
     configurations
     frames
    
+.. toctree::
+    :caption: Visualization
+    :maxdepth: 2
+
+    visualization
