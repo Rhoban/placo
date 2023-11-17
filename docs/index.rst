@@ -25,7 +25,6 @@ Outline
   getting_started/index
   kinematics
   placo/summary
-  dev
 
 Links
 -----

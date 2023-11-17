@@ -2,8 +2,15 @@ Getting started
 ===============
 
 .. toctree::
-   :maxdepth: 2
+    :caption: Installation
+    :maxdepth: 2
 
-   installation
-   robot_wrapper
+    installation_pip
+    installation_source
+
+.. toctree::
+    :caption: First steps
+    :maxdepth: 2
+
+    robot_wrapper
    

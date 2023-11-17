@@ -1,4 +1,5 @@
 pydata-sphinx-theme
+sphinx-copybutton
 meshcat
 pin
 numpy

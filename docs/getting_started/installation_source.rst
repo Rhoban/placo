@@ -1,17 +1,5 @@
-Installation
-============
-
-Using pip
----------
-
-PlaCo is available on `PyPI <https://pypi.org/project/placo/>`_ and can be installed with pip:
-
-.. code-block:: bash
-
-    pip install placo
-
 From source
------------
+===========
 
 PlaCo is mostly written in C++, relying on Boost Python to expose the C++ code to Python.
 If you want to get the sources yourself, you will first have to retrieve the dependencies and then to build
@@ -40,7 +28,7 @@ You can then install the following dependencies:
             robotpkg-pinocchio robotpkg-py310-pinocchio
 
 .. note::
-    You might want to adapt ``robotpkg-py310-pinocchio`` to your own Python version.
+    Change ``robotpkg-py310-pinocchio`` according to your own Python version.
 
 Cloning and building
 ~~~~~~~~~~~~~~~~~~~~
