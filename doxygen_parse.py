@@ -119,7 +119,7 @@ def parse_compound(compounddef_node: ET.Element):
                 "detaileddescription/para/simplesect[@kind='return']"
             )
             if return_type:
-                member_definitions[id]["returns"] = return_type.find("para").text
+                member_definitions[id]["returns"] = element_to_string(return_type.find("para"))
 
             if compound_kind == "namespace":
                 compound_members[name].append(id)
