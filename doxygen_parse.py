@@ -104,7 +104,7 @@ def parse_compound(compounddef_node: ET.Element):
                 "detaileddescription/para/parameterlist/parameteritem"
             ):
                 param_name = entry.find("parameternamelist/parametername").text
-                param_desc = entry.find("parameterdescription/para").text
+                param_desc = element_to_string(entry.find("parameterdescription/para"))
                 member_definitions[id]["detailed"].append(
                     {"name": param_name, "desc": param_desc}
                 )
