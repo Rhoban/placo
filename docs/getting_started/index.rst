@@ -12,5 +12,8 @@ Getting started
     :caption: First steps
     :maxdepth: 2
 
-    robot_wrapper
+    load_robots
+    collisions
+    configurations
+    frames
    
