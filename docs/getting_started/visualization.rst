@@ -29,7 +29,7 @@ Visualizing robot frame
 If you want to visualize any frame attached to the robot, import
 :func:`placo_utils.visualization.robot_frame_viz`:
 
-.. code-block:: ptyhon
+.. code-block:: python
 
     from placo_utils.visualization import robot_frame_viz
 
