@@ -40,7 +40,7 @@ html_theme_options = {
    ]
 }
 
-html_logo = "_static/placo.svg"
+html_logo = "_static/placo.png"
 
 html_static_path = ['_static']
 html_page_context = ""
