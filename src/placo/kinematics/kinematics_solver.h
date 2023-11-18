@@ -17,6 +17,7 @@
 #include "placo/kinematics/distance_task.h"
 #include "placo/kinematics/joints_task.h"
 #include "placo/kinematics/gear_task.h"
+#include "placo/kinematics/wheel_task.h"
 #include "placo/kinematics/regularization_task.h"
 #include "placo/kinematics/centroidal_momentum_task.h"
 
@@ -182,6 +183,15 @@ public:
    * @return gear task
    */
   GearTask& add_gear_task();
+
+  /**
+   * @brief Adds a wheel task
+   * @param joint joint name
+   * @param radius wheel radius
+   * @param omniwheel true if it's an omniwheel (can slide laterally)
+   * @return the wheel task
+   */
+  WheelTask& add_wheel_task(const std::string joint, double radius, bool omniwheel = false);
 
   /**
    * @brief Adds a distance task to be maintained between two frames

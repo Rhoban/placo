@@ -55,6 +55,10 @@ void exposeKinematics()
           .def<GearTask& (KinematicsSolver::*)(void)>("add_gear_task", &KinematicsSolver::add_gear_task,
                                                       return_internal_reference<>())
 
+          // Wheel task
+          .def<WheelTask& (KinematicsSolver::*)(std::string, double, bool)>(
+              "add_wheel_task", &KinematicsSolver::add_wheel_task, return_internal_reference<>())
+
           // Distance task
           .def<DistanceTask& (KinematicsSolver::*)(std::string, std::string, double)>(
               "add_distance_task", &KinematicsSolver::add_distance_task, return_internal_reference<>())
@@ -96,8 +100,10 @@ void exposeKinematics()
           .def("solve", &KinematicsSolver::solve);
 
   class__<Task, bases<tools::Prioritized>, boost::noncopyable>("Task", no_init)
-      .add_property("A", +[](const Task& task) { return task.A; })
-      .add_property("b", +[](const Task& task) { return task.b; })
+      .add_property(
+          "A", +[](const Task& task) { return task.A; })
+      .add_property(
+          "b", +[](const Task& task) { return task.b; })
       .def("error", &Task::error)
       .def("error_norm", &Task::error_norm)
       .def("update", &Task::update);
@@ -166,6 +172,13 @@ void exposeKinematics()
           });
 
   class__<GearTask, bases<Task>>("GearTask", init<>()).def("set_gear", &GearTask::set_gear);
+
+  class__<WheelTask, bases<Task>>("WheelTask", init<std::string, double, bool>())
+      .add_property("joint", &WheelTask::joint)
+      .add_property("radius", &WheelTask::radius)
+      .add_property("omniwheel", &WheelTask::omniwheel)
+      .add_property(
+          "T_world_surface", +[](const WheelTask& task) { return task.T_world_surface; }, &WheelTask::T_world_surface);
 
   class__<DistanceTask, bases<Task>>("DistanceTask", init<RobotWrapper::FrameIndex, RobotWrapper::FrameIndex, double>())
       .add_property("frame_a", &DistanceTask::frame_a)

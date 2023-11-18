@@ -138,6 +138,11 @@ GearTask& KinematicsSolver::add_gear_task()
   return add_task(new GearTask());
 }
 
+WheelTask& KinematicsSolver::add_wheel_task(std::string joint, double radius, bool omniwheel)
+{
+  return add_task(new WheelTask(joint, radius, omniwheel));
+}
+
 RegularizationTask& KinematicsSolver::add_regularization_task(double magnitude)
 {
   RegularizationTask& task = add_task(new RegularizationTask());

@@ -69,6 +69,7 @@ add_library(libplaco SHARED
     src/placo/kinematics/distance_task.cpp
     src/placo/kinematics/joints_task.cpp
     src/placo/kinematics/gear_task.cpp
+    src/placo/kinematics/wheel_task.cpp
     src/placo/kinematics/regularization_task.cpp
     src/placo/kinematics/constraint.cpp
     src/placo/kinematics/avoid_self_collisions_constraint.cpp
