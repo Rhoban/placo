@@ -13,7 +13,7 @@ author = 'Rhoban Team'
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ['sphinx.ext.autodoc', 'sphinx_copybutton']
+extensions = ['sphinx.ext.autodoc', 'sphinx_copybutton', 'sphinxcontrib.video']
 
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
@@ -40,12 +40,25 @@ html_theme_options = {
    ]
 }
 
+html_css_files = [
+    'placo.css',
+]
+
 html_logo = "_static/placo.png"
 
 html_static_path = ['_static']
 html_page_context = ""
 
 autoclass_content = 'both'
+
+from docutils import nodes
+
+def example_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
+    uri = 'https://github.com/rhoban/placo-examples/blob/master/' + text
+    return [nodes.reference('Example code: '+text, 'Example code: '+text, refuri=uri, **options)], []
+
+def setup(app):
+    app.add_role("example", example_role)
 
 import os
 import sys

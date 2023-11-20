@@ -1,4 +1,5 @@
 pydata-sphinx-theme
+sphinxcontrib-video
 sphinx-copybutton
 meshcat
 pin
