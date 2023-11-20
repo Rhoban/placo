@@ -17,7 +17,10 @@ def resolve_type(node):
     type_node = node.find("type")
 
     if type_node.find("ref") is not None:
-        return type_node.find("ref").attrib["refid"]
+        if type_node.text and "vector" in type_node.text:
+          return ["std::vector", type_node.find("ref").attrib["refid"]]
+        else:
+          return type_node.find("ref").attrib["refid"]
     else:
         return type_node.text
 
@@ -145,8 +148,12 @@ def parse_xml(xml_file: str):
             parse_compound(compounddef_node)
 
 
-def resolve_doxygen_id(id: str):
-    if id in doxygen_id_to_name:
+def resolve_doxygen_id(id: list|str):
+    if type(id) == list:
+        tpl = resolve_doxygen_id(id[0])
+        typ = resolve_doxygen_id(id[1])
+        return f"{tpl}<{typ}>"
+    elif id in doxygen_id_to_name:
         return doxygen_id_to_name[id]
     else:
         return id
