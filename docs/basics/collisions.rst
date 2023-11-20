@@ -9,7 +9,7 @@ By default, all collision pairs will be enabled when loading the robot.
 Disabling all collisions
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-By passing the :func:`placo.Flags.ignore_collisions` flag when loading the robot
+By passing the ``placo.Flags.ignore_collisions`` flag when loading the robot
 (see :ref:`robot_wrapper_flags`), you can disable all collisions.
 
 Specifying collision pairs
@@ -30,7 +30,7 @@ to enable collisions for. Those bodies should be the name of the links in the UR
 
 .. note::
     Instead of using link name (strings), you can also use integers representing geometry
-    objects (as the ones returned in :func:`placo.Collision`). Thanks to this, it is possible
+    objects (as the ones returned in :func:`Collision <placo.Collision>` objects). Thanks to this, it is possible
     to write a script that samples robot configuration and auto-generates the ``collisions.json``
     file.
 
@@ -43,8 +43,8 @@ Using self-collisions
 Checking for self-collisions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-By calling :func:`placo.RobotWrapper.self_collisions`, you can get the current self collisions
-as a list of :func:`placo.Collision` objects.
+By calling :func:`self_collisions() <placo.RobotWrapper.self_collisions>`, you can get the current self collisions
+as a list of :func:`Collision <placo.Collision>` objects.
 
 .. admonition:: Example
     
@@ -56,11 +56,12 @@ as a list of :func:`placo.Collision` objects.
 Checking for nearest distances
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-By calling :func:`placo.RobotWrapper.distances`, you can get all the current minimum distances
-between the collision pairs as a list of :func:`placo.Distance` objects.
+By calling :func:`distances <placo.RobotWrapper.distances>`, you can get all the current minimum distances
+between the collision pairs as a list of :func:`Distance <placo.Distance>` objects.
 
 See also
 --------
 
-When using the kinematics solver, :func:`placo.KinematicsSolver.add_avoid_self_collisions_constraint` can
-be called to add a constraint to the solver so that self collisions are prevented.
+When using the kinematics solver,
+:func:`KinematicsSolver.add_avoid_self_collisions_constraint <placo.KinematicsSolver.add_avoid_self_collisions_constraint>`
+can be called to add a constraint to the solver so that self collisions are prevented.

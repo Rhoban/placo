@@ -8,8 +8,8 @@ Python and available in the ``placo_utils`` package.
 Robot visualization
 -------------------
 
-You can use :func:`placo_utils.visualization.robot_viz` to visualize a robot,
-and :func:`placo_utils.visualization.robot_frame_viz` to visualize a frame
+You can use :func:`robot_viz <placo_utils.visualization.robot_viz>` to visualize a robot,
+and :func:`robot_frame_viz <placo_utils.visualization.robot_frame_viz>` to visualize a frame
 attached to the robot.
 
 .. admonition:: Example
@@ -22,7 +22,7 @@ attached to the robot.
 Custom frame
 ------------
 
-You can use :func:`placo_utils.visualization.frame_viz` to visualize any frame
+You can use :func:`frame_viz <placo_utils.visualization.frame_viz>` to visualize any frame
 in the world frame, by passing ``T_world_frame`` as argument.
 
 .. admonition:: Example
@@ -35,8 +35,8 @@ in the world frame, by passing ``T_world_frame`` as argument.
 Points
 ------
 
-You can use :func:`placo_utils.visualization.point_viz` to visualize a single point,
-or :func:`placo_utils.visualization.points_viz` to visualize a list of points.
+You can use :func:`point_viz <placo_utils.visualization.point_viz>` to visualize a single point,
+or :func:`points_viz <placo_utils.visualization.points_viz>` to visualize a list of points.
 
 .. admonition:: Example
     
@@ -48,7 +48,7 @@ or :func:`placo_utils.visualization.points_viz` to visualize a list of points.
 Lines
 ------
 
-You can use :func:`placo_utils.visualization.line_viz` to visualize lines.
+You can use :func:`line_viz <placo_utils.visualization.line_viz>` to visualize lines.
 
 .. admonition:: Example
     
@@ -60,7 +60,7 @@ You can use :func:`placo_utils.visualization.line_viz` to visualize lines.
 Arrow
 ------
 
-You can use :func:`placo_utils.visualization.arrow_viz` to visualize an arrow.
+You can use :func:`arrow_viz <placo_utils.visualization.arrow_viz>` to visualize an arrow.
 
 .. admonition:: Example
     
