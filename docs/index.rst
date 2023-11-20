@@ -22,7 +22,7 @@ Outline
 .. toctree::
   :maxdepth: 3
 
-  getting_started/index
+  basics/index
   kinematics
   placo/summary
 

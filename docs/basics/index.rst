@@ -1,8 +1,8 @@
-Getting started
-===============
+Basics
+======
 
 .. toctree::
-    :caption: Installation
+    :caption: Getting started
     :maxdepth: 2
 
     installation_pip
