@@ -140,6 +140,20 @@ public:
   double get_joint_velocity(const std::string& name);
 
   /**
+   * @brief Sets the joint acceleration in state.qd
+   * @param name joint name
+   * @param value joint acceleration
+   */
+  void set_joint_acceleration(const std::string& name, double value);
+
+  /**
+   * @brief Gets the joint acceleration from state.qd
+   * @param name joint name
+   * @return joint acceleration
+   */
+  double get_joint_acceleration(const std::string& name);
+
+  /**
    * @brief Gets the offset for a given joint in the \ref state (in \ref State.q)
    * @param name joint name
    * @return offset in state.q

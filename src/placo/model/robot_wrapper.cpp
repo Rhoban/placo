@@ -170,6 +170,16 @@ double RobotWrapper::get_joint_velocity(const std::string& name)
   return state.qd[get_joint_v_offset(name)];
 }
 
+void RobotWrapper::set_joint_acceleration(const std::string& name, double value)
+{
+  state.qdd[get_joint_v_offset(name)] = value;
+}
+
+double RobotWrapper::get_joint_acceleration(const std::string& name)
+{
+  return state.qdd[get_joint_v_offset(name)];
+}
+
 void RobotWrapper::set_joint_velocity(const std::string& name, double value)
 {
   state.qd[get_joint_v_offset(name)] = value;
