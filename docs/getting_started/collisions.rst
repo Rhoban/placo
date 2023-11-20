@@ -1,18 +1,6 @@
 Self-collisions
 ===============
 
-In PlaCo, self-collisions can be involved in several ways:
-
-* By using :func:`placo.RobotWrapper.self_collisions`, you can check if the
-  robot is in self-collision. By doing that, you can check if the robot is self-colliding,
-  but also retrieve the list of self-colliding pairs of bodies.
-* By using :func:`placo.RobotWrapper.distances`, you can compute the distances
-  between the robot bodies. This function gives you the closest points between
-  each pair of bodies.
-* When using the solvers, you can use methods to avoid self collisions, like:
-    * :func:`placo.KinematicsSolver.add_avoid_self_collisions_constraint`
-    * :func:`placo.DynamicsSolver.add_avoid_self_collisions_constraint`
-
 Configuring self-collision pairs
 --------------------------------
 
@@ -45,3 +33,24 @@ to enable collisions for. Those bodies should be the name of the links in the UR
     objects (as the ones returned in :func:`placo.Collision`). Thanks to this, it is possible
     to write a script that samples robot configuration and auto-generates the ``collisions.json``
     file.
+
+Using self-collisions
+---------------------
+
+Checking for self-collisions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+By calling :func:`placo.RobotWrapper.self_collisions`, you can get the current self collisions
+as a list of :func:`placo.Collision` objects.
+
+Checking for nearest distances
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+By calling :func:`placo.RobotWrapper.distances`, you can get all the current minimum distances
+between the collision pairs as a list of :func:`placo.Distance` objects.
+
+See also
+--------
+
+When using the kinematics solver, :func:`placo.KinematicsSolver.add_avoid_self_collisions_constraint` can
+be called to add a constraint to the solver so that self collisions are prevented.

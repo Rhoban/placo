@@ -1,5 +1,5 @@
-Using PIP
-=========
+Installtion using PIP
+=====================
 
 PlaCo is available on `PyPI <https://pypi.org/project/placo/>`_ and can be installed with pip:
 
