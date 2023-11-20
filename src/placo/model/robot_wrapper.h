@@ -94,7 +94,7 @@ public:
    *
    * @param filename path to collisions.json file
    */
-  void load_collisions_pairs(const std::string& filename);
+  void load_collision_pairs(const std::string& filename);
 
   /**
    * @brief Reset internal states, this sets q to the neutral position, qd and qdd to zero

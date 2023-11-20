@@ -34,6 +34,9 @@ to enable collisions for. Those bodies should be the name of the links in the UR
     to write a script that samples robot configuration and auto-generates the ``collisions.json``
     file.
 
+.. note::
+    It is also possible to load collision pairs explicitely by using :func:`placo.RobotWrapper.load_collision_pairs`
+
 Using self-collisions
 ---------------------
 

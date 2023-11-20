@@ -73,7 +73,7 @@ RobotWrapper::RobotWrapper(std::string model_directory, int flags, std::string u
   {
     if (tools::file_exists(model_directory + "/collisions.json"))
     {
-      load_collisions_pairs(model_directory + "/collisions.json");
+      load_collision_pairs(model_directory + "/collisions.json");
     }
     else
     {
@@ -265,7 +265,7 @@ RobotWrapper::State RobotWrapper::neutral_state()
   return state;
 }
 
-void RobotWrapper::load_collisions_pairs(const std::string& filename)
+void RobotWrapper::load_collision_pairs(const std::string& filename)
 {
   // Reading collision pairs
   Json::Value collisions;
