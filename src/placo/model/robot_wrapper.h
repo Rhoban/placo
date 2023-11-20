@@ -205,7 +205,8 @@ public:
   State neutral_state();
 
   /**
-   * @brief Update the current kinematics
+   * @brief Update internal computation for kinematics (frames, jacobian). This method should be called when
+   * the robot state has changed.
    */
   void update_kinematics();
 
