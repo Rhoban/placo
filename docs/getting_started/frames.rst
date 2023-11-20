@@ -1,6 +1,10 @@
 Frames
 ======
 
+.. important::
+    Everytime the robot internal state changes, you have to call the method
+    :func:`placo.RobotWrapper.update_kinematics` to be sure that the frames are up to date.
+
 Frame to world transformation
 -----------------------------
 
