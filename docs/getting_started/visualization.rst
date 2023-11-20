@@ -23,7 +23,7 @@ Custom frame
 ------------
 
 You can use :func:`placo_utils.visualization.frame_viz` to visualize any frame
-in the world frame, by passing ``T_world_frame`` as argument:
+in the world frame, by passing ``T_world_frame`` as argument.
 
 .. admonition:: Example
     
@@ -35,7 +35,7 @@ in the world frame, by passing ``T_world_frame`` as argument:
 Points
 ------
 
-You can use :func:`placo_utils.visualization.point_viz` to visualize a point
+You can use :func:`placo_utils.visualization.point_viz` to visualize a point.
 
 .. admonition:: Example
     
@@ -43,3 +43,27 @@ You can use :func:`placo_utils.visualization.point_viz` to visualize a point
         :loop:
 
     :example:`visualization/visualize_point.py`
+
+Lines
+------
+
+You can use :func:`placo_utils.visualization.line_viz` to visualize lines.
+
+.. admonition:: Example
+    
+    .. video:: https://github.com/Rhoban/placo-examples/raw/master/visualization/videos/lines.mp4
+        :loop:
+
+    :example:`visualization/visualize_lines.py`
+
+Arrow
+------
+
+You can use :func:`placo_utils.visualization.arrow_viz` to visualize an arrow.
+
+.. admonition:: Example
+    
+    .. video:: https://github.com/Rhoban/placo-examples/raw/master/visualization/videos/arrow.mp4
+        :loop:
+
+    :example:`visualization/visualize_arrow.py`
