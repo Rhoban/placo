@@ -5,15 +5,17 @@ Robot state
 -----------
 
 The robot configuration is stored in the ``RobotWrapper`` class, in the
-:func:`placo.RobotWrapper.state <placo.RobotWrapper.state>` member.
+:func:`placo.RobotWrapper.state <placo.RobotWrapper.state>` members:
 
-You can use the following helpers:
-
-* :func:`placo.RobotWrapper.get_joint`: to retrieve the joint value of a given joint name,
-* :func:`placo.RobotWrapper.set_joint`: to set the joint value of a given joint name,
-* :func:`placo.RobotWrapper.get_joint_velocity`: to retrieve the joint velocity of a given joint
-  name,
-* :func:`placo.RobotWrapper.set_joint_velocity`: to set the joint velocity of a given joint name.
+* ``robot.state.q`` for :math:`q` the joint positions, you can use the helpers:
+    * :func:`placo.RobotWrapper.get_joint`: to retrieve the joint value of a given joint name,
+    * :func:`placo.RobotWrapper.set_joint`: to set the joint value of a given joint name,
+* ``robot.state.qd`` for :math:`\dot{q}` the joint velocities, you can use the helpers:
+    * :func:`placo.RobotWrapper.get_joint_velocity`: to retrieve the joint velocity of a given joint name,
+    * :func:`placo.RobotWrapper.set_joint_velocity`: to set the joint velocity of a given joint name.
+* ``robot.state.qdd`` for :math:`\ddot{q}` the joint accelerations, you can use the helpers:
+    * :func:`placo.RobotWrapper.get_joint_acceleration`: to retrieve the joint acceleration of a given joint name,
+    * :func:`placo.RobotWrapper.set_joint_acceleration`: to set the joint acceleration of a given joint name.
 
 For example:
 
@@ -21,6 +23,12 @@ For example:
 
     # Sets head_pan joint to 0.5 rad
     robot.set_joint("head_pan", 0.5)
+
+Integrating
+-----------
+
+You can call :func:`placo.RobotWrapper.integrate` to integrate the robot state. This will integrate the
+acceleration, velocity and position of the robot for a given ``dt``.
 
 Joint limits
 ------------
