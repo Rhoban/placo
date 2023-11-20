@@ -28,7 +28,6 @@ void exposeTools()
   def("wrap_angle", &wrap_angle);
   def("rotation_from_axis", &rotation_from_axis);
   def("frame_yaw", &frame_yaw);
-  def("frame", &frame);
   def("flatten_on_floor", &flatten_on_floor);
 
   exposeStdVector<int>("vector_int");

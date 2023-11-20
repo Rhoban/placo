@@ -73,14 +73,6 @@ Eigen::Matrix3d rotation_from_axis(std::string axis, Eigen::Vector3d vector)
   return pinocchio::exp3(w * theta);
 }
 
-Eigen::Affine3d frame(Eigen::Matrix4d matrix)
-{
-  Eigen::Affine3d result;
-  result.matrix() = matrix;
-
-  return result;
-}
-
 Eigen::Affine3d flatten_on_floor(const Eigen::Affine3d& transformation)
 {
   Eigen::Affine3d flattened = transformation;

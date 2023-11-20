@@ -35,13 +35,6 @@ double frame_yaw(Eigen::Matrix3d rotation);
 Eigen::Matrix3d rotation_from_axis(std::string axis, Eigen::Vector3d vector);
 
 /**
- * @brief Makes an Affine3d from a 4x4 matrix (for python bindings)
- * @param matrix the 4x4 matrix
- * @return The Affine3d
- */
-Eigen::Affine3d frame(Eigen::Matrix4d matrix);
-
-/**
  * @brief Takes a 3D transformation and ensure it is "flat" on the floor
  * (setting z to 0 and keeping only yaw)
  * @param transformation a 3D transformation
