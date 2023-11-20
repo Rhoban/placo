@@ -43,6 +43,13 @@ Checking for self-collisions
 By calling :func:`placo.RobotWrapper.self_collisions`, you can get the current self collisions
 as a list of :func:`placo.Collision` objects.
 
+.. admonition:: Example
+    
+    .. video:: https://github.com/Rhoban/placo-examples/raw/master/robot_wrapper/videos/collisions.mp4
+        :loop:
+
+    :example:`robot_wrapper/collisions.py`
+
 Checking for nearest distances
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

@@ -17,7 +17,7 @@ attached to the robot.
     .. video:: https://github.com/Rhoban/placo-examples/raw/master/visualization/videos/robot.mp4
         :loop:
 
-    :example:`visualization/visualize_robot.py`
+    :example:`visualization/robot.py`
 
 Custom frame
 ------------
@@ -30,19 +30,20 @@ in the world frame, by passing ``T_world_frame`` as argument.
     .. video:: https://github.com/Rhoban/placo-examples/raw/master/visualization/videos/frame.mp4
         :loop:
 
-    :example:`visualization/visualize_frame.py`
+    :example:`visualization/frame.py`
 
 Points
 ------
 
-You can use :func:`placo_utils.visualization.point_viz` to visualize a point.
+You can use :func:`placo_utils.visualization.point_viz` to visualize a single point,
+or :func:`placo_utils.visualization.points_viz` to visualize a list of points.
 
 .. admonition:: Example
     
     .. video:: https://github.com/Rhoban/placo-examples/raw/master/visualization/videos/point.mp4
         :loop:
 
-    :example:`visualization/visualize_point.py`
+    :example:`visualization/point.py`
 
 Lines
 ------
@@ -54,7 +55,7 @@ You can use :func:`placo_utils.visualization.line_viz` to visualize lines.
     .. video:: https://github.com/Rhoban/placo-examples/raw/master/visualization/videos/lines.mp4
         :loop:
 
-    :example:`visualization/visualize_lines.py`
+    :example:`visualization/lines.py`
 
 Arrow
 ------
@@ -66,4 +67,4 @@ You can use :func:`placo_utils.visualization.arrow_viz` to visualize an arrow.
     .. video:: https://github.com/Rhoban/placo-examples/raw/master/visualization/videos/arrow.mp4
         :loop:
 
-    :example:`visualization/visualize_arrow.py`
+    :example:`visualization/arrow.py`
