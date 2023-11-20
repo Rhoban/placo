@@ -17,6 +17,7 @@ dependencies = [
   "rhoban-cmeel-jsoncpp",
   "meshcat",
   "numpy",
+  "ischedule"
 ]
 description = "PlaCo: Rhoban Planning and Control"
 license = "MIT"
