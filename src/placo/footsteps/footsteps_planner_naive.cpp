@@ -22,6 +22,11 @@ FootstepsPlannerNaive::FootstepsPlannerNaive(HumanoidParameters& parameters) : F
 {
 }
 
+std::string FootstepsPlannerNaive::name()
+{
+  return "naive";
+}
+
 void FootstepsPlannerNaive::plan_impl(std::vector<FootstepsPlanner::Footstep>& footsteps,
                                       HumanoidRobot::Side flying_side, Eigen::Affine3d T_world_left,
                                       Eigen::Affine3d T_world_right)

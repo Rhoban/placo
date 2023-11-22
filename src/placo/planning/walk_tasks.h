@@ -32,6 +32,8 @@ public:
 
   void reach_initial_pose(Eigen::Affine3d T_world_left, double feet_spacing, double com_height, double trunk_pitch);
 
+  bool scaled = false;
+
   bool trunk_mode = false;
   double com_delay = 0.;
   double com_x = 0.;

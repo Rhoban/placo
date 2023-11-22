@@ -22,6 +22,11 @@ public:
    */
   void configure(double x, double y, double theta, int steps);
 
+  /**
+   * @brief Return the type of footsteps planner
+   */
+  std::string name();
+
 protected:
   // Step configuration
   double d_x;

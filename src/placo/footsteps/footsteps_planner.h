@@ -46,6 +46,7 @@ public:
     bool computed_polygon = false;
     bool start = false;
     bool end = false;
+    bool replanned = false;
     bool kick();
     std::vector<Eigen::Vector2d> support_polygon();
 
@@ -106,6 +107,11 @@ public:
    */
   static std::vector<Support> make_supports(std::vector<Footstep> footsteps, bool start = true, bool middle = false,
                                             bool end = true);
+
+  /**
+   * @brief Return the type of footsteps planner
+   */
+  virtual std::string name() = 0;
 
   static void add_first_support(std::vector<Support>& supports, Support support);
 
