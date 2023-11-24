@@ -162,6 +162,17 @@ CoMPolygonConstraint& KinematicsSolver::add_com_polygon_constraint(std::vector<E
   return add_constraint(new CoMPolygonConstraint(polygon, margin));
 }
 
+ConeConstraint& KinematicsSolver::add_cone_constraint(model::RobotWrapper::FrameIndex frame, double alpha_max,
+                                                      Eigen::Affine3d T_world_cone)
+{
+  return add_constraint(new ConeConstraint(frame, alpha_max, T_world_cone));
+}
+
+ConeConstraint& KinematicsSolver::add_cone_constraint(std::string frame, double alpha_max, Eigen::Affine3d T_world_cone)
+{
+  return add_cone_constraint(robot.get_frame_index(frame), alpha_max, T_world_cone);
+}
+
 void KinematicsSolver::mask_dof(std::string dof)
 {
   masked_dof.insert(robot.get_joint_v_offset(dof));

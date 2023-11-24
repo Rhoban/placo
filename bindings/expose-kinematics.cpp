@@ -79,6 +79,10 @@ void exposeKinematics()
           .def("add_com_polygon_constraint", &KinematicsSolver::add_com_polygon_constraint,
                return_internal_reference<>())
 
+          // Cone constraint
+          .def<ConeConstraint& (KinematicsSolver::*)(std::string, double, Eigen::Affine3d)>(
+              "add_cone_constraint", &KinematicsSolver::add_cone_constraint, return_internal_reference<>())
+
           // Masking/unmasking DoFs
           .def("mask_dof", &KinematicsSolver::mask_dof)
           .def("unmask_dof", &KinematicsSolver::unmask_dof)
@@ -200,4 +204,13 @@ void exposeKinematics()
   class__<CoMPolygonConstraint, bases<Constraint>>("CoMPolygonConstraint", init<std::vector<Eigen::Vector2d>, double>())
       .def_readwrite("polygon", &CoMPolygonConstraint::polygon)
       .def_readwrite("margin", &CoMPolygonConstraint::margin);
+
+  class__<ConeConstraint, bases<Constraint>>("ConesConstraint",
+                                             init<model::RobotWrapper::FrameIndex, double, Eigen::Affine3d>())
+      .add_property(
+          "T_world_cone", +[](const ConeConstraint& constraint) { return constraint.T_world_cone; },
+          &ConeConstraint::T_world_cone)
+      .def_readwrite("alpha_max", &ConeConstraint::alpha_max)
+      .def_readwrite("N", &ConeConstraint::N)
+      .def_readwrite("range", &ConeConstraint::range);
 }

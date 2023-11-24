@@ -25,6 +25,7 @@
 #include "placo/kinematics/constraint.h"
 #include "placo/kinematics/avoid_self_collisions_constraint.h"
 #include "placo/kinematics/com_polygon_constraint.h"
+#include "placo/kinematics/cone_constraint.h"
 
 // Problem formulation
 #include "placo/problem/problem.h"
@@ -240,6 +241,27 @@ public:
    * @return constraint
    */
   CoMPolygonConstraint& add_com_polygon_constraint(std::vector<Eigen::Vector2d> polygon, double margin = 0.);
+
+  /**
+   * @brief Adds a Cone constraint
+   * @param frame frame
+   * @param alpha_max alpha max (in radians) between the frame z-axis and the cone frame zt-axis
+   * @param T_world_cone cone frame
+   * @return constraint
+   * @pyignore
+   */
+  ConeConstraint& add_cone_constraint(model::RobotWrapper::FrameIndex frame, double alpha_max,
+                                      Eigen::Affine3d T_world_cone = Eigen::Affine3d::Identity());
+
+  /**
+   * @brief Adds a Cone constraint
+   * @param frame frame
+   * @param alpha_max alpha max (in radians) between the frame z-axis and the cone frame zt-axis
+   * @param T_world_cone cone frame
+   * @return constraint
+   */
+  ConeConstraint& add_cone_constraint(std::string frame, double alpha_max,
+                                      Eigen::Affine3d T_world_cone = Eigen::Affine3d::Identity());
 
   /**
    * @brief Constructs the QP problem and solves it
