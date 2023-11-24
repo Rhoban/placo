@@ -353,7 +353,7 @@ public:
   /**
    * @brief Some configuration noise added before solving
    */
-  double noise = 1e-4;
+  double noise = 1e-5;
 
   /**
    * @brief solver dt (for speeds limiting)

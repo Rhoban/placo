@@ -245,8 +245,16 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
     auto q_random = pinocchio::randomConfiguration(robot.model);
 
     // Adding some noise in direction of a random configuration (except floating base)
-    robot.state.q.block(7, 0, robot.model.nq - 7, 1) +=
-        (q_random.block(7, 0, robot.model.nq - 7, 1) - robot.state.q.block(7, 0, robot.model.nq - 7, 1)) * noise;
+    for (int k = 7; k < robot.model.nq; k++)
+    {
+      if (robot.model.lowerPositionLimit(k) == std::numeric_limits<double>::lowest() ||
+          robot.model.upperPositionLimit(k) == std::numeric_limits<double>::max())
+      {
+        continue;
+      }
+
+      robot.state.q(k) += (q_random(k) - robot.state.q(k)) * noise;
+    }
   }
 
   has_scaling = false;

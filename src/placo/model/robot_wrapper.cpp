@@ -85,13 +85,13 @@ RobotWrapper::RobotWrapper(std::string model_directory, int flags, std::string u
   data = new pinocchio::Data(model);
 
   // Assuming that motors with limits both equals to zero are not defined in the
-  // URDF, setting them to PI
+  // URDF, setting them to the maximum possible value
   for (int k = 0; k < model.nq; k++)
   {
     if (model.lowerPositionLimit[k] == 0 && model.upperPositionLimit[k] == 0)
     {
-      model.lowerPositionLimit[k] = -M_PI;
-      model.upperPositionLimit[k] = M_PI;
+      model.lowerPositionLimit[k] = std::numeric_limits<double>::lowest();
+      model.upperPositionLimit[k] = std::numeric_limits<double>::max();
     }
   }
 
