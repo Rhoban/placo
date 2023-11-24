@@ -13,6 +13,11 @@ public:
   FootstepsPlannerNaive(model::HumanoidParameters& parameters);
 
   /**
+   * @brief Return the type of footsteps planner
+   */
+  std::string name();
+
+  /**
    * @brief Configure the naive footsteps planner
    * @param T_world_left_target Targetted frame for the left foot
    * @param T_world_right_target Targetted frame for the right foot

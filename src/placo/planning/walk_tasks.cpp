@@ -13,12 +13,13 @@ void WalkTasks::initialize_tasks(KinematicsSolver* solver_, HumanoidRobot* robot
   solver = solver_;
 
   left_foot_task = solver->add_frame_task("left_foot", robot->get_T_world_left());
-  left_foot_task.configure("left_foot", "soft", 1., 1.);
+  left_foot_task.configure("left_foot", scaled?"scaled":"soft", 1., 1.);
 
   right_foot_task = solver->add_frame_task("right_foot", robot->get_T_world_right());
-  right_foot_task.configure("right_foot", "soft", 1., 1.);
+  right_foot_task.configure("right_foot", scaled?"scaled":"soft", 1., 1.);
 
   trunk_orientation_task = &solver->add_orientation_task("trunk", robot->get_T_world_trunk().rotation());
+  trunk_orientation_task->configure("trunk", scaled?"scaled":"soft", 1.);
 
   update_com_task();
 }
@@ -35,7 +36,7 @@ void WalkTasks::update_com_task()
     if (trunk_task == nullptr)
     {
       trunk_task = &solver->add_position_task("trunk", robot->get_T_world_frame("trunk").translation());
-      trunk_task->configure("trunk", "soft", 1.);
+      trunk_task->configure("trunk", scaled?"scaled":"soft", 1.);
     }
   }
   else
@@ -48,7 +49,7 @@ void WalkTasks::update_com_task()
     if (com_task == nullptr)
     {
       com_task = &solver->add_com_task(robot->com_world());
-      com_task->configure("com", "soft", 1.);
+      com_task->configure("com", scaled?"scaled":"soft", 1.);
     }
   }
 }
