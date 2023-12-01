@@ -195,14 +195,9 @@ def arrow_viz(
 
     T = tf.translation_matrix(point_from)
     if np.linalg.norm(point_to - point_from) > 1e-6:
-        new_y = (point_to - point_from) / np.linalg.norm(point_to - point_from)
-        new_z = np.cross(np.array([0, 0, 1]), new_y)
-        new_z /= np.linalg.norm(new_z)
-        new_x = np.cross(new_y, new_z)
-        new_x /= np.linalg.norm(new_x)
-        new_z = np.cross(new_x, new_y)
-        new_z /= np.linalg.norm(new_z)
-        T[:3, :3] = np.vstack([new_x, new_y, new_z]).T
+        T[:3, :3] = placo.rotation_from_axis(
+            "y", (point_to - point_from) / np.linalg.norm(point_to - point_from)
+        )
 
     T_cylinder = T @ tf.translation_matrix(np.array([0, length / 2.0, 0.0]))
     T_head = T @ tf.translation_matrix(np.array([0, length + head_length / 2.0, 0.0]))
