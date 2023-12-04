@@ -4,7 +4,7 @@
 #include "module.h"
 #include "registry.h"
 #include "placo/model/robot_wrapper.h"
-#include "placo/model/humanoid_robot.h"
+#include "placo/humanoid/humanoid_robot.h"
 #include "placo/kinematics/kinematics_solver.h"
 #include <Eigen/Dense>
 #include <boost/python.hpp>
@@ -12,6 +12,7 @@
 using namespace boost::python;
 using namespace placo;
 using namespace placo::model;
+using namespace placo::humanoid;
 
 #ifdef HAVE_RHOBAN_UTILS
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(read_from_histories_overloads, read_from_histories, 2, 4);

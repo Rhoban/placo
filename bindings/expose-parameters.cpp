@@ -4,14 +4,15 @@
 #include "module.h"
 #include "registry.h"
 #include "placo/model/robot_wrapper.h"
-#include "placo/model/humanoid_robot.h"
-#include "placo/model/humanoid_parameters.h"
+#include "placo/humanoid/humanoid_robot.h"
+#include "placo/humanoid/humanoid_parameters.h"
 #include <Eigen/Dense>
 #include <boost/python.hpp>
 
 using namespace boost::python;
 using namespace placo;
 using namespace placo::model;
+using namespace placo::humanoid;
 
 void exposeParameters()
 {

@@ -2,7 +2,6 @@
 #include "eiquadprog/eiquadprog.hpp"
 #include "pinocchio/algorithm/geometry.hpp"
 #include "placo/model/robot_wrapper.h"
-#include "placo/model/humanoid_robot.h"
 #include "placo/problem/problem.h"
 #include "placo/tools/utils.h"
 
