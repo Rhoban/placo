@@ -3,22 +3,21 @@
 #include "expose-utils.hpp"
 #include "module.h"
 #include "registry.h"
-#include "placo/planning/walk_pattern_generator.h"
+#include "placo/humanoid/walk_pattern_generator.h"
 #include "placo/kinematics/kinematics_solver.h"
-#include "placo/footsteps/footsteps_planner.h"
-#include "placo/trajectory/swing_foot.h"
-#include "placo/trajectory/swing_foot_quintic.h"
-#include "placo/trajectory/swing_foot_cubic.h"
-#include "placo/planning/walk_tasks.h"
-#include "placo/planning/lipm.h"
+#include "placo/humanoid/footsteps_planner.h"
+#include "placo/humanoid/swing_foot.h"
+#include "placo/humanoid/swing_foot_quintic.h"
+#include "placo/humanoid/swing_foot_cubic.h"
+#include "placo/humanoid/walk_tasks.h"
+#include "placo/humanoid/lipm.h"
 #include <Eigen/Dense>
 #include <boost/python.hpp>
 
 using namespace placo;
 using namespace boost::python;
 using namespace placo::kinematics;
-using namespace placo::trajectory;
-using namespace placo::model;
+using namespace placo::humanoid;
 
 void exposeWalkPatternGenerator()
 {

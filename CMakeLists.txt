@@ -27,23 +27,30 @@ endif()
 find_package (Eigen3 3 REQUIRED NO_MODULE)
 
 add_library(libplaco SHARED
-    # Wrappers and basic utils
+    # Wrappers
     src/placo/model/robot_wrapper.cpp
-    src/placo/model/humanoid_robot.cpp
+
+    # Humanoid
+    src/placo/humanoid/humanoid_robot.cpp
+    src/placo/humanoid/humanoid_parameters.cpp
+    src/placo/humanoid/foot_trajectory.cpp
+    src/placo/humanoid/swing_foot.cpp
+    src/placo/humanoid/swing_foot_quintic.cpp
+    src/placo/humanoid/swing_foot_cubic.cpp
+    src/placo/humanoid/kick.cpp
+    src/placo/humanoid/footsteps_planner.cpp
+    src/placo/humanoid/footsteps_planner_naive.cpp
+    src/placo/humanoid/footsteps_planner_repetitive.cpp
+    src/placo/humanoid/walk_pattern_generator.cpp
+    src/placo/humanoid/walk_tasks.cpp
+    src/placo/humanoid/lipm.cpp
 
     # Tools
     src/placo/tools/axises_mask.cpp
     src/placo/tools/utils.cpp
     src/placo/tools/prioritized.cpp
-
-    # Trajectories
-    src/placo/trajectory/foot_trajectory.cpp
-    src/placo/trajectory/swing_foot.cpp
-    src/placo/trajectory/swing_foot_quintic.cpp
-    src/placo/trajectory/swing_foot_cubic.cpp
-    src/placo/trajectory/cubic_spline.cpp
-    src/placo/trajectory/cubic_spline_3d.cpp
-    src/placo/trajectory/kick.cpp
+    src/placo/tools/cubic_spline.cpp
+    src/placo/tools/cubic_spline_3d.cpp
 
     # Problem formulation
     src/placo/problem/problem.cpp
@@ -93,15 +100,6 @@ add_library(libplaco SHARED
     src/placo/dynamics/avoid_self_collisions_constraint.cpp
     src/placo/dynamics/reaction_ratio_constraint.cpp
 
-    # Walking
-    src/placo/footsteps/footsteps_planner.cpp
-    src/placo/footsteps/footsteps_planner_naive.cpp
-    src/placo/footsteps/footsteps_planner_repetitive.cpp
-    src/placo/planning/walk_pattern_generator.cpp
-    src/placo/planning/walk_tasks.cpp
-    src/placo/model/humanoid_parameters.cpp
-    src/placo/planning/lipm.cpp
-
     ${PROTO_SRCS}
     ${PROTO_HDRS}  
 )
@@ -137,7 +135,6 @@ find_package(Boost COMPONENTS python REQUIRED)
 add_library(placo MODULE 
     bindings/expose-eigen.cpp
     bindings/expose-tools.cpp
-    bindings/expose-trajectory.cpp
     bindings/expose-problem.cpp
     bindings/expose-footsteps.cpp
     bindings/expose-robot-wrapper.cpp

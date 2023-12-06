@@ -5,6 +5,8 @@
 #include "module.h"
 #include "registry.h"
 #include "placo/tools/utils.h"
+#include "placo/tools/cubic_spline.h"
+#include "placo/tools/cubic_spline_3d.h"
 #include "placo/tools/axises_mask.h"
 #include "placo/tools/prioritized.h"
 #include "expose-utils.hpp"
@@ -59,6 +61,21 @@ void exposeTools()
       .def("set_name", &Prioritized::set_name)
       .def<void (Prioritized::*)(std::string, std::string, double)>("configure", &Prioritized::configure,
                                                                     configure_overloads());
+
+  class__<CubicSpline>("CubicSpline", init<optional<bool>>())
+      .def("pos", &CubicSpline::pos)
+      .def("vel", &CubicSpline::vel)
+      .def("add_point", &CubicSpline::add_point)
+      .def("clear", &CubicSpline::clear)
+      .def("duration", &CubicSpline::duration);
+
+  class__<CubicSpline3D>("CubicSpline3D")
+      .def("pos", &CubicSpline3D::pos)
+      .def("vel", &CubicSpline3D::vel)
+      .def("add_point", &CubicSpline3D::add_point)
+      .def("clear", &CubicSpline3D::clear)
+      .def("duration", &CubicSpline3D::duration);
+      
 
 #ifdef HAVE_RHOBAN_UTILS
   using namespace rhoban_utils;

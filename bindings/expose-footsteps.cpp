@@ -3,14 +3,14 @@
 #include "expose-utils.hpp"
 #include "module.h"
 #include "registry.h"
-#include "placo/footsteps/footsteps_planner.h"
-#include "placo/footsteps/footsteps_planner_naive.h"
-#include "placo/footsteps/footsteps_planner_repetitive.h"
+#include "placo/humanoid/footsteps_planner.h"
+#include "placo/humanoid/footsteps_planner_naive.h"
+#include "placo/humanoid/footsteps_planner_repetitive.h"
 #include <Eigen/Dense>
 #include <boost/python.hpp>
 
 using namespace boost::python;
-using namespace placo::model;
+using namespace placo::humanoid;
 using namespace placo;
 
 void exposeFootsteps()
