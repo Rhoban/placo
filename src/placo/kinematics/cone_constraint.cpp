@@ -4,23 +4,25 @@
 
 namespace placo::kinematics
 {
-ConeConstraint::ConeConstraint(model::RobotWrapper::FrameIndex frame, double alpha_max, Eigen::Affine3d T_world_cone)
-  : frame(frame), alpha_max(alpha_max), T_world_cone(T_world_cone)
+ConeConstraint::ConeConstraint(model::RobotWrapper::FrameIndex frame_a, model::RobotWrapper::FrameIndex frame_b,
+                               double angle_max)
+  : frame_a(frame_a), frame_b(frame_b), angle_max(angle_max)
 {
 }
 
 void ConeConstraint::add_constraint(placo::problem::Problem& problem)
 {
-  Eigen::Affine3d T_world_local = solver->robot.get_T_world_frame(frame);
-  Eigen::Affine3d T_cone_local = T_world_cone.inverse() * T_world_local;
-  Eigen::Matrix3d R_cone_world = T_world_cone.rotation().transpose();
+  Eigen::Affine3d T_a_b = solver->robot.get_T_a_b(frame_a, frame_b);
 
   // Axis expressed in the cone frame
-  Eigen::Vector3d axis_cone = T_cone_local.rotation() * Eigen::Vector3d::UnitZ();
+  Eigen::Vector3d axis_cone = T_a_b.rotation() * Eigen::Vector3d::UnitZ();
 
-  // Jacobian of the body expressed in the cone frame
+  // Jacobian of the rotational velocity expressed in a
   Eigen::MatrixXd J_cone =
-      R_cone_world * solver->robot.frame_jacobian(frame, pinocchio::ReferenceFrame::WORLD).block(3, 0, 3, solver->N);
+      T_a_b.linear() *
+          solver->robot.frame_jacobian(frame_b, pinocchio::ReferenceFrame::LOCAL).block(3, 0, 3, solver->N) -
+      solver->robot.frame_jacobian(frame_a, pinocchio::ReferenceFrame::LOCAL).block(3, 0, 3, solver->N);
+  ;
 
   // Preparing the expression
   problem::Expression e;
@@ -48,7 +50,7 @@ void ConeConstraint::add_constraint(placo::problem::Problem& problem)
     e.b(k) = alpha;
   }
 
-  problem.add_constraint(e <= alpha_max)
+  problem.add_constraint(e <= angle_max)
       .configure(priority == Prioritized::Priority::Hard ? problem::ProblemConstraint::Hard :
                                                            problem::ProblemConstraint::Soft,
                  weight);

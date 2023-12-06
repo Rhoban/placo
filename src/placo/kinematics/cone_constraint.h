@@ -10,23 +10,28 @@ class KinematicsSolver;
 class ConeConstraint : public Constraint
 {
 public:
-  ConeConstraint(model::RobotWrapper::FrameIndex frame, double alpha_max,
-                 Eigen::Affine3d T_world_cone = Eigen::Affine3d::Identity());
+  /**
+   * @brief With a cone constraint, the z-axis of frame a and frame b should remaine within a cone of angle angle_max
+   * @param frame_a
+   * @param frame_b
+   * @param angle_max
+   */
+  ConeConstraint(model::RobotWrapper::FrameIndex frame_a, model::RobotWrapper::FrameIndex frame_b, double angle_max);
 
   /**
-   * @brief Frame being used (its z axis has to remain within an angle of alpha_max with the z-axis of T_world_cone)
+   * @brief Frame A
    */
-  model::RobotWrapper::FrameIndex frame;
+  model::RobotWrapper::FrameIndex frame_a;
 
   /**
-   * @brief Maximum angle allowable by the cone constraint (between the frame z axis and T_world_cone z axis)
+   * @brief Frame B
    */
-  double alpha_max;
+  model::RobotWrapper::FrameIndex frame_b;
 
   /**
-   * @brief The (inertial) frame in which the cone is defined
+   * @brief Maximum angle allowable by the cone constraint (between z-axis of frame_a and frame_b)
    */
-  Eigen::Affine3d T_world_cone;
+  double angle_max;
 
   /**
    * @brief Number of slices used to discretize the cone

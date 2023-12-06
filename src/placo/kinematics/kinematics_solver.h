@@ -244,24 +244,25 @@ public:
 
   /**
    * @brief Adds a Cone constraint
-   * @param frame frame
+   * @param frame_a frame A
+   * @param frame_b frame B
    * @param alpha_max alpha max (in radians) between the frame z-axis and the cone frame zt-axis
    * @param T_world_cone cone frame
    * @return constraint
    * @pyignore
    */
-  ConeConstraint& add_cone_constraint(model::RobotWrapper::FrameIndex frame, double alpha_max,
-                                      Eigen::Affine3d T_world_cone = Eigen::Affine3d::Identity());
+  ConeConstraint& add_cone_constraint(model::RobotWrapper::FrameIndex frame_a, model::RobotWrapper::FrameIndex frame_b,
+                                      double alpha_max);
 
   /**
    * @brief Adds a Cone constraint
-   * @param frame frame
+   * @param frame_a frame A
+   * @param frame_b frame B
    * @param alpha_max alpha max (in radians) between the frame z-axis and the cone frame zt-axis
    * @param T_world_cone cone frame
    * @return constraint
    */
-  ConeConstraint& add_cone_constraint(std::string frame, double alpha_max,
-                                      Eigen::Affine3d T_world_cone = Eigen::Affine3d::Identity());
+  ConeConstraint& add_cone_constraint(std::string frame_a, std::string frame_b, double alpha_max);
 
   /**
    * @brief Constructs the QP problem and solves it
