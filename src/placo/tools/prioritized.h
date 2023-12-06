@@ -41,25 +41,6 @@ public:
   std::string name;
 
   /**
-   * @brief Sets the object priority
-   * @param priority Priority value (hard, soft or scaled)
-   */
-  void set_priority_value(Priority priority);
-
-  /**
-   * @brief Sets the object priority
-   * @param priority Priority value (hard, soft or scaled)
-   */
-  void set_priority(std::string priority);
-
-  /**
-   * @brief Sets the object weight (for soft tasks)
-   * @param weight weight value
-   */
-  void set_weight(double weight);
-  void set_name(std::string name);
-
-  /**
    * @brief Configures the object
    * @param name task name
    * @param priority task priority (hard, soft or scaled)
