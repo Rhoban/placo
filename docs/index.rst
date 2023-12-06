@@ -1,15 +1,16 @@
-.. PlaCo documentation master file, created by
-   sphinx-quickstart on Mon Nov 13 14:13:11 2023.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
 
-Welcome to PlaCo's documentation!
-=================================
+Welcome to PlaCo's documentation
+================================
 
-What is it?
------------
+.. admonition:: Whas it it?
+    
+    .. video:: https://github.com/Rhoban/placo-examples/raw/master/kinematics/videos/6axis_trajectory.mp4
+        :autoplay:
+        :muted:
+        :loop:
 
-.. note::
+    :example:`kinematics/6axis_trajectory.py`
+
     PlaCo is an implementation for whole-body inverse kinematics and dynamics based on
     Quadratic Programming solver.
 
@@ -23,7 +24,7 @@ Outline
   :maxdepth: 3
 
   basics/index
-  kinematics
+  kinematics/index
   placo/summary
 
 Links
