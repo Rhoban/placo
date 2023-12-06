@@ -206,7 +206,7 @@ void exposeKinematics()
       .def_readwrite("margin", &CoMPolygonConstraint::margin);
 
   class__<ConeConstraint, bases<Constraint>>(
-      "ConesConstraint", init<model::RobotWrapper::FrameIndex, model::RobotWrapper::FrameIndex, double>())
+      "ConeConstraint", init<model::RobotWrapper::FrameIndex, model::RobotWrapper::FrameIndex, double>())
       .def_readwrite("angle_max", &ConeConstraint::angle_max)
       .def_readwrite("N", &ConeConstraint::N)
       .def_readwrite("range", &ConeConstraint::range);
