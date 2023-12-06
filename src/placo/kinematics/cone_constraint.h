@@ -7,6 +7,11 @@
 namespace placo::kinematics
 {
 class KinematicsSolver;
+
+/**
+ * @brief A cone constraint is a constraint where the z-axis of frame a and frame b should remaine within a cone of
+ * angle angle_max.
+ */
 class ConeConstraint : public Constraint
 {
 public:
