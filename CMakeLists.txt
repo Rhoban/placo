@@ -82,6 +82,7 @@ add_library(libplaco SHARED
     src/placo/kinematics/avoid_self_collisions_constraint.cpp
     src/placo/kinematics/com_polygon_constraint.cpp
     src/placo/kinematics/cone_constraint.cpp
+    src/placo/kinematics/axis_align_task.cpp
 
     # Dynamics QP solver
     src/placo/dynamics/task.cpp

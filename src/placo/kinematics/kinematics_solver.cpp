@@ -101,6 +101,18 @@ RelativeFrameTask KinematicsSolver::add_relative_frame_task(std::string frame_a,
   return add_relative_frame_task(robot.get_frame_index(frame_a), robot.get_frame_index(frame_b), T_a_b);
 }
 
+AxisAlignTask& KinematicsSolver::add_axisalign_task(model::RobotWrapper::FrameIndex frame, Eigen::Vector3d axis_frame,
+                                                    Eigen::Vector3d targetAxis_world)
+{
+  return add_task(new AxisAlignTask(frame, axis_frame, targetAxis_world));
+}
+
+AxisAlignTask& KinematicsSolver::add_axisalign_task(std::string frame, Eigen::Vector3d axis_frame,
+                                                    Eigen::Vector3d target_axis_world)
+{
+  return add_axisalign_task(robot.get_frame_index(frame), axis_frame, target_axis_world);
+}
+
 JointsTask& KinematicsSolver::add_joints_task(std::map<std::string, double>& joints)
 {
   JointsTask& task = add_task(new JointsTask());

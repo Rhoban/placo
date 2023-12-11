@@ -20,6 +20,7 @@
 #include "placo/kinematics/wheel_task.h"
 #include "placo/kinematics/regularization_task.h"
 #include "placo/kinematics/centroidal_momentum_task.h"
+#include "placo/kinematics/axis_align_task.h"
 
 // Constraints
 #include "placo/kinematics/constraint.h"
@@ -213,6 +214,25 @@ public:
    * @return distance task
    */
   DistanceTask& add_distance_task(std::string frame_a, std::string frame_b, double distance);
+
+  /**
+   * @brief Adds an axis alignment task. The goal here is to keep the given axis (expressed in the given frame) aligned
+   * with another one (given in the world)
+   * @param frame the robot frame we want to control
+   * @param axis_frame the axis to align, expressed in the robot frame
+   * @param targetAxis_world the target axis (in the world) we want to be aligned with
+   */
+  AxisAlignTask& add_axisalign_task(model::RobotWrapper::FrameIndex frame, Eigen::Vector3d axis_frame,
+                                    Eigen::Vector3d targetAxis_world);
+
+  /**
+   * @brief Adds an axis alignment task. The goal here is to keep the given axis (expressed in the given frame) aligned
+   * with another one (given in the world)
+   * @param frame the robot frame we want to control
+   * @param axis_frame the axis to align, expressed in the robot frame
+   * @param targetAxis_world the target axis (in the world) we want to be aligned with
+   */
+  AxisAlignTask& add_axisalign_task(std::string frame, Eigen::Vector3d axis_frame, Eigen::Vector3d targetAxis_world);
 
   /**
    * @brief Adding a centroidal momentum task
