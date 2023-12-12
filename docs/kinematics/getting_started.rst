@@ -75,6 +75,7 @@ date, by calling :func:`update_kinematics() <placo.RobotWrapper.update_kinematic
 then run the solver by calling :func:`solve() <placo.KinematicsSolver.solve>`:
 
 .. code-block:: python
+    
     # Updating kinematics computations (frames, jacobians, etc.)
     robot.update_kinematics()
     # Solving the IK
