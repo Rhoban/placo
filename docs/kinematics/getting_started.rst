@@ -52,7 +52,7 @@ Here:
 * ``configure()`` is a method allowing us to configure the task in the solver
     * ``effector`` is the name of the task
     * ``soft`` means that the task is not hard-constrained (the solver will do its best to reach the desired pose,
-    but will not fail if it's not reachable)
+       but will not fail if it's not reachable)
     * the two last arguments are the weight of the position and orientation tasks.
 
 Updating the task
