@@ -1,5 +1,5 @@
-Tasks, constraints and solve
-============================
+Concepts (tasks and constraints)
+================================
 
 This page is walking through the kinematics solver main concepts. Feel free to skip the maths if you are not interested in the details.
 
