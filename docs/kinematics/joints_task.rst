@@ -23,8 +23,8 @@ You can use the following code to initialize the joint task:
     joints_task = solver.add_joints_task()
     joints_task.configure("joints", "soft", 1.0)
 
-Task configuration
-------------------
+Task update
+-----------
 
 You can configure the task by passing a ``dict`` to :func:`set_joints() <placo.JointsTask.set_joints>`:
 

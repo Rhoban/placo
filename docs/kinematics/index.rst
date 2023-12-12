@@ -15,7 +15,8 @@ Kinematics
 .. toctree::
     :caption: Tasks
     :maxdepth: 2
-    
+
+    position_orientation_frame_task
     joints_task
 ..     Position and orientation (relative+absolute)
 ..     Handling kinematics loops
