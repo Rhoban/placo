@@ -18,18 +18,18 @@ Kinematics
 
     position_orientation_frame_task
     joints_task
-..     Position and orientation (relative+absolute)
 ..     Handling kinematics loops
 ..     CoM task
 ..     Gear task
 ..     Wheel task
-..     Distance task
-..     CentroidalMomentum task
 
 .. .. toctree::
 ..     :caption: Constraints
 ..     :maxdepth: 2
 ..     
+..     Avoid self collisions
+..     Cone constaint
+..     CoM Polygon
 
 .. toctree::
   :caption: Examples
