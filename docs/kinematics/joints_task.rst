@@ -9,7 +9,7 @@ A :func:`JointsTask <placo.JointsTask>` is a task that can be used to define a t
     on the robot wrapper (see :doc:`joints configurations </basics/configurations>`),
     it is **not** equivalent to using a joint task. Using the joints task will allow to account for everything
     that the solver is enforcing (joint limits, joint velocity limits, other tasks such as loops closing constraints
-    etc...), while :func:`set_joint() <placo.RobotWrapper.set_joint>` will not and immediately update the joint value
+    etc...), while :func:`set_joint() <placo.RobotWrapper.set_joint>` will immediately update the joint value
     in the robot state.
 
 Task initialization
