@@ -65,9 +65,9 @@ Moving joints in a parallel robot
 In serial robots, forward kinematics is straightforward computation from the joints configuration. It is not the
 case for parallel robots.
 
-In that case, you might also want to use the solver with :func:`JointsTask <placo.JointsTask>` to move the joints
-of the robot and compute a forward kinematics. Note that your initial configuration will affect the result, since
-this is a numerical solution and not an analytical one.
+In that case, you might also want to use the solver with a :doc:`joints task <joints_task>` to move the joints
+while enforcing the loop closure constraint. 
+Note that your initial configuration will affect the result, since this is a numerical solution and not an analytical one.
 
 If you want to do both state estimation and control, you might then want to instantiate multiple kinematic solver
 with different tasks sets. In the :doc:`examples gallery <examples_gallery>`, you can find both joint and task
