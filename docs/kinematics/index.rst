@@ -29,8 +29,7 @@ Kinematics
 
     com_polygon_constraint
     avoid_self_collisions_constraint
-
-..     Cone constaint
+    cone_constraint
 
 .. toctree::
   :caption: Examples
