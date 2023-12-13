@@ -13,6 +13,8 @@ using namespace placo;
 using namespace placo::kinematics;
 using namespace placo::model;
 
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(frametask_configure_overloads, configure, 2, 4);
+
 void exposeKinematics()
 {
   class_<KinematicsSolver> solver_class =
@@ -158,7 +160,7 @@ void exposeKinematics()
       .def(
           "orientation", +[](const FrameTask& task) -> OrientationTask& { return *task.orientation; },
           return_internal_reference<>())
-      .def("configure", &FrameTask::configure)
+      .def("configure", &FrameTask::configure, frametask_configure_overloads())
       .add_property("T_world_frame", &FrameTask::get_T_world_frame, &FrameTask::set_T_world_frame);
 
   class__<RelativeFrameTask>("RelativeFrameTask", init<RelativePositionTask&, RelativeOrientationTask&>())
@@ -169,7 +171,7 @@ void exposeKinematics()
       .def(
           "orientation", +[](const RelativeFrameTask& task) -> RelativeOrientationTask& { return task.orientation; },
           return_internal_reference<>())
-      .def("configure", &RelativeFrameTask::configure)
+      .def("configure", &RelativeFrameTask::configure, frametask_configure_overloads())
       .add_property("T_a_b", &RelativeFrameTask::get_T_a_b, &RelativeFrameTask::set_T_a_b);
 
   class__<AxisAlignTask, bases<Task>>("AxisAlignTask",
