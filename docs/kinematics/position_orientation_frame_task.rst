@@ -5,13 +5,10 @@ Position, orientation and frame tasks
 use to control the position and orientation of a particular frame on the robot.
 The :func:`FrameTask <placo.FrameTask>` is a combination of both, wrapping the two tasks in a single one.
 
-Position and orientation tasks
-------------------------------
+Position task
+-------------
 
-Initialization
-~~~~~~~~~~~~~~
-
-Position and orientation tasks can be initialized this way:
+Position tasks can be initialized and updated this way:
 
 .. code-block:: python
 
@@ -19,23 +16,19 @@ Position and orientation tasks can be initialized this way:
     effector_position = solver.add_position_task("effector", np.array([0., 0., 0.]))
     effector_position.configure("effector_position", "soft", 1.0)
 
+    # Updating the effector target in the world
+    effector_position.target_world = np.array([0.1, -0.5, 0.])
+
+Orientation task
+----------------
+
+Orientation tasks can be initialized and updated this way:
+
 .. code-block:: python
 
     # Creating an orientation task, argumanets are the frame name and goal (world) orientation (rotation matrix)
     effector_orientation = solver.add_orientation_task("effector", np.eye(3))
     effector_orientation.configure("effector_orientation", "soft", 1.0)
-
-Update
-~~~~~~
-
-You can update the position and orientation tasks by setting the target position and orientation:
-
-.. code-block:: python
-
-    # Updating the effector target in the world
-    effector_position.target_world = np.array([0.1, -0.5, 0.])
-
-.. code-block:: python
 
     # Updating the effector orientation in the world
     effector_orientation.R_world_frame = np.eye(3)
