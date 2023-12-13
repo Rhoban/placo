@@ -23,11 +23,11 @@ description = "PlaCo: Rhoban Planning and Control"
 license = "MIT"
 name = "placo"
 requires-python = ">= 3.8"
-version = "0.4.3"
+version = "0.4.5"
 
 [project.urls]
 changelog = "https://github.com/rhoban/placo/blob/main/CHANGELOG.md"
-homepage = "https://github.com/rhoban/placo"
+homepage = "https://placo.readthedocs.io/en/latest/"
 repository = "https://github.com/rhoban/placo.git"
 
 [tool.isort]
