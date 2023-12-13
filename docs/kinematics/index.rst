@@ -2,14 +2,14 @@ Kinematics
 ==========
 
  .. toctree::
-     :caption: Basics
-     :maxdepth: 2
+    :caption: Basics
+    :maxdepth: 2
 
-     getting_started
-     concepts
-     joint_limits
-     joints_mask
-     solver_status
+    getting_started
+    concepts
+    joint_limits
+    joints_mask
+    solver_status
 
 .. toctree::
     :caption: Tasks
@@ -18,6 +18,8 @@ Kinematics
     position_orientation_frame_task
     joints_task
     com_task
+    loop_closures
+
 ..     Handling kinematics loops
 ..     CoM task               MISSING EXAMPLE (quadruped ?)
 ..     Wheel task
