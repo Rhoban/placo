@@ -600,6 +600,8 @@ public:
 
   /**
    * @brief All the joint names
+   *
+   * @param include_floating_base whether to include the floating base joint (false by default)
    */
   std::vector<std::string> joint_names(bool include_floating_base = false);
 
