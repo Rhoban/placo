@@ -74,6 +74,15 @@ Examples gallery
 
     :example:`kinematics/humanoid.py`
 
+.. admonition:: Humanoid robot with self collisions avoidance
+    
+    .. video:: https://github.com/Rhoban/placo-examples/raw/master/kinematics/videos/humanoid_collisions.mp4
+        :autoplay:
+        :muted:
+        :loop:
+
+    :example:`kinematics/humanoid_collisions.py`
+
 .. admonition:: Orbita 3-axis parallel rotation (joints control)
     
     .. video:: https://github.com/Rhoban/placo-examples/raw/master/kinematics/videos/orbita_joint.mp4
