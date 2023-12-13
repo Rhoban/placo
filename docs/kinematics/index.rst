@@ -20,8 +20,6 @@ Kinematics
     joints_task
     com_task
 
-..     Handling kinematics loops
-..     CoM task               MISSING EXAMPLE (quadruped ?)
 ..     Wheel task
 ..     Gear task
 
@@ -32,9 +30,6 @@ Kinematics
     com_polygon_constraint
     avoid_self_collisions_constraint
 
-..     
-..     CoM Polygon
-..     Avoid self collisions   
 ..     Cone constaint
 
 .. toctree::
