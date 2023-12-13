@@ -33,7 +33,7 @@ The task can be updated by setting :func:`target_world <placo.CoMTask.target_wor
 Example
 -------
 
-The CoM task is used in the following example:
+The CoM task is used in the following example to swing the robot body laterally:
 
 .. admonition:: Humanoid
     
