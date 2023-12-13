@@ -21,8 +21,7 @@ Kinematics
     com_task
     wheel_task
     axis_align_task
-
-..     Gear task
+    gear_task
 
 .. toctree::
     :caption: Constraints
