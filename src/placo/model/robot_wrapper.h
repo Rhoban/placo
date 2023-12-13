@@ -601,12 +601,7 @@ public:
   /**
    * @brief All the joint names
    */
-  std::vector<std::string> joint_names();
-
-  /**
-   * @brief All the actuated joint names
-   */
-  std::vector<std::string> actuated_joint_names();
+  std::vector<std::string> joint_names(bool include_floating_base = false);
 
   /**
    * @brief All the frame names

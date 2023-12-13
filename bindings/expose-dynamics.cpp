@@ -24,7 +24,7 @@ void exposeDynamics()
           "tau_dict", +[](const DynamicsSolver::Result& result, RobotWrapper& robot) {
             boost::python::dict dict;
 
-            for (auto& dof : robot.actuated_joint_names())
+            for (auto& dof : robot.joint_names())
             {
               dict[dof] = result.tau[robot.get_joint_v_offset(dof)];
             }
@@ -135,8 +135,10 @@ void exposeDynamics()
                                                                         &DynamicsSolver::add_frame_task);
 
   class__<Task, bases<tools::Prioritized>, boost::noncopyable>("DynamicsTask", no_init)
-      .add_property("A", +[](const Task& task) { return task.A; })
-      .add_property("b", +[](const Task& task) { return task.b; })
+      .add_property(
+          "A", +[](const Task& task) { return task.A; })
+      .add_property(
+          "b", +[](const Task& task) { return task.b; })
       .add_property("kp", &Task::kp, &Task::kp)
       .add_property("kd", &Task::kd, &Task::kd)
       .add_property("critically_damped", &Task::critically_damped, &Task::critically_damped)

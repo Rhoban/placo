@@ -185,7 +185,7 @@ void HumanoidRobot::read_from_histories(rhoban_utils::HistoryCollection& histori
                                         std::string source, bool use_imu)
 {
   // Updating DOFs from replay
-  for (const std::string& name : actuated_joint_names())
+  for (const std::string& name : joint_names())
   {
     set_joint(name, histories.number(source + ":" + name)->interpolate(timestamp));
   }
@@ -215,4 +215,4 @@ void HumanoidRobot::read_from_histories(rhoban_utils::HistoryCollection& histori
   }
 }
 #endif
-}  // namespace placo::model
+}  // namespace placo::humanoid

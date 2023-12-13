@@ -18,6 +18,8 @@ using namespace placo::humanoid;
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(read_from_histories_overloads, read_from_histories, 2, 4);
 #endif
 
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(joint_names_overloads, joint_names, 0, 1);
+
 template <class RobotType, class W1>
 void exposeRobotType(class_<RobotType, W1>& type)
 {
@@ -44,8 +46,7 @@ void exposeRobotType(class_<RobotType, W1>& type)
       .def("get_T_world_fbase", &RobotType::get_T_world_fbase)
       .def("set_T_world_fbase", &RobotType::set_T_world_fbase)
       .def("com_world", &RobotType::com_world)
-      .def("joint_names", &RobotType::joint_names)
-      .def("actuated_joint_names", &RobotType::actuated_joint_names)
+      .def("joint_names", &RobotType::joint_names, joint_names_overloads())
       .def("frame_names", &RobotType::frame_names)
       .def("self_collisions", &RobotType::self_collisions)
       .def("distances", &RobotType::distances)
@@ -65,7 +66,7 @@ void exposeRobotType(class_<RobotType, W1>& type)
             auto torques = robot.static_gravity_compensation_torques(frame);
             boost::python::dict dict;
 
-            for (auto& dof : robot.actuated_joint_names())
+            for (auto& dof : robot.joint_names())
             {
               dict[dof] = torques[robot.get_joint_v_offset(dof)];
             }
@@ -83,7 +84,7 @@ void exposeRobotType(class_<RobotType, W1>& type)
             auto torques = robot.torques_from_acceleration_with_fixed_frame(qdd_a, frame);
             boost::python::dict dict;
 
-            for (auto& dof : robot.actuated_joint_names())
+            for (auto& dof : robot.joint_names())
             {
               dict[dof] = torques[robot.get_joint_v_offset(dof) - 6];
             }
