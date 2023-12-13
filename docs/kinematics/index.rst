@@ -30,6 +30,7 @@ Kinematics
     :maxdepth: 2
 
     com_polygon_constraint
+    avoid_self_collisions_constraint
 
 ..     
 ..     CoM Polygon

@@ -53,10 +53,12 @@ as a list of :func:`Collision <placo.Collision>` objects.
 
     :example:`robot_wrapper/collisions.py`
 
+.. _collision_distances:
+
 Checking for nearest distances
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-By calling :func:`distances <placo.RobotWrapper.distances>`, you can get all the current minimum distances
+By calling :func:`distances() <placo.RobotWrapper.distances>`, you can get all the current minimum distances
 between the collision pairs as a list of :func:`Distance <placo.Distance>` objects.
 
 See also
