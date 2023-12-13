@@ -18,16 +18,17 @@ Kinematics
 
     position_orientation_frame_task
     joints_task
+    com_task
 ..     Handling kinematics loops
-..     CoM task
-..     Gear task
+..     CoM task               MISSING EXAMPLE (quadruped ?)
 ..     Wheel task
+..     Gear task
 
 .. .. toctree::
 ..     :caption: Constraints
 ..     :maxdepth: 2
 ..     
-..     Avoid self collisions
+..     Avoid self collisions   
 ..     Cone constaint
 ..     CoM Polygon
 

@@ -24,6 +24,11 @@ For example:
     # Sets head_pan joint to 0.5 rad
     robot.set_joint("head_pan", 0.5)
 
+Retrieving all the joint names
+------------------------------
+
+All the joint names can be retrieved by calling :func:`joint_names() <placo.RobotWrapper.joint_names>`.
+
 Integrating
 -----------
 
