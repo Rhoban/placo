@@ -12,7 +12,8 @@ in the world.
 Task initialization
 -------------------
 
-The CoM task can be initialized like this:
+The CoM task can be initialized by calling :func:`add_com_task() <placo.KinematicsSolver.add_com_task>` on the
+solver:
 
 .. code-block:: python
 
