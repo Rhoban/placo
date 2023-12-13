@@ -20,7 +20,7 @@ Examples gallery
 
     :example:`kinematics/6axis_targets.py`
 
-.. admonition:: Quadruped reaching targets
+.. admonition:: Quadruped reaching targets while not tilting
     
     .. video:: https://github.com/Rhoban/placo-examples/raw/master/kinematics/videos/quadruped_targets.mp4
         :autoplay:

@@ -113,3 +113,17 @@ Those can be prioritized and weighted in the exact same way as tasks, as explain
 .. admonition:: Math details
 
     Constraints are added to the solver as a set of inequalities :math:`C(q) \leq 0`. 
+
+Removing tasks and constraints
+------------------------------
+
+Tasks and constraints can be removed from the solver by using
+:func:`remove_task <placo.KinematicsSolver.remove_task>` and :func:`remove_constraint <placo.KinematicsSolver.remove_constraint>`:
+
+.. code-block:: python
+
+    # Removing a task
+    solver.remove_task(some_task)
+
+    # Removing a constraint
+    solver.remove_constraint(some_constraint)

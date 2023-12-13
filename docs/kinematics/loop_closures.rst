@@ -77,7 +77,7 @@ control for the *planar 2 dof* and *3-axis parallel rotation* robots.
 Example
 -------
 
-Here are examples making use of loop closure constraints:
+Here are two examples depicting the use of the solver with the planar 2 DoF for both joints and task control:
 
 .. admonition:: Planar 2 DoF (joints control)
     
@@ -88,20 +88,11 @@ Here are examples making use of loop closure constraints:
 
     :example:`kinematics/planar_2dof_joints.py`
 
-.. admonition:: Orbita 3-axis parallel rotation (joints control)
+.. admonition:: Planar 2 DoF (trajectory control)
     
-    .. video:: https://github.com/Rhoban/placo-examples/raw/master/kinematics/videos/orbita_joint.mp4
+    .. video:: https://github.com/Rhoban/placo-examples/raw/master/kinematics/videos/planar_2dof_trajectory.mp4
         :autoplay:
         :muted:
         :loop:
 
-    :example:`kinematics/orbita_joint.py`
-
-.. admonition:: Megabot parallel quadruped
-    
-    .. video:: https://github.com/Rhoban/placo-examples/raw/master/kinematics/videos/megabot.mp4
-        :autoplay:
-        :muted:
-        :loop:
-
-    :example:`kinematics/megabot.py`
+    :example:`kinematics/planar_2dof_trajectory.py`
