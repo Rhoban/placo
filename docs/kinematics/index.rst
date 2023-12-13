@@ -7,10 +7,9 @@ Kinematics
 
      getting_started
      concepts
-
-..     Joint and velocity limits
-..     Solver status
-..     Floating base
+     joint_limits
+     joints_mask
+     solver_status
 
 .. toctree::
     :caption: Tasks
