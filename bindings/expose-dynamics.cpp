@@ -227,7 +227,9 @@ void exposeDynamics()
             update_map<std::string, double>(task.djoints, py_dict);
           });
 
-  class__<GearTask, bases<Task>>("DynamicsGearTask", init<>()).def("set_gear", &GearTask::set_gear);
+  class__<GearTask, bases<Task>>("DynamicsGearTask", init<>())
+      .def("set_gear", &GearTask::set_gear)
+      .def("add_gear", &GearTask::add_gear);
 
   class__<Constraint, bases<tools::Prioritized>, boost::noncopyable>("DynamicsConstraint", no_init);
 

@@ -12,27 +12,6 @@ class GearTask : public Task
 {
 public:
   /**
-   * @brief A gear entry configures a joint-mimic with ratio
-   */
-  struct Gear
-  {
-    /**
-     * @brief Target joint
-     */
-    int target;
-
-    /**
-     * @brief Source joint
-     */
-    int source;
-
-    /**
-     * @brief Ratio
-     */
-    double ratio;
-  };
-
-  /**
    * @brief see \ref placo::dynamics::DynamicsSolver::add_gear_task
    */
   GearTask();
@@ -40,7 +19,7 @@ public:
   /**
    * @brief Gear settings
    */
-  std::map<int, Gear> gears;
+  std::map<int, std::map<int, double>> gears;
 
   /**
    * @brief Sets a gear constraint
@@ -49,6 +28,15 @@ public:
    * @param ratio ratio
    */
   void set_gear(std::string target, std::string source, double ratio);
+
+  /**
+   * @brief Adds a gear constraint, you can add multiple source for the same target, they
+   * will be summed
+   * @param target target joint
+   * @param source source joint
+   * @param ratio ratio
+   */
+  void add_gear(std::string target, std::string source, double ratio);
 
   void update() override;
   std::string type_name() override;
