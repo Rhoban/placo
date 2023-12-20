@@ -190,7 +190,8 @@ void exposeKinematics()
             update_map<std::string, double>(task.joints, py_dict);
           });
 
-  class__<GearTask, bases<Task>>("GearTask", init<>()).def("set_gear", &GearTask::set_gear);
+  class__<GearTask, bases<Task>>("GearTask", init<>())
+      .def("set_gear", &GearTask::set_gear, "add_gear", &GearTask::add_gear);
 
   class__<WheelTask, bases<Task>>("WheelTask", init<std::string, double, bool>())
       .add_property("joint", &WheelTask::joint)
