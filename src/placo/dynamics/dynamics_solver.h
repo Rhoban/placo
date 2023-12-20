@@ -485,8 +485,7 @@ public:
   }
 
 protected:
-  // Masked DoFs (enforce zero acceleration)
-  std::set<int> masked_dof;
+  // Disables floating base
   bool masked_fbase;
 
   // Tasks

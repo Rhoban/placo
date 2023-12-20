@@ -435,11 +435,6 @@ DynamicsSolver::Result DynamicsSolver::solve()
     Variable& qdd_variable = problem.add_variable(robot.model.nv);
     qdd = qdd_variable.expr();
 
-    for (auto& joint : masked_dof)
-    {
-      problem.add_constraint(qdd_variable.expr(joint, 1) == 0);
-    }
-
     if (masked_fbase)
     {
       problem.add_constraint(qdd_variable.expr(0, 6) == 0.);
@@ -579,8 +574,12 @@ DynamicsSolver::Result DynamicsSolver::solve()
     constraint->add_constraint(problem, tau);
   }
 
-  // Floating base has no torque
-  problem.add_constraint(tau.slice(0, 6) == 0);
+  // Floating base has no torque, except if is masked (in that case, the floating base torque will
+  // allow to compensate for any motion)
+  if (!masked_fbase)
+  {
+    problem.add_constraint(tau.slice(0, 6) == 0);
+  }
 
   // Passive joints that are not determined have a tau constraint
   if (passive_taus.size() > determined_contacts_count)
@@ -616,16 +615,6 @@ DynamicsSolver::Result DynamicsSolver::solve()
   }
 
   return result;
-}
-
-void DynamicsSolver::mask_dof(std::string dof)
-{
-  masked_dof.insert(robot.get_joint_v_offset(dof));
-}
-
-void DynamicsSolver::unmask_dof(std::string dof)
-{
-  masked_dof.erase(robot.get_joint_v_offset(dof));
 }
 
 void DynamicsSolver::mask_fbase(bool masked)
