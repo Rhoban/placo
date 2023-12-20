@@ -12,6 +12,9 @@ using namespace placo;
 using namespace placo::dynamics;
 using namespace placo::model;
 
+// Set passive overloads
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(set_passive_overloads, set_passive, 1, 4);
+
 void exposeDynamics()
 {
   class__<DynamicsSolver::Result>("DynamicsSolverResult")
@@ -91,7 +94,7 @@ void exposeDynamics()
            return_internal_reference<>())
       .def("add_reaction_ratio_constraint", &DynamicsSolver::add_reaction_ratio_constraint,
            return_internal_reference<>())
-      .def("set_passive", &DynamicsSolver::set_passive)
+      .def("set_passive", &DynamicsSolver::set_passive, set_passive_overloads())
       .def("enable_velocity_limits", &DynamicsSolver::enable_velocity_limits)
       .def("enable_velocity_vs_torque_limits", &DynamicsSolver::enable_velocity_vs_torque_limits)
       .def("enable_joint_limits", &DynamicsSolver::enable_joint_limits)

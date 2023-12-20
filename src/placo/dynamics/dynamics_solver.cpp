@@ -402,7 +402,7 @@ void DynamicsSolver::dump_status()
   dump_status_stream(std::cout);
 }
 
-DynamicsSolver::Result DynamicsSolver::solve()
+DynamicsSolver::Result DynamicsSolver::solve(bool integrate)
 {
   DynamicsSolver::Result result;
   std::vector<Variable*> contact_wrenches;
@@ -607,6 +607,17 @@ DynamicsSolver::Result DynamicsSolver::solve()
     for (auto& contact : contacts)
     {
       contact->wrench = contact->f.value(problem.x);
+    }
+
+    if (integrate)
+    {
+      if (dt == 0.)
+      {
+        throw std::runtime_error("DynamicsSolver::solve, trying to integrate, but dt is not set");
+      }
+
+      robot.state.qdd = result.qdd;
+      robot.integrate(dt);
     }
   }
   catch (QPError& e)

@@ -338,7 +338,7 @@ public:
    */
   void dump_status();
 
-  Result solve();
+  Result solve(bool integrate = false);
 
   /**
    * @brief Masks (disables a DoF) from being used by the QP solver (it can't provide speed)
