@@ -12,8 +12,9 @@ using namespace placo;
 using namespace placo::dynamics;
 using namespace placo::model;
 
-// Set passive overloads
+// Overloads
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(set_passive_overloads, set_passive, 1, 4);
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(solve_overloads, solve, 0, 1);
 
 void exposeDynamics()
 {
@@ -79,6 +80,7 @@ void exposeDynamics()
       .def_readwrite("dt", &DynamicsSolver::dt)
       .def_readwrite("qdd_safe", &DynamicsSolver::qdd_safe)
       .def_readwrite("optimize_contact_forces", &DynamicsSolver::optimize_contact_forces)
+      .def_readwrite("gravity_only", &DynamicsSolver::gravity_only)
       .def("mask_fbase", &DynamicsSolver::mask_fbase)
       .def("add_point_contact", &DynamicsSolver::add_point_contact, return_internal_reference<>())
       .def("add_unilateral_point_contact", &DynamicsSolver::add_unilateral_point_contact, return_internal_reference<>())
@@ -101,7 +103,7 @@ void exposeDynamics()
       .def("enable_torque_limits", &DynamicsSolver::enable_torque_limits)
       .def("dump_status", &DynamicsSolver::dump_status)
       .def("set_static", &DynamicsSolver::set_static)
-      .def("solve", &DynamicsSolver::solve)
+      .def("solve", &DynamicsSolver::solve, solve_overloads())
       .def<void (DynamicsSolver::*)(Task&)>("add_task", &DynamicsSolver::add_task)
       .def<void (DynamicsSolver::*)(Constraint&)>("add_constraint", &DynamicsSolver::add_constraint)
       .def<void (DynamicsSolver::*)(Constraint&)>("add_constraint", &DynamicsSolver::add_constraint)
