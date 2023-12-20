@@ -641,7 +641,6 @@ Eigen::VectorXd RobotWrapper::torques_from_acceleration_with_fixed_frame(Eigen::
 
 std::vector<std::string> RobotWrapper::joint_names(bool include_floating_base)
 {
-  return model.names;
   std::vector<std::string> joints = model.names;
   if (!include_floating_base)
   {
