@@ -643,7 +643,7 @@ std::vector<std::string> RobotWrapper::joint_names(bool include_floating_base)
 {
   return model.names;
   std::vector<std::string> joints = model.names;
-  if (include_floating_base)
+  if (!include_floating_base)
   {
     joints.erase(std::remove(joints.begin(), joints.end(), "universe"), joints.end());
     joints.erase(std::remove(joints.begin(), joints.end(), "root_joint"), joints.end());
