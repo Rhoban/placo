@@ -386,7 +386,7 @@ public:
   /**
    * @brief Global friction that is added to all the joints
    */
-  double friction = 1e-3;
+  double friction = 0.;
 
   /**
    * @brief Solver dt (seconds)
@@ -407,6 +407,11 @@ public:
    * @brief If true, the solver will try to optimize the contact forces by removing variables
    */
   bool optimize_contact_forces = false;
+
+  /**
+   * @brief Use gravity only (no coriolis, no centrifugal)
+   */
+  bool gravity_only = false;
 
   /**
    * @brief Instance of the problem

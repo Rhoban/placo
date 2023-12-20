@@ -471,7 +471,14 @@ DynamicsSolver::Result DynamicsSolver::solve(bool integrate)
   Expression tau = robot.mass_matrix() * qdd + robot.state.qd * friction;
 
   // b
-  tau = tau + robot.non_linear_effects();
+  if (gravity_only)
+  {
+    tau = tau + robot.generalized_gravity();
+  }
+  else
+  {
+    tau = tau + robot.non_linear_effects();
+  }
 
   // J^T F
 
