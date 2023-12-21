@@ -444,6 +444,10 @@ DynamicsSolver::Result DynamicsSolver::solve(bool integrate)
   for (auto& task : tasks)
   {
     task->update();
+    if (task->A.rows() == 0)
+    {
+      continue;
+    }
 
     if (!is_static)
     {

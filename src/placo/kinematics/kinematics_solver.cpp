@@ -274,6 +274,12 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
   {
     task->update();
 
+    // Skipping empty tasks
+    if (task->A.rows() == 0)
+    {
+      continue;
+    }
+
     // This could be written (task->A * qd->expr() == task->b), but would come with the
     // significant cost of multiplying A with identity matrix for each task
     Expression e;
