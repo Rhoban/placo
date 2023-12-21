@@ -422,7 +422,7 @@ DynamicsSolver::Result DynamicsSolver::solve(bool integrate)
     double qd = robot.get_joint_velocity(joint);
     int index = robot.get_joint_v_offset(joint);
     passive_indices.push_back(index);
-    passive_taus[k++] = q * pj.kp + qd * pj.kd;
+    passive_taus[k++] = -q * pj.kp - qd * pj.kd;
   }
 
   Expression qdd;
