@@ -450,13 +450,6 @@ DynamicsSolver::Result DynamicsSolver::solve(bool integrate)
 
   // J^T F
 
-  // Contacts that will result in a decision variable
-  std::vector<Contact*> variable_contacts;
-  // Contacts that will be optimized out
-  std::vector<Contact*> determined_contacts;
-  std::vector<int> determined_indices;
-  int determined_contacts_count = 0;
-
   for (auto& contact : contacts)
   {
     contact->update();
@@ -469,21 +462,10 @@ DynamicsSolver::Result DynamicsSolver::solve(bool integrate)
     }
     else
     {
-      if (optimize_contact_forces && contact->is_internal() &&
-          determined_contacts_count + contact->size() <= passive_joints.size())
-      {
-        // This contact will be determined
-        determined_contacts.push_back(contact);
-        determined_contacts_count += contact->size();
-      }
-      else
-      {
-        // This contact will be an actual decision variable
-        Variable& f_variable = problem.add_variable(contact->size());
-        contact->f = f_variable.expr();
-        contact->add_constraints(problem);
-        variable_contacts.push_back(contact);
-      }
+      // This contact will be an actual decision variable
+      Variable& f_variable = problem.add_variable(contact->size());
+      contact->f = f_variable.expr();
+      contact->add_constraints(problem);
     }
   }
 
@@ -495,49 +477,11 @@ DynamicsSolver::Result DynamicsSolver::solve(bool integrate)
   // Now, tau = Ax + b with x = [qdd, f1, f2, ...], we copy J^T to the extended A
   // for forces that are decision variables
   k = N;
-  for (auto& contact : variable_contacts)
+  for (auto& contact : contacts)
   {
     tau.A.block(0, k, N, contact->J.rows()) = -contact->J.transpose();
     tau.b -= contact->J.transpose() * contact->f.b;
     k += contact->J.rows();
-  }
-
-  // Gathering the first N entries of the passive torque ids
-  determined_indices = std::vector<int>(passive_indices.begin(), passive_indices.begin() + determined_contacts_count);
-
-  if (optimize_contact_forces && determined_contacts_count > 0)
-  {
-    // Computing Jd, the jacobian of determined contact forces
-    Eigen::MatrixXd Jd = Eigen::MatrixXd::Zero(N, determined_contacts_count);
-    k = 0;
-    for (auto& contact : determined_contacts)
-    {
-      Jd.block(0, k, N, contact->J.rows()) = contact->J.transpose();
-      k += contact->J.rows();
-    }
-
-    // Building the expression for the determined forces
-    // Jd^T fd = M qdd + b - J^T F - tau_passive
-    Expression fd;
-    fd.A = tau.A(determined_indices, Eigen::all);
-    fd.b = tau.b(determined_indices);
-    fd.b -= passive_taus.topRows(determined_contacts_count);
-
-    // We use the inverse of the Jd matrix for those passive Dofs to express fd as a
-    // function of other variables
-    fd = Jd(determined_indices, Eigen::all).inverse() * fd;
-
-    // We feed the determined contacts with force expressed as other variables
-    k = 0;
-    for (auto& contact : determined_contacts)
-    {
-      contact->f = fd.slice(k, contact->size());
-      contact->add_constraints(problem);
-      k += contact->size();
-    }
-
-    // fd can now be added to tau
-    tau = tau - Jd * fd;
   }
 
   // Computing limit inequalitie
@@ -585,14 +529,10 @@ DynamicsSolver::Result DynamicsSolver::solve(bool integrate)
   }
 
   // Passive joints that are not determined have a tau constraint
-  if (passive_taus.size() > determined_contacts_count)
-  {
-    Expression passive_tau_expr;
-    passive_tau_expr.A = tau.A(passive_indices, Eigen::all);
-    passive_tau_expr.b = tau.b(passive_indices);
-    problem.add_constraint(passive_tau_expr.slice(determined_contacts_count) ==
-                           passive_taus.bottomRows(passive_taus.size() - determined_contacts_count));
-  }
+  Expression passive_tau_expr;
+  passive_tau_expr.A = tau.A(passive_indices, Eigen::all);
+  passive_tau_expr.b = tau.b(passive_indices);
+  problem.add_constraint(passive_tau_expr == passive_taus);
 
   // We want to minimize torques
   problem.add_constraint(tau == 0).configure(ProblemConstraint::Soft, 1e-3);

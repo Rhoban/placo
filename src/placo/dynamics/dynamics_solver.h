@@ -404,11 +404,6 @@ public:
   double qdd_safe = 1.;
 
   /**
-   * @brief If true, the solver will try to optimize the contact forces by removing variables
-   */
-  bool optimize_contact_forces = false;
-
-  /**
    * @brief Use gravity only (no coriolis, no centrifugal)
    */
   bool gravity_only = false;
