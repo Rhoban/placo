@@ -139,11 +139,6 @@ CoMTask& DynamicsSolver::add_com_task(Eigen::Vector3d target_world)
   return add_task(new CoMTask(target_world));
 }
 
-void DynamicsSolver::set_static(bool is_static_)
-{
-  is_static = is_static_;
-}
-
 JointsTask& DynamicsSolver::add_joints_task()
 {
   return add_task(new JointsTask());
@@ -234,11 +229,6 @@ void DynamicsSolver::compute_limits_inequalities(Expression& tau)
   {
     problem.add_constraint(tau.slice(6) <= robot.model.effortLimit.bottomRows(N - 6));
     problem.add_constraint(tau.slice(6) >= -robot.model.effortLimit.bottomRows(N - 6));
-  }
-
-  if (is_static)
-  {
-    return;
   }
 
   int constraints = 0;
@@ -376,10 +366,7 @@ void DynamicsSolver::clear()
 void DynamicsSolver::dump_status_stream(std::ostream& stream)
 {
   stream << "* Dynamics Tasks:" << std::endl;
-  if (is_static)
-  {
-    std::cout << "  * Solver is static (qdd is 0)" << std::endl;
-  }
+
   for (auto task : tasks)
   {
     task->update();
@@ -431,19 +418,12 @@ DynamicsSolver::Result DynamicsSolver::solve(bool integrate)
   }
 
   Expression qdd;
-  if (is_static)
-  {
-    qdd = Expression::from_vector(Eigen::VectorXd::Zero(robot.model.nv));
-  }
-  else
-  {
-    Variable& qdd_variable = problem.add_variable(robot.model.nv);
-    qdd = qdd_variable.expr();
+  Variable& qdd_variable = problem.add_variable(robot.model.nv);
+  qdd = qdd_variable.expr();
 
-    if (masked_fbase)
-    {
-      problem.add_constraint(qdd_variable.expr(0, 6) == 0.);
-    }
+  if (masked_fbase)
+  {
+    problem.add_constraint(qdd_variable.expr(0, 6) == 0.);
   }
 
   // Updating tasks
@@ -514,7 +494,7 @@ DynamicsSolver::Result DynamicsSolver::solve(bool integrate)
 
   // Now, tau = Ax + b with x = [qdd, f1, f2, ...], we copy J^T to the extended A
   // for forces that are decision variables
-  k = is_static ? 0 : N;
+  k = N;
   for (auto& contact : variable_contacts)
   {
     tau.A.block(0, k, N, contact->J.rows()) = -contact->J.transpose();
@@ -571,27 +551,24 @@ DynamicsSolver::Result DynamicsSolver::solve(bool integrate)
       continue;
     }
 
-    if (!is_static)
+    ProblemConstraint::Priority task_priority = ProblemConstraint::Hard;
+    if (task->priority == Task::Priority::Soft)
     {
-      ProblemConstraint::Priority task_priority = ProblemConstraint::Hard;
-      if (task->priority == Task::Priority::Soft)
-      {
-        task_priority = ProblemConstraint::Soft;
-      }
-      else if (task->priority == Task::Priority::Scaled)
-      {
-        throw std::runtime_error("DynamicsSolver::solve: Scaled priority is not supported");
-      }
-
-      Expression e;
-      e.A = task->A;
-      e.b = -task->b;
-      if (task->tau_task)
-      {
-        e.A = e.A * tau.A;
-      }
-      problem.add_constraint(e == 0).configure(task_priority, task->weight);
+      task_priority = ProblemConstraint::Soft;
     }
+    else if (task->priority == Task::Priority::Scaled)
+    {
+      throw std::runtime_error("DynamicsSolver::solve: Scaled priority is not supported");
+    }
+
+    Expression e;
+    e.A = task->A;
+    e.b = -task->b;
+    if (task->tau_task)
+    {
+      e.A = e.A * tau.A;
+    }
+    problem.add_constraint(e == 0).configure(task_priority, task->weight);
   }
 
   // Add constraints

@@ -61,12 +61,6 @@ public:
   std::map<std::string, PassiveJoint> passive_joints;
 
   /**
-   * @brief Sets the robot as static, this will impose the joint accelerations to be zero
-   * @param is_static whether the robot should be static
-   */
-  void set_static(bool is_static);
-
-  /**
    * @brief Sets a DoF as passive, the corresponding tau will be fixed in the equation of motion
    *        it can be purely passive joint or a spring-like behaviour
    * @param joint_name the joint
@@ -514,8 +508,5 @@ protected:
   bool joint_limits = false;
   bool velocity_vs_torque_limits = false;
   bool velocity_limits = false;
-
-  // If true, the solver will assume qdd = 0
-  bool is_static = false;
 };
 }  // namespace placo::dynamics
