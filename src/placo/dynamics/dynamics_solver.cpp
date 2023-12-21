@@ -149,6 +149,11 @@ JointsTask& DynamicsSolver::add_joints_task()
   return add_task(new JointsTask());
 }
 
+TorqueTask& DynamicsSolver::add_torque_task()
+{
+  return add_task(new TorqueTask());
+}
+
 GearTask& DynamicsSolver::add_gear_task()
 {
   return add_task(new GearTask());
@@ -441,31 +446,10 @@ DynamicsSolver::Result DynamicsSolver::solve(bool integrate)
     }
   }
 
+  // Updating tasks
   for (auto& task : tasks)
   {
     task->update();
-    if (task->A.rows() == 0)
-    {
-      continue;
-    }
-
-    if (!is_static)
-    {
-      ProblemConstraint::Priority task_priority = ProblemConstraint::Hard;
-      if (task->priority == Task::Priority::Soft)
-      {
-        task_priority = ProblemConstraint::Soft;
-      }
-      else if (task->priority == Task::Priority::Scaled)
-      {
-        throw std::runtime_error("DynamicsSolver::solve: Scaled priority is not supported");
-      }
-
-      Expression e;
-      e.A = task->A;
-      e.b = -task->b;
-      problem.add_constraint(e == 0).configure(task_priority, task->weight);
-    }
   }
 
   // We build the expression for tau, given the equation of motion
@@ -578,6 +562,37 @@ DynamicsSolver::Result DynamicsSolver::solve(bool integrate)
 
   // Computing limit inequalitie
   compute_limits_inequalities(tau);
+
+  // Adding tasks
+  for (auto& task : tasks)
+  {
+    if (task->A.rows() == 0)
+    {
+      continue;
+    }
+
+    if (!is_static)
+    {
+      ProblemConstraint::Priority task_priority = ProblemConstraint::Hard;
+      if (task->priority == Task::Priority::Soft)
+      {
+        task_priority = ProblemConstraint::Soft;
+      }
+      else if (task->priority == Task::Priority::Scaled)
+      {
+        throw std::runtime_error("DynamicsSolver::solve: Scaled priority is not supported");
+      }
+
+      Expression e;
+      e.A = task->A;
+      e.b = -task->b;
+      if (task->tau_task)
+      {
+        e.A = e.A * tau.A;
+      }
+      problem.add_constraint(e == 0).configure(task_priority, task->weight);
+    }
+  }
 
   // Add constraints
   for (auto constraint : constraints)

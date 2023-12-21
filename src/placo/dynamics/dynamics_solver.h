@@ -16,6 +16,7 @@
 #include "placo/dynamics/relative_orientation_task.h"
 #include "placo/dynamics/relative_frame_task.h"
 #include "placo/dynamics/joints_task.h"
+#include "placo/dynamics/torque_task.h"
 #include "placo/dynamics/gear_task.h"
 #include "placo/dynamics/com_task.h"
 
@@ -201,10 +202,15 @@ public:
 
   /**
    * @brief Adds a joints task
-   * @param target target joints values
    * @return joints task
    */
   JointsTask& add_joints_task();
+
+  /**
+   * @brief Adds a torque task
+   * @return torque task
+   */
+  TorqueTask& add_torque_task();
 
   /**
    * @brief Adds a gear task, allowing replication of a joint. This can be used to implement timing belt, if coupled

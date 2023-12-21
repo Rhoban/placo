@@ -130,6 +130,8 @@ void exposeDynamics()
           "add_relative_frame_task", &DynamicsSolver::add_relative_frame_task)
       .def<JointsTask& (DynamicsSolver::*)()>("add_joints_task", &DynamicsSolver::add_joints_task,
                                               return_internal_reference<>())
+      .def<TorqueTask& (DynamicsSolver::*)()>("add_torque_task", &DynamicsSolver::add_torque_task,
+                                              return_internal_reference<>())
       .def<GearTask& (DynamicsSolver::*)()>("add_gear_task", &DynamicsSolver::add_gear_task,
                                             return_internal_reference<>())
       .def<CoMTask& (DynamicsSolver::*)(Eigen::Vector3d)>("add_com_task", &DynamicsSolver::add_com_task,
@@ -232,6 +234,8 @@ void exposeDynamics()
           "set_joints_velocities", +[](JointsTask& task, boost::python::dict& py_dict) {
             update_map<std::string, double>(task.djoints, py_dict);
           });
+
+  class__<TorqueTask, bases<Task>>("DynamicsTorqueTask", init<>()).def("set_torque", &TorqueTask::set_torque);
 
   class__<GearTask, bases<Task>>("DynamicsGearTask", init<>())
       .def("set_gear", &GearTask::set_gear)

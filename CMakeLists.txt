@@ -93,6 +93,7 @@ add_library(libplaco SHARED
     src/placo/dynamics/relative_orientation_task.cpp
     src/placo/dynamics/relative_frame_task.cpp
     src/placo/dynamics/joints_task.cpp
+    src/placo/dynamics/torque_task.cpp
     src/placo/dynamics/gear_task.cpp
     src/placo/dynamics/com_task.cpp
     src/placo/dynamics/contacts.cpp
