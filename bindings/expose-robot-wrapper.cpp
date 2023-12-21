@@ -55,6 +55,7 @@ void exposeRobotType(class_<RobotType, W1>& type)
       .def("generalized_gravity", &RobotType::generalized_gravity)
       .def("non_linear_effects", &RobotType::non_linear_effects)
       .def("mass_matrix", &RobotType::mass_matrix)
+      .def("set_gravity", &RobotType::set_gravity)
       .def("total_mass", &RobotType::total_mass)
       .def("integrate", &RobotType::integrate)
       .def(

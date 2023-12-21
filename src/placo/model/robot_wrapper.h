@@ -556,6 +556,11 @@ public:
   Eigen::MatrixXd mass_matrix();
 
   /**
+   * @brief Sets the gravity vector
+   */
+  void set_gravity(Eigen::Vector3d gravity);
+
+  /**
    * @brief Integrates the internal \ref state for a given ``dt``
    *
    * This will first update qd from qdd, and then q from qd

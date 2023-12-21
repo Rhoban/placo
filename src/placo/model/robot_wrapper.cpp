@@ -578,6 +578,11 @@ Eigen::MatrixXd RobotWrapper::mass_matrix()
   return M;
 }
 
+void RobotWrapper::set_gravity(Eigen::Vector3d gravity)
+{
+  model.gravity.linear() = gravity;
+}
+
 void RobotWrapper::integrate(double dt)
 {
   // If qd is not set, initialize to 0
