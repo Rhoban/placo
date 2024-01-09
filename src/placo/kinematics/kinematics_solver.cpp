@@ -337,7 +337,9 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
     robot.state.q = pinocchio::integrate(robot.model, robot.state.q, qd_sol);
     if (dt > 0)
     {
+      auto qd_save = robot.state.qd;
       robot.state.qd = pinocchio::difference(robot.model, q_save, robot.state.q) / dt;
+      robot.state.qdd = (robot.state.qd - qd_save) / dt;
     }
   }
   else

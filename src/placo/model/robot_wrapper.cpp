@@ -261,6 +261,8 @@ RobotWrapper::State RobotWrapper::neutral_state()
   state.q = pinocchio::neutral(model);
   state.qd = Eigen::VectorXd(model.nv);
   state.qd.setZero();
+  state.qdd = Eigen::VectorXd(model.nv);
+  state.qdd.setZero();
 
   return state;
 }

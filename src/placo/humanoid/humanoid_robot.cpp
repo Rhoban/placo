@@ -132,13 +132,43 @@ Eigen::Vector3d HumanoidRobot::get_com_velocity(Side support, Eigen::Vector3d om
   Eigen::MatrixXd J_u = J.leftCols(6);
   Eigen::MatrixXd J_a = J.rightCols(20);
 
-  // XXX : is it better to use pseudo_invers or inverse ?
   Eigen::MatrixXd J_u_pinv = J_u.completeOrthogonalDecomposition().pseudoInverse();
 
   Eigen::VectorXd M(6);
   M << 0, 0, 0, omega_b;
 
   return J_u_C * J_u_pinv * M + (J_a_C - J_u_C * J_u_pinv * J_a) * state.qd.block(6, 0, model.nv - 6, 1);
+}
+
+Eigen::VectorXd HumanoidRobot::get_torques(Eigen::VectorXd acc_a, Eigen::VectorXd contact_forces)
+{
+  // Contact Jacobians
+  int nb_contacts = contact_forces.size();
+  Eigen::MatrixXd J_c = Eigen::MatrixXd::Zero(model.nv, nb_contacts);
+  for (int i = 0; i < nb_contacts; i++)
+  {
+    if (i < nb_contacts/2)
+    {
+      J_c.col(i) = frame_jacobian("left_ps_" + std::to_string(i), "local").transpose().col(2);
+    }
+    else
+    {
+      J_c.col(i) = frame_jacobian("right_ps_" + std::to_string(i - nb_contacts/2), "local").transpose().col(2);
+    }
+  }
+
+  // Mass matrix and non linear effects
+  Eigen::MatrixXd M = mass_matrix();
+  Eigen::MatrixXd M_u = M.topLeftCorner(6, 6);
+  Eigen::VectorXd h = non_linear_effects();
+  Eigen::VectorXd h_u = h.head(6);
+
+  // Unactuated DoFs acceleration (floating base)
+  Eigen::VectorXd acc_u = M_u.inverse() * ((J_c * contact_forces).head(6) - h_u);
+  Eigen::VectorXd acc(acc_u.size() + acc_a.size());
+  acc << acc_u, acc_a;
+
+  return M * acc + h - J_c * contact_forces;
 }
 
 Eigen::Vector2d HumanoidRobot::dcm(Eigen::Vector2d com_velocity, double omega)

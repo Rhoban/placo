@@ -57,6 +57,14 @@ public:
   Eigen::Vector3d get_com_velocity(Side support, Eigen::Vector3d omega_b);
 
   /**
+   * @brief Compute the torques of the motors from the contact forces
+   * @param acc_a Accelerations of the actuated DoFs
+   * @param contact_forces Contact forces from the feet (forces are supposed normal to the ground)
+   * @return Torques of the motors
+   */
+  Eigen::VectorXd get_torques(Eigen::VectorXd acc_a, Eigen::VectorXd contact_forces);
+
+  /**
    * @brief Compute the Divergent Component of Motion (DCM)
    * @param com_velocity CoM velocity
    * @param omega Natural frequency of the LIP (= sqrt(g/h))

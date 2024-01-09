@@ -87,6 +87,7 @@ void exposeTools()
       .def("biggestTimestamp", &HistoryCollection::biggestTimestamp)
       .def("startNamedLog", &HistoryCollection::startNamedLog)
       .def("stopNamedLog", &HistoryCollection::stopNamedLog)
+      .def("getTimestamps", &HistoryCollection::getTimestamps)
       .def(
           "number", +[](HistoryCollection& collection, std::string name,
                         double t) { return collection.number(name)->interpolate(t); })

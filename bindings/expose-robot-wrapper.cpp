@@ -171,6 +171,24 @@ void exposeRobotWrapper()
       .def("dcm", &HumanoidRobot::dcm)
       .def("zmp", &HumanoidRobot::zmp)
       .def("other_side", &HumanoidRobot::other_side)
+      .def(
+          "get_torques",
+          +[](HumanoidRobot& robot, Eigen::VectorXd qdd_a, Eigen::VectorXd contact_forces) {
+            return robot.get_torques(qdd_a, contact_forces);
+          })
+      .def(
+          "get_torques_dict",
+            +[](HumanoidRobot& robot, Eigen::VectorXd qdd_a, Eigen::VectorXd contact_forces) {
+            auto torques = robot.get_torques(qdd_a, contact_forces);
+            boost::python::dict dict;
+
+            for (auto& dof : robot.actuated_joint_names())
+            {
+              dict[dof] = torques[robot.get_joint_v_offset(dof) - 6];
+            }
+            
+            return dict;
+          })
 #ifdef HAVE_RHOBAN_UTILS
       .def("read_from_histories", &HumanoidRobot::read_from_histories, read_from_histories_overloads())
 #endif
