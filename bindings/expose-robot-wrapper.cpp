@@ -184,7 +184,7 @@ void exposeRobotWrapper()
             auto torques = robot.get_torques(qdd_a, contact_forces);
             boost::python::dict dict;
 
-            for (auto& dof : robot.actuated_joint_names())
+            for (auto& dof : robot.joint_names())
             {
               dict[dof] = torques[robot.get_joint_v_offset(dof) - 6];
             }
