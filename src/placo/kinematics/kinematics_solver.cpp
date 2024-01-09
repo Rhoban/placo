@@ -101,6 +101,18 @@ RelativeFrameTask KinematicsSolver::add_relative_frame_task(std::string frame_a,
   return add_relative_frame_task(robot.get_frame_index(frame_a), robot.get_frame_index(frame_b), T_a_b);
 }
 
+AxisAlignTask& KinematicsSolver::add_axisalign_task(model::RobotWrapper::FrameIndex frame, Eigen::Vector3d axis_frame,
+                                                    Eigen::Vector3d targetAxis_world)
+{
+  return add_task(new AxisAlignTask(frame, axis_frame, targetAxis_world));
+}
+
+AxisAlignTask& KinematicsSolver::add_axisalign_task(std::string frame, Eigen::Vector3d axis_frame,
+                                                    Eigen::Vector3d target_axis_world)
+{
+  return add_axisalign_task(robot.get_frame_index(frame), axis_frame, target_axis_world);
+}
+
 JointsTask& KinematicsSolver::add_joints_task(std::map<std::string, double>& joints)
 {
   JointsTask& task = add_task(new JointsTask());
@@ -145,8 +157,7 @@ WheelTask& KinematicsSolver::add_wheel_task(std::string joint, double radius, bo
 RegularizationTask& KinematicsSolver::add_regularization_task(double magnitude)
 {
   RegularizationTask& task = add_task(new RegularizationTask());
-  task.set_name("regularization");
-  task.set_weight(magnitude);
+  task.configure("regularization", Task::Priority::Soft, magnitude);
 
   return task;
 }
@@ -161,15 +172,15 @@ CoMPolygonConstraint& KinematicsSolver::add_com_polygon_constraint(std::vector<E
   return add_constraint(new CoMPolygonConstraint(polygon, margin));
 }
 
-ConeConstraint& KinematicsSolver::add_cone_constraint(model::RobotWrapper::FrameIndex frame, double alpha_max,
-                                                      Eigen::Affine3d T_world_cone)
+ConeConstraint& KinematicsSolver::add_cone_constraint(model::RobotWrapper::FrameIndex frame_a,
+                                                      model::RobotWrapper::FrameIndex frame_b, double angle_max)
 {
-  return add_constraint(new ConeConstraint(frame, alpha_max, T_world_cone));
+  return add_constraint(new ConeConstraint(frame_a, frame_b, angle_max));
 }
 
-ConeConstraint& KinematicsSolver::add_cone_constraint(std::string frame, double alpha_max, Eigen::Affine3d T_world_cone)
+ConeConstraint& KinematicsSolver::add_cone_constraint(std::string frame_a, std::string frame_b, double angle_max)
 {
-  return add_cone_constraint(robot.get_frame_index(frame), alpha_max, T_world_cone);
+  return add_cone_constraint(robot.get_frame_index(frame_a), robot.get_frame_index(frame_b), angle_max);
 }
 
 void KinematicsSolver::mask_dof(std::string dof)
@@ -262,6 +273,12 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
   for (auto task : tasks)
   {
     task->update();
+
+    // Skipping empty tasks
+    if (task->A.rows() == 0)
+    {
+      continue;
+    }
 
     // This could be written (task->A * qd->expr() == task->b), but would come with the
     // significant cost of multiplying A with identity matrix for each task

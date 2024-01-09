@@ -16,6 +16,7 @@
 #include "placo/dynamics/relative_orientation_task.h"
 #include "placo/dynamics/relative_frame_task.h"
 #include "placo/dynamics/joints_task.h"
+#include "placo/dynamics/torque_task.h"
 #include "placo/dynamics/gear_task.h"
 #include "placo/dynamics/com_task.h"
 
@@ -58,12 +59,6 @@ public:
 
   // Passive joints
   std::map<std::string, PassiveJoint> passive_joints;
-
-  /**
-   * @brief Sets the robot as static, this will impose the joint accelerations to be zero
-   * @param is_static whether the robot should be static
-   */
-  void set_static(bool is_static);
 
   /**
    * @brief Sets a DoF as passive, the corresponding tau will be fixed in the equation of motion
@@ -201,10 +196,15 @@ public:
 
   /**
    * @brief Adds a joints task
-   * @param target target joints values
    * @return joints task
    */
   JointsTask& add_joints_task();
+
+  /**
+   * @brief Adds a torque task
+   * @return torque task
+   */
+  TorqueTask& add_torque_task();
 
   /**
    * @brief Adds a gear task, allowing replication of a joint. This can be used to implement timing belt, if coupled
@@ -338,7 +338,7 @@ public:
    */
   void dump_status();
 
-  Result solve();
+  Result solve(bool integrate = false);
 
   /**
    * @brief Masks (disables a DoF) from being used by the QP solver (it can't provide speed)
@@ -386,7 +386,7 @@ public:
   /**
    * @brief Global friction that is added to all the joints
    */
-  double friction = 1e-3;
+  double friction = 0.;
 
   /**
    * @brief Solver dt (seconds)
@@ -404,9 +404,9 @@ public:
   double qdd_safe = 1.;
 
   /**
-   * @brief If true, the solver will try to optimize the contact forces by removing variables
+   * @brief Use gravity only (no coriolis, no centrifugal)
    */
-  bool optimize_contact_forces = false;
+  bool gravity_only = false;
 
   /**
    * @brief Instance of the problem
@@ -485,8 +485,7 @@ public:
   }
 
 protected:
-  // Masked DoFs (enforce zero acceleration)
-  std::set<int> masked_dof;
+  // Disables floating base
   bool masked_fbase;
 
   // Tasks
@@ -504,8 +503,5 @@ protected:
   bool joint_limits = false;
   bool velocity_vs_torque_limits = false;
   bool velocity_limits = false;
-
-  // If true, the solver will assume qdd = 0
-  bool is_static = false;
 };
 }  // namespace placo::dynamics

@@ -13,7 +13,7 @@ author = 'Rhoban Team'
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ['sphinx.ext.autodoc', 'sphinx_copybutton', 'sphinxcontrib.video']
+extensions = ['sphinx.ext.autodoc', 'sphinx_copybutton', 'sphinxcontrib.video', 'sphinx.ext.mathjax']
 
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
@@ -24,8 +24,8 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 html_theme = "pydata_sphinx_theme"
 
 html_theme_options = {
-    "show_nav_level": 2,
-    "show_toc_level": 2,
+    "show_nav_level": 1,
+    "show_toc_level": 1,
     "icon_links": [
         {
             # Label for this link

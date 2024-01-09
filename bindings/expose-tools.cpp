@@ -56,9 +56,6 @@ void exposeTools()
       .add_property("name", &Prioritized::name)
       .add_property(
           "priority", +[](Prioritized& pri) { return pri.priority_name(); })
-      .def("set_priority", &Prioritized::set_priority)
-      .def("set_weight", &Prioritized::set_weight)
-      .def("set_name", &Prioritized::set_name)
       .def<void (Prioritized::*)(std::string, std::string, double)>("configure", &Prioritized::configure,
                                                                     configure_overloads());
 
@@ -75,7 +72,6 @@ void exposeTools()
       .def("add_point", &CubicSpline3D::add_point)
       .def("clear", &CubicSpline3D::clear)
       .def("duration", &CubicSpline3D::duration);
-      
 
 #ifdef HAVE_RHOBAN_UTILS
   using namespace rhoban_utils;

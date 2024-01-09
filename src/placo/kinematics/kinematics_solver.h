@@ -20,6 +20,7 @@
 #include "placo/kinematics/wheel_task.h"
 #include "placo/kinematics/regularization_task.h"
 #include "placo/kinematics/centroidal_momentum_task.h"
+#include "placo/kinematics/axis_align_task.h"
 
 // Constraints
 #include "placo/kinematics/constraint.h"
@@ -215,6 +216,25 @@ public:
   DistanceTask& add_distance_task(std::string frame_a, std::string frame_b, double distance);
 
   /**
+   * @brief Adds an axis alignment task. The goal here is to keep the given axis (expressed in the given frame) aligned
+   * with another one (given in the world)
+   * @param frame the robot frame we want to control
+   * @param axis_frame the axis to align, expressed in the robot frame
+   * @param targetAxis_world the target axis (in the world) we want to be aligned with
+   */
+  AxisAlignTask& add_axisalign_task(model::RobotWrapper::FrameIndex frame, Eigen::Vector3d axis_frame,
+                                    Eigen::Vector3d targetAxis_world);
+
+  /**
+   * @brief Adds an axis alignment task. The goal here is to keep the given axis (expressed in the given frame) aligned
+   * with another one (given in the world)
+   * @param frame the robot frame we want to control
+   * @param axis_frame the axis to align, expressed in the robot frame
+   * @param targetAxis_world the target axis (in the world) we want to be aligned with
+   */
+  AxisAlignTask& add_axisalign_task(std::string frame, Eigen::Vector3d axis_frame, Eigen::Vector3d targetAxis_world);
+
+  /**
    * @brief Adding a centroidal momentum task
    * @param L_world desired centroidal angular momentum in the world
    * @return centroidal task
@@ -244,24 +264,25 @@ public:
 
   /**
    * @brief Adds a Cone constraint
-   * @param frame frame
+   * @param frame_a frame A
+   * @param frame_b frame B
    * @param alpha_max alpha max (in radians) between the frame z-axis and the cone frame zt-axis
    * @param T_world_cone cone frame
    * @return constraint
    * @pyignore
    */
-  ConeConstraint& add_cone_constraint(model::RobotWrapper::FrameIndex frame, double alpha_max,
-                                      Eigen::Affine3d T_world_cone = Eigen::Affine3d::Identity());
+  ConeConstraint& add_cone_constraint(model::RobotWrapper::FrameIndex frame_a, model::RobotWrapper::FrameIndex frame_b,
+                                      double alpha_max);
 
   /**
    * @brief Adds a Cone constraint
-   * @param frame frame
+   * @param frame_a frame A
+   * @param frame_b frame B
    * @param alpha_max alpha max (in radians) between the frame z-axis and the cone frame zt-axis
    * @param T_world_cone cone frame
    * @return constraint
    */
-  ConeConstraint& add_cone_constraint(std::string frame, double alpha_max,
-                                      Eigen::Affine3d T_world_cone = Eigen::Affine3d::Identity());
+  ConeConstraint& add_cone_constraint(std::string frame_a, std::string frame_b, double alpha_max);
 
   /**
    * @brief Constructs the QP problem and solves it

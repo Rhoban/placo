@@ -1,4 +1,0 @@
-Kinematics
-==========
-
-TODO

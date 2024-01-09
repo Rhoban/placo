@@ -13,6 +13,8 @@ using namespace placo;
 using namespace placo::kinematics;
 using namespace placo::model;
 
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(frametask_configure_overloads, configure, 2, 4);
+
 void exposeKinematics()
 {
   class_<KinematicsSolver> solver_class =
@@ -47,6 +49,10 @@ void exposeKinematics()
           .def<RelativeFrameTask (KinematicsSolver::*)(std::string, std::string, Eigen::Affine3d)>(
               "add_relative_frame_task", &KinematicsSolver::add_relative_frame_task)
 
+          // Axis align task
+          .def<AxisAlignTask& (KinematicsSolver::*)(std::string, Eigen::Vector3d, Eigen::Vector3d)>(
+              "add_axisalign_task", &KinematicsSolver::add_axisalign_task, return_internal_reference<>())
+
           // Joint task
           .def<JointsTask& (KinematicsSolver::*)(void)>("add_joints_task", &KinematicsSolver::add_joints_task,
                                                         return_internal_reference<>())
@@ -80,7 +86,7 @@ void exposeKinematics()
                return_internal_reference<>())
 
           // Cone constraint
-          .def<ConeConstraint& (KinematicsSolver::*)(std::string, double, Eigen::Affine3d)>(
+          .def<ConeConstraint& (KinematicsSolver::*)(std::string, std::string, double)>(
               "add_cone_constraint", &KinematicsSolver::add_cone_constraint, return_internal_reference<>())
 
           // Masking/unmasking DoFs
@@ -154,7 +160,7 @@ void exposeKinematics()
       .def(
           "orientation", +[](const FrameTask& task) -> OrientationTask& { return *task.orientation; },
           return_internal_reference<>())
-      .def("configure", &FrameTask::configure)
+      .def("configure", &FrameTask::configure, frametask_configure_overloads())
       .add_property("T_world_frame", &FrameTask::get_T_world_frame, &FrameTask::set_T_world_frame);
 
   class__<RelativeFrameTask>("RelativeFrameTask", init<RelativePositionTask&, RelativeOrientationTask&>())
@@ -165,8 +171,17 @@ void exposeKinematics()
       .def(
           "orientation", +[](const RelativeFrameTask& task) -> RelativeOrientationTask& { return task.orientation; },
           return_internal_reference<>())
-      .def("configure", &RelativeFrameTask::configure)
+      .def("configure", &RelativeFrameTask::configure, frametask_configure_overloads())
       .add_property("T_a_b", &RelativeFrameTask::get_T_a_b, &RelativeFrameTask::set_T_a_b);
+
+  class__<AxisAlignTask, bases<Task>>("AxisAlignTask",
+                                      init<RobotWrapper::FrameIndex, Eigen::Vector3d, Eigen::Vector3d>())
+      .add_property("frame_index", &AxisAlignTask::frame_index)
+      .add_property(
+          "axis_frame", +[](const AxisAlignTask& task) { return task.axis_frame; }, &AxisAlignTask::axis_frame)
+      .add_property(
+          "targetAxis_world", +[](const AxisAlignTask& task) { return task.targetAxis_world; },
+          &AxisAlignTask::targetAxis_world);
 
   class__<JointsTask, bases<Task>>("JointsTask", init<>())
       .def("set_joint", &JointsTask::set_joint)
@@ -175,7 +190,9 @@ void exposeKinematics()
             update_map<std::string, double>(task.joints, py_dict);
           });
 
-  class__<GearTask, bases<Task>>("GearTask", init<>()).def("set_gear", &GearTask::set_gear);
+  class__<GearTask, bases<Task>>("GearTask", init<>())
+      .def("set_gear", &GearTask::set_gear)
+      .def("add_gear", &GearTask::add_gear);
 
   class__<WheelTask, bases<Task>>("WheelTask", init<std::string, double, bool>())
       .add_property("joint", &WheelTask::joint)
@@ -205,12 +222,9 @@ void exposeKinematics()
       .def_readwrite("polygon", &CoMPolygonConstraint::polygon)
       .def_readwrite("margin", &CoMPolygonConstraint::margin);
 
-  class__<ConeConstraint, bases<Constraint>>("ConesConstraint",
-                                             init<model::RobotWrapper::FrameIndex, double, Eigen::Affine3d>())
-      .add_property(
-          "T_world_cone", +[](const ConeConstraint& constraint) { return constraint.T_world_cone; },
-          &ConeConstraint::T_world_cone)
-      .def_readwrite("alpha_max", &ConeConstraint::alpha_max)
+  class__<ConeConstraint, bases<Constraint>>(
+      "ConeConstraint", init<model::RobotWrapper::FrameIndex, model::RobotWrapper::FrameIndex, double>())
+      .def_readwrite("angle_max", &ConeConstraint::angle_max)
       .def_readwrite("N", &ConeConstraint::N)
       .def_readwrite("range", &ConeConstraint::range);
 }

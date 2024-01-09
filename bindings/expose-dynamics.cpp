@@ -12,6 +12,10 @@ using namespace placo;
 using namespace placo::dynamics;
 using namespace placo::model;
 
+// Overloads
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(set_passive_overloads, set_passive, 1, 4);
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(solve_overloads, solve, 0, 1);
+
 void exposeDynamics()
 {
   class__<DynamicsSolver::Result>("DynamicsSolverResult")
@@ -24,7 +28,7 @@ void exposeDynamics()
           "tau_dict", +[](const DynamicsSolver::Result& result, RobotWrapper& robot) {
             boost::python::dict dict;
 
-            for (auto& dof : robot.actuated_joint_names())
+            for (auto& dof : robot.joint_names())
             {
               dict[dof] = result.tau[robot.get_joint_v_offset(dof)];
             }
@@ -75,7 +79,8 @@ void exposeDynamics()
       .def_readwrite("friction", &DynamicsSolver::friction)
       .def_readwrite("dt", &DynamicsSolver::dt)
       .def_readwrite("qdd_safe", &DynamicsSolver::qdd_safe)
-      .def_readwrite("optimize_contact_forces", &DynamicsSolver::optimize_contact_forces)
+      .def_readwrite("gravity_only", &DynamicsSolver::gravity_only)
+      .def("mask_fbase", &DynamicsSolver::mask_fbase)
       .def("add_point_contact", &DynamicsSolver::add_point_contact, return_internal_reference<>())
       .def("add_unilateral_point_contact", &DynamicsSolver::add_unilateral_point_contact, return_internal_reference<>())
       .def("add_relative_point_contact", &DynamicsSolver::add_relative_point_contact, return_internal_reference<>())
@@ -90,14 +95,13 @@ void exposeDynamics()
            return_internal_reference<>())
       .def("add_reaction_ratio_constraint", &DynamicsSolver::add_reaction_ratio_constraint,
            return_internal_reference<>())
-      .def("set_passive", &DynamicsSolver::set_passive)
+      .def("set_passive", &DynamicsSolver::set_passive, set_passive_overloads())
       .def("enable_velocity_limits", &DynamicsSolver::enable_velocity_limits)
       .def("enable_velocity_vs_torque_limits", &DynamicsSolver::enable_velocity_vs_torque_limits)
       .def("enable_joint_limits", &DynamicsSolver::enable_joint_limits)
       .def("enable_torque_limits", &DynamicsSolver::enable_torque_limits)
       .def("dump_status", &DynamicsSolver::dump_status)
-      .def("set_static", &DynamicsSolver::set_static)
-      .def("solve", &DynamicsSolver::solve)
+      .def("solve", &DynamicsSolver::solve, solve_overloads())
       .def<void (DynamicsSolver::*)(Task&)>("add_task", &DynamicsSolver::add_task)
       .def<void (DynamicsSolver::*)(Constraint&)>("add_constraint", &DynamicsSolver::add_constraint)
       .def<void (DynamicsSolver::*)(Constraint&)>("add_constraint", &DynamicsSolver::add_constraint)
@@ -124,6 +128,8 @@ void exposeDynamics()
           "add_relative_frame_task", &DynamicsSolver::add_relative_frame_task)
       .def<JointsTask& (DynamicsSolver::*)()>("add_joints_task", &DynamicsSolver::add_joints_task,
                                               return_internal_reference<>())
+      .def<TorqueTask& (DynamicsSolver::*)()>("add_torque_task", &DynamicsSolver::add_torque_task,
+                                              return_internal_reference<>())
       .def<GearTask& (DynamicsSolver::*)()>("add_gear_task", &DynamicsSolver::add_gear_task,
                                             return_internal_reference<>())
       .def<CoMTask& (DynamicsSolver::*)(Eigen::Vector3d)>("add_com_task", &DynamicsSolver::add_com_task,
@@ -135,8 +141,10 @@ void exposeDynamics()
                                                                         &DynamicsSolver::add_frame_task);
 
   class__<Task, bases<tools::Prioritized>, boost::noncopyable>("DynamicsTask", no_init)
-      .add_property("A", +[](const Task& task) { return task.A; })
-      .add_property("b", +[](const Task& task) { return task.b; })
+      .add_property(
+          "A", +[](const Task& task) { return task.A; })
+      .add_property(
+          "b", +[](const Task& task) { return task.b; })
       .add_property("kp", &Task::kp, &Task::kp)
       .add_property("kd", &Task::kd, &Task::kd)
       .add_property("critically_damped", &Task::critically_damped, &Task::critically_damped)
@@ -225,7 +233,11 @@ void exposeDynamics()
             update_map<std::string, double>(task.djoints, py_dict);
           });
 
-  class__<GearTask, bases<Task>>("DynamicsGearTask", init<>()).def("set_gear", &GearTask::set_gear);
+  class__<TorqueTask, bases<Task>>("DynamicsTorqueTask", init<>()).def("set_torque", &TorqueTask::set_torque);
+
+  class__<GearTask, bases<Task>>("DynamicsGearTask", init<>())
+      .def("set_gear", &GearTask::set_gear)
+      .def("add_gear", &GearTask::add_gear);
 
   class__<Constraint, bases<tools::Prioritized>, boost::noncopyable>("DynamicsConstraint", no_init);
 

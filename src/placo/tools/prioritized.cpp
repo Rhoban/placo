@@ -32,26 +32,6 @@ Prioritized::~Prioritized()
 {
 }
 
-void Prioritized::set_priority_value(Priority priority_)
-{
-  priority = priority_;
-}
-
-void Prioritized::set_priority(std::string priority)
-{
-  priority = priority_from_string(priority);
-}
-
-void Prioritized::set_weight(double weight_)
-{
-  weight = weight_;
-}
-
-void Prioritized::set_name(std::string name_)
-{
-  name = name_;
-}
-
 void Prioritized::configure(std::string name_, std::string priority_, double weight_)
 {
   name = name_;

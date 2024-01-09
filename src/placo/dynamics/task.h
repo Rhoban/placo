@@ -75,6 +75,11 @@ public:
   bool critically_damped = true;
 
   /**
+   * @brief If true, the task is about tau and not about qdd
+   */
+  bool tau_task = false;
+
+  /**
    * @brief Gets the kd to actually use
    * @return if critically_damped, kd will be computed from kp, otherwise kd will be returned
    */

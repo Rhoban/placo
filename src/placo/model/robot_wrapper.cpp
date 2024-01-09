@@ -197,7 +197,7 @@ void RobotWrapper::set_torque_limit(const std::string& name, double limit)
 
 void RobotWrapper::set_velocity_limits(double limit)
 {
-  for (auto& name : actuated_joint_names())
+  for (auto& name : joint_names())
   {
     set_velocity_limit(name, limit);
   }
@@ -580,6 +580,11 @@ Eigen::MatrixXd RobotWrapper::mass_matrix()
   return M;
 }
 
+void RobotWrapper::set_gravity(Eigen::Vector3d gravity)
+{
+  model.gravity.linear() = gravity;
+}
+
 void RobotWrapper::integrate(double dt)
 {
   // If qd is not set, initialize to 0
@@ -641,16 +646,14 @@ Eigen::VectorXd RobotWrapper::torques_from_acceleration_with_fixed_frame(Eigen::
   return torques_from_acceleration_with_fixed_frame(qdd_a, get_frame_index(frame));
 }
 
-std::vector<std::string> RobotWrapper::joint_names()
+std::vector<std::string> RobotWrapper::joint_names(bool include_floating_base)
 {
-  return model.names;
-}
-
-std::vector<std::string> RobotWrapper::actuated_joint_names()
-{
-  std::vector<std::string> joints = joint_names();
-  joints.erase(std::remove(joints.begin(), joints.end(), "universe"), joints.end());
-  joints.erase(std::remove(joints.begin(), joints.end(), "root_joint"), joints.end());
+  std::vector<std::string> joints = model.names;
+  if (!include_floating_base)
+  {
+    joints.erase(std::remove(joints.begin(), joints.end(), "universe"), joints.end());
+    joints.erase(std::remove(joints.begin(), joints.end(), "root_joint"), joints.end());
+  }
   return joints;
 }
 
