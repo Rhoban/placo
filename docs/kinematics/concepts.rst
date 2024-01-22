@@ -54,54 +54,6 @@ or ``scaled`` tasks.
       enforcing :math:`0 \leq \lambda \leq 1`, and adding :math:`\lVert \lambda - 1 \rVert^2` to the objective function
       to encourage the scaling factor to be close to 1.
 
-.. _regularization:    
-
-Regularization
---------------
-
-Default L2 regularization
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Specified tasks might lead to an under-constrained problem, where an infinite number of solutions exist.
-In that case, the solver will try to minimize the norm of the configuration variation, which will lead to
-a solution that is as close as possible to the current configuration.
-
-This is because a very low weighted cost is always present in front of the norm of the configuration variation
-:math:`\lVert \Delta q \rVert^2`.
-
-Custom L2 regularization
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-You can add your own regularization by adding a :func:`RegularizationTask <placo.RegularizationTask>`:
-
-.. code-block:: python
-
-    # Adding a custom regularization task
-    regularization_task = solver.add_regularization_task(1e-4)
-
-The greater is the provided regularization value, the more expansive it will be for the solver to move
-any joint.
-
-Posture regularization
-~~~~~~~~~~~~~~~~~~~~~~
-
-Another way to regularize the problem is using a posture regularization. This can be achieved with *e.g*
-a :func:`JointsTask <placo.JointsTask>`:
-
-.. code-block:: python
-
-    # Adding a posture regularization task
-    joints_task = solver.add_joints_task()
-    joints_task.set_joints({
-        joint: 0.0
-        for joint in robot.joint_names()
-    })
-    joints_task.configure("posture", "soft", 1e-5)
-
-
-Here, the joints task is setting a target to zero for all joints with a small soft weight of *1e-5*.
-When no tasks are specified, the joints will go back to those positions.
-
 Constraints
 -----------
 
