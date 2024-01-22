@@ -40,7 +40,7 @@ any joint.
 
 .. admonition:: 6-axis regularization (custom strong L2)
 
-    If you pass ``--strong_l2`` to the following example, a strong $10^{2}$ L2 regularization will be used.
+    If you pass ``--strong_l2`` to the following example, a strong :math:`10^{2}` L2 regularization will be used.
     This will create a strong cost against the motion and cause the robot to lag behind its target.
     
     .. video:: https://github.com/Rhoban/placo-examples/raw/master/kinematics/videos/6axis_regularization_strong_l2.mp4
@@ -72,7 +72,7 @@ When no tasks are specified, the joints will go back to those positions.
 
 .. admonition:: 6-axis regularization (posture)
 
-    If you pass ``--posture`` to the following example, a joint task with $10^{-6}$ weight will be used.
+    If you pass ``--posture`` to the following example, a joint task with :math:`10^{-6}` weight will be used.
     Note that the pose of the robot is slightly different from the default regularization
     
     .. video:: https://github.com/Rhoban/placo-examples/raw/master/kinematics/videos/6axis_regularization_posture.mp4
@@ -93,7 +93,7 @@ a :func:`KineticEnergyRegularizationTask <placo.KineticEnergyRegularizationTask>
     # Adding a kinetic energy regularization task
     kinetic_energy_task = solver.add_kinetic_energy_regularization_task(1e-6)
 
-This will minimise $\frac{1}{2} \dot{q}^T M \dot{q}$, where $M$ is the inertia matrix of the robot.
+This will minimise :math:`\frac{1}{2} \dot{q}^T M \dot{q}`, where :math:`M` is the inertia matrix of the robot.
 
 .. note::
 
@@ -108,7 +108,7 @@ This will minimise $\frac{1}{2} \dot{q}^T M \dot{q}$, where $M$ is the inertia m
   
 .. admonition:: 6-axis regularization (kinetic energy)
 
-  If you pass ``--kinetic`` to the following example, a kinetic energy regularization task with $10^{-6}$
+  If you pass ``--kinetic`` to the following example, a kinetic energy regularization task with :math:`10^{-6}`
   weight will be used. Since the energy is weighted by the mass matrix, the end of the arm will
   be more used than the base.
   
