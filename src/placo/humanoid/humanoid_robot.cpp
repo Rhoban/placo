@@ -168,10 +168,6 @@ Eigen::VectorXd HumanoidRobot::get_torques(Eigen::VectorXd acc_a, Eigen::VectorX
   Eigen::VectorXd acc(acc_u.size() + acc_a.size());
   acc << acc_u, acc_a;
 
-  std::cout << "h: " << h.transpose() << std::endl;
-  std::cout << "J_c: " << J_c << std::endl;
-  std::cout << "acc: " << acc.transpose() << std::endl;
-
   return M * acc + h - J_c * contact_forces;
 }
 
