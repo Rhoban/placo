@@ -143,17 +143,16 @@ Eigen::Vector3d HumanoidRobot::get_com_velocity(Side support, Eigen::Vector3d om
 Eigen::VectorXd HumanoidRobot::get_torques(Eigen::VectorXd acc_a, Eigen::VectorXd contact_forces, bool use_non_linear_effects)
 {
   // Contact Jacobians
-  int nb_contacts = contact_forces.size();
-  Eigen::MatrixXd J_c = Eigen::MatrixXd::Zero(model.nv, nb_contacts);
-  for (int i = 0; i < nb_contacts; i++)
+  Eigen::MatrixXd J_c = Eigen::MatrixXd::Zero(model.nv, 8);
+  for (int i = 0; i < 8; i++)
   {
-    if (i < nb_contacts/2)
+    if (i < 4)
     {
       J_c.col(i) = frame_jacobian("left_ps_" + std::to_string(i), "local").transpose().col(2);
     }
     else
     {
-      J_c.col(i) = frame_jacobian("right_ps_" + std::to_string(i - nb_contacts/2), "local").transpose().col(2);
+      J_c.col(i) = frame_jacobian("right_ps_" + std::to_string(i - 4), "local").transpose().col(2);
     }
   }
 
@@ -161,17 +160,17 @@ Eigen::VectorXd HumanoidRobot::get_torques(Eigen::VectorXd acc_a, Eigen::VectorX
   Eigen::MatrixXd M = mass_matrix();
   Eigen::MatrixXd M_u = M.topLeftCorner(6, 6);
 
-  Eigen::VectorXd h = Eigen::VectorXd::Zero(model.nv);
-  if (use_non_linear_effects)
-  {
-    h = non_linear_effects();
-  }
+  Eigen::VectorXd h = use_non_linear_effects ? non_linear_effects() : generalized_gravity();
   Eigen::VectorXd h_u = h.head(6);
 
   // Unactuated DoFs acceleration (floating base)
   Eigen::VectorXd acc_u = M_u.inverse() * ((J_c * contact_forces).head(6) - h_u);
   Eigen::VectorXd acc(acc_u.size() + acc_a.size());
   acc << acc_u, acc_a;
+
+  std::cout << "h: " << h.transpose() << std::endl;
+  std::cout << "J_c: " << J_c << std::endl;
+  std::cout << "acc: " << acc.transpose() << std::endl;
 
   return M * acc + h - J_c * contact_forces;
 }
