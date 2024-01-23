@@ -77,6 +77,10 @@ void exposeKinematics()
           // Regularization task
           .def("add_regularization_task", &KinematicsSolver::add_regularization_task, return_internal_reference<>())
 
+          // Kinetic energy regularization task
+          .def("add_kinetic_energy_regularization_task", &KinematicsSolver::add_kinetic_energy_regularization_task,
+               return_internal_reference<>())
+
           // Avoid self collisions constraint
           .def("add_avoid_self_collisions_constraint", &KinematicsSolver::add_avoid_self_collisions_constraint,
                return_internal_reference<>())
@@ -211,6 +215,8 @@ void exposeKinematics()
       .add_property("L_world", &CentroidalMomentumTask::L_world, &CentroidalMomentumTask::L_world);
 
   class__<RegularizationTask, bases<Task>>("RegularizationTask");
+
+  class__<KineticEnergyRegularizationTask, bases<RegularizationTask>>("KineticEnergyRegularizationTask");
 
   class__<Constraint, bases<tools::Prioritized>, boost::noncopyable>("KinematicsConstraint", no_init);
 

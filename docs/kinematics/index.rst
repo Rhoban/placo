@@ -7,6 +7,7 @@ Kinematics
 
     getting_started
     concepts
+    regularization
     joint_limits
     joints_mask
     solver_status
