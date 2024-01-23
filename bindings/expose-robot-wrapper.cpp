@@ -15,7 +15,7 @@ using namespace placo::model;
 using namespace placo::humanoid;
 
 #ifdef HAVE_RHOBAN_UTILS
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(read_from_histories_overloads, read_from_histories, 2, 4);
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(read_from_histories_overloads, read_from_histories, 2, 5);
 #endif
 
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(joint_names_overloads, joint_names, 0, 1);
@@ -175,18 +175,18 @@ void exposeRobotWrapper()
       .def("other_side", &HumanoidRobot::other_side)
       .def(
           "get_torques",
-          +[](HumanoidRobot& robot, Eigen::VectorXd qdd_a, Eigen::VectorXd contact_forces) {
-            return robot.get_torques(qdd_a, contact_forces);
+          +[](HumanoidRobot& robot, Eigen::VectorXd qdd_a, Eigen::VectorXd contact_forces, bool use_nle) {
+            return robot.get_torques(qdd_a, contact_forces, use_nle);
           })
       .def(
           "get_torques_dict",
-            +[](HumanoidRobot& robot, Eigen::VectorXd qdd_a, Eigen::VectorXd contact_forces) {
-            auto torques = robot.get_torques(qdd_a, contact_forces);
+            +[](HumanoidRobot& robot, Eigen::VectorXd qdd_a, Eigen::VectorXd contact_forces, bool use_nle) {
+            auto torques = robot.get_torques(qdd_a, contact_forces, use_nle);
             boost::python::dict dict;
 
             for (auto& dof : robot.joint_names())
             {
-              dict[dof] = torques[robot.get_joint_v_offset(dof) - 6];
+              dict[dof] = torques[robot.get_joint_v_offset(dof)];
             }
             
             return dict;

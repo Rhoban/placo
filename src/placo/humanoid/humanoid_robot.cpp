@@ -140,7 +140,7 @@ Eigen::Vector3d HumanoidRobot::get_com_velocity(Side support, Eigen::Vector3d om
   return J_u_C * J_u_pinv * M + (J_a_C - J_u_C * J_u_pinv * J_a) * state.qd.block(6, 0, model.nv - 6, 1);
 }
 
-Eigen::VectorXd HumanoidRobot::get_torques(Eigen::VectorXd acc_a, Eigen::VectorXd contact_forces)
+Eigen::VectorXd HumanoidRobot::get_torques(Eigen::VectorXd acc_a, Eigen::VectorXd contact_forces, bool use_non_linear_effects)
 {
   // Contact Jacobians
   int nb_contacts = contact_forces.size();
@@ -160,7 +160,12 @@ Eigen::VectorXd HumanoidRobot::get_torques(Eigen::VectorXd acc_a, Eigen::VectorX
   // Mass matrix and non linear effects
   Eigen::MatrixXd M = mass_matrix();
   Eigen::MatrixXd M_u = M.topLeftCorner(6, 6);
-  Eigen::VectorXd h = non_linear_effects();
+
+  Eigen::VectorXd h = Eigen::VectorXd::Zero(model.nv);
+  if (use_non_linear_effects)
+  {
+    h = non_linear_effects();
+  }
   Eigen::VectorXd h_u = h.head(6);
 
   // Unactuated DoFs acceleration (floating base)
@@ -212,17 +217,29 @@ bool HumanoidRobot::camera_look_at(double& pan, double& tilt, const Eigen::Vecto
 
 #ifdef HAVE_RHOBAN_UTILS
 void HumanoidRobot::read_from_histories(rhoban_utils::HistoryCollection& histories, double timestamp,
-                                        std::string source, bool use_imu)
+                                        std::string source, bool use_imu, Eigen::VectorXd qd_joints)
 {
   // Updating DOFs from replay
   for (const std::string& name : joint_names())
   {
     set_joint(name, histories.number(source + ":" + name)->interpolate(timestamp));
+    if (qd_joints.size() > 1)
+    {
+      set_joint_velocity(name, qd_joints[get_joint_v_offset(name) - 6]);
+    }
   }
 
   // Set the support
-  double left_pressure = histories.number("left_pressure_weight")->interpolate(timestamp);
-  double right_pressure = histories.number("right_pressure_weight")->interpolate(timestamp);
+  double left_pressure = histories.number("left_pressure_0")->interpolate(timestamp) +
+                         histories.number("left_pressure_1")->interpolate(timestamp) +
+                         histories.number("left_pressure_2")->interpolate(timestamp) +
+                         histories.number("left_pressure_3")->interpolate(timestamp);
+
+  double right_pressure = histories.number("right_pressure_0")->interpolate(timestamp) +
+                          histories.number("right_pressure_1")->interpolate(timestamp) +
+                          histories.number("right_pressure_2")->interpolate(timestamp) +
+                          histories.number("right_pressure_3")->interpolate(timestamp);
+
   if (left_pressure > right_pressure)
   {
     update_support_side(Left);
@@ -242,6 +259,32 @@ void HumanoidRobot::read_from_histories(rhoban_utils::HistoryCollection& histori
 
     Eigen::Matrix3d R_world_trunk = pinocchio::rpy::rpyToMatrix(imuRoll, imuPitch, imuYaw);
     update_from_imu(R_world_trunk);
+  }
+
+  // Setting the floating base velocity (TODO : check if it is correct)
+  if (qd_joints.size() > 1)
+  {
+    std::cout << "Setting floating base velocity" << std::endl;
+    std::cout << "NOT TESTED !!!" << std::endl;
+    
+    Eigen::Matrix3d R_support_trunk  = get_T_a_b(support_frame(), trunk).linear();
+    Eigen::Vector3d omega_trunk = Eigen::Vector3d(histories.number("gyro_x")->interpolate(timestamp),
+                                                  histories.number("gyro_y")->interpolate(timestamp),
+                                                  histories.number("gyro_z")->interpolate(timestamp));
+    Eigen::Vector3d omega_support = R_support_trunk * omega_trunk;
+
+    Eigen::VectorXd twist_support(6);
+    twist_support << Eigen::Vector3d::Zero(), omega_support;
+    
+    Eigen::MatrixXd J_support = frame_jacobian(support_frame());
+    Eigen::MatrixXd J_support_bf = J_support.leftCols(6);
+    Eigen::MatrixXd J_support_a = J_support.rightCols(model.nv - 6);
+
+    Eigen::VectorXd qd_bf = J_support_bf.completeOrthogonalDecomposition().pseudoInverse() * (twist_support - J_support_a * qd_joints);
+    for (int i=0; i<6; i++)
+    {
+      state.qd[i] = qd_bf[i];
+    }
   }
 }
 #endif
