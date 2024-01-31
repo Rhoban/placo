@@ -451,21 +451,24 @@ DynamicsSolver::Result DynamicsSolver::solve(bool integrate)
   // J^T F
   for (auto& contact : contacts)
   {
-    contact->update();
+    if (contact->active)
+    {
+      contact->update();
 
-    ExternalWrenchContact* ext = dynamic_cast<ExternalWrenchContact*>(contact);
-    if (ext != nullptr)
-    {
-      Eigen::VectorXd w_ext = ext->w_ext;
-      tau.b -= contact->J.transpose() * w_ext;
-      contact->f = Expression::from_vector(w_ext);
-    }
-    else
-    {
-      // This contact will be an actual decision variable
-      Variable& f_variable = problem.add_variable(contact->size());
-      contact->f = f_variable.expr();
-      contact->add_constraints(problem);
+      ExternalWrenchContact* ext = dynamic_cast<ExternalWrenchContact*>(contact);
+      if (ext != nullptr)
+      {
+        Eigen::VectorXd w_ext = ext->w_ext;
+        tau.b -= contact->J.transpose() * w_ext;
+        contact->f = Expression::from_vector(w_ext);
+      }
+      else
+      {
+        // This contact will be an actual decision variable
+        Variable& f_variable = problem.add_variable(contact->size());
+        contact->f = f_variable.expr();
+        contact->add_constraints(problem);
+      }
     }
   }
 
@@ -479,14 +482,17 @@ DynamicsSolver::Result DynamicsSolver::solve(bool integrate)
   k = N;
   for (auto& contact : contacts)
   {
-    if (dynamic_cast<ExternalWrenchContact*>(contact) != nullptr)
+    if (contact->active)
     {
-      continue;
-    }
+      if (dynamic_cast<ExternalWrenchContact*>(contact) != nullptr)
+      {
+        continue;
+      }
 
-    tau.A.block(0, k, N, contact->J.rows()) = -contact->J.transpose();
-    tau.b -= contact->J.transpose() * contact->f.b;
-    k += contact->J.rows();
+      tau.A.block(0, k, N, contact->J.rows()) = -contact->J.transpose();
+      tau.b -= contact->J.transpose() * contact->f.b;
+      k += contact->J.rows();
+    }
   }
 
   // Computing limit inequalitie
@@ -557,7 +563,10 @@ DynamicsSolver::Result DynamicsSolver::solve(bool integrate)
 
     for (auto& contact : contacts)
     {
-      contact->wrench = contact->f.value(problem.x);
+      if (contact->active)
+      {
+        contact->wrench = contact->f.value(problem.x);
+      }
     }
 
     if (integrate)
