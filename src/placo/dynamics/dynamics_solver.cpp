@@ -449,7 +449,6 @@ DynamicsSolver::Result DynamicsSolver::solve(bool integrate)
   }
 
   // J^T F
-
   for (auto& contact : contacts)
   {
     contact->update();
@@ -459,6 +458,7 @@ DynamicsSolver::Result DynamicsSolver::solve(bool integrate)
     {
       Eigen::VectorXd w_ext = ext->w_ext;
       tau.b -= contact->J.transpose() * w_ext;
+      contact->f = Expression::from_vector(w_ext);
     }
     else
     {
@@ -479,6 +479,11 @@ DynamicsSolver::Result DynamicsSolver::solve(bool integrate)
   k = N;
   for (auto& contact : contacts)
   {
+    if (dynamic_cast<ExternalWrenchContact*>(contact) != nullptr)
+    {
+      continue;
+    }
+
     tau.A.block(0, k, N, contact->J.rows()) = -contact->J.transpose();
     tau.b -= contact->J.transpose() * contact->f.b;
     k += contact->J.rows();
@@ -529,10 +534,13 @@ DynamicsSolver::Result DynamicsSolver::solve(bool integrate)
   }
 
   // Passive joints that are not determined have a tau constraint
-  Expression passive_tau_expr;
-  passive_tau_expr.A = tau.A(passive_indices, Eigen::all);
-  passive_tau_expr.b = tau.b(passive_indices);
-  problem.add_constraint(passive_tau_expr == passive_taus);
+  if (passive_taus.size() > 0)
+  {
+    Expression passive_tau_expr;
+    passive_tau_expr.A = tau.A(passive_indices, Eigen::all);
+    passive_tau_expr.b = tau.b(passive_indices);
+    problem.add_constraint(passive_tau_expr == passive_taus);
+  }
 
   // We want to minimize torques
   problem.add_constraint(tau == 0).configure(ProblemConstraint::Soft, 1e-3);
