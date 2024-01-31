@@ -60,9 +60,10 @@ public:
    * @brief Compute the torques of the motors from the contact forces
    * @param acc_a Accelerations of the actuated DoFs
    * @param contact_forces Contact forces from the feet (forces are supposed normal to the ground)
+   * @param use_non_linear_effects If true, non linear effects are taken into account (state.qd necessary)
    * @return Torques of the motors
    */
-  Eigen::VectorXd get_torques(Eigen::VectorXd acc_a, Eigen::VectorXd contact_forces);
+  Eigen::VectorXd get_torques(Eigen::VectorXd acc_a, Eigen::VectorXd contact_forces, bool use_non_linear_effects = false);
 
   /**
    * @brief Compute the Divergent Component of Motion (DCM)
@@ -99,9 +100,10 @@ public:
    * @param histories Log file
    * @param timestamp Timestamp
    * @param use_imu Use IMU values for the trunk orientation
+   * @param qd_joints If not empty, use these values for the joint velocities (state.qd) (NOT TESTED)
    */
   void read_from_histories(rhoban_utils::HistoryCollection& histories, double timestamp, std::string source = "read",
-                           bool use_imu = false);
+                           bool use_imu = false, Eigen::VectorXd qd_joints = Eigen::VectorXd::Zero(1));
 #endif
 
   /**
