@@ -226,6 +226,8 @@ void exposeKinematics()
 
   class__<CoMPolygonConstraint, bases<Constraint>>("CoMPolygonConstraint", init<std::vector<Eigen::Vector2d>, double>())
       .def_readwrite("polygon", &CoMPolygonConstraint::polygon)
+      .def_readwrite("dcm", &CoMPolygonConstraint::dcm)
+      .def_readwrite("omega", &CoMPolygonConstraint::omega)
       .def_readwrite("margin", &CoMPolygonConstraint::margin);
 
   class__<ConeConstraint, bases<Constraint>>(

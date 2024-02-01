@@ -26,6 +26,17 @@ public:
    */
   double margin;
 
+  /**
+   * @brief If DCM mode is enabled, the constraint will be applied on the DCM instead of the CoM with
+   * the following omega (sqrt(g / h))
+   */
+  double omega = 0.;
+
+  /**
+   * @brief If set to true, the DCM will be used instead of the CoM
+   */
+  bool dcm = false;
+
   virtual void add_constraint(placo::problem::Problem& problem) override;
 };
 }  // namespace placo::kinematics
