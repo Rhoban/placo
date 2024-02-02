@@ -13,7 +13,7 @@ using namespace placo::dynamics;
 using namespace placo::model;
 
 // Overloads
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(set_passive_overloads, set_passive, 1, 4);
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(set_passive_overloads, set_passive, 1, 3);
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(solve_overloads, solve, 0, 1);
 
 void exposeDynamics()
@@ -97,6 +97,8 @@ void exposeDynamics()
       .def("add_reaction_ratio_constraint", &DynamicsSolver::add_reaction_ratio_constraint,
            return_internal_reference<>())
       .def("set_passive", &DynamicsSolver::set_passive, set_passive_overloads())
+      .def("set_tau", &DynamicsSolver::set_tau)
+      .def("reset_joint", &DynamicsSolver::reset_joint)
       .def("enable_velocity_limits", &DynamicsSolver::enable_velocity_limits)
       .def("enable_velocity_vs_torque_limits", &DynamicsSolver::enable_velocity_vs_torque_limits)
       .def("enable_joint_limits", &DynamicsSolver::enable_joint_limits)

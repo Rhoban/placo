@@ -45,10 +45,15 @@ public:
     Eigen::VectorXd qdd;
   };
 
-  struct PassiveJoint
+  struct OverrideJoint
   {
+    // If passive is true, tau will be computed as a function of kp and kd
+    bool passive;
     double kp;
     double kd;
+
+    // Else, a custom tau will be used
+    double tau;
   };
 
   DynamicsSolver(model::RobotWrapper& robot);
@@ -57,8 +62,8 @@ public:
   // Contacts
   std::vector<Contact*> contacts;
 
-  // Passive joints
-  std::map<std::string, PassiveJoint> passive_joints;
+  // Override joints (passive or custom tau)
+  std::map<std::string, OverrideJoint> override_joints;
 
   /**
    * @brief Sets a DoF as passive, the corresponding tau will be fixed in the equation of motion
@@ -68,7 +73,20 @@ public:
    * @param kp kp gain if the joint is a spring (0 by default)
    * @param kd kd gain if the joint is a spring (0 by default)
    */
-  void set_passive(const std::string& joint_name, bool is_passive = true, double kp = 0., double kd = 0.);
+  void set_passive(const std::string& joint_name, double kp = 0., double kd = 0.);
+
+  /**
+   * @brief Sets a custom torque to be applied by a given joint
+   * @param joint_name the joint
+   * @param tau torque
+   */
+  void set_tau(const std::string& joint_name, double tau);
+
+  /**
+   * @brief Resets a given joint so that its torque is no longer overriden
+   * @param joint_name the joint
+   */
+  void reset_joint(const std::string& joint_name);
 
   /**
    * @brief Adds a position (in the world) task
