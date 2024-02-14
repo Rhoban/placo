@@ -21,6 +21,12 @@ public:
   virtual ~Contact();
 
   /**
+   * @brief true if the contact is active (ignored by the solver else, this allow to enable/disable
+   * a contact without removing it from the solver)
+   */
+  bool active = true;
+
+  /**
    * @brief true if this object memory is in the solver (it will be deleted by the solver)
    */
   bool solver_memory = false;

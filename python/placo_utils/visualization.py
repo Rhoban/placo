@@ -217,9 +217,12 @@ def contacts_viz(solver: placo.DynamicsSolver, ratio=0.1, radius=0.005):
     global previous_contacts
     robot = solver.robot
     frames = robot.frame_names()
+    k = 0
 
-    for k in range(solver.count_contacts()):
+    for _ in range(solver.count_contacts()):
         contact = solver.get_contact(k)
+        if not contact.active:
+            continue
 
         if isinstance(contact, placo.PointContact):
             frame_name = frames[contact.position_task().frame_index]
@@ -254,8 +257,11 @@ def contacts_viz(solver: placo.DynamicsSolver, ratio=0.1, radius=0.005):
                 radius=radius,
             )
 
-    vis = get_viewer()
-    while k < previous_contacts:
         k += 1
-        vis["arrows"][f"contact_{k}"].delete()
+
+    vis = get_viewer()
+    k_d = k
+    while k_d < previous_contacts:
+        vis["arrows"][f"contact_{k_d}"].delete()
+        k_d += 1
     previous_contacts = k

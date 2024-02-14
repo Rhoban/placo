@@ -63,9 +63,9 @@ void AvoidSelfCollisionsConstraint::add_constraint(problem::Problem& problem, pr
       double lambda = -1;
       for (int k = 6; k < solver->N; k++)
       {
-        if (fabs(J(1, k)) > 1e-6)
+        if (fabs(J(0, k)) > 1e-6)
         {
-          double lambda_i = fabs(solver->qdd_safe / J(1, k));
+          double lambda_i = fabs(solver->qdd_safe / J(0, k));
           if (lambda < 0 || lambda_i < lambda)
           {
             lambda = lambda_i;
@@ -73,7 +73,7 @@ void AvoidSelfCollisionsConstraint::add_constraint(problem::Problem& problem, pr
         }
       }
 
-      double xdd_safe = (lambda * (J * J.transpose()) + dJ * solver->robot.state.qd)(0, 0);
+      double xdd_safe = (lambda * (J * J.transpose()))(0, 0) + dJ[0];
 
       if (distance.min_distance >= self_collisions_margin)
       {
@@ -83,7 +83,7 @@ void AvoidSelfCollisionsConstraint::add_constraint(problem::Problem& problem, pr
         double xd_max = sqrt(2. * error * xdd_safe);
 
         e.A.block(constraint, 0, 1, solver->N) = solver->dt * J;
-        e.b[constraint] = dJ[0] + xd + xd_max;
+        e.b[constraint] = solver->dt * dJ[0] + xd + xd_max;
       }
       else
       {

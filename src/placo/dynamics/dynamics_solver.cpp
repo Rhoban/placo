@@ -5,19 +5,25 @@ namespace placo::dynamics
 {
 using namespace placo::problem;
 
-void DynamicsSolver::set_passive(const std::string& joint_name, bool is_passive, double kp, double kd)
+void DynamicsSolver::set_passive(const std::string& joint_name, double kp, double kd)
 {
-  if (!is_passive)
-  {
-    passive_joints.erase(joint_name);
-  }
-  else
-  {
-    PassiveJoint pj;
-    pj.kp = kp;
-    pj.kd = kd;
-    passive_joints[joint_name] = pj;
-  }
+  OverrideJoint oj;
+  oj.passive = true;
+  oj.kp = kp;
+  oj.kd = kd;
+  override_joints[joint_name] = oj;
+}
+
+void DynamicsSolver::set_tau(const std::string& joint_name, double tau)
+{
+  OverrideJoint oj;
+  oj.tau = tau;
+  override_joints[joint_name] = oj;
+}
+
+void DynamicsSolver::reset_joint(const std::string& joint_name)
+{
+  override_joints.erase(joint_name);
 }
 
 PointContact& DynamicsSolver::add_point_contact(PositionTask& position_task)
@@ -219,10 +225,10 @@ void DynamicsSolver::compute_limits_inequalities(Expression& tau)
     throw std::runtime_error("DynamicsSolver::compute_limits_inequalities: dt is not set");
   }
 
-  std::set<int> passive_ids;
-  for (auto& passive_joint : passive_joints)
+  std::set<int> override_ids;
+  for (auto& override_joint : override_joints)
   {
-    passive_ids.insert(robot.get_joint_v_offset(passive_joint.first));
+    override_ids.insert(robot.get_joint_v_offset(override_joint.first));
   }
 
   if (torque_limits)
@@ -234,11 +240,11 @@ void DynamicsSolver::compute_limits_inequalities(Expression& tau)
   int constraints = 0;
   if (joint_limits)
   {
-    constraints += 2 * (N - 6 - passive_joints.size());
+    constraints += 2 * (N - 6 - override_joints.size());
   }
   if (velocity_limits)
   {
-    constraints += 2 * (N - 6 - passive_joints.size());
+    constraints += 2 * (N - 6 - override_joints.size());
   }
 
   if (constraints > 0)
@@ -252,7 +258,7 @@ void DynamicsSolver::compute_limits_inequalities(Expression& tau)
     // Iterating for each actuated joints
     for (int k = 0; k < N - 6; k++)
     {
-      if (passive_ids.count(k + 6) > 0)
+      if (override_ids.count(k + 6) > 0)
       {
         continue;
       }
@@ -403,18 +409,26 @@ DynamicsSolver::Result DynamicsSolver::solve(bool integrate)
   problem.clear_variables();
 
   // Computing target torque for passive joints
-  std::vector<int> passive_indices;
-  Eigen::VectorXd passive_taus = Eigen::VectorXd::Zero(passive_joints.size());
+  std::vector<int> override_indices;
+  Eigen::VectorXd override_taus = Eigen::VectorXd::Zero(override_joints.size());
   int k = 0;
-  for (auto& entry : passive_joints)
+  for (auto& entry : override_joints)
   {
     std::string joint = entry.first;
-    PassiveJoint pj = entry.second;
+    OverrideJoint oj = entry.second;
     double q = robot.get_joint(joint);
     double qd = robot.get_joint_velocity(joint);
     int index = robot.get_joint_v_offset(joint);
-    passive_indices.push_back(index);
-    passive_taus[k++] = -q * pj.kp - qd * pj.kd;
+    override_indices.push_back(index);
+
+    if (oj.tau)
+    {
+      override_taus[k++] = oj.tau;
+    }
+    else
+    {
+      override_taus[k++] = -q * oj.kp - qd * oj.kd;
+    }
   }
 
   Expression qdd;
@@ -449,23 +463,26 @@ DynamicsSolver::Result DynamicsSolver::solve(bool integrate)
   }
 
   // J^T F
-
   for (auto& contact : contacts)
   {
-    contact->update();
+    if (contact->active)
+    {
+      contact->update();
 
-    ExternalWrenchContact* ext = dynamic_cast<ExternalWrenchContact*>(contact);
-    if (ext != nullptr)
-    {
-      Eigen::VectorXd w_ext = ext->w_ext;
-      tau.b -= contact->J.transpose() * w_ext;
-    }
-    else
-    {
-      // This contact will be an actual decision variable
-      Variable& f_variable = problem.add_variable(contact->size());
-      contact->f = f_variable.expr();
-      contact->add_constraints(problem);
+      ExternalWrenchContact* ext = dynamic_cast<ExternalWrenchContact*>(contact);
+      if (ext != nullptr)
+      {
+        Eigen::VectorXd w_ext = ext->w_ext;
+        tau.b -= contact->J.transpose() * w_ext;
+        contact->f = Expression::from_vector(w_ext);
+      }
+      else
+      {
+        // This contact will be an actual decision variable
+        Variable& f_variable = problem.add_variable(contact->size());
+        contact->f = f_variable.expr();
+        contact->add_constraints(problem);
+      }
     }
   }
 
@@ -479,9 +496,17 @@ DynamicsSolver::Result DynamicsSolver::solve(bool integrate)
   k = N;
   for (auto& contact : contacts)
   {
-    tau.A.block(0, k, N, contact->J.rows()) = -contact->J.transpose();
-    tau.b -= contact->J.transpose() * contact->f.b;
-    k += contact->J.rows();
+    if (contact->active)
+    {
+      if (dynamic_cast<ExternalWrenchContact*>(contact) != nullptr)
+      {
+        continue;
+      }
+
+      tau.A.block(0, k, N, contact->J.rows()) = -contact->J.transpose();
+      tau.b -= contact->J.transpose() * contact->f.b;
+      k += contact->J.rows();
+    }
   }
 
   // Computing limit inequalitie
@@ -528,11 +553,14 @@ DynamicsSolver::Result DynamicsSolver::solve(bool integrate)
     problem.add_constraint(tau.slice(0, 6) == 0);
   }
 
-  // Passive joints that are not determined have a tau constraint
-  Expression passive_tau_expr;
-  passive_tau_expr.A = tau.A(passive_indices, Eigen::all);
-  passive_tau_expr.b = tau.b(passive_indices);
-  problem.add_constraint(passive_tau_expr == passive_taus);
+  // Enforce the override torques
+  if (override_taus.size() > 0)
+  {
+    Expression override_tau_expr;
+    override_tau_expr.A = tau.A(override_indices, Eigen::all);
+    override_tau_expr.b = tau.b(override_indices);
+    problem.add_constraint(override_tau_expr == override_taus);
+  }
 
   // We want to minimize torques
   problem.add_constraint(tau == 0).configure(ProblemConstraint::Soft, 1e-3);
@@ -549,7 +577,10 @@ DynamicsSolver::Result DynamicsSolver::solve(bool integrate)
 
     for (auto& contact : contacts)
     {
-      contact->wrench = contact->f.value(problem.x);
+      if (contact->active)
+      {
+        contact->wrench = contact->f.value(problem.x);
+      }
     }
 
     if (integrate)

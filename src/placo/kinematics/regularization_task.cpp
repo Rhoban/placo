@@ -6,10 +6,14 @@ namespace placo::kinematics
 void RegularizationTask::update()
 {
   // Regularization magnitude is handled through the task weight (see add_regularization_task)
-  A = Eigen::MatrixXd(solver->N, solver->N);
-  A.setIdentity();
+  // Floating base is not regularized by this task
+  Eigen::MatrixXd I = Eigen::MatrixXd(solver->N, solver->N);
+  I.setIdentity();
 
-  b = Eigen::MatrixXd(solver->N, 1);
+  A = Eigen::MatrixXd(solver->N - 6, solver->N);
+  A.block(0, 0, solver->N - 6, solver->N) = I.block(6, 0, solver->N - 6, solver->N);
+
+  b = Eigen::MatrixXd(solver->N - 6, 1);
   b.setZero();
 }
 

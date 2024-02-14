@@ -110,6 +110,11 @@ void exposeRobotType(class_<RobotType, W1>& type)
             return robot.frame_jacobian_time_variation(frame, reference);
           })
       .def(
+          "relative_position_jacobian",
+          +[](RobotType& robot, const std::string& frameA, const std::string& frameB) {
+            return robot.relative_position_jacobian(frameA, frameB);
+          })
+      .def(
           "joint_jacobian", +[](RobotType& robot, const std::string& joint,
                                 const std::string& reference) { return robot.joint_jacobian(joint, reference); })
       .def(
@@ -174,13 +179,11 @@ void exposeRobotWrapper()
       .def("zmp", &HumanoidRobot::zmp)
       .def("other_side", &HumanoidRobot::other_side)
       .def(
-          "get_torques",
-          +[](HumanoidRobot& robot, Eigen::VectorXd qdd_a, Eigen::VectorXd contact_forces, bool use_nle) {
-            return robot.get_torques(qdd_a, contact_forces, use_nle);
-          })
+          "get_torques", +[](HumanoidRobot& robot, Eigen::VectorXd qdd_a, Eigen::VectorXd contact_forces,
+                             bool use_nle) { return robot.get_torques(qdd_a, contact_forces, use_nle); })
       .def(
           "get_torques_dict",
-            +[](HumanoidRobot& robot, Eigen::VectorXd qdd_a, Eigen::VectorXd contact_forces, bool use_nle) {
+          +[](HumanoidRobot& robot, Eigen::VectorXd qdd_a, Eigen::VectorXd contact_forces, bool use_nle) {
             auto torques = robot.get_torques(qdd_a, contact_forces, use_nle);
             boost::python::dict dict;
 
@@ -188,7 +191,7 @@ void exposeRobotWrapper()
             {
               dict[dof] = torques[robot.get_joint_v_offset(dof)];
             }
-            
+
             return dict;
           })
 #ifdef HAVE_RHOBAN_UTILS
