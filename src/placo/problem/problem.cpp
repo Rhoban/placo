@@ -29,6 +29,7 @@ Problem::~Problem()
 Variable& Problem::add_variable(int size)
 {
   Variable* variable = new Variable;
+  variable->problem = this;
   variable->k_start = n_variables;
   variable->k_end = n_variables + size;
   n_variables += size;

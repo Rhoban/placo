@@ -75,7 +75,7 @@ public:
    * @param order order
    * @param dt delta time
    */
-  Integrator(Variable& variable, Eigen::VectorXd X0, int order, double dt);
+  Integrator(Variable& variable, Expression X0, int order, double dt);
 
   /**
    * @brief Creates an integrator able to build expressions and values over a decision variable. A custom continuous
@@ -90,7 +90,7 @@ public:
    * @param dt delta time
    * @pyignore
    */
-  Integrator(Variable& variable, Eigen::VectorXd X0, Eigen::MatrixXd system_matrix, double dt);
+  Integrator(Variable& variable, Expression X0, Eigen::MatrixXd system_matrix, double dt);
 
   virtual ~Integrator();
 
@@ -173,7 +173,7 @@ public:
   /**
    * @brief Initial state
    */
-  Eigen::VectorXd X0;
+  Expression X0;
 
   /**
    * @brief Caching the discrete matrix for the last step

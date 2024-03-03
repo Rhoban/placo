@@ -12,11 +12,7 @@ Expression::Expression()
 
 Expression Expression::from_vector(const Eigen::VectorXd& v)
 {
-  Expression e;
-  e.A = Eigen::MatrixXd(v.rows(), 0);
-  e.b = v;
-
-  return e;
+  return Expression(v);
 }
 
 Expression Expression::from_double(const double& value)
@@ -33,6 +29,12 @@ Expression::Expression(const Expression& other)
 {
   A = other.A;
   b = other.b;
+}
+
+Expression::Expression(const Eigen::VectorXd& v)
+{
+  A = Eigen::MatrixXd(v.rows(), 0);
+  b = v;
 }
 
 bool Expression::is_scalar() const

@@ -16,6 +16,7 @@ class Expression
 public:
   Expression();
   Expression(const Expression& other);
+  Expression(const Eigen::VectorXd& v);
 
   /**
    * @brief Expression A matrix, in Ax + b

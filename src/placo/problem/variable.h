@@ -5,6 +5,8 @@
 
 namespace placo::problem
 {
+class Problem;
+
 /**
  * @brief Represents a variable in a \ref Problem
  */
@@ -44,5 +46,10 @@ public:
    * @brief Variable version, incremented by \ref Problem after a solve
    */
   int version = 0;
+
+  /**
+   * @brief Variable's problem
+   */
+  Problem* problem = nullptr;
 };
 };  // namespace placo::problem

@@ -2,6 +2,7 @@
 #include <iostream>
 #include <unsupported/Eigen/MatrixFunctions>
 #include "placo/problem/integrator.h"
+#include "placo/problem/problem.h"
 
 namespace placo::problem
 {
@@ -46,7 +47,7 @@ Integrator::Integrator()
 {
 }
 
-Integrator::Integrator(Variable& variable_, Eigen::VectorXd X0, Eigen::MatrixXd system_matrix, double dt)
+Integrator::Integrator(Variable& variable_, Expression X0, Eigen::MatrixXd system_matrix, double dt)
   : variable(&variable_), X0(X0), dt(dt), M(system_matrix)
 {
   order = system_matrix.rows() - 1;
@@ -73,9 +74,13 @@ Integrator::Integrator(Variable& variable_, Eigen::VectorXd X0, Eigen::MatrixXd 
   }
 }
 
-Integrator::Integrator(Variable& variable_, Eigen::VectorXd X0, int order, double dt)
+Integrator::Integrator(Variable& variable_, Expression X0, int order, double dt)
   : Integrator(variable_, X0, upper_shift_matrix(order), dt)
 {
+  if (X0.rows() != order)
+  {
+    throw std::runtime_error("Integrator: X0 should have " + std::to_string(order) + " rows (same as order)");
+  }
 }
 
 Integrator::~Integrator()
@@ -140,16 +145,17 @@ Expression Integrator::expr(int step, int diff)
     e.A = Eigen::MatrixXd(rows, variable->k_end);
     e.A.setZero();
     e.b = Eigen::VectorXd(rows);
+    e.b.setZero();
 
     if (diff == -1)
     {
       e.A.block(0, variable->k_start, rows, step) = final_transition_matrix.block(0, N - step, rows, step);
-      e.b = a_powers[step] * X0;
+      e = e + a_powers[step] * X0;
     }
     else
     {
       e.A.block(0, variable->k_start, 1, step) = final_transition_matrix.block(diff, N - step, 1, step);
-      e.b(0, 0) = (a_powers[step] * X0)(diff, 0);
+      e = e + (a_powers[step] * X0).slice(diff, 1);
     }
 
     return e;
@@ -222,7 +228,7 @@ void Integrator::update_trajectory()
     trajectory.variable_value = variable->value;
 
     // Updating keyframes
-    Eigen::VectorXd X = X0;
+    Eigen::VectorXd X = X0.value(variable->problem->x);
     trajectory.keyframes[0] = X;
 
     for (int k = 1; k <= variable->size(); k++)

@@ -78,7 +78,7 @@ void exposeProblem()
       .def("in_polygon_xy", &PolygonConstraint::in_polygon_xy)
       .staticmethod("in_polygon_xy");
 
-  class__<Integrator>("Integrator", init<Variable&, Eigen::VectorXd, int, double>())
+  class__<Integrator>("Integrator", init<Variable&, Expression, int, double>())
       .def(init<Variable&, Eigen::VectorXd, Eigen::MatrixXd, double>())
       .def("upper_shift_matrix", &Integrator::upper_shift_matrix)
       .staticmethod("upper_shift_matrix")
@@ -177,4 +177,6 @@ void exposeProblem()
       // Aggregation
       .def("sum", &Expression::sum)
       .def("mean", &Expression::mean);
+
+  implicitly_convertible<Eigen::VectorXd, Expression>();
 }
