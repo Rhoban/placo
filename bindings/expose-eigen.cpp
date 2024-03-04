@@ -34,9 +34,9 @@ void exposeEigen()
   eigenpy::enableEigenPy();
 
   // Ensuring types are exposed
-  eigenpy::exposeType<Eigen::Vector2d>();
-  eigenpy::exposeType<Eigen::Vector3d>();
-  eigenpy::exposeType<Eigen::VectorXd>();
+  // eigenpy::exposeType<Eigen::Vector2d>();
+  // eigenpy::exposeType<Eigen::Vector3d>();
+  // eigenpy::exposeType<Eigen::VectorXd>();
 
   // Enables eigen for specific matrix sizes
   eigenpy::enableEigenPySpecific<Eigen::Matrix<double, 4, 1>>();
