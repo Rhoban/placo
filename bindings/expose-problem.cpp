@@ -22,6 +22,7 @@ using namespace placo;
 using namespace placo::problem;
 
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(expr_overloads, expr, 0, 2);
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(integrator_expr_overloads, expr, 1, 2);
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(configure_overloads, configure, 1, 2);
 
 void exposeProblem()
@@ -91,7 +92,7 @@ void exposeProblem()
           "B", +[](const Integrator& i) { return i.B; })
       .add_property(
           "final_transition_matrix", +[](const Integrator& i) { return i.final_transition_matrix; })
-      .def("expr", &Integrator::expr)
+      .def("expr", &Integrator::expr, integrator_expr_overloads())
       .def("expr_t", &Integrator::expr_t)
       .def("value", &Integrator::value)
       .def("get_trajectory", &Integrator::get_trajectory);
