@@ -76,14 +76,20 @@ class TestProblem(unittest.TestCase):
         x = problem.add_variable(16)
         problem.add_constraint(x.expr().sum() == np.array([1.0]))
         problem.solve()
-        self.assertNumpyEqual(x.value, 1 / 16.0, msg="16 values which sum equals 1 should be minimized to 1/16")
+        self.assertNumpyEqual(
+            x.value,
+            1 / 16.0,
+            msg="16 values which sum equals 1 should be minimized to 1/16",
+        )
 
         # We add an inequality so that the 0th value should be greater than 2
         problem.add_constraint(x.expr(0, 1) >= np.array([2.0]))
         problem.add_constraint(x.expr(0, 1) <= np.array([10.0]))
         problem.solve()
         self.assertGreaterEqual(x.value[0], 2.0 - 1e-6, msg=f"The value should be >= 2")
-        self.assertNumpyEqual(x.value[1:], -1 / 15.0, msg=f"The remaining values should be -1/15.")
+        self.assertNumpyEqual(
+            x.value[1:], -1 / 15.0, msg=f"The remaining values should be -1/15."
+        )
 
     def test_expression_constraint(self):
         problem = placo.Problem()
@@ -101,8 +107,12 @@ class TestProblem(unittest.TestCase):
 
         problem.solve()
 
-        self.assertNumpyEqual(p1.value, np.array([17, 22]), msg="P1 should be in 17, 22")
-        self.assertNumpyEqual(p2.value, np.array([18, 19]), msg="P2 should be in 18, 19")
+        self.assertNumpyEqual(
+            p1.value, np.array([17, 22]), msg="P1 should be in 17, 22"
+        )
+        self.assertNumpyEqual(
+            p2.value, np.array([18, 19]), msg="P2 should be in 18, 19"
+        )
 
     def test_integrator_matrix(self):
         M = placo.Integrator.upper_shift_matrix(3)
@@ -119,9 +129,15 @@ class TestProblem(unittest.TestCase):
         expected_A = np.array([[1.0, 0.1, 0.005], [0.0, 1.0, 0.1], [0.0, 0.0, 1.0]])
         expected_B = np.array([1 / 6 * 0.1**3, 0.005, 0.1])
 
-        self.assertNumpyEqual(integrator.M, expected, msg="Checking system matrix M or order 3")
-        self.assertNumpyEqual(integrator.A, expected_A, msg="Checking system matrix A or order 3")
-        self.assertNumpyEqual(integrator.B, expected_B, msg="Checking system matrix B or order 3")
+        self.assertNumpyEqual(
+            integrator.M, expected, msg="Checking system matrix M or order 3"
+        )
+        self.assertNumpyEqual(
+            integrator.A, expected_A, msg="Checking system matrix A or order 3"
+        )
+        self.assertNumpyEqual(
+            integrator.B, expected_B, msg="Checking system matrix B or order 3"
+        )
 
     def test_integrator(self):
         # Creating a problem
@@ -151,6 +167,35 @@ class TestProblem(unittest.TestCase):
         # Testing that inequality is still enforced
         self.assertTrue(integrator.value(0.5, 0) <= -5.0)
 
+    def test_integrator_expr_x0(self):
+        # Creating a problem
+        problem = placo.Problem()
+        x = problem.add_variable(10)
+        integrator = placo.Integrator(x, np.array([1.0, 2.0]), 2, 0.1)
+
+        problem.add_constraint(integrator.expr(10, 0) == 2.0)
+        problem.add_constraint(integrator.expr(10, 1) == 3.0)
+
+        y = problem.add_variable(10)
+        integrator2 = placo.Integrator(y, integrator.expr(10), 2, 0.1)
+
+        problem.add_constraint(integrator2.expr(10, 0) == 0.0)
+        problem.add_constraint(integrator2.expr(10, 1) == 0.0)
+
+        problem.solve()
+
+        # Testing the first integrator
+        self.assertNumpyEqual(integrator.value(1.0, 0), 2.0)
+        self.assertNumpyEqual(integrator.value(1.0, 1), 3.0)
+
+        # Testing that the beginning of the second integrator is the end of the first
+        self.assertNumpyEqual(integrator2.value(0.0, 0), 2.0)
+        self.assertNumpyEqual(integrator2.value(0.0, 1), 3.0)
+
+        # Testing the second integrator
+        self.assertNumpyEqual(integrator2.value(1.0, 0), 0.0)
+        self.assertNumpyEqual(integrator2.value(1.0, 1), 0.0)
+
     def test_soft_inequality(self):
         problem = placo.Problem()
         x = problem.add_variable(1)
@@ -162,7 +207,9 @@ class TestProblem(unittest.TestCase):
 
         problem.solve()
         self.assertNumpyEqual(x.value, 6.0, msg="Hard constraint should be enforced")
-        self.assertNumpyEqual(problem.slacks, 1.0, msg="Soft constraint should be slacking")
+        self.assertNumpyEqual(
+            problem.slacks, 1.0, msg="Soft constraint should be slacking"
+        )
 
     def test_polygon_constraint(self):
         problem = placo.Problem()
@@ -172,7 +219,9 @@ class TestProblem(unittest.TestCase):
 
         x = problem.add_variable(1)
         y = problem.add_variable(1)
-        problem.add_constraint(placo.PolygonConstraint.in_polygon(x.expr(), y.expr(), polygon, 0.0))
+        problem.add_constraint(
+            placo.PolygonConstraint.in_polygon(x.expr(), y.expr(), polygon, 0.0)
+        )
         problem.solve()
 
         self.assertNumpyEqual(
@@ -185,7 +234,9 @@ class TestProblem(unittest.TestCase):
             msg="The [0., 0.] value should be projected in the polygon bottom-left corner at [1., 1.]",
         )
 
-        problem.add_constraint((x.expr() / y.expr()) == np.array([3.0, 3.0])).configure("soft", 1.0)
+        problem.add_constraint((x.expr() / y.expr()) == np.array([3.0, 3.0])).configure(
+            "soft", 1.0
+        )
         problem.solve()
         self.assertNumpyEqual(
             np.hstack((x.value, y.value)),
@@ -276,9 +327,13 @@ class TestProblem(unittest.TestCase):
         epsilon = 1e-8
         for t_test in [0.0, 0.25, 0.5, 1.5]:
             # Finite differences
-            acc_fd = (integrator.value(t_test + epsilon, 1) - integrator.value(t_test, 1)) / epsilon
+            acc_fd = (
+                integrator.value(t_test + epsilon, 1) - integrator.value(t_test, 1)
+            ) / epsilon
             # ddc = omega**2 c - omega**2 z
-            acc_zmp = omega**2 * integrator.value(t_test, 0) - omega**2 * integrator.value(t_test, 2)
+            acc_zmp = omega**2 * integrator.value(
+                t_test, 0
+            ) - omega**2 * integrator.value(t_test, 2)
 
             self.assertNumpyEqual(acc_fd, acc_zmp, epsilon=1e-3)
 
