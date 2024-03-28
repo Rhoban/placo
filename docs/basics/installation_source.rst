@@ -1,5 +1,5 @@
-Installtion from source
-=======================
+Installation from source
+========================
 
 PlaCo is mostly written in C++, relying on Boost Python to expose the C++ code to Python.
 If you want to get the sources yourself, you will first have to retrieve the dependencies and then to build
