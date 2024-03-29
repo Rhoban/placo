@@ -46,7 +46,8 @@ void exposeFootsteps()
       .def("kick", &FootstepsPlanner::Support::kick)
       .add_property("footsteps", &FootstepsPlanner::Support::footsteps)
       .add_property("start", &FootstepsPlanner::Support::start, &FootstepsPlanner::Support::start)
-      .add_property("end", &FootstepsPlanner::Support::end, &FootstepsPlanner::Support::end);
+      .add_property("end", &FootstepsPlanner::Support::end, &FootstepsPlanner::Support::end)
+      .add_property("timesteps", &FootstepsPlanner::Support::timesteps, &FootstepsPlanner::Support::timesteps);
 
   class__<FootstepsPlanner, boost::noncopyable>("FootstepsPlanner", no_init)
       .def("make_supports", &FootstepsPlanner::make_supports)

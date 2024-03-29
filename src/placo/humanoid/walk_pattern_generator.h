@@ -189,6 +189,6 @@ protected:
   void planSingleSupportTrajectory(TrajectoryPart& part, Trajectory& trajectory, int step, double& t,
                                    Trajectory* old_trajectory, double t_replan);
 
-  int support_timesteps(FootstepsPlanner::Support& support);
+  // int support_timesteps(FootstepsPlanner::Support& support);
 };
 }  // namespace placo::humanoid

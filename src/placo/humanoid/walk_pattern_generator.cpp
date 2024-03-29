@@ -274,27 +274,27 @@ double WalkPatternGenerator::Trajectory::get_part_t_end(double t)
   return part.t_end;
 }
 
-int WalkPatternGenerator::support_timesteps(FootstepsPlanner::Support& support)
-{
-  if (support.kick())
-  {
-    return parameters.kick_support_timesteps();
-  }
+// int WalkPatternGenerator::support_timesteps(FootstepsPlanner::Support& support)
+// {
+//   if (support.kick())
+//   {
+//     return parameters.kick_support_timesteps();
+//   }
 
-  if (support.footsteps.size() == 1)
-  {
-    return parameters.single_support_timesteps;
-  }
+//   if (support.footsteps.size() == 1)
+//   {
+//     return parameters.single_support_timesteps;
+//   }
 
-  if (support.start || support.end)
-  {
-    return parameters.startend_double_support_timesteps();
-  }
-  else
-  {
-    return parameters.double_support_timesteps();
-  }
-}
+//   if (support.start || support.end)
+//   {
+//     return parameters.startend_double_support_timesteps();
+//   }
+//   else
+//   {
+//     return parameters.double_support_timesteps();
+//   }
+// }
 
 // XXX : No more management of the CoM height while kicking
 void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initial_pos, Eigen::Vector2d initial_vel,
@@ -305,14 +305,14 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
 
   for (size_t i = 0; i < trajectory.supports.size(); i++)
   {
-    timesteps += support_timesteps(trajectory.supports[i]);
+    timesteps += trajectory.supports[i].timesteps;
 
     // While kicking, we always want to plan the CoM for the next support
-    if (trajectory.supports[i].kick())
-    {
-      i++;
-      timesteps += support_timesteps(trajectory.supports[i]);
-    }
+    // if (trajectory.supports[i].kick())
+    // {
+    //   i++;
+    //   timesteps += support_timesteps(trajectory.supports[i]);
+    // }
 
     if (timesteps >= parameters.planned_timesteps)
     {
@@ -353,9 +353,8 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
   for (size_t i = 0; i < trajectory.supports.size(); i++)
   {
     current_support = trajectory.supports[i];
-    int step_timesteps = support_timesteps(current_support);
 
-    for (int timestep = constrained_timesteps; timestep < fmin(timesteps, constrained_timesteps + step_timesteps); timestep++)
+    for (int timestep = constrained_timesteps; timestep < fmin(timesteps, constrained_timesteps + current_support.timesteps); timestep++)
     {
       // Ensuring ZMP remains in the support polygon
       if (timestep > kept_timesteps)
@@ -410,7 +409,7 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
       }
     }
 
-    constrained_timesteps += step_timesteps;
+    constrained_timesteps += current_support.timesteps;
 
     if (constrained_timesteps >= timesteps)
     {
@@ -672,7 +671,7 @@ std::vector<FootstepsPlanner::Support> WalkPatternGenerator::replan_supports(Foo
   auto footsteps = planner.plan(flying_side, T_world_left, T_world_right);
 
   std::vector<FootstepsPlanner::Support> supports;
-  supports = FootstepsPlanner::make_supports(footsteps, false, parameters.has_double_support(), true);
+  supports = FootstepsPlanner::make_supports(footsteps, parameters, false, parameters.has_double_support(), true);
   
   if (current_support.is_both())
   {

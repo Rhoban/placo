@@ -223,7 +223,7 @@ FootstepsPlanner::Support operator*(Eigen::Affine3d T, const FootstepsPlanner::S
 }
 
 std::vector<FootstepsPlanner::Support>
-FootstepsPlanner::make_supports(std::vector<FootstepsPlanner::Footstep> footsteps, bool start, bool middle, bool end)
+FootstepsPlanner::make_supports(std::vector<FootstepsPlanner::Footstep> footsteps, HumanoidParameters parameters, bool start, bool middle, bool end)
 {
   std::vector<Support> supports;
 
@@ -234,18 +234,21 @@ FootstepsPlanner::make_supports(std::vector<FootstepsPlanner::Footstep> footstep
       // Creating the first (double-support) initial state
       Support support;
       support.start = true;
+      support.timesteps = parameters.startend_double_support_timesteps();
       support.footsteps = { footsteps[0], footsteps[1] };
       supports.push_back(support);
     }
     else
     {
       Support support;
+      support.timesteps = parameters.single_support_timesteps;
       support.footsteps = { footsteps[0] };
       supports.push_back(support);
 
       if (middle)
       {
         Support double_support;
+        double_support.timesteps = parameters.double_support_timesteps();
         double_support.footsteps = { footsteps[0], footsteps[1] };
 
         supports.push_back(double_support);
@@ -256,6 +259,7 @@ FootstepsPlanner::make_supports(std::vector<FootstepsPlanner::Footstep> footstep
     for (int step = 1; step < footsteps.size() - 1; step++)
     {
       Support single_support;
+      single_support.timesteps = parameters.single_support_timesteps;
       single_support.footsteps = { footsteps[step] };
       supports.push_back(single_support);
 
@@ -264,6 +268,7 @@ FootstepsPlanner::make_supports(std::vector<FootstepsPlanner::Footstep> footstep
       if ((!is_end && middle))
       {
         Support double_support;
+        double_support.timesteps = parameters.double_support_timesteps();
         double_support.footsteps = { footsteps[step], footsteps[step + 1] };
 
         supports.push_back(double_support);
@@ -276,6 +281,7 @@ FootstepsPlanner::make_supports(std::vector<FootstepsPlanner::Footstep> footstep
     // Creating the first (double-support) initial state
     Support support;
     support.end = true;
+    support.timesteps = parameters.startend_double_support_timesteps();
     support.footsteps = { footsteps[footsteps.size() - 2], footsteps[footsteps.size() - 1] };
     supports.push_back(support);
   }

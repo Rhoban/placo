@@ -47,6 +47,7 @@ public:
     bool start = false;
     bool end = false;
     bool replanned = false;
+    int timesteps;
     bool kick();
     std::vector<Eigen::Vector2d> support_polygon();
 
@@ -99,14 +100,16 @@ public:
 
   /**
    * @brief Generate the supports from the footsteps
+   * @param footsteps the footsteps to follow
+   * @param parameters the parameters of the walky
    * @param start should we add a double support at the begining of the move?
    * @param middle should we add a double support between each step ?
    * @param end should we add a double support at the end of the move?
    * @return vector of supports to use. It starts with initial double supports,
    * and add double support phases between footsteps.
    */
-  static std::vector<Support> make_supports(std::vector<Footstep> footsteps, bool start = true, bool middle = false,
-                                            bool end = true);
+  static std::vector<Support> make_supports(std::vector<Footstep> footsteps, HumanoidParameters parameters, 
+                                            bool start = true, bool middle = false, bool end = true);
 
   /**
    * @brief Return the type of footsteps planner
