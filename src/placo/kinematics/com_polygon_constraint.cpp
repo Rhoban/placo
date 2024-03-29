@@ -28,7 +28,6 @@ void CoMPolygonConstraint::add_constraint(placo::problem::Problem& problem)
     // Future DCM is c + J dq + J dq / (dt * w)
     //             = c + J dq (1 + 1 / (dt * w))
     com_xy.A *= (1. + 1. / (solver->dt * omega));
-    std::cout << "Coef: " << (1. + 1. / (solver->dt * omega)) << std::endl;
   }
   com_xy.b = com;
 
