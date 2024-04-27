@@ -42,7 +42,6 @@ void GearTask::update()
     {
       int source = gear_source.first;
       double ratio = gear_source.second;
-      auto& gear = entry.second;
       double q_source = solver->robot.state.q[source + 1];
 
       A(k, source) = ratio;

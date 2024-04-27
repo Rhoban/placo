@@ -20,7 +20,6 @@ void exposeKinematics()
   class_<KinematicsSolver> solver_class =
       class__<KinematicsSolver>("KinematicsSolver", init<RobotWrapper&>())
           .add_property("problem", &KinematicsSolver::problem)
-          .add_property("noise", &KinematicsSolver::noise, &KinematicsSolver::noise)
           .add_property("dt", &KinematicsSolver::dt, &KinematicsSolver::dt)
           .add_property("N", &KinematicsSolver::N)
           .add_property("scale", &KinematicsSolver::scale)
@@ -111,7 +110,8 @@ void exposeKinematics()
           .def<void (KinematicsSolver::*)(Task&)>("remove_task", &KinematicsSolver::remove_task)
           .def<void (KinematicsSolver::*)(FrameTask&)>("remove_task", &KinematicsSolver::remove_task)
           .def("remove_constraint", &KinematicsSolver::remove_constraint)
-          .def("solve", &KinematicsSolver::solve);
+          .def("solve", &KinematicsSolver::solve)
+          .def("add_q_noise", &KinematicsSolver::add_q_noise);
 
   class__<Task, bases<tools::Prioritized>, boost::noncopyable>("Task", no_init)
       .add_property(

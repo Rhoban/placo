@@ -244,6 +244,23 @@ void KinematicsSolver::compute_limits_inequalities()
   }
 }
 
+void KinematicsSolver::add_q_noise(double noise)
+{
+  auto q_random = pinocchio::randomConfiguration(robot.model);
+
+  // Adding some noise in direction of a random configuration (except floating base)
+  for (int k = 7; k < robot.model.nq; k++)
+  {
+    if (robot.model.lowerPositionLimit(k) == std::numeric_limits<double>::lowest() ||
+        robot.model.upperPositionLimit(k) == std::numeric_limits<double>::max())
+    {
+      continue;
+    }
+
+    robot.state.q(k) += (q_random(k) - robot.state.q(k)) * noise;
+  }
+}
+
 Eigen::VectorXd KinematicsSolver::solve(bool apply)
 {
   // Ensure variable is created
@@ -254,26 +271,6 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
 
   // Clear previously created constraints
   problem.clear_constraints();
-
-  // Adding some random noise
-  auto q_save = robot.state.q;
-
-  if (noise > 0)
-  {
-    auto q_random = pinocchio::randomConfiguration(robot.model);
-
-    // Adding some noise in direction of a random configuration (except floating base)
-    for (int k = 7; k < robot.model.nq; k++)
-    {
-      if (robot.model.lowerPositionLimit(k) == std::numeric_limits<double>::lowest() ||
-          robot.model.upperPositionLimit(k) == std::numeric_limits<double>::max())
-      {
-        continue;
-      }
-
-      robot.state.q(k) += (q_random(k) - robot.state.q(k)) * noise;
-    }
-  }
 
   has_scaling = false;
 
@@ -359,6 +356,9 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
 
   if (apply)
   {
+    // Initial robot configuration
+    auto q_save = robot.state.q;
+
     robot.state.q = pinocchio::integrate(robot.model, robot.state.q, qd_sol);
     if (dt > 0)
     {
@@ -366,10 +366,6 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
       robot.state.qd = pinocchio::difference(robot.model, q_save, robot.state.q) / dt;
       robot.state.qdd = (robot.state.qd - qd_save) / dt;
     }
-  }
-  else
-  {
-    robot.state.q = q_save;
   }
 
   return qd_sol;
