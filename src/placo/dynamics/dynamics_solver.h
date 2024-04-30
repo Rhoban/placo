@@ -38,11 +38,23 @@ public:
     // Checks if the gravity computation is a success
     bool success;
 
+    // The following equation should hold: M qdd + b = tau + tau_contacts
+
+    // With:
+    // - M: the mass matrix
+    // - qdd: joint-space acceleration
+    // - b: non-linear (bias) terms
+    // - tau: applied torques vector
+    // - tau_contacts: contact forces
+
     // Torques computed by the solver
     Eigen::VectorXd tau;
 
     // Accelerations computed by the solver
     Eigen::VectorXd qdd;
+
+    // Contact forces computed by the solver
+    Eigen::VectorXd tau_contacts;
   };
 
   struct OverrideJoint
@@ -425,6 +437,16 @@ public:
    * @brief Use gravity only (no coriolis, no centrifugal)
    */
   bool gravity_only = false;
+
+  /**
+   * @brief Cost for torque regularization
+   */
+  double torque_cost = 1e-3;
+
+  /**
+   * @brief Extra force to be added to the system (similar to non-linear terms)
+   */
+  Eigen::VectorXd extra_force = Eigen::VectorXd::Zero(0);
 
   /**
    * @brief Instance of the problem

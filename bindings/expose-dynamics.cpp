@@ -24,6 +24,8 @@ void exposeDynamics()
           "tau", +[](const DynamicsSolver::Result& result) { return result.tau; })
       .add_property(
           "qdd", +[](const DynamicsSolver::Result& result) { return result.qdd; })
+      .add_property(
+          "tau_contacts", +[](const DynamicsSolver::Result& result) { return result.tau_contacts; })
       .def(
           "tau_dict", +[](const DynamicsSolver::Result& result, RobotWrapper& robot) {
             boost::python::dict dict;
@@ -81,6 +83,7 @@ void exposeDynamics()
       .def_readwrite("dt", &DynamicsSolver::dt)
       .def_readwrite("qdd_safe", &DynamicsSolver::qdd_safe)
       .def_readwrite("gravity_only", &DynamicsSolver::gravity_only)
+      .def_readwrite("torque_cost", &DynamicsSolver::torque_cost)
       .def("mask_fbase", &DynamicsSolver::mask_fbase)
       .def("add_point_contact", &DynamicsSolver::add_point_contact, return_internal_reference<>())
       .def("add_unilateral_point_contact", &DynamicsSolver::add_unilateral_point_contact, return_internal_reference<>())

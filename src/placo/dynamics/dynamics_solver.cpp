@@ -462,6 +462,11 @@ DynamicsSolver::Result DynamicsSolver::solve(bool integrate)
     tau = tau + robot.non_linear_effects();
   }
 
+  if (extra_force.size() > 0)
+  {
+    tau = tau + extra_force;
+  }
+
   // J^T F
   for (auto& contact : contacts)
   {
@@ -563,7 +568,7 @@ DynamicsSolver::Result DynamicsSolver::solve(bool integrate)
   }
 
   // We want to minimize torques
-  problem.add_constraint(tau == 0).configure(ProblemConstraint::Soft, 1e-3);
+  problem.add_constraint(tau == 0).configure(ProblemConstraint::Soft, torque_cost);
 
   try
   {
@@ -574,12 +579,14 @@ DynamicsSolver::Result DynamicsSolver::solve(bool integrate)
     // Exporting result values
     result.tau = tau.value(problem.x);
     result.qdd = qdd.value(problem.x);
+    result.tau_contacts = Eigen::VectorXd::Zero(N);
 
     for (auto& contact : contacts)
     {
       if (contact->active)
       {
         contact->wrench = contact->f.value(problem.x);
+        result.tau_contacts += contact->J.transpose() * contact->wrench;
       }
     }
 
