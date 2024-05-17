@@ -83,8 +83,11 @@ void WalkTasks::reach_initial_pose(Eigen::Affine3d T_world_left, double feet_spa
 
 void WalkTasks::update_tasks(WalkPatternGenerator::Trajectory& trajectory, double t)
 {
-  update_tasks(trajectory.get_T_world_left(t), trajectory.get_T_world_right(t),
-               trajectory.get_p_world_CoM(t + com_delay), trajectory.get_R_world_trunk(t));
+  if (solver != nullptr)
+  {
+    update_tasks(trajectory.get_T_world_left(t), trajectory.get_T_world_right(t),
+                 trajectory.get_p_world_CoM(t + com_delay), trajectory.get_R_world_trunk(t));
+  }
 }
 
 void WalkTasks::update_tasks(Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right, Eigen::Vector3d com_world,
