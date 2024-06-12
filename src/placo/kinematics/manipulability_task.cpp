@@ -12,15 +12,15 @@ Eigen::MatrixXd ManipulabilityTask::mask_matrix(Eigen::MatrixXd M)
 {
   if (type == POSITION)
   {
-    return M.block(0, 0, 3, M.cols());
+    return M.block(0, 6, 3, M.cols() - 6);
   }
   else if (type == ORIENTATION)
   {
-    return M.block(3, 0, 3, M.cols());
+    return M.block(3, 6, 3, M.cols() - 6);
   }
   else
   {
-    return M;
+    return M.block(0, 6, 6, M.cols() - 6);
   }
 }
 
