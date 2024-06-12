@@ -3,6 +3,7 @@
 #include "pinocchio/algorithm/center-of-mass.hpp"
 #include "pinocchio/algorithm/compute-all-terms.hpp"
 #include "pinocchio/algorithm/geometry.hpp"
+#include "pinocchio/algorithm/kinematics-derivatives.hpp"
 #include "pinocchio/algorithm/rnea.hpp"
 #include "pinocchio/algorithm/crba.hpp"
 #include "pinocchio/algorithm/centroidal.hpp"
@@ -253,11 +254,26 @@ void RobotWrapper::update_kinematics()
   pinocchio::framesForwardKinematics(model, *data, state.q);
   pinocchio::computeJointJacobians(model, *data, state.q);
   pinocchio::computeJointJacobiansTimeVariation(model, *data, state.q, state.qd);
+  pinocchio::updateFramePlacements(model, *data);
 }
 
-void RobotWrapper::update_time_variations()
+void RobotWrapper::compute_hessians()
 {
-  pinocchio::computeJointJacobiansTimeVariation(model, *data, state.q, state.qd);
+  pinocchio::computeJointKinematicHessians(model, *data);
+}
+
+Eigen::MatrixXd RobotWrapper::get_frame_hessian(FrameIndex frame, int joint_v_index)
+{
+  // Frame parent joint index
+  pinocchio::JointIndex joint_id = model.frames[frame].parent;
+  pinocchio::SE3 T = model.frames[frame].placement;
+
+  pinocchio::Tensor<double, 3, 0> H = pinocchio::getJointKinematicHessian(model, *data, joint_id, pinocchio::LOCAL);
+  const Eigen::DenseIndex matrix_offset = 6 * model.nv;
+
+  Eigen::Map<Eigen::MatrixXd> hessian(H.data() + joint_v_index * matrix_offset, 6, model.nv);
+
+  return T.inverse().toActionMatrix() * hessian;
 }
 
 RobotWrapper::State RobotWrapper::neutral_state()

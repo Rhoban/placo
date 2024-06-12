@@ -225,9 +225,14 @@ public:
   void update_kinematics();
 
   /**
-   * @brief Update internal computation for time variations only
+   * @brief Compute kinematics hessians
    */
-  void update_time_variations();
+  void compute_hessians();
+
+  /**
+   * @brief Get the component for the hessian of a given frame for a given joint
+   */
+  Eigen::MatrixXd get_frame_hessian(FrameIndex frame, int joint_v_index);
 
   /**
    * @brief Gets the CoM position in the world
