@@ -162,6 +162,35 @@ RegularizationTask& KinematicsSolver::add_regularization_task(double magnitude)
   return task;
 }
 
+ManipulabilityTask& KinematicsSolver::add_manipulability_task(model::RobotWrapper::FrameIndex frame,
+                                                              ManipulabilityTask::Type type, double lambda)
+{
+  return add_task(new ManipulabilityTask(frame, type, lambda));
+}
+
+ManipulabilityTask& KinematicsSolver::add_manipulability_task(std::string frame, std::string type, double lambda)
+{
+  ManipulabilityTask::Type type_;
+  if (type == "position")
+  {
+    type_ = ManipulabilityTask::Type::POSITION;
+  }
+  else if (type == "orientation")
+  {
+    type_ = ManipulabilityTask::Type::ORIENTATION;
+  }
+  else if (type == "both")
+  {
+    type_ = ManipulabilityTask::Type::BOTH;
+  }
+  else
+  {
+    throw std::runtime_error("Unknown manipulability type: " + type);
+  }
+
+  return add_manipulability_task(robot.get_frame_index(frame), type_, lambda);
+}
+
 KineticEnergyRegularizationTask& KinematicsSolver::add_kinetic_energy_regularization_task(double magnitude)
 {
   KineticEnergyRegularizationTask& task = add_task(new KineticEnergyRegularizationTask());

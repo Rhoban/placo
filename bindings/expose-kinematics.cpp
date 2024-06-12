@@ -76,6 +76,10 @@ void exposeKinematics()
           // Regularization task
           .def("add_regularization_task", &KinematicsSolver::add_regularization_task, return_internal_reference<>())
 
+          // Manipulability task
+          .def<ManipulabilityTask& (KinematicsSolver::*)(std::string, std::string, double)>(
+              "add_manipulability_task", &KinematicsSolver::add_manipulability_task, return_internal_reference<>())
+
           // Kinetic energy regularization task
           .def("add_kinetic_energy_regularization_task", &KinematicsSolver::add_kinetic_energy_regularization_task,
                return_internal_reference<>())
@@ -215,6 +219,10 @@ void exposeKinematics()
       .add_property("L_world", &CentroidalMomentumTask::L_world, &CentroidalMomentumTask::L_world);
 
   class__<RegularizationTask, bases<Task>>("RegularizationTask");
+
+  class__<ManipulabilityTask, bases<Task>>("ManipulabilityTask",
+                                           init<RobotWrapper::FrameIndex, ManipulabilityTask::Type, double>())
+      .def_readwrite("lambda", &ManipulabilityTask::lambda);
 
   class__<KineticEnergyRegularizationTask, bases<RegularizationTask>>("KineticEnergyRegularizationTask");
 

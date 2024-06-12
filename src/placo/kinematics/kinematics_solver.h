@@ -19,6 +19,7 @@
 #include "placo/kinematics/gear_task.h"
 #include "placo/kinematics/wheel_task.h"
 #include "placo/kinematics/regularization_task.h"
+#include "placo/kinematics/manipulability_task.h"
 #include "placo/kinematics/kinetic_energy_regularization_task.h"
 #include "placo/kinematics/centroidal_momentum_task.h"
 #include "placo/kinematics/axis_align_task.h"
@@ -248,6 +249,21 @@ public:
    * @return regularization task
    */
   RegularizationTask& add_regularization_task(double magnitude = 1e-6);
+
+  /**
+   * @brief Adds a manipulability regularization task for a given magnitude
+   * @return manipulability task
+   */
+  ManipulabilityTask& add_manipulability_task(model::RobotWrapper::FrameIndex frame, ManipulabilityTask::Type type,
+                                              double lambda = 1.0);
+
+  /**
+   * @brief Adds a manipulability regularization task for a given magnitude
+   * @param frame the reference frame
+   * @param type type (position, orientation or both)
+   * @return manipulability task
+   */
+  ManipulabilityTask& add_manipulability_task(std::string frame, std::string type = "both", double lambda_ = 1.0);
 
   /**
    * @brief Adds a kinetic energy regularization task for a given magnitude

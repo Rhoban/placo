@@ -255,6 +255,11 @@ void RobotWrapper::update_kinematics()
   pinocchio::computeJointJacobiansTimeVariation(model, *data, state.q, state.qd);
 }
 
+void RobotWrapper::update_time_variations()
+{
+  pinocchio::computeJointJacobiansTimeVariation(model, *data, state.q, state.qd);
+}
+
 RobotWrapper::State RobotWrapper::neutral_state()
 {
   State state;

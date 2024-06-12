@@ -225,6 +225,11 @@ public:
   void update_kinematics();
 
   /**
+   * @brief Update internal computation for time variations only
+   */
+  void update_time_variations();
+
+  /**
    * @brief Gets the CoM position in the world
    */
   Eigen::Vector3d com_world();
