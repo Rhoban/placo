@@ -27,10 +27,10 @@ Eigen::MatrixXd ManipulabilityTask::mask_matrix(Eigen::MatrixXd M)
 void ManipulabilityTask::update()
 {
   // Computing the Jacobian matrix
-  Eigen::MatrixXd J_unmasked = solver->robot.frame_jacobian(frame_index, pinocchio::LOCAL_WORLD_ALIGNED);
+  Eigen::MatrixXd J_unmasked = solver->robot.frame_jacobian(frame_index, pinocchio::LOCAL);
   Eigen::MatrixXd J = mask_matrix(J_unmasked);
   Eigen::MatrixXd JJT_inv = (J * J.transpose()).inverse();
-  double manipulability = sqrt((J * J.transpose()).determinant());
+  double manipulability = sqrt(fmax(0., (J * J.transpose()).determinant()));
   solver->robot.compute_hessians();
 
   Eigen::VectorXd manipulability_gradient(solver->N - 6);
@@ -54,11 +54,6 @@ void ManipulabilityTask::update()
   A.block(0, 0, solver->N - 6, solver->N) = I.block(6, 0, solver->N - 6, solver->N) * lambda;
 
   b = (1 / (2. * lambda)) * manipulability_gradient;
-
-  std::cout << "Manipulability gradient: " << manipulability_gradient.transpose() << std::endl;
-  std::cout << "Manipulability: " << manipulability << std::endl;
-  std::cout << "A: " << A << std::endl;
-  std::cout << "b: " << b.transpose() << std::endl;
 }
 
 std::string ManipulabilityTask::type_name()
