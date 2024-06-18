@@ -30,7 +30,7 @@ void ManipulabilityTask::update()
   Eigen::MatrixXd J_unmasked = solver->robot.frame_jacobian(frame_index, pinocchio::LOCAL);
   Eigen::MatrixXd J = mask_matrix(J_unmasked);
   Eigen::MatrixXd JJT_inv = (J * J.transpose()).inverse();
-  double manipulability = sqrt(fmax(0., (J * J.transpose()).determinant()));
+  manipulability = sqrt(fmax(0., (J * J.transpose()).determinant()));
   solver->robot.compute_hessians();
 
   Eigen::VectorXd manipulability_gradient(solver->N - 6);
