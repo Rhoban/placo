@@ -54,6 +54,11 @@ void ManipulabilityTask::update()
   A.block(0, 0, solver->N - 6, solver->N) = I.block(6, 0, solver->N - 6, solver->N) * lambda;
 
   b = (1 / (2. * lambda)) * manipulability_gradient;
+
+  if (minimize)
+  {
+    b = -b;
+  }
 }
 
 std::string ManipulabilityTask::type_name()

@@ -36,5 +36,10 @@ struct ManipulabilityTask : public Task
    * @brief Type of frame manipulability to compute
    */
   Type type;
+
+  /**
+   * @brief Should the manipulability be minimized (can be useful to find singularities)
+   */
+  bool minimize = false;
 };
 }  // namespace placo::kinematics
