@@ -93,7 +93,7 @@ a :func:`KineticEnergyRegularizationTask <placo.KineticEnergyRegularizationTask>
     # Adding a kinetic energy regularization task
     kinetic_energy_task = solver.add_kinetic_energy_regularization_task(1e-6)
 
-This will minimise :math:`\frac{1}{2} \dot{q}^T M \dot{q}`, where :math:`M` is the inertia matrix of the robot.
+This will minimize :math:`\frac{1}{2} \dot{q}^T M \dot{q}`, where :math:`M` is the inertia matrix of the robot.
 
 .. note::
 
@@ -116,5 +116,41 @@ This will minimise :math:`\frac{1}{2} \dot{q}^T M \dot{q}`, where :math:`M` is t
       :autoplay:
       :muted:
       :loop:
+
+  :example:`kinematics/6axis_regularization.py`
+
+
+Manipulability regularization
+-----------------------------
+
+Manipulability is a well-known metrics establishing the ability of the robot to produce motion in all the
+direction (for position and/or orientation) in the task-space.
+Formally, it is the volume of the ellipsoid obtained by mapping unit-length motion in joint-space to task-space
+(through the relevant Jacobian).
+
+You can use a :func:`ManipulabilityTask <placo.ManipulabilityTask>`:
+
+.. code-block:: python
+
+    manipulability = solver.add_manipulability_task("effector", "both", 1.0)
+    manipulability.configure("manipulability", "soft", 1e-3)
+
+Here:
+
+* ``"effector"`` is the frame for which manipulability should be maximized (in ``LOCAL`` reference frame)
+* ``"both"`` means that the manipulability for both position and orientation will be used. The values ``"position"``
+or ``"orientation"`` can be used to only compute the manipulability for respectively position and orientation
+* The last parameter, ``1.0`` is a value that will be added on the Hessian of the objective function. Since
+maximizing the manipulability is a first-order task, a 
+
+.. admonition:: Math details
+
+    To compute the manipulability derivatives, kinematics hessians need to be computed.
+    See `https://arxiv.org/abs/2002.11901 <https://arxiv.org/abs/2002.11901>`_.
+
+.. admonition:: manipulability
+
+  If you pass ``--manipulability`` to the 6axis regularization example, the manipulability will be maximized
+  during the process.
 
   :example:`kinematics/6axis_regularization.py`
