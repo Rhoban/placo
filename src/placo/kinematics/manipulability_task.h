@@ -45,6 +45,6 @@ struct ManipulabilityTask : public Task
   /**
    * @brief The last computed manipulability value
    */
-  bool manipulability = 0.;
+  double manipulability = 0.;
 };
 }  // namespace placo::kinematics
