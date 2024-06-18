@@ -222,7 +222,7 @@ void exposeKinematics()
 
   class__<ManipulabilityTask, bases<Task>>("ManipulabilityTask",
                                            init<RobotWrapper::FrameIndex, ManipulabilityTask::Type, double>())
-      .def_readwrite("lambda", &ManipulabilityTask::lambda)
+      .def_readwrite("lambda_", &ManipulabilityTask::lambda)
       .def_readwrite("minimize", &ManipulabilityTask::minimize)
       .def_readonly("manipulability", &ManipulabilityTask::manipulability);
 

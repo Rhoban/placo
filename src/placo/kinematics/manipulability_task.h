@@ -14,7 +14,7 @@ struct ManipulabilityTask : public Task
     BOTH = 2
   };
 
-  ManipulabilityTask(model::RobotWrapper::FrameIndex frame_index, Type type, double lambda = 1.0);
+  ManipulabilityTask(model::RobotWrapper::FrameIndex frame_index, Type type, double lambda_ = 1.0);
 
   virtual void update();
   virtual std::string type_name();
