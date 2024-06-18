@@ -41,5 +41,10 @@ struct ManipulabilityTask : public Task
    * @brief Should the manipulability be minimized (can be useful to find singularities)
    */
   bool minimize = false;
+
+  /**
+   * @brief The last computed manipulability value
+   */
+  bool manipulability = 0.;
 };
 }  // namespace placo::kinematics
