@@ -16,14 +16,14 @@ dependencies = [
   "pin >= 2.6.18, < 3",
   "rhoban-cmeel-jsoncpp",
   "meshcat",
-  "numpy",
+  "numpy<2",
   "ischedule"
 ]
 description = "PlaCo: Rhoban Planning and Control"
 license = "MIT"
 name = "placo"
 requires-python = ">= 3.8"
-version = "0.5.4"
+version = "0.5.5"
 
 [project.urls]
 changelog = "https://github.com/rhoban/placo/blob/main/CHANGELOG.md"
