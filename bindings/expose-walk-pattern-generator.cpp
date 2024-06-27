@@ -110,8 +110,10 @@ void exposeWalkPatternGenerator()
       .add_property("trunk_mode", &WalkTasks::trunk_mode, &WalkTasks::trunk_mode)
       .add_property("com_x", &WalkTasks::com_x, &WalkTasks::com_x)
       .add_property("com_y", &WalkTasks::com_y, &WalkTasks::com_y)
-      .add_property(
-          "trunk_orientation_task", +[](WalkTasks& tasks) { return *tasks.trunk_orientation_task; });
+      .add_property("trunk_orientation_task",
+                    make_function(
+                        +[](WalkTasks& tasks) -> OrientationTask& { return *tasks.trunk_orientation_task; },
+                        return_value_policy<reference_existing_object>()));
 
   class__<LIPM::Trajectory>("LIPMTrajectory", init<>())
       .def("pos", &LIPM::Trajectory::pos)
