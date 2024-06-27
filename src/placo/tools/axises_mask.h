@@ -74,7 +74,7 @@ struct AxisesMask
   Eigen::Matrix3d R_local_world;
 
   /**
-   * @brief ROtation from world to custom rotation (provided by the user)
+   * @brief Rotation from world to custom rotation (provided by the user)
    */
   Eigen::Matrix3d R_custom_world;
 
