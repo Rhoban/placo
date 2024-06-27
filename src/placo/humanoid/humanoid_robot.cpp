@@ -11,7 +11,14 @@ HumanoidRobot::HumanoidRobot(std::string model_directory, int flags, std::string
   initialize();
 
   // Measuring some distances
-  dist_y_trunk_foot = fabs(get_T_a_b("trunk", "left_hip_yaw").translation().y());
+  if (model.existFrame("trunk") && model.existFrame("left_hip_yaw"))
+  {
+    dist_y_trunk_foot = fabs(get_T_a_b("trunk", "left_hip_yaw").translation().y());
+  }
+  else
+  {
+    std::cerr << "WARNING: Can't find trunk frames in the model, can't measure leg spacing" << std::endl;
+  }
 
   if (model.existFrame("head_base") && model.existFrame("head_pitch") && model.existFrame("camera"))
   {
@@ -140,7 +147,8 @@ Eigen::Vector3d HumanoidRobot::get_com_velocity(Side support, Eigen::Vector3d om
   return J_u_C * J_u_pinv * M + (J_a_C - J_u_C * J_u_pinv * J_a) * state.qd.block(6, 0, model.nv - 6, 1);
 }
 
-Eigen::VectorXd HumanoidRobot::get_torques(Eigen::VectorXd acc_a, Eigen::VectorXd contact_forces, bool use_non_linear_effects)
+Eigen::VectorXd HumanoidRobot::get_torques(Eigen::VectorXd acc_a, Eigen::VectorXd contact_forces,
+                                           bool use_non_linear_effects)
 {
   // Contact Jacobians
   Eigen::MatrixXd J_c = Eigen::MatrixXd::Zero(model.nv, 8);
@@ -267,12 +275,13 @@ void HumanoidRobot::read_from_histories(rhoban_utils::HistoryCollection& histori
     b << Eigen::Vector3d::Zero(), omega_trunk;
 
     Eigen::MatrixXd J(6, model.nv);
-    J << frame_jacobian(support_frame(), pinocchio::ReferenceFrame::LOCAL).topRows(3), frame_jacobian("trunk", "local").bottomRows(3);
+    J << frame_jacobian(support_frame(), pinocchio::ReferenceFrame::LOCAL).topRows(3),
+        frame_jacobian("trunk", "local").bottomRows(3);
     Eigen::MatrixXd J_bf = J.leftCols(6);
     Eigen::MatrixXd J_a = J.rightCols(model.nv - 6);
 
     Eigen::VectorXd qd_bf = J_bf.inverse() * (b - J_a * qd_joints);
-    for (int i=0; i<6; i++)
+    for (int i = 0; i < 6; i++)
     {
       state.qd[i] = qd_bf[i];
     }
