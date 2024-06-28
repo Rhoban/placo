@@ -377,6 +377,18 @@ public:
   void remove_constraint(Constraint& constraint);
 
   /**
+   * @brief Set the kp for all tasks
+   * @param kp
+   */
+  void set_kp(double kp);
+
+  /**
+   * @brief Set the kp for all tasks
+   * @param kpd
+   */
+  void set_kd(double kd);
+
+  /**
    * @brief Global damping that is added to all the joints
    */
   double damping = 0.;

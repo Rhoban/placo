@@ -585,6 +585,22 @@ void DynamicsSolver::remove_constraint(Constraint& constraint)
   }
 }
 
+void DynamicsSolver::set_kp(double kp)
+{
+  for (auto& task : tasks)
+  {
+    task->kp = kp;
+  }
+}
+
+void DynamicsSolver::set_kd(double kd)
+{
+  for (auto& task : tasks)
+  {
+    task->kd = kd;
+  }
+}
+
 void DynamicsSolver::add_task(Task& task)
 {
   task.solver = this;

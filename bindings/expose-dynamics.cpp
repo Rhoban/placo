@@ -113,6 +113,8 @@ void exposeDynamics()
       .def<void (DynamicsSolver::*)(FrameTask&)>("remove_task", &DynamicsSolver::remove_task)
       .def("remove_contact", &DynamicsSolver::remove_contact)
       .def("remove_constraint", &DynamicsSolver::remove_constraint)
+      .def("set_kp", &DynamicsSolver::set_kp)
+      .def("set_kd", &DynamicsSolver::set_kd)
       .add_property(
           "robot", +[](const DynamicsSolver& solver) { return solver.robot; })
       .def(
