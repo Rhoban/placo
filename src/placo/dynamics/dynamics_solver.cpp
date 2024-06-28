@@ -5,27 +5,6 @@ namespace placo::dynamics
 {
 using namespace placo::problem;
 
-void DynamicsSolver::set_passive(const std::string& joint_name, double kp, double kd)
-{
-  OverrideJoint oj;
-  oj.passive = true;
-  oj.kp = kp;
-  oj.kd = kd;
-  override_joints[joint_name] = oj;
-}
-
-void DynamicsSolver::set_tau(const std::string& joint_name, double tau)
-{
-  OverrideJoint oj;
-  oj.tau = tau;
-  override_joints[joint_name] = oj;
-}
-
-void DynamicsSolver::reset_joint(const std::string& joint_name)
-{
-  override_joints.erase(joint_name);
-}
-
 PointContact& DynamicsSolver::add_point_contact(PositionTask& position_task)
 {
   return add_contact(new PointContact(position_task, false));
@@ -225,12 +204,6 @@ void DynamicsSolver::compute_limits_inequalities(Expression& tau)
     throw std::runtime_error("DynamicsSolver::compute_limits_inequalities: dt is not set");
   }
 
-  std::set<int> override_ids;
-  for (auto& override_joint : override_joints)
-  {
-    override_ids.insert(robot.get_joint_v_offset(override_joint.first));
-  }
-
   if (torque_limits)
   {
     problem.add_constraint(tau.slice(6) <= robot.model.effortLimit.bottomRows(N - 6));
@@ -240,11 +213,11 @@ void DynamicsSolver::compute_limits_inequalities(Expression& tau)
   int constraints = 0;
   if (joint_limits)
   {
-    constraints += 2 * (N - 6 - override_joints.size());
+    constraints += 2 * (N - 6);
   }
   if (velocity_limits)
   {
-    constraints += 2 * (N - 6 - override_joints.size());
+    constraints += 2 * (N - 6);
   }
 
   if (constraints > 0)
@@ -258,10 +231,6 @@ void DynamicsSolver::compute_limits_inequalities(Expression& tau)
     // Iterating for each actuated joints
     for (int k = 0; k < N - 6; k++)
     {
-      if (override_ids.count(k + 6) > 0)
-      {
-        continue;
-      }
       double q = robot.state.q[k + 7];
       double qd = robot.state.qd[k + 6];
 
@@ -408,29 +377,6 @@ DynamicsSolver::Result DynamicsSolver::solve(bool integrate)
   problem.clear_constraints();
   problem.clear_variables();
 
-  // Computing target torque for passive joints
-  std::vector<int> override_indices;
-  Eigen::VectorXd override_taus = Eigen::VectorXd::Zero(override_joints.size());
-  int k = 0;
-  for (auto& entry : override_joints)
-  {
-    std::string joint = entry.first;
-    OverrideJoint oj = entry.second;
-    double q = robot.get_joint(joint);
-    double qd = robot.get_joint_velocity(joint);
-    int index = robot.get_joint_v_offset(joint);
-    override_indices.push_back(index);
-
-    if (oj.tau)
-    {
-      override_taus[k++] = oj.tau;
-    }
-    else
-    {
-      override_taus[k++] = -q * oj.kp - qd * oj.kd;
-    }
-  }
-
   Expression qdd;
   Variable& qdd_variable = problem.add_variable(robot.model.nv);
   qdd = qdd_variable.expr();
@@ -450,7 +396,7 @@ DynamicsSolver::Result DynamicsSolver::solve(bool integrate)
   // tau = M qdd + b - J^T F
 
   // M qdd
-  Expression tau = robot.mass_matrix() * qdd + robot.state.qd * friction;
+  Expression tau = robot.mass_matrix() * qdd + robot.state.qd * damping;
 
   // b
   if (gravity_only)
@@ -498,7 +444,7 @@ DynamicsSolver::Result DynamicsSolver::solve(bool integrate)
 
   // Now, tau = Ax + b with x = [qdd, f1, f2, ...], we copy J^T to the extended A
   // for forces that are decision variables
-  k = N;
+  int k = N;
   for (auto& contact : contacts)
   {
     if (contact->active)
@@ -556,15 +502,6 @@ DynamicsSolver::Result DynamicsSolver::solve(bool integrate)
   if (!masked_fbase)
   {
     problem.add_constraint(tau.slice(0, 6) == 0);
-  }
-
-  // Enforce the override torques
-  if (override_taus.size() > 0)
-  {
-    Expression override_tau_expr;
-    override_tau_expr.A = tau.A(override_indices, Eigen::all);
-    override_tau_expr.b = tau.b(override_indices);
-    problem.add_constraint(override_tau_expr == override_taus);
   }
 
   // We want to minimize torques

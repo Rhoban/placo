@@ -8,9 +8,16 @@ TorqueTask::TorqueTask()
   tau_task = true;
 }
 
-void TorqueTask::set_torque(std::string joint, double torque)
+void TorqueTask::set_torque(std::string joint, double torque, double kp, double kd)
 {
-  torques[joint] = torque;
+  torques[joint].torque = torque;
+  torques[joint].kp = kp;
+  torques[joint].kd = kd;
+}
+
+void TorqueTask::reset_torque(std::string joint)
+{
+  torques.erase(joint);
 }
 
 void TorqueTask::update()
@@ -27,8 +34,10 @@ void TorqueTask::update()
   int k = 0;
   for (auto& entry : torques)
   {
+    TargetTau target = entry.second;
     A(k, solver->robot.get_joint_v_offset(entry.first)) = 1;
-    b(k, 0) = entry.second;
+    b(k, 0) = target.torque + target.kp * solver->robot.get_joint(entry.first) -
+              target.kd * solver->robot.get_joint_velocity(entry.first);
     k++;
   }
 }

@@ -13,8 +13,8 @@ using namespace placo::dynamics;
 using namespace placo::model;
 
 // Overloads
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(set_passive_overloads, set_passive, 1, 3);
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(solve_overloads, solve, 0, 1);
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(set_torque_overloads, set_torque, 2, 4);
 
 void exposeDynamics()
 {
@@ -79,7 +79,7 @@ void exposeDynamics()
 
   class__<DynamicsSolver>("DynamicsSolver", init<RobotWrapper&>())
       .add_property("problem", &DynamicsSolver::problem)
-      .def_readwrite("friction", &DynamicsSolver::friction)
+      .def_readwrite("damping", &DynamicsSolver::damping)
       .def_readwrite("dt", &DynamicsSolver::dt)
       .def_readwrite("qdd_safe", &DynamicsSolver::qdd_safe)
       .def_readwrite("gravity_only", &DynamicsSolver::gravity_only)
@@ -99,9 +99,6 @@ void exposeDynamics()
            return_internal_reference<>())
       .def("add_reaction_ratio_constraint", &DynamicsSolver::add_reaction_ratio_constraint,
            return_internal_reference<>())
-      .def("set_passive", &DynamicsSolver::set_passive, set_passive_overloads())
-      .def("set_tau", &DynamicsSolver::set_tau)
-      .def("reset_joint", &DynamicsSolver::reset_joint)
       .def("enable_velocity_limits", &DynamicsSolver::enable_velocity_limits)
       .def("enable_velocity_vs_torque_limits", &DynamicsSolver::enable_velocity_vs_torque_limits)
       .def("enable_joint_limits", &DynamicsSolver::enable_joint_limits)
@@ -239,7 +236,9 @@ void exposeDynamics()
             update_map<std::string, double>(task.djoints, py_dict);
           });
 
-  class__<TorqueTask, bases<Task>>("DynamicsTorqueTask", init<>()).def("set_torque", &TorqueTask::set_torque);
+  class__<TorqueTask, bases<Task>>("DynamicsTorqueTask", init<>())
+      .def("set_torque", &TorqueTask::set_torque, set_torque_overloads())
+      .def("reset_torque", &TorqueTask::reset_torque);
 
   class__<GearTask, bases<Task>>("DynamicsGearTask", init<>())
       .def("set_gear", &GearTask::set_gear)

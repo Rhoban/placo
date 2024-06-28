@@ -57,48 +57,11 @@ public:
     Eigen::VectorXd tau_contacts;
   };
 
-  struct OverrideJoint
-  {
-    // If passive is true, tau will be computed as a function of kp and kd
-    bool passive;
-    double kp;
-    double kd;
-
-    // Else, a custom tau will be used
-    double tau;
-  };
-
   DynamicsSolver(model::RobotWrapper& robot);
   virtual ~DynamicsSolver();
 
   // Contacts
   std::vector<Contact*> contacts;
-
-  // Override joints (passive or custom tau)
-  std::map<std::string, OverrideJoint> override_joints;
-
-  /**
-   * @brief Sets a DoF as passive, the corresponding tau will be fixed in the equation of motion
-   *        it can be purely passive joint or a spring-like behaviour
-   * @param joint_name the joint
-   * @param is_passive true if the should the joint be passive
-   * @param kp kp gain if the joint is a spring (0 by default)
-   * @param kd kd gain if the joint is a spring (0 by default)
-   */
-  void set_passive(const std::string& joint_name, double kp = 0., double kd = 0.);
-
-  /**
-   * @brief Sets a custom torque to be applied by a given joint
-   * @param joint_name the joint
-   * @param tau torque
-   */
-  void set_tau(const std::string& joint_name, double tau);
-
-  /**
-   * @brief Resets a given joint so that its torque is no longer overriden
-   * @param joint_name the joint
-   */
-  void reset_joint(const std::string& joint_name);
 
   /**
    * @brief Adds a position (in the world) task
@@ -414,9 +377,9 @@ public:
   void remove_constraint(Constraint& constraint);
 
   /**
-   * @brief Global friction that is added to all the joints
+   * @brief Global damping that is added to all the joints
    */
-  double friction = 0.;
+  double damping = 0.;
 
   /**
    * @brief Solver dt (seconds)
