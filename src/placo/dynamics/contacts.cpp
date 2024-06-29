@@ -190,6 +190,7 @@ PuppetContact::PuppetContact()
 void PuppetContact::update()
 {
   J = Eigen::MatrixXd(solver->N, solver->N);
+  J.setIdentity();
 }
 
 TaskContact::TaskContact(Task& task)
