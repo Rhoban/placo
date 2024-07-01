@@ -54,3 +54,8 @@ a velocity:
 
     # Computes the velocity
     v = dq / dt
+
+.. note::
+
+    When the solved value is applied (by passing `True` in `solver.solve(True)`), the robot state
+    (`robot.state.qd`) is updated with the computed velocity.

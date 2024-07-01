@@ -82,7 +82,7 @@ then run the solver by calling :func:`solve() <placo.KinematicsSolver.solve>`:
     solver.solve(True)
 
 The boolean argument to :func:`solve() <placo.KinematicsSolver.solve>` means that we want to reflect the
-solution in the robot model by integrating it.
+solution in the robot state by integrating it (you can think of it as :math:`q` being updated to :math:`q + \Delta q`).
 
 Putting it all together
 -----------------------
