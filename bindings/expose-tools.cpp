@@ -31,6 +31,7 @@ void exposeTools()
   def("rotation_from_axis", &rotation_from_axis);
   def("frame_yaw", &frame_yaw);
   def("flatten_on_floor", &flatten_on_floor);
+  def("optimal_transformation", &optimal_transformation);
 
   exposeStdVector<int>("vector_int");
   exposeStdVector<double>("vector_double");
