@@ -126,6 +126,10 @@ Eigen::Affine3d optimal_transformation(Eigen::MatrixXd points_in_A, Eigen::Matri
   {
     throw std::runtime_error("optimal_transformation(): points in A and B should have the same number of rows");
   }
+  if (points_in_A.rows() < 3)
+  {
+    throw std::runtime_error("optimal_transformation(): at least 3 points are required");
+  }
 
   Eigen::Affine3d T_a_b = Eigen::Affine3d::Identity();
 
