@@ -115,4 +115,52 @@ bool file_exists(const std::string& name)
   struct stat buffer;
   return (stat(name.c_str(), &buffer) == 0);
 }
+
+Eigen::Affine3d optimal_transformation(Eigen::MatrixXd points_in_A, Eigen::MatrixXd points_in_B)
+{
+  if (points_in_A.cols() != 3 || points_in_B.cols() != 3)
+  {
+    throw std::runtime_error("optimal_transformation(): points should have 3 columns (x, y, z)");
+  }
+  if (points_in_A.rows() != points_in_B.rows())
+  {
+    throw std::runtime_error("optimal_transformation(): points in A and B should have the same number of rows");
+  }
+
+  Eigen::Affine3d T_a_b = Eigen::Affine3d::Identity();
+
+  // Compute the barycenters
+  Eigen::Vector3d barycenter_A = points_in_A.colwise().mean();
+  Eigen::Vector3d barycenter_B = points_in_B.colwise().mean();
+
+  // Compute the centered points
+  Eigen::MatrixXd centered_A = points_in_A.rowwise() - barycenter_A.transpose();
+  Eigen::MatrixXd centered_B = points_in_B.rowwise() - barycenter_B.transpose();
+
+  // Compute the covariance matrix
+  Eigen::Matrix3d H = centered_B.transpose() * centered_A;
+
+  // Compute the SVD
+  Eigen::JacobiSVD<Eigen::Matrix3d> svd(H, Eigen::ComputeFullU | Eigen::ComputeFullV);
+  Eigen::Matrix3d U = svd.matrixU();
+  Eigen::Matrix3d V = svd.matrixV();
+
+  // Compute the rotation
+  Eigen::Matrix3d R = V * U.transpose();
+
+  if (R.determinant() < 0)
+  {
+    Eigen::Matrix3d Z = Eigen::Matrix3d::Identity();
+    Z(2, 2) = -1;
+    R = V * Z * U.transpose();
+  }
+
+  // Compute the translation
+  Eigen::Vector3d t = barycenter_A - R * barycenter_B;
+
+  T_a_b.linear() = R;
+  T_a_b.translation() = t;
+
+  return T_a_b;
+}
 }  // namespace placo::tools

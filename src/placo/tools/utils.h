@@ -60,5 +60,11 @@ double safe_acos(double v);
  */
 bool file_exists(const std::string& name);
 
-extern std::map<std::string, std::string> dof_to_motors;
+/**
+ * @brief Finds the optimal transformation T_a_b that minimizes the sum of squared distances
+ * between the (same) points in A and T_a_b * points in B
+ * Points are stacked in lines (columns are x, y and z) in the matrices
+ */
+Eigen::Affine3d optimal_transformation(Eigen::MatrixXd points_in_A, Eigen::MatrixXd points_in_B);
+
 }  // namespace placo::tools
