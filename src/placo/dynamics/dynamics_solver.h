@@ -35,7 +35,7 @@ class DynamicsSolver
 public:
   struct Result
   {
-    // Checks if the gravity computation is a success
+    // Indicate whether the problem was solved
     bool success;
 
     // The following equation should hold: M qdd + b = tau + tau_contacts
@@ -43,7 +43,7 @@ public:
     // With:
     // - M: the mass matrix
     // - qdd: joint-space acceleration
-    // - b: non-linear (bias) terms
+    // - b: non-linear (bias) terms (+ optionally solver.extra_force)
     // - tau: applied torques vector
     // - tau_contacts: contact forces
 
