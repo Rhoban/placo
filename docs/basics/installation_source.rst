@@ -24,11 +24,16 @@ You can then install the following dependencies:
 
 .. code-block:: bash
 
-    sudo apt-get install robotpkg-hpp-fcl robotpkg-eiquadprog \
-            robotpkg-pinocchio robotpkg-py310-pinocchio
+    sudo apt-get install \
+            robotpkg-py310-eigenpy=3.1.1 \
+            robotpkg-hpp-fcl=2.3.6 \
+            robotpkg-pinocchio=2.6.20 \
+            robotpkg-py310-eigenpy=3.1.1  \
+            robotpkg-py310-hpp-fcl=2.3.6 \
+            robotpkg-py310-pinocchio=2.6.20 \
 
 .. note::
-    Change ``robotpkg-py310-pinocchio`` according to your own Python version.
+    Versions above are frozen to ensure compatiblity. Placo has not yet switched to Pinocchio 3.
 
 Cloning and building
 ~~~~~~~~~~~~~~~~~~~~
