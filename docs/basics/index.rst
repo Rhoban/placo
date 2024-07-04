@@ -16,6 +16,13 @@ Basics
     collisions
     configurations
     frames
+
+.. toctree::
+    :caption: Tools
+    :maxdepth: 2
+
+    frames_tools
+    interpolation
    
 .. toctree::
     :caption: Visualization
