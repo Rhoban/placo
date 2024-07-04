@@ -22,8 +22,9 @@ This can be convenient if you only care a bout a specific axis (for example, a n
 
 .. admonition:: Rotation from axis example
     
-    The following example shows the result of :func:`rotation_from_axis <placo.rotation_from_axis>`.
-    Axises are looping as ``x``, ``y`` and ``z``, tracking the purple arrow.
+    The following example shows the result of :func:`rotation_from_axis <placo.rotation_from_axis>`, asking
+    a rotation matrix to track the purple arrow.
+    At each full revolution, the axis is switched periodically between ``x``, ``y`` and ``z``.
 
     .. video:: https://github.com/Rhoban/placo-examples/raw/master/tools/videos/rotation_from_axis.mp4
         :loop:
