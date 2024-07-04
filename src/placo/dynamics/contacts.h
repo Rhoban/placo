@@ -103,6 +103,11 @@ public:
   PositionTask* position_task;
 
   /**
+   * @brief rotation matrix expressing the surface frame in the world frame (for unilateral contact)
+   */
+  Eigen::Matrix3d R_world_surface;
+
+  /**
    * @brief true for unilateral contact with the ground
    */
   bool unilateral;

@@ -47,26 +47,36 @@ PointContact::PointContact(PositionTask& position_task, bool unilateral)
 {
   this->position_task = &position_task;
   this->unilateral = unilateral;
+  R_world_surface.setIdentity();
 }
 
 void PointContact::update()
 {
   J = position_task->A;
+
+  if (J.rows() != 3)
+  {
+    throw std::logic_error("PointContact::update: a point contact should be associated with a task of dimension 3 (did "
+                           "you mask some axises?)");
+  }
 }
 
 void PointContact::add_constraints(Problem& problem)
 {
   if (unilateral)
   {
+    // Expressing the force in the surface frame
+    Expression f_surface = R_world_surface.transpose() * f;
+
     // The contact is unilateral
-    problem.add_constraint(f.slice(F_Z, 1) >= 0);
+    problem.add_constraint(f_surface.slice(F_Z, 1) >= 0);
 
     // We don't slip
-    problem.add_constraint(f.slice(F_X, 1) <= mu * f.slice(F_Z, 1));
-    problem.add_constraint(-mu * f.slice(F_Z, 1) <= f.slice(F_X, 1));
+    problem.add_constraint(f_surface.slice(F_X, 1) <= mu * f_surface.slice(F_Z, 1));
+    problem.add_constraint(-mu * f_surface.slice(F_Z, 1) <= f_surface.slice(F_X, 1));
 
-    problem.add_constraint(f.slice(F_Y, 1) <= mu * f.slice(F_Z, 1));
-    problem.add_constraint(-mu * f.slice(F_Z, 1) <= f.slice(F_Y, 1));
+    problem.add_constraint(f_surface.slice(F_Y, 1) <= mu * f_surface.slice(F_Z, 1));
+    problem.add_constraint(-mu * f_surface.slice(F_Z, 1) <= f_surface.slice(F_Y, 1));
   }
 
   // Objective

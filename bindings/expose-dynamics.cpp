@@ -50,7 +50,10 @@ void exposeDynamics()
       .def(
           "position_task", +[](PointContact& contact) -> PositionTask& { return *contact.position_task; },
           return_internal_reference<>())
-      .def_readwrite("unilateral", &PointContact::unilateral);
+      .def_readwrite("unilateral", &PointContact::unilateral)
+      .add_property(
+          "R_world_surface", +[](PointContact& contact) { return contact.R_world_surface; },
+          +[](PointContact& contact, Eigen::Matrix3d R) { contact.R_world_surface = R; });
 
   class__<Contact6D, bases<Contact>>("Contact6D", init<FrameTask&, bool>())
       .def(
