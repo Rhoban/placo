@@ -84,6 +84,28 @@ then run the solver by calling :func:`solve() <placo.KinematicsSolver.solve>`:
 The boolean argument to :func:`solve() <placo.KinematicsSolver.solve>` means that we want to reflect the
 solution in the robot state by integrating it (you can think of it as :math:`q` being updated to :math:`q + \Delta q`).
 
+.. note::
+
+    PlaCo is often used in a loop fashion, in that case, we recommend the following pattern:
+
+    .. code-block:: python
+        
+        # Be sure
+        robot.update_kinematics()
+
+        while is_running: # some main loop
+            # Update tasks data here
+
+            # Solve the IK
+            solver.solve(True)
+
+            # Update frames and jacobians
+            robot.update_kinematics()
+
+            # Optionally: dump the solver status
+            solver.dump_status()
+
+
 Putting it all together
 -----------------------
 
