@@ -91,6 +91,10 @@ double CubicSpline::interpolation(double t, CubicSpline::ValueType type)
         {
           return polynom_diff(t - _splines[i].t_start, _splines[i].poly);
         }
+        else if (type == Acceleration)
+        {
+          return polynom_diff2(t - _splines[i].t_start, _splines[i].poly);
+        }
       }
     }
     return 0.0;
@@ -105,6 +109,11 @@ double CubicSpline::pos(double t)
 double CubicSpline::vel(double t)
 {
   return interpolation(t, Speed);
+}
+
+double CubicSpline::acc(double t)
+{
+  return interpolation(t, Acceleration);
 }
 
 /**
@@ -123,6 +132,11 @@ double CubicSpline::polynom_value(double t, const Polynom& p)
 double CubicSpline::polynom_diff(double t, const Polynom& p)
 {
   return t * (3 * p.a * t + 2 * p.b) + p.c;
+}
+
+double CubicSpline::polynom_diff2(double t, const Polynom& p)
+{
+  return 6 * p.a * t + 2 * p.b;
 }
 
 CubicSpline::Polynom CubicSpline::fit(double t1, double x1, double dx1, double t2, double x2, double dx2)

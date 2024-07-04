@@ -43,6 +43,13 @@ public:
    */
   Eigen::Vector3d vel(double t);
 
+  /**
+   * @brief Returns the spline accleeration at time t
+   * @param t time
+   * @return acceleration (3D vector)
+   */
+  Eigen::Vector3d acc(double t);
+
 private:
   CubicSpline xSpline;
   CubicSpline ySpline;

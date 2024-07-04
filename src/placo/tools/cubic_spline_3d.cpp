@@ -35,4 +35,9 @@ Eigen::Vector3d CubicSpline3D::vel(double t)
   return Eigen::Vector3d(xSpline.vel(t), ySpline.vel(t), zSpline.vel(t));
 }
 
+Eigen::Vector3d CubicSpline3D::acc(double t)
+{
+  return Eigen::Vector3d(xSpline.acc(t), ySpline.acc(t), zSpline.acc(t));
+}
+
 }  // namespace placo::tools

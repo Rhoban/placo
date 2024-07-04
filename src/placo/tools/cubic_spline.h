@@ -52,10 +52,18 @@ public:
    */
   double vel(double x);
 
+  /**
+   * @brief Retrieve acceleration at a given time
+   * @param t time
+   * @return acceleration
+   */
+  double acc(double x);
+
   enum ValueType
   {
     Value,
-    Speed
+    Speed,
+    Acceleration
   };
   double interpolation(double x, ValueType type);
 
@@ -106,6 +114,11 @@ private:
    * Polynom diff. value
    */
   static double polynom_diff(double t, const Polynom& p);
+
+  /**
+   * Polynom diff. value
+   */
+  static double polynom_diff2(double t, const Polynom& p);
 
   /**
    * Fit a polynom
