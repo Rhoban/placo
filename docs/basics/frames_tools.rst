@@ -19,11 +19,12 @@ The method :func:`rotation_from_axis <placo.rotation_from_axis>` builds a rotati
 points towards the given direction. Note that there is an arbitrary choice here, but the result is deterministic.
 
 This can be convenient if you only care a bout a specific axis (for example, a normal surface).
-The following example shows the result of this method.
-Axises are looping as ``x``, ``y`` and ``z``, tracking the purple arrow.
 
-.. admonition:: Example
+.. admonition:: Rotation from axis example
     
+    The following example shows the result of :func:`rotation_from_axis <placo.rotation_from_axis>`.
+    Axises are looping as ``x``, ``y`` and ``z``, tracking the purple arrow.
+
     .. video:: https://github.com/Rhoban/placo-examples/raw/master/tools/videos/rotation_from_axis.mp4
         :loop:
 
@@ -35,13 +36,13 @@ Optimal transformation
 For two given set of points, the :func:`optimal_transformation <placo.optimal_transformation>` function can be used to find the optimal transformation between them.
 
 This tool is useful in the case where some points are used to retrieve the corresponding transformation.
-In the example below, the optimal transformation is computed between the red points on the floor and the robot legs,
-allowing to find the optimal match to place the robot on the floor.
-This can be convenient for state estimation.
 
-
-.. admonition:: Example
+.. admonition:: Optimal transformation example
     
+    In the example below, the optimal transformation is computed between the red points on the floor and the robot legs,
+    allowing to find the optimal match to place the robot on the floor.
+    This can be convenient for state estimation.
+
     .. video:: https://github.com/Rhoban/placo-examples/raw/master/tools/videos/optimal_transformation.mp4
         :loop:
 
