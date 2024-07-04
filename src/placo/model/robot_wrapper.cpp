@@ -7,6 +7,9 @@
 #include "pinocchio/algorithm/rnea.hpp"
 #include "pinocchio/algorithm/crba.hpp"
 #include "pinocchio/algorithm/centroidal.hpp"
+// Following includes will be required for Pinocchio 3:
+// #include "pinocchio/collision/collision.hpp"
+// #include "pinocchio/collision/distance.hpp"
 #include "placo/tools/utils.h"
 #include <json/json.h>
 #include <filesystem>
