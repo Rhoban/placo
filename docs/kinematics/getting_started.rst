@@ -4,8 +4,9 @@ Getting started
 Introduction
 ------------
 
-PlaCo offers you a way to formulate constrained *task-space inverse kinematics* problem, through a convenient
-API. This page will guide you through the main concepts through an introduction example.
+The kinematics solver allows you to formulate *task-space inverse kinematics* problems, including constraints
+such as joint limits and velocities, through a convenient API. This page will guide you through the main
+concepts through an introduction example.
 
 Creating the kinematics solver
 ------------------------------
