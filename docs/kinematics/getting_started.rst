@@ -122,3 +122,8 @@ Putting all the above parts together and adding some visualization will result i
     :example:`kinematics/6axis_basic.py`
 
 You can find more examples in the :doc:`examples gallery <examples_gallery>`.
+
+See also
+--------
+
+* `Pink <https://github.com/stephane-caron/pink>`_, a task-space inverse kinematics library based on Pinocchio (Python)
