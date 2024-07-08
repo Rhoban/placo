@@ -542,6 +542,12 @@ DynamicsSolver::Result DynamicsSolver::solve(bool integrate)
       }
 
       robot.state.qdd = result.qdd;
+      if (masked_fbase)
+      {
+        // Ensuring zero acceleration for the floating base. Even with the hard constraint, numerical issues
+        // could yield a drift.
+        robot.state.qdd.head(6).setZero();
+      }
       robot.integrate(dt);
     }
   }
