@@ -396,6 +396,16 @@ public:
   void set_qdd_safe(std::string joint, double qdd);
 
   /**
+   * @brief Sets the allowed torque limit by the solver for a given joint. This will not affect the robot's model
+   * effort limit. When computing the velocity vs torque limit, the robot's model effort will still be used.
+   * You can see this limit as a continuous limit allowable for the robot, while the robot's model limit is the
+   * maximum possible torque.
+   * @param joint
+   * @param limit
+   */
+  void set_torque_limit(std::string joint, double limit);
+
+  /**
    * @brief Global damping that is added to all the joints
    */
   double damping = 0.;
@@ -418,7 +428,7 @@ public:
   /**
    * @brief Continuous torque limits
    */
-  std::map<int, double> torque_limit_continuous;
+  Eigen::VectorXd effort_limit;
 
   /**
    * @brief Use gravity only (no coriolis, no centrifugal)

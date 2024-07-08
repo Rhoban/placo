@@ -174,6 +174,8 @@ DynamicsSolver::DynamicsSolver(model::RobotWrapper& robot) : robot(robot)
   {
     set_qdd_safe(joint, 1.0);
   }
+
+  effort_limit = robot.model.effortLimit;
 }
 
 DynamicsSolver::~DynamicsSolver()
@@ -211,22 +213,8 @@ void DynamicsSolver::compute_limits_inequalities(Expression& tau)
 
   if (torque_limits)
   {
-    if (velocity_vs_torque_limits)
-    {
-      for (int k = 6; k < N - 6; k++)
-      {
-        if (torque_limit_continuous.count(k))
-        {
-          problem.add_constraint(tau.slice(6 + k, 1) <= torque_limit_continuous[k]);
-          problem.add_constraint(tau.slice(6 + k, 1) >= -torque_limit_continuous[k]);
-        }
-      }
-    }
-    else
-    {
-      problem.add_constraint(tau.slice(6) <= robot.model.effortLimit.bottomRows(N - 6));
-      problem.add_constraint(tau.slice(6) >= -robot.model.effortLimit.bottomRows(N - 6));
-    }
+    problem.add_constraint(tau.slice(6) <= effort_limit.bottomRows(N - 6));
+    problem.add_constraint(tau.slice(6) >= -effort_limit.bottomRows(N - 6));
   }
 
   int constraints = 0;
@@ -625,6 +613,13 @@ void DynamicsSolver::set_qdd_safe(std::string joint, double qdd)
   int v = robot.get_joint_v_offset(joint);
 
   qdd_safe[v] = qdd;
+}
+
+void DynamicsSolver::set_torque_limit(std::string joint, double limit)
+{
+  int v = robot.get_joint_v_offset(joint);
+
+  effort_limit[v] = limit;
 }
 
 void DynamicsSolver::add_task(Task& task)
