@@ -438,7 +438,7 @@ public:
   /**
    * @brief Cost for torque regularization
    */
-  double torque_cost = 1e-3;
+  double torque_cost = 1e-6;
 
   /**
    * @brief Extra force to be added to the system (similar to non-linear terms)
