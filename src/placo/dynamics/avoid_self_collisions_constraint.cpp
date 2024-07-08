@@ -65,7 +65,7 @@ void AvoidSelfCollisionsConstraint::add_constraint(problem::Problem& problem, pr
       {
         if (fabs(J(0, k)) > 1e-6)
         {
-          double lambda_i = fabs(solver->qdd_safe / J(0, k));
+          double lambda_i = fabs(solver->qdd_safe[k] / J(0, k));
           if (lambda < 0 || lambda_i < lambda)
           {
             lambda = lambda_i;

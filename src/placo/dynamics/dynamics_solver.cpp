@@ -169,6 +169,11 @@ DynamicsSolver::DynamicsSolver(model::RobotWrapper& robot) : robot(robot)
   masked_fbase = false;
   problem.use_sparsity = false;
   problem.rewrite_equalities = true;
+
+  for (std::string joint : robot.joint_names())
+  {
+    set_qdd_safe(joint, 1.0);
+  }
 }
 
 DynamicsSolver::~DynamicsSolver()
@@ -275,12 +280,12 @@ void DynamicsSolver::compute_limits_inequalities(Expression& tau)
           // We are in the contact, ensuring at least
           // qdd <= -qdd_safe
           e.A(constraint, k + 6) = 1;
-          e.b(constraint) = qdd_safe;
+          e.b(constraint) = qdd_safe[k + 6];
         }
         else
         {
           // qdd*dt + qd <= qd_max
-          double qd_max = sqrt(2. * (robot.model.upperPositionLimit[k + 7] - q) * qdd_safe);
+          double qd_max = sqrt(2. * (robot.model.upperPositionLimit[k + 7] - q) * qdd_safe[k + 6]);
           e.A(constraint, k + 6) = dt;
           e.b(constraint) = qd - qd_max;
         }
@@ -291,12 +296,12 @@ void DynamicsSolver::compute_limits_inequalities(Expression& tau)
           // We are in the contact, ensuring at least
           // qdd >= qdd_safe
           e.A(constraint, k + 6) = -1;
-          e.b(constraint) = qdd_safe;
+          e.b(constraint) = qdd_safe[k + 6];
         }
         else
         {
           // qdd*dt + qd >= -qd_max
-          double qd_max = sqrt(2. * fabs(robot.model.lowerPositionLimit[k + 7] - q) * qdd_safe);
+          double qd_max = sqrt(2. * fabs(robot.model.lowerPositionLimit[k + 7] - q) * qdd_safe[k + 6]);
           e.A(constraint, k + 6) = -dt;
           e.b(constraint) = -qd - qd_max;
         }
@@ -599,6 +604,13 @@ void DynamicsSolver::set_kd(double kd)
   {
     task->kd = kd;
   }
+}
+
+void DynamicsSolver::set_qdd_safe(std::string joint, double qdd)
+{
+  int v = robot.get_joint_v_offset(joint);
+
+  qdd_safe[v] = qdd;
 }
 
 void DynamicsSolver::add_task(Task& task)

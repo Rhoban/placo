@@ -389,6 +389,13 @@ public:
   void set_kd(double kd);
 
   /**
+   * @brief Sets the "safe" Qdd acceptable for a given joint (used by joint limits)
+   * @param joint
+   * @param qdd
+   */
+  void set_qdd_safe(std::string joint, double qdd);
+
+  /**
    * @brief Global damping that is added to all the joints
    */
   double damping = 0.;
@@ -406,7 +413,7 @@ public:
   /**
    * @brief The value of qdd safe
    */
-  double qdd_safe = 1.;
+  std::map<int, double> qdd_safe;
 
   /**
    * @brief Use gravity only (no coriolis, no centrifugal)
