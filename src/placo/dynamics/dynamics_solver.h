@@ -416,6 +416,11 @@ public:
   std::map<int, double> qdd_safe;
 
   /**
+   * @brief Continuous torque limits
+   */
+  std::map<int, double> torque_limit_continuous;
+
+  /**
    * @brief Use gravity only (no coriolis, no centrifugal)
    */
   bool gravity_only = false;
