@@ -25,6 +25,7 @@ Outline
 
   basics/index
   kinematics/index
+  dynamics/index
   placo/summary
 
 Links
