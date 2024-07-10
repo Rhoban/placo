@@ -11,12 +11,11 @@ PositionTask::PositionTask(model::RobotWrapper::FrameIndex frame_index, Eigen::V
 
 void PositionTask::update()
 {
+  pinocchio::ReferenceFrame frame_type = pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED;
+
   // Computing J and dJ
-  Eigen::MatrixXd J = solver->robot.frame_jacobian(frame_index, pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED)
-                          .block(0, 0, 3, solver->N);
-  Eigen::MatrixXd dJ =
-      solver->robot.frame_jacobian_time_variation(frame_index, pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED)
-          .block(0, 0, 3, solver->N);
+  Eigen::MatrixXd J = solver->robot.frame_jacobian(frame_index, frame_type).block(0, 0, 3, solver->N);
+  Eigen::MatrixXd dJ = solver->robot.frame_jacobian_time_variation(frame_index, frame_type).block(0, 0, 3, solver->N);
 
   // Computing error
   Eigen::Affine3d T_world_frame = solver->robot.get_T_world_frame(frame_index);
