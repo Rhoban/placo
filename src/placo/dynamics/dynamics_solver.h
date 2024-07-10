@@ -428,7 +428,7 @@ public:
   /**
    * @brief Continuous torque limits
    */
-  Eigen::VectorXd effort_limit;
+  std::map<int, double> overriden_torque_limits;
 
   /**
    * @brief Use gravity only (no coriolis, no centrifugal)

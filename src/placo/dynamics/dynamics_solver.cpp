@@ -174,8 +174,6 @@ DynamicsSolver::DynamicsSolver(model::RobotWrapper& robot) : robot(robot)
   {
     set_qdd_safe(joint, 1.0);
   }
-
-  effort_limit = robot.model.effortLimit;
 }
 
 DynamicsSolver::~DynamicsSolver()
@@ -213,6 +211,12 @@ void DynamicsSolver::compute_limits_inequalities(Expression& tau)
 
   if (torque_limits)
   {
+    Eigen::VectorXd effort_limit = robot.model.effortLimit;
+    for (auto& entry : overriden_torque_limits)
+    {
+      effort_limit[entry.first] = entry.second;
+    }
+
     problem.add_constraint(tau.slice(6) <= effort_limit.bottomRows(N - 6));
     problem.add_constraint(tau.slice(6) >= -effort_limit.bottomRows(N - 6));
   }
@@ -365,7 +369,7 @@ void DynamicsSolver::dump_status_stream(std::ostream& stream)
     stream << std::endl;
     char buffer[128];
     sprintf(buffer, "    - Error: %.06f [%s]\n", task->error.norm(), task->error_unit().c_str());
-    stream << buffer << std::endl;
+    stream << buffer;
     sprintf(buffer, "    - DError: %.06f [%s]\n", task->derror.norm(), task->error_unit().c_str());
     stream << buffer << std::endl;
   }
@@ -511,8 +515,8 @@ DynamicsSolver::Result DynamicsSolver::solve(bool integrate)
     problem.add_constraint(tau.slice(0, 6) == 0);
   }
 
-  // We want to minimize torques
-  problem.add_constraint(tau == 0).configure(ProblemConstraint::Soft, torque_cost);
+  // We want to minimize actuated torques
+  problem.add_constraint(tau.slice(6) == 0).configure(ProblemConstraint::Soft, torque_cost);
 
   try
   {
@@ -625,7 +629,7 @@ void DynamicsSolver::set_torque_limit(std::string joint, double limit)
 {
   int v = robot.get_joint_v_offset(joint);
 
-  effort_limit[v] = limit;
+  overriden_torque_limits[v] = limit;
 }
 
 void DynamicsSolver::add_task(Task& task)
