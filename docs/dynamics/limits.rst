@@ -95,8 +95,8 @@ presents in the URDF or :ref:`overriden by the user <joint_limits>`.
     # Enables joint limits (disabled by default)
     solver.enable_joint_limits(True) # Read carefully below
 
-Enforcing the joint limits in a dynamics formulation is trickier. Since the tasks are expressed as acceleration,
-it requires converting it to a velocity limit in practice.
+Enforcing the joint limits in a dynamics formulation is trickier. In practice, the joint limits are enforced
+by generating limits on the future velocity.
 
 You **need** to define a **safe acceleration** limit for each joints, which is internally set to 1 by default,
 and can be set by the user with:
