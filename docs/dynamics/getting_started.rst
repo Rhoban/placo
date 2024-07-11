@@ -22,8 +22,8 @@ the examples:
 
 The ``solver`` will be the tool we'll use to formulate our tasks, contacts and constraints.
 
-Defining our tasks
-------------------
+Defining tasks
+--------------
 
 Our robot is a static arm, we can start by disabling the floating base:
 
