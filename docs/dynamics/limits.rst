@@ -129,4 +129,4 @@ and can be set by the user with:
 
         \ddot q \le -\ddot q_{safe}
 
-    This situation can happen during initialization, or because of numerical issues.
+    This situation can happen during initialization, or because of numerical inaccuracies.
