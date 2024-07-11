@@ -20,13 +20,15 @@ the acceleration and used in expressions.
 
 A typical task structure will look like:
 
-:math:`\ddot q^{desired} = K_p (q^{desired} - q) + K_d (\dot q^{desired} - \dot q) + \ddot q^{desired}`.
+:math:`\ddot q^{desired} = K_p (q^{task} - q) + K_d (\dot q^{task} - \dot q) + \ddot q^{task}`.
 
-Where the desired position, velocity and accelerations are given by the user.
-If you only have a position reference, the desired velocity and acceleration can be set to zero.
+Where the :math:`task` superscript denotes the values provided by the task.
+Those values can be produced by your task-space trajectory.
+If you only have a position reference, the desired velocity and acceleration will be set to zero, and the
+task will act as a feedback position controller.
 In that case, :math:`K_p` can be adjusted to change the stiffness, and :math:`K_d` can be set to
 :math:`2 \sqrt{K_p}` to have a `critically damped system <https://en.wikipedia.org/wiki/Damping>`_.
-This is the default in the solver to reduce the number of parameters to tune.
+This is the default in the solver, allowing to reduce the number of parameters to tune.
 
 2) Tasks and constraints can refer to torque
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
