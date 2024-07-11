@@ -87,8 +87,6 @@ void exposeDynamics()
       .def("mask_fbase", &DynamicsSolver::mask_fbase)
       .def("add_point_contact", &DynamicsSolver::add_point_contact, return_internal_reference<>())
       .def("add_unilateral_point_contact", &DynamicsSolver::add_unilateral_point_contact, return_internal_reference<>())
-      .def("add_relative_point_contact", &DynamicsSolver::add_relative_point_contact, return_internal_reference<>())
-      .def("add_relative_fixed_contact", &DynamicsSolver::add_relative_fixed_contact, return_internal_reference<>())
       .def("add_planar_contact", &DynamicsSolver::add_planar_contact, return_internal_reference<>())
       .def("add_fixed_contact", &DynamicsSolver::add_fixed_contact, return_internal_reference<>())
       .def<ExternalWrenchContact& (DynamicsSolver::*)(std::string)>(
