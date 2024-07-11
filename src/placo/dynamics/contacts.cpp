@@ -86,53 +86,6 @@ void PointContact::add_constraints(Problem& problem)
   }
 }
 
-bool RelativePointContact::is_internal()
-{
-  return true;
-}
-
-RelativePointContact::RelativePointContact(RelativePositionTask& relative_position_task)
-{
-  this->relative_position_task = &relative_position_task;
-}
-
-void RelativePointContact::update()
-{
-  J = relative_position_task->A;
-}
-
-void RelativePointContact::add_constraints(Problem& problem)
-{
-  // Objective
-  if (weight_forces > 0)
-  {
-    problem.add_constraint(f == 0).configure(ProblemConstraint::Soft, weight_forces);
-  }
-}
-
-Relative6DContact::Relative6DContact(RelativeFrameTask& relative_frame_task)
-{
-  this->relative_position_task = relative_frame_task.position;
-  this->relative_orientation_task = relative_frame_task.orientation;
-}
-
-void Relative6DContact::update()
-{
-  J = Eigen::MatrixXd::Zero(6, solver->N);
-  J.block(0, 0, 3, solver->N) =
-      solver->robot.frame_jacobian(relative_position_task->frame_b_index, pinocchio::WORLD).block(0, 0, 3, solver->N) -
-      solver->robot.frame_jacobian(relative_position_task->frame_a_index, pinocchio::WORLD).block(0, 0, 3, solver->N);
-  J.block(3, 0, 3, solver->N) = solver->robot.frame_jacobian(relative_orientation_task->frame_b_index, pinocchio::WORLD)
-                                    .block(3, 0, 3, solver->N) -
-                                solver->robot.frame_jacobian(relative_orientation_task->frame_a_index, pinocchio::WORLD)
-                                    .block(3, 0, 3, solver->N);
-}
-
-bool Relative6DContact::is_internal()
-{
-  return true;
-}
-
 Contact6D::Contact6D(FrameTask& frame_task, bool unilateral)
 {
   this->position_task = frame_task.position;

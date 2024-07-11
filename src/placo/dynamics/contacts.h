@@ -68,12 +68,6 @@ public:
   virtual void add_constraints(problem::Problem& problem);
 
   /**
-   * @brief Is it an internal contact ?
-   * @return true if the contact is internal
-   */
-  virtual bool is_internal();
-
-  /**
    * @brief Expression of the forces applied on the contact, created by the \ref DynamicsSolver::solve call
    */
   problem::Expression f;
@@ -157,39 +151,6 @@ public:
 
   virtual void update();
   virtual void add_constraints(problem::Problem& problem);
-};
-
-class RelativePointContact : public Contact
-{
-public:
-  /**
-   * @brief see \ref DynamicsSolver::add_relative_point_contact
-   */
-  RelativePointContact(RelativePositionTask& position_task);
-
-  /**
-   * @brief Associated relative position task
-   */
-  RelativePositionTask* relative_position_task;
-
-  virtual void update();
-  virtual void add_constraints(problem::Problem& problem);
-  virtual bool is_internal();
-};
-
-class Relative6DContact : public Contact
-{
-public:
-  /**
-   * @brief see \ref DynamicsSolver::add_relative_fixed_contact
-   */
-  Relative6DContact(RelativeFrameTask& frame_task);
-
-  RelativePositionTask* relative_position_task;
-  RelativeOrientationTask* relative_orientation_task;
-
-  virtual void update();
-  virtual bool is_internal();
 };
 
 class ExternalWrenchContact : public Contact
