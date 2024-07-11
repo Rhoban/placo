@@ -9,7 +9,7 @@ cd ../..
 
 while [ true ]
 do
-    inotifywait *.rst kinematics/ basics/ --recursive 
+    inotifywait *.rst dynamics/ kinematics/ basics/ --recursive 
     make html
     sleep 0.5
 done
