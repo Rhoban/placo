@@ -14,3 +14,5 @@ method to disable the floating base:
 
 This will add a constraint on the floating base that should have no acceleration, and allow forces to be applied
 by the floating base to compensate for bias forces such as gravity.
+
+**(WORK IN PROGRESS)**

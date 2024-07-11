@@ -139,7 +139,7 @@ Here:
 
 * ``"effector"`` is the frame for which manipulability should be maximized (in ``LOCAL`` reference frame)
 * ``"both"`` means that the manipulability for both position and orientation will be used. The values ``"position"``
-or ``"orientation"`` can be used to only compute the manipulability for respectively position and orientation
+  or ``"orientation"`` can be used to only compute the manipulability for respectively position and orientation
 * The last parameter, ``1.0`` is a value that will be added on the Hessian of the objective function. Since
 maximizing the manipulability is a first-order task, a 
 
