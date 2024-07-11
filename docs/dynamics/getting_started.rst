@@ -60,7 +60,7 @@ We will now enable all possible limits, since the UR5 URDF file is specifying pr
 Updating the task
 -----------------
 
-Let's update the task by updating a t ime ``t``, and setting :func:`T_world_frame <placo.DynamicsFrameTask.T_world_frame>` on the ``effector_task`` accordingly:
+Let's update the task by updating a time ``t``, and setting :func:`T_world_frame <placo.DynamicsFrameTask.T_world_frame>` on the ``effector_task`` accordingly:
 
 .. code-block:: python
 
