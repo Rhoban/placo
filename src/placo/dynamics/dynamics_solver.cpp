@@ -193,7 +193,6 @@ void DynamicsSolver::enable_velocity_limits(bool enable)
 
 void DynamicsSolver::enable_velocity_vs_torque_limits(bool enable)
 {
-  velocity_limits = enable;
   velocity_vs_torque_limits = enable;
 }
 
@@ -204,7 +203,7 @@ void DynamicsSolver::enable_torque_limits(bool enable)
 
 void DynamicsSolver::compute_limits_inequalities(Expression& tau)
 {
-  if ((joint_limits || velocity_limits) && dt == 0.)
+  if ((joint_limits || velocity_limits || velocity_vs_torque_limits) && dt == 0.)
   {
     throw std::runtime_error("DynamicsSolver::compute_limits_inequalities: dt is not set");
   }
@@ -245,38 +244,35 @@ void DynamicsSolver::compute_limits_inequalities(Expression& tau)
       double q = robot.state.q[k + 7];
       double qd = robot.state.qd[k + 6];
 
-      if (velocity_limits)
+      if (velocity_vs_torque_limits)
       {
-        if (torque_limits && velocity_vs_torque_limits)
-        {
-          double ratio = robot.model.velocityLimit[k + 6] / robot.model.effortLimit[k + 6];
+        double ratio = robot.model.velocityLimit[k + 6] / robot.model.effortLimit[k + 6];
 
-          // qd + dt*qdd <= qd_max - ratio * tau
-          // ratio * tau + dt*qdd + qd - qd_max <= 0
-          e.A.block(constraint, 0, 1, problem.n_variables) = ratio * tau.A.block(k + 6, 0, 1, problem.n_variables);
-          e.b[constraint] = ratio * tau.b[k + 6];
-          e.A(constraint, k + 6) += dt;
-          e.b[constraint] += qd - robot.model.velocityLimit[k + 6];
-          constraint++;
+        // qd + dt*qdd <= qd_max - ratio * tau
+        // ratio * tau + dt*qdd + qd - qd_max <= 0
+        e.A.block(constraint, 0, 1, problem.n_variables) = ratio * tau.A.block(k + 6, 0, 1, problem.n_variables);
+        e.b[constraint] = ratio * tau.b[k + 6];
+        e.A(constraint, k + 6) += dt;
+        e.b[constraint] += qd - robot.model.velocityLimit[k + 6];
+        constraint++;
 
-          // qd + dt*qdd >= -qd_max - ratio * tau
-          // -ratio*tau - dt*qdd - qd - qd_max <= 0
-          e.A.block(constraint, 0, 1, problem.n_variables) = -ratio * tau.A.block(k + 6, 0, 1, problem.n_variables);
-          e.b[constraint] = -ratio * tau.b[k + 6];
-          e.A(constraint, k + 6) -= dt;
-          e.b[constraint] -= qd + robot.model.velocityLimit[k + 6];
-          constraint++;
-        }
-        else
-        {
-          e.A(constraint, k + 6) = dt;
-          e.b(constraint) = -robot.model.velocityLimit[k + 6] + qd;
-          constraint++;
+        // qd + dt*qdd >= -qd_max - ratio * tau
+        // -ratio*tau - dt*qdd - qd - qd_max <= 0
+        e.A.block(constraint, 0, 1, problem.n_variables) = -ratio * tau.A.block(k + 6, 0, 1, problem.n_variables);
+        e.b[constraint] = -ratio * tau.b[k + 6];
+        e.A(constraint, k + 6) -= dt;
+        e.b[constraint] -= qd + robot.model.velocityLimit[k + 6];
+        constraint++;
+      }
+      else if (velocity_limits)
+      {
+        e.A(constraint, k + 6) = dt;
+        e.b(constraint) = -robot.model.velocityLimit[k + 6] + qd;
+        constraint++;
 
-          e.A(constraint, k + 6) = -dt;
-          e.b(constraint) = -robot.model.velocityLimit[k + 6] - qd;
-          constraint++;
-        }
+        e.A(constraint, k + 6) = -dt;
+        e.b(constraint) = -robot.model.velocityLimit[k + 6] - qd;
+        constraint++;
       }
 
       if (joint_limits)
