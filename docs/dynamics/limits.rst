@@ -54,7 +54,7 @@ This duality can also be imposed by using :func:`enable_velocity_vs_torque_limit
     solver.enable_velocity_vs_torque_limits(True)
 
 Enabling this limit will **replace** the velocity limit.
-Without torque limits enabled, here is the 
+Without torque limits enabled, here is the constraint enforced:
 
 .. image:: ../_static/velocity_vs_torque.svg
     :width: 300px
