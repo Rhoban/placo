@@ -132,13 +132,15 @@ void Contact6D::add_constraints(Problem& problem)
   }
 }
 
-ExternalWrenchContact::ExternalWrenchContact(model::RobotWrapper::FrameIndex frame_index) : frame_index(frame_index)
+ExternalWrenchContact::ExternalWrenchContact(model::RobotWrapper::FrameIndex frame_index,
+                                             pinocchio::ReferenceFrame reference)
+  : frame_index(frame_index), reference(reference)
 {
 }
 
 void ExternalWrenchContact::update()
 {
-  J = solver->robot.frame_jacobian(frame_index, pinocchio::LOCAL_WORLD_ALIGNED);
+  J = solver->robot.frame_jacobian(frame_index, reference);
 }
 
 PuppetContact::PuppetContact()

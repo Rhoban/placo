@@ -236,16 +236,20 @@ public:
   /**
    * @brief Adds an external wrench
    * @param frame_index
+   * @param reference
    * @return external wrench contact
    */
-  ExternalWrenchContact& add_external_wrench_contact(model::RobotWrapper::FrameIndex frame_index);
+  ExternalWrenchContact&
+  add_external_wrench_contact(model::RobotWrapper::FrameIndex frame_index,
+                              pinocchio::ReferenceFrame reference = pinocchio::LOCAL_WORLD_ALIGNED);
 
   /**
    * @brief Adds an external wrench
    * @param frame_name frame
+   * @param reference reference frame (world or local)
    * @return external wrench contact
    */
-  ExternalWrenchContact& add_external_wrench_contact(std::string frame_name);
+  ExternalWrenchContact& add_external_wrench_contact(std::string frame_name, std::string reference = "world");
 
   /**
    * @brief Adds a puppet contact, this will add some free contact forces for the whole system, allowing it

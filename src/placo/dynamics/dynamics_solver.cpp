@@ -25,14 +25,27 @@ Contact6D& DynamicsSolver::add_fixed_contact(FrameTask& frame_task)
   return add_contact(new Contact6D(frame_task, false));
 }
 
-ExternalWrenchContact& DynamicsSolver::add_external_wrench_contact(model::RobotWrapper::FrameIndex frame_index)
+ExternalWrenchContact& DynamicsSolver::add_external_wrench_contact(model::RobotWrapper::FrameIndex frame_index,
+                                                                   pinocchio::ReferenceFrame reference)
 {
-  return add_contact(new ExternalWrenchContact(frame_index));
+  return add_contact(new ExternalWrenchContact(frame_index, reference));
 }
 
-ExternalWrenchContact& DynamicsSolver::add_external_wrench_contact(std::string frame_name)
+ExternalWrenchContact& DynamicsSolver::add_external_wrench_contact(std::string frame_name, std::string reference)
 {
-  return add_external_wrench_contact(robot.get_frame_index(frame_name));
+  if (reference == "world")
+  {
+    return add_external_wrench_contact(robot.get_frame_index(frame_name), pinocchio::LOCAL_WORLD_ALIGNED);
+  }
+  else if (reference == "local")
+  {
+    return add_external_wrench_contact(robot.get_frame_index(frame_name), pinocchio::LOCAL);
+  }
+  else
+  {
+    throw std::runtime_error("DynamicsSolver::add_external_wrench_contact: unknown reference '" + reference +
+                             "' (should be 'world' or 'local')");
+  }
 }
 
 PuppetContact& DynamicsSolver::add_puppet_contact()
