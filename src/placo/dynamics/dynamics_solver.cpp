@@ -60,11 +60,6 @@ AvoidSelfCollisionsConstraint& DynamicsSolver::add_avoid_self_collisions_constra
   return add_constraint(new AvoidSelfCollisionsConstraint());
 }
 
-ReactionRatioConstraint& DynamicsSolver::add_reaction_ratio_constraint(Contact& contact, double reaction_ratio)
-{
-  return add_constraint(new ReactionRatioConstraint(contact, reaction_ratio));
-}
-
 PositionTask& DynamicsSolver::add_position_task(model::RobotWrapper::FrameIndex frame_index,
                                                 Eigen::Vector3d target_world)
 {
