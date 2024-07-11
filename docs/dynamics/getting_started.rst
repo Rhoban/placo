@@ -112,8 +112,8 @@ only use a feedback controller, with an implicit target velocity set to zero.
 You can think of it as the effector trying to reach the target with no velocity, meaning it is getting slower and
 slower as it approaches the target.
 
-To account for that, you can specify target velocities while tracking the target, let's turn our trajectory into a
-form that allow us to do so:
+To account for that, you can specify target velocities while tracking the target, let's rewrite our trajectory
+and add its derivative with respect to time as a target velocity:
 
 .. code-block:: python
         
