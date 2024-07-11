@@ -101,8 +101,6 @@ void exposeDynamics()
       .def("add_task_contact", &DynamicsSolver::add_task_contact, return_internal_reference<>())
       .def("add_avoid_self_collisions_constraint", &DynamicsSolver::add_avoid_self_collisions_constraint,
            return_internal_reference<>())
-      .def("add_reaction_ratio_constraint", &DynamicsSolver::add_reaction_ratio_constraint,
-           return_internal_reference<>())
       .def("enable_velocity_limits", &DynamicsSolver::enable_velocity_limits)
       .def("enable_velocity_vs_torque_limits", &DynamicsSolver::enable_velocity_vs_torque_limits)
       .def("enable_joint_limits", &DynamicsSolver::enable_joint_limits)
@@ -255,7 +253,4 @@ void exposeDynamics()
   class__<AvoidSelfCollisionsConstraint, bases<Constraint>>("AvoidSelfCollisionsDynamicsConstraint", init<>())
       .def_readwrite("self_collisions_margin", &AvoidSelfCollisionsConstraint::self_collisions_margin)
       .def_readwrite("self_collisions_trigger", &AvoidSelfCollisionsConstraint::self_collisions_trigger);
-
-  class__<ReactionRatioConstraint, bases<Constraint>>("DynamicsReactionRatioConstraint", init<Contact&, double>())
-      .def_readwrite("reaction_ratio", &ReactionRatioConstraint::reaction_ratio);
 }
