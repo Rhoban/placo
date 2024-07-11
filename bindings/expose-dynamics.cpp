@@ -67,10 +67,6 @@ void exposeDynamics()
       .def_readwrite("width", &Contact6D::width)
       .def("zmp", &Contact6D::zmp);
 
-  class__<RelativePointContact, bases<Contact>>("RelativePointContact", init<RelativePositionTask&>());
-
-  class__<Relative6DContact, bases<Contact>>("Relative6DContact", init<RelativeFrameTask&>());
-
   class__<ExternalWrenchContact, bases<Contact>>("ExternalWrenchContact", init<RobotWrapper::FrameIndex>())
       .add_property("frame_index", &ExternalWrenchContact::frame_index)
       .add_property(
