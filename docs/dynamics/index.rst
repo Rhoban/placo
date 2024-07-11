@@ -7,4 +7,5 @@ Dynamics
 
     introduction
     getting_started
+    limits
     contacts

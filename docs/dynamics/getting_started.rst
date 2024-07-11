@@ -99,7 +99,7 @@ Putting it all together, you'll get an example similar to this:
         :muted:
         :loop:
 
-    Note: to reproduce this, pass ``--no-velocity`` argument when running the example
+    Note: to reproduce the above example, pass ``--no-velocity`` argument when running the example
 
     :example:`dynamics/ur5_targets.py`
 
@@ -132,6 +132,8 @@ And change our task update as follow:
     T_world_effector, dtarget_world = get_trajectory(t)
     effector_task.T_world_frame = T_world_effector
     effector_task.position().dtarget_world = dtarget_world
+
+You should get something similar to this:
 
 .. admonition:: UR5 tracking targets, with velocity tracking
     
