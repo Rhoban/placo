@@ -33,11 +33,6 @@ void Contact::add_constraints(Problem& problem)
 {
 }
 
-bool Contact::is_internal()
-{
-  return false;
-}
-
 Eigen::Vector3d Contact6D::zmp()
 {
   return Eigen::Vector3d(-wrench(M_Y, 0) / wrench(F_Z, 0), wrench(M_X, 0) / wrench(F_Z, 0), 0);
