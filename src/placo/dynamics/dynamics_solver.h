@@ -220,20 +220,6 @@ public:
   PointContact& add_unilateral_point_contact(PositionTask& position_task);
 
   /**
-   * @brief Adds a relative point contact, which can be typically used for internal forces like loop-closing
-   * @param position_task associated relative position task
-   * @return relative point contact
-   */
-  RelativePointContact& add_relative_point_contact(RelativePositionTask& position_task);
-
-  /**
-   * @brief Adds a relative fixed contact, can be used for fixed closed loops
-   * @param frame_task the associated relative frame task
-   * @return relative fixed contact
-   */
-  Relative6DContact& add_relative_fixed_contact(RelativeFrameTask& frame_task);
-
-  /**
    * @brief Adds a fixed contact
    * @param frame_task the associated frame task
    * @return fixed contact

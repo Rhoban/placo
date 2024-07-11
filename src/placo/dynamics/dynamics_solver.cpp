@@ -15,16 +15,6 @@ PointContact& DynamicsSolver::add_unilateral_point_contact(PositionTask& positio
   return add_contact(new PointContact(position_task, true));
 }
 
-RelativePointContact& DynamicsSolver::add_relative_point_contact(RelativePositionTask& position_task)
-{
-  return add_contact(new RelativePointContact(position_task));
-}
-
-Relative6DContact& DynamicsSolver::add_relative_fixed_contact(RelativeFrameTask& frame_task)
-{
-  return add_contact(new Relative6DContact(frame_task));
-}
-
 Contact6D& DynamicsSolver::add_planar_contact(FrameTask& frame_task)
 {
   return add_contact(new Contact6D(frame_task, true));
