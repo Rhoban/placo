@@ -436,7 +436,7 @@ public:
   bool gravity_only = false;
 
   /**
-   * @brief Cost for torque regularization
+   * @brief Cost for torque regularization (1e-6 by default)
    */
   double torque_cost = 1e-6;
 
