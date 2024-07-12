@@ -223,7 +223,7 @@ void DynamicsSolver::compute_limits_inequalities(Expression& tau)
   {
     constraints += 2 * (N - 6);
   }
-  if (velocity_limits)
+  if (velocity_limits || velocity_vs_torque_limits)
   {
     constraints += 2 * (N - 6);
   }
