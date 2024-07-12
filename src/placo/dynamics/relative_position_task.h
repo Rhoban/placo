@@ -33,7 +33,7 @@ public:
   Eigen::Vector3d dtarget = Eigen::Vector3d::Zero();
 
   /**
-   * @brief Target relative velocity
+   * @brief Target relative acceleration
    */
   Eigen::Vector3d ddtarget = Eigen::Vector3d::Zero();
 

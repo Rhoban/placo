@@ -89,7 +89,7 @@ void exposeDynamics()
       .def("add_unilateral_point_contact", &DynamicsSolver::add_unilateral_point_contact, return_internal_reference<>())
       .def("add_planar_contact", &DynamicsSolver::add_planar_contact, return_internal_reference<>())
       .def("add_fixed_contact", &DynamicsSolver::add_fixed_contact, return_internal_reference<>())
-      .def<ExternalWrenchContact& (DynamicsSolver::*)(std::string)>(
+      .def<ExternalWrenchContact& (DynamicsSolver::*)(std::string, std::string)>(
           "add_external_wrench_contact", &DynamicsSolver::add_external_wrench_contact, return_internal_reference<>())
       .def("add_puppet_contact", &DynamicsSolver::add_puppet_contact, return_internal_reference<>())
       .def("add_task_contact", &DynamicsSolver::add_task_contact, return_internal_reference<>())
@@ -158,6 +158,8 @@ void exposeDynamics()
           "target_world", +[](const PositionTask& task) { return task.target_world; }, &PositionTask::target_world)
       .add_property(
           "dtarget_world", +[](const PositionTask& task) { return task.dtarget_world; }, &PositionTask::dtarget_world)
+      .add_property(
+          "ddtarget_world", +[](const PositionTask& task) { return task.dtarget_world; }, &PositionTask::ddtarget_world)
       .add_property("mask", &PositionTask::mask, &PositionTask::mask);
 
   class__<CoMTask, bases<Task>>("DynamicsCoMTask", init<Eigen::Vector3d>())
