@@ -1,9 +1,6 @@
 Tasks and constraints
 =====================
 
-This page is providing details about the kinematics solver main concepts. Feel free to skip the maths if you
-only want the big picture.
-
 Tasks
 -----
 
@@ -62,10 +59,6 @@ Constraints are specific limits that you want your robot to respect. While joint
 implemented in the solver itself, other specific constraints can be added to the solver.
 
 Those can be prioritized and weighted in the exact same way as tasks, as explained above.
-
-.. admonition:: Math details
-
-    Constraints are added to the solver as a set of inequalities :math:`C(q) \leq 0`. 
 
 Removing tasks and constraints
 ------------------------------

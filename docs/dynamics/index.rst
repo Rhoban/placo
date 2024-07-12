@@ -7,21 +7,14 @@ Dynamics
 
     introduction
     getting_started
+    concepts
     limits
     regularization
     contacts
 
-.. .. toctree::
-..    :caption: Tasks
-..    :maxdepth: 2
-
-    .. position_orientation_frame_task
-    .. joints_task
-    .. com_task
-    .. gear_task
-
-.. .. toctree::
-..     :caption: Constraints
-..     :maxdepth: 2
-
-..     avoid_self_collisions_constraint
+.. toctree::
+   :caption: Tasks
+   :maxdepth: 2
+   
+   joints_task
+    
