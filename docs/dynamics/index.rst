@@ -8,13 +8,14 @@ Dynamics
     introduction
     getting_started
     concepts
+    contacts
     limits
     regularization
-    contacts
 
 .. toctree::
    :caption: Tasks
    :maxdepth: 2
    
    joints_task
+   position_orientation_frame_task
     
