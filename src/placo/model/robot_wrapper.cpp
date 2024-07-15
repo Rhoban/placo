@@ -318,7 +318,7 @@ void RobotWrapper::load_collision_pairs(const std::string& filename)
 
   for (size_t k = 0; k < collisions.size(); k++)
   {
-    Json::Value& entry = collisions[k];
+    Json::Value& entry = collisions[(int)k];
     if (entry.size() == 2)
     {
       if (entry[0].isInt() && entry[1].isInt())
