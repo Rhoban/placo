@@ -405,9 +405,9 @@ public:
   bool gravity_only = false;
 
   /**
-   * @brief Cost for torque regularization (1e-6 by default)
+   * @brief Cost for torque regularization (1e-3 by default)
    */
-  double torque_cost = 1e-6;
+  double torque_cost = 1e-3;
 
   /**
    * @brief Extra force to be added to the system (similar to non-linear terms)
