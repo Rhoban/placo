@@ -65,14 +65,9 @@ public:
   double kp = 1e3;
 
   /**
-   * @brief D gain for position control
+   * @brief D gain for position control (if negative, will be critically damped)
    */
-  double kd = 0.;
-
-  /**
-   * @brief If this is true, kd will be computed from kp to have a critically damped system
-   */
-  bool critically_damped = true;
+  double kd = -1;
 
   /**
    * @brief If true, the task is about tau and not about qdd

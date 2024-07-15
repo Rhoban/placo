@@ -4,7 +4,7 @@ namespace placo::dynamics
 {
 double Task::get_kd()
 {
-  if (critically_damped)
+  if (kd < 0.0)
   {
     return 2. * sqrt(kp);
   }

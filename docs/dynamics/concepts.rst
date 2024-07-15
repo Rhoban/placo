@@ -22,8 +22,8 @@ Each task has a :func:`kp <placo.DynamicsTask.kp>` attribute, allowing to adjust
 the task's "stiffness".
 By default, the derivative gain :func:`kd <placo.DynamicsTask.kd>` is set to :math:`2 \sqrt{K_p}` to have a
 `critically damped system <https://en.wikipedia.org/wiki/Damping>`_.
-To change this behaviour, you can set the :func:`critically_damped <placo.DynamicsTask.critically_damped>`
-attribute to ``False`` and set the :func:`kd <placo.DynamicsTask.kd>` attribute to the desired value.
+To change this behaviour, you can set the :func:`kd <placo.DynamicsTask.kd>` attribute to the desired value
+(setting it to a negative value will restore the default critical damping behaviour).
 
 +------------------+------------------------------------------------------------------------+
 | Priority         | Description                                                            | 
