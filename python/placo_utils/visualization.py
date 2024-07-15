@@ -238,7 +238,12 @@ def contacts_viz(solver: placo.DynamicsSolver, ratio=0.1, radius=0.005):
             frame_name = frames[contact.position_task().frame_index]
             T_world_frame = robot.get_T_world_frame(frame_name)
             wrench = T_world_frame[:3, :3] @ contact.wrench[:3]
-            origin = T_world_frame[:3, 3] + T_world_frame[:3, :3] @ contact.zmp()
+
+            if np.linalg.norm(wrench) < 1e-6:
+                origin = T_world_frame[:3, 3]
+            else:
+                origin = T_world_frame[:3, 3] + T_world_frame[:3, :3] @ contact.zmp()
+            
             arrow_viz(
                 f"contact_{k}",
                 origin,
