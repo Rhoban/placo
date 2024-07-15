@@ -101,6 +101,11 @@ void Contact6D::add_constraints(Problem& problem)
 {
   if (unilateral)
   {
+    if (length == 0 || width == 0.)
+    {
+      throw std::logic_error("Contact length and width should be set for unilateral planar contact");
+    }
+
     // The contact is unilateral
     problem.add_constraint(f.slice(F_Z, 1) >= 0);
 
