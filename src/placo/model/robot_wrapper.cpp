@@ -110,7 +110,7 @@ RobotWrapper::RobotWrapper(std::string model_directory, int flags, std::string u
 
     for (auto& collision : collisions)
     {
-      std::cerr << "  -" << collisions[0].bodyA << " collides with " << collisions[0].bodyB << std::endl;
+      std::cerr << "  -" << collision.bodyA << " collides with " << collision.bodyB << std::endl;
     }
   }
 }
@@ -316,7 +316,7 @@ void RobotWrapper::load_collision_pairs(const std::string& filename)
   }
   f >> collisions;
 
-  for (int k = 0; k < collisions.size(); k++)
+  for (size_t k = 0; k < collisions.size(); k++)
   {
     Json::Value& entry = collisions[k];
     if (entry.size() == 2)
