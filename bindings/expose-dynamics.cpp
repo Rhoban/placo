@@ -15,6 +15,7 @@ using namespace placo::model;
 // Overloads
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(solve_overloads, solve, 0, 1);
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(set_torque_overloads, set_torque, 2, 4);
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(set_joint_overloads, set_joint, 2, 4);
 
 void exposeDynamics()
 {
@@ -148,7 +149,6 @@ void exposeDynamics()
           "b", +[](const Task& task) { return task.b; })
       .add_property("kp", &Task::kp, &Task::kp)
       .add_property("kd", &Task::kd, &Task::kd)
-      .add_property("critically_damped", &Task::critically_damped, &Task::critically_damped)
       .add_property("error", &Task::error)
       .add_property("derror", &Task::derror);
 
@@ -227,7 +227,7 @@ void exposeDynamics()
       .add_property("T_a_b", &RelativeFrameTask::get_T_a_b, &RelativeFrameTask::set_T_a_b);
 
   class__<JointsTask, bases<Task>>("DynamicsJointsTask", init<>())
-      .def("set_joint", &JointsTask::set_joint)
+      .def("set_joint", &JointsTask::set_joint, set_joint_overloads())
       .def(
           "set_joints", +[](JointsTask& task,
                             boost::python::dict& py_dict) { update_map<std::string, double>(task.joints, py_dict); })
