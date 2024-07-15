@@ -31,6 +31,11 @@ int Contact::size()
 
 void Contact::add_constraints(Problem& problem)
 {
+  // Forces minimization objective
+  if (weight_forces > 0)
+  {
+    problem.add_constraint(f == 0).configure(ProblemConstraint::Soft, weight_forces);
+  }
 }
 
 Eigen::Vector3d Contact6D::zmp()
