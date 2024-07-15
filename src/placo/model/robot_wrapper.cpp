@@ -708,7 +708,7 @@ void RobotWrapper::add_q_noise(double noise)
   auto q_random = pinocchio::randomConfiguration(model);
 
   // Adding some noise in direction of a random configuration (except floating base)
-  for (int k = 7; k < robot.model.nq; k++)
+  for (int k = 7; k < model.nq; k++)
   {
     if (model.lowerPositionLimit(k) == std::numeric_limits<double>::lowest() ||
         model.upperPositionLimit(k) == std::numeric_limits<double>::max())
