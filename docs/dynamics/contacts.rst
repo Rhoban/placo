@@ -86,6 +86,21 @@ Fixed point contact
 
 *To be used with:* :func:`position task <placo.DynamicsPositionTask>`
 
+This type of contact can be used for points that are attached to the world.
+
+.. admonition:: Hanging quadruped
+
+    .. video:: https://github.com/Rhoban/placo-examples/raw/master/dynamics/videos/quadruped_hanging.mp4
+        :autoplay:
+        :muted:
+        :loop:
+
+    In this example, a quadruped robot is attached with four points (which are not unilateral).
+    All motors expect one are unactuated (torque is set to zero).
+    This results in a "hanging" robot.
+
+    :example:`dynamics/quadruped_hanging.py`
+
 Point (unilateral) contact
 --------------------------
 
