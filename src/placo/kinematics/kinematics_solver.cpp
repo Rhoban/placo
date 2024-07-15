@@ -273,23 +273,6 @@ void KinematicsSolver::compute_limits_inequalities()
   }
 }
 
-void KinematicsSolver::add_q_noise(double noise)
-{
-  auto q_random = pinocchio::randomConfiguration(robot.model);
-
-  // Adding some noise in direction of a random configuration (except floating base)
-  for (int k = 7; k < robot.model.nq; k++)
-  {
-    if (robot.model.lowerPositionLimit(k) == std::numeric_limits<double>::lowest() ||
-        robot.model.upperPositionLimit(k) == std::numeric_limits<double>::max())
-    {
-      continue;
-    }
-
-    robot.state.q(k) += (q_random(k) - robot.state.q(k)) * noise;
-  }
-}
-
 Eigen::VectorXd KinematicsSolver::solve(bool apply)
 {
   // Ensure variable is created

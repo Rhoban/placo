@@ -631,6 +631,11 @@ public:
   double total_mass();
 
   /**
+   * @brief Adds some noise to the configuration
+   */
+  void add_q_noise(double noise);
+
+  /**
    * @brief URDF model directory
    */
   std::string model_directory;

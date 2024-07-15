@@ -315,18 +315,6 @@ public:
   Result solve(bool integrate = false);
 
   /**
-   * @brief Masks (disables a DoF) from being used by the QP solver (it can't provide speed)
-   * @param dof the dof name
-   */
-  void mask_dof(std::string dof);
-
-  /**
-   * @brief Unmsks (enables a DoF) from being used by the QP solver (it can provide speed)
-   * @param dof the dof name
-   */
-  void unmask_dof(std::string dof);
-
-  /**
    * @brief Decides if the floating base should be masked
    */
   void mask_fbase(bool masked);

@@ -51,3 +51,17 @@ by using :func:`set_joint_limits <placo.RobotWrapper.set_joint_limits>`:
 You can also update the velocity and torque limits, by using respectively
 :func:`set_velocity_limit <placo.RobotWrapper.set_velocity_limit>` and
 :func:`set_torque_limit <placo.RobotWrapper.set_torque_limit>`.
+
+Adding configuration noise
+--------------------------
+
+You can call the method :func:`add_q_noise <placo.RobotWrapper.add_q_noise>` to add noise to the joint positions:
+
+.. code-block:: python
+
+    # Adds noise to the joint positions
+    robot.add_q_noise(0.01)
+
+The noise parameters is a value between 0 and 1.
+A random configuration will be sampled within the ranges of the robot, and the configuration will be updated towards
+this configuration.

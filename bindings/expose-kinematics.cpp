@@ -114,8 +114,7 @@ void exposeKinematics()
           .def<void (KinematicsSolver::*)(Task&)>("remove_task", &KinematicsSolver::remove_task)
           .def<void (KinematicsSolver::*)(FrameTask&)>("remove_task", &KinematicsSolver::remove_task)
           .def("remove_constraint", &KinematicsSolver::remove_constraint)
-          .def("solve", &KinematicsSolver::solve)
-          .def("add_q_noise", &KinematicsSolver::add_q_noise);
+          .def("solve", &KinematicsSolver::solve);
 
   class__<Task, bases<tools::Prioritized>, boost::noncopyable>("Task", no_init)
       .add_property(
