@@ -314,13 +314,6 @@ public:
    * @return the vector containing delta q, which are target variations for the robot degrees of freedom.
    */
   Eigen::VectorXd solve(bool apply = false);
-
-  /**
-   * @brief Adds some noise on the configuration of the robot (q)
-   * @param noise noise level, expressed in ratio of the joint limits
-   */
-  void add_q_noise(double noise = 1e-5);
-
   /**
    * @brief Masks (disables a DoF) from being used by the QP solver (it can't provide speed)
    * @param dof the dof name
