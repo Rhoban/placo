@@ -487,12 +487,17 @@ DynamicsSolver::Result DynamicsSolver::solve(bool integrate)
     }
 
     Expression e;
-    e.A = task->A;
-    e.b = -task->b;
     if (task->tau_task)
     {
-      e.A = e.A * tau.A;
+      e.A = task->A * tau.A;
+      e.b = task->A * tau.b - task->b;
     }
+    else
+    {
+      e.A = task->A;
+      e.b = -task->b;
+    }
+
     problem.add_constraint(e == 0).configure(task_priority, task->weight);
   }
 
