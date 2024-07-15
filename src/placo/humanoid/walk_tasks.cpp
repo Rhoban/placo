@@ -73,7 +73,7 @@ void WalkTasks::reach_initial_pose(Eigen::Affine3d T_world_left, double feet_spa
     if (i <= 10)
     {
       // Adding strong noise to avoid singularities
-      solver->add_q_noise(0.1);
+      solver->robot.add_q_noise(0.1);
     }
 
     robot->update_kinematics();
