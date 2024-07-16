@@ -132,7 +132,6 @@ void Problem::solve()
       {
         n_equalities += constraint->expression.rows();
       }
-
       constraint->is_active = true;
     }
   }
