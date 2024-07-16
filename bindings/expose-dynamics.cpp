@@ -43,6 +43,7 @@ void exposeDynamics()
       .def_readwrite("active", &Contact::active)
       .def_readwrite("mu", &Contact::mu)
       .def_readwrite("weight_forces", &Contact::weight_forces)
+      .def_readwrite("weight_tangentials", &Contact::weight_tangentials)
       .def_readwrite("weight_moments", &Contact::weight_moments)
       .add_property(
           "wrench", +[](Contact& contact) { return contact.wrench; });

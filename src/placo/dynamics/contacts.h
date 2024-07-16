@@ -42,6 +42,11 @@ public:
   double weight_forces = 0.;
 
   /**
+   * @brief Extra cost for tangential forces
+   */
+  double weight_tangentials = 0.;
+
+  /**
    * @brief Weight of moments for optimization (if relevant)
    */
   double weight_moments = 0.;

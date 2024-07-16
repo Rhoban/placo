@@ -84,6 +84,11 @@ void PointContact::add_constraints(Problem& problem)
   {
     problem.add_constraint(f.slice(F_X, 3) == 0).configure(ProblemConstraint::Soft, weight_forces);
   }
+  if (weight_tangentials > 0)
+  {
+    Expression f_surface = R_world_surface.transpose() * f;
+    problem.add_constraint(f_surface.slice(F_X, 2) == 0).configure(ProblemConstraint::Soft, weight_tangentials);
+  }
 }
 
 Contact6D::Contact6D(FrameTask& frame_task, bool unilateral)
@@ -135,6 +140,10 @@ void Contact6D::add_constraints(Problem& problem)
   if (weight_forces > 0)
   {
     problem.add_constraint(f.slice(F_X, 3) == 0).configure(ProblemConstraint::Soft, weight_forces);
+  }
+  if (weight_tangentials > 0)
+  {
+    problem.add_constraint(f.slice(F_Y, 2) == 0).configure(ProblemConstraint::Soft, weight_tangentials);
   }
   if (weight_moments > 0)
   {
