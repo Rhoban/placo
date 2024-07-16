@@ -8,7 +8,6 @@ Dynamics
     introduction
     getting_started
     concepts
-    contacts
     limits
     regularization
 
