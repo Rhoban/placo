@@ -31,6 +31,7 @@ You can then install the following dependencies:
             robotpkg-py310-eigenpy=3.1.1  \
             robotpkg-py310-hpp-fcl=2.3.6 \
             robotpkg-py310-pinocchio=2.6.20 \
+            robotpkg-eiquadprog
 
 .. note::
     Versions above are frozen to ensure compatiblity. Placo has not yet switched to Pinocchio 3.
