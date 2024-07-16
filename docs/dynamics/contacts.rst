@@ -154,6 +154,17 @@ set the robot in a specific state.
     # Create the puppet contact
     puppet_contact = solver.add_puppet_contact()
 
+For example, you can consider such a loop at the begining to initialize the robot:
+
+.. code-block:: python
+        
+    # Initializing the robot using a puppet contact
+    puppet_contact = solver.add_puppet_contact()
+    for k in range(1000):
+        solver.solve(True)
+        robot.update_kinematics()
+    solver.remove_contact(puppet_contact)
+
 .. admonition:: Quadruped puppet
 
     .. video:: https://github.com/Rhoban/placo-examples/raw/master/dynamics/videos/quadruped_puppet.mp4
