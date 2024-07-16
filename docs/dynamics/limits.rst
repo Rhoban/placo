@@ -4,7 +4,7 @@ Joint, velocity and torque limits
 Torque limits
 -------------
 
-Torque limits are **enabled by default**. They enforce the robot torque limits
+Torque limits are **disabled by default**. They enforce the robot torque limits
 presents in the URDF or :ref:`overriden by the user <joint_limits>`.
 
 You can enable/disable those limits with:
@@ -12,7 +12,7 @@ You can enable/disable those limits with:
 
 .. code-block:: python
 
-    # Disables torque limits (enabled by default)
+    # Disables torque limits (disabled by default)
     solver.enable_torque_limits(False)
 
 
