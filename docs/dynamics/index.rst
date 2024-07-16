@@ -12,6 +12,9 @@ Dynamics
     limits
     regularization
 
+.. loops closures
+.. maybe: move "contacts" to a separate toctree
+
 .. toctree::
    :caption: Tasks
    :maxdepth: 2
@@ -22,4 +25,15 @@ Dynamics
    com_task
    gear_task
 
-    
+.. toctree::
+   :caption: Contacts
+   :maxdepth: 2
+
+   contacts
+   fixed_planar_contacts
+   point_contacts
+   puppet_contact
+   external_wrench_contact
+   task_contact
+   weighting_deactivating_contacts
+   
