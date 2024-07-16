@@ -91,6 +91,11 @@ public:
   int determined_variables = 0;
 
   /**
+   * @brief Default internal regularization
+   */
+  double regularization = 1e-8;
+
+  /**
    * @brief Computed result
    */
   Eigen::VectorXd x;

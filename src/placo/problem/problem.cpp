@@ -192,9 +192,8 @@ void Problem::solve()
   q.setZero();
 
   // Adding regularization
-  double epsilon = 1e-8;
   P.block(0, 0, free_variables, free_variables).setIdentity();
-  P.block(0, 0, free_variables, free_variables) *= epsilon;
+  P.block(0, 0, free_variables, free_variables) *= regularization;
 
   // Scanning the constraints (counting inequalities and equalities, building objectif function)
   for (auto constraint : constraints)

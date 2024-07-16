@@ -117,6 +117,7 @@ void exposeProblem()
       .add_property("slack_variables", &Problem::slack_variables, &Problem::slack_variables)
       .add_property("use_sparsity", &Problem::use_sparsity, &Problem::use_sparsity)
       .add_property("rewrite_equalities", &Problem::rewrite_equalities, &Problem::rewrite_equalities)
+      .add_property("regularization", &Problem::regularization, &Problem::regularization)
       .add_property(
           "slacks", +[](const Problem& problem) { return problem.slacks; });
 
