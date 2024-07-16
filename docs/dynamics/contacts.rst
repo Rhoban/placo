@@ -88,6 +88,14 @@ Fixed point contact
 
 This type of contact can be used for points that are attached to the world.
 
+.. code-block:: python
+
+    # Creating a leg task
+    leg_task = robot.add_position_task("leg1")
+    # Creating a fixed point contact
+    # Warning: this is NOT an unilateral contact, it can pull on the ground
+    leg_contact = robot.add_fixed_point_contact(leg_task)
+
 .. admonition:: Hanging quadruped
 
     .. video:: https://github.com/Rhoban/placo-examples/raw/master/dynamics/videos/quadruped_hanging.mp4
@@ -106,6 +114,14 @@ Point (unilateral) contact
 
 *To be used with:* :func:`position task <placo.DynamicsPositionTask>`
 
+.. code-block:: python
+
+    # Creating a leg task
+    leg_task = robot.add_position_task("leg1")
+    # Creating an unilateral point contact
+    leg_contact = robot.add_point_contact(leg_task)
+    # If needed, the normal to the surface in the world can be set
+    leg_contact.R_world_surface = np.eye(3)
 
 .. _quadruped_example:
 
@@ -124,6 +140,29 @@ Puppet contact
 --------------
 
 *To be used with:* no task required
+
+The puppet contact is an "universal contact", allowing the solver to add arbitrary forces anywhere
+on the robot. By essence, it makes all the tasks feasible force-wise.
+
+This contact is helpful for debugging purpose, and can be used in the initialization phase to
+set the robot in a specific state.
+
+.. code-block:: python
+
+    # Create the puppet contact
+    puppet_contact = solver.add_puppet_contact()
+
+.. admonition:: Quadruped puppet
+
+    .. video:: https://github.com/Rhoban/placo-examples/raw/master/dynamics/videos/quadruped_puppet.mp4
+        :autoplay:
+        :muted:
+        :loop:
+
+    The quadruped in this example is achieving flying-like tasks.
+    This is made possible by the addition of a "puppet contact", providing arbitrary necessary forces.
+
+    :example:`dynamics/quadruped_puppet.py`
 
 External wrench contact
 -----------------------
