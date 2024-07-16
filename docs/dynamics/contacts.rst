@@ -82,7 +82,7 @@ Planar (unilateral) contact
 
 
 Fixed point contact
--------------
+-------------------
 
 *To be used with:* :func:`position task <placo.DynamicsPositionTask>`
 

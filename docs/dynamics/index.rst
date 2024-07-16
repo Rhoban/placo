@@ -16,6 +16,10 @@ Dynamics
    :caption: Tasks
    :maxdepth: 2
    
-   joints_task
    position_orientation_frame_task
+   joints_task
+   torque_task
+   com_task
+
+
     
