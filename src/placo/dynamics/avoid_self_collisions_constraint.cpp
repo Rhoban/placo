@@ -60,20 +60,12 @@ void AvoidSelfCollisionsConstraint::add_constraint(problem::Problem& problem, pr
       Eigen::VectorXd dJ = n.transpose() * (dJB - dJA).block(0, 0, 3, solver->N) * solver->robot.state.qd;
 
       // Computing xdd_safe from qdd_safe
-      double lambda = -1;
+      double xdd_safe = 0.0;
       for (int k = 6; k < solver->N; k++)
       {
-        if (fabs(J(0, k)) > 1e-6)
-        {
-          double lambda_i = fabs(solver->qdd_safe[k] / J(0, k));
-          if (lambda < 0 || lambda_i < lambda)
-          {
-            lambda = lambda_i;
-          }
-        }
+        xdd_safe += fabs(J(0, k)) * solver->qdd_safe[k];
       }
-
-      double xdd_safe = (lambda * (J * J.transpose()))(0, 0) + dJ[0];
+      xdd_safe = 0.5 * xdd_safe;
 
       if (distance.min_distance >= self_collisions_margin)
       {
