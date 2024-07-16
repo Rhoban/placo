@@ -10,9 +10,7 @@ Dynamics
     concepts
     limits
     regularization
-
-.. loops closures
-.. maybe: move "contacts" to a separate toctree
+    loop_closures
 
 .. toctree::
    :caption: Tasks
