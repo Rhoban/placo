@@ -20,6 +20,6 @@ Dynamics
    joints_task
    torque_task
    com_task
-
+   gear_task
 
     
