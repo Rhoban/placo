@@ -79,7 +79,10 @@ void exposeDynamics()
           return_internal_reference<>())
       .def_readwrite("unilateral", &LineContact::unilateral)
       .def_readwrite("length", &LineContact::length)
-      .def("zmp", &LineContact::zmp);
+      .def("zmp", &LineContact::zmp)
+      .add_property(
+          "R_world_surface", +[](PointContact& contact) { return contact.R_world_surface; },
+          +[](PointContact& contact, Eigen::Matrix3d R) { contact.R_world_surface = R; });
 
   class__<ExternalWrenchContact, bases<Contact>>("ExternalWrenchContact", init<RobotWrapper::FrameIndex>())
       .add_property("frame_index", &ExternalWrenchContact::frame_index)

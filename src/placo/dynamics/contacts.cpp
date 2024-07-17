@@ -156,13 +156,14 @@ LineContact::LineContact(FrameTask& frame_task, bool unilateral)
   this->position_task = frame_task.position;
   this->orientation_task = frame_task.orientation;
   this->unilateral = unilateral;
+  R_world_surface.setIdentity();
 }
 
 void LineContact::update()
 {
   J = Eigen::MatrixXd::Zero(5, solver->N);
-  J.block(0, 0, 3, solver->N) =
-      solver->robot.frame_jacobian(position_task->frame_index, pinocchio::LOCAL).block(0, 0, 3, solver->N);
+  J.block(0, 0, 3, solver->N) = solver->robot.frame_jacobian(position_task->frame_index, pinocchio::LOCAL_WORLD_ALIGNED)
+                                    .block(0, 0, 3, solver->N);
 
   if (orientation_task->A.rows() != 2)
   {
@@ -182,31 +183,36 @@ void LineContact::add_constraints(Problem& problem)
       throw std::logic_error("LineContact length should be set for unilateral contact");
     }
 
+    // Expressing the force in the surface frame
+    Expression f_surface = R_world_surface.transpose() * f;
+
     // The contact is unilateral
-    problem.add_constraint(f.slice(F_Z, 1) >= 0);
+    problem.add_constraint(f_surface.slice(F_Z, 1) >= 0);
 
     // We want the ZMPs to remain in the contacts
     // We add constraints in the form of:
     // -l_1 f_x <= m_y <= l_1 f_x
-    problem.add_constraint(f.slice(M_Y, 1) <= ((length / 2) * f.slice(F_Z, 1)));
-    problem.add_constraint((-(length / 2) * f.slice(F_Z, 1)) <= f.slice(M_Y, 1));
+    problem.add_constraint(f_surface.slice(M_Y, 1) <= ((length / 2) * f_surface.slice(F_Z, 1)));
+    problem.add_constraint((-(length / 2) * f_surface.slice(F_Z, 1)) <= f_surface.slice(M_Y, 1));
 
     // We don't slip
-    problem.add_constraint(f.slice(F_X, 1) <= mu * f.slice(F_Z, 1));
-    problem.add_constraint(-mu * f.slice(F_Z, 1) <= f.slice(F_X, 1));
+    problem.add_constraint(f_surface.slice(F_X, 1) <= mu * f_surface.slice(F_Z, 1));
+    problem.add_constraint(-mu * f_surface.slice(F_Z, 1) <= f_surface.slice(F_X, 1));
 
-    problem.add_constraint(f.slice(F_Y, 1) <= mu * f.slice(F_Z, 1));
-    problem.add_constraint(-mu * f.slice(F_Z, 1) <= f.slice(F_Y, 1));
+    problem.add_constraint(f_surface.slice(F_Y, 1) <= mu * f_surface.slice(F_Z, 1));
+    problem.add_constraint(-mu * f_surface.slice(F_Z, 1) <= f_surface.slice(F_Y, 1));
   }
 
   // Objective
   if (weight_forces > 0)
   {
-    problem.add_constraint(f.slice(F_X, 3) == 0).configure(ProblemConstraint::Soft, weight_forces);
+    Expression f_surface = R_world_surface.transpose() * f;
+    problem.add_constraint(f_surface.slice(F_X, 3) == 0).configure(ProblemConstraint::Soft, weight_forces);
   }
   if (weight_tangentials > 0)
   {
-    problem.add_constraint(f.slice(F_Y, 2) == 0).configure(ProblemConstraint::Soft, weight_tangentials);
+    Expression f_surface = R_world_surface.transpose() * f;
+    problem.add_constraint(f_surface.slice(F_Y, 2) == 0).configure(ProblemConstraint::Soft, weight_tangentials);
   }
   if (weight_moments > 0)
   {

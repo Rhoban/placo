@@ -187,6 +187,11 @@ public:
   double length = 0.;
 
   /**
+   * @brief rotation matrix expressing the surface frame in the world frame (for unilateral contact)
+   */
+  Eigen::Matrix3d R_world_surface;
+
+  /**
    * @brief Returns the contact ZMP in the local frame
    * @return zmp
    */
