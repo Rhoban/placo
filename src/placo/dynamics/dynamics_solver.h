@@ -234,6 +234,20 @@ public:
   Contact6D& add_planar_contact(FrameTask& frame_task);
 
   /**
+   * @brief Adds a fixed line contact
+   * @param frame_task associated frame task
+   * @return line contact
+   */
+  LineContact& add_line_contact(FrameTask& frame_task);
+
+  /**
+   * @brief Adds a unilateral line contact, which is unilateral in the sense of the local body z-axis
+   * @param frame_task associated frame task
+   * @return unilateral line contact
+   */
+  LineContact& add_unilateral_line_contact(FrameTask& frame_task);
+
+  /**
    * @brief Adds an external wrench
    * @param frame_index
    * @param reference

@@ -13,6 +13,7 @@ using namespace placo::dynamics;
 using namespace placo::model;
 
 // Overloads
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(frame_configure_overloads, configure, 2, 4);
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(solve_overloads, solve, 0, 1);
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(set_torque_overloads, set_torque, 2, 4);
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(set_joint_overloads, set_joint, 2, 4);
@@ -69,6 +70,17 @@ void exposeDynamics()
       .def_readwrite("width", &Contact6D::width)
       .def("zmp", &Contact6D::zmp);
 
+  class__<LineContact, bases<Contact>>("LineContact", init<FrameTask&, bool>())
+      .def(
+          "position_task", +[](LineContact& contact) -> PositionTask& { return *contact.position_task; },
+          return_internal_reference<>())
+      .def(
+          "orientation_task", +[](LineContact& contact) -> OrientationTask& { return *contact.orientation_task; },
+          return_internal_reference<>())
+      .def_readwrite("unilateral", &LineContact::unilateral)
+      .def_readwrite("length", &LineContact::length)
+      .def("zmp", &LineContact::zmp);
+
   class__<ExternalWrenchContact, bases<Contact>>("ExternalWrenchContact", init<RobotWrapper::FrameIndex>())
       .add_property("frame_index", &ExternalWrenchContact::frame_index)
       .add_property(
@@ -91,6 +103,8 @@ void exposeDynamics()
       .def("add_unilateral_point_contact", &DynamicsSolver::add_unilateral_point_contact, return_internal_reference<>())
       .def("add_planar_contact", &DynamicsSolver::add_planar_contact, return_internal_reference<>())
       .def("add_fixed_contact", &DynamicsSolver::add_fixed_contact, return_internal_reference<>())
+      .def("add_line_contact", &DynamicsSolver::add_line_contact, return_internal_reference<>())
+      .def("add_unilateral_line_contact", &DynamicsSolver::add_unilateral_line_contact, return_internal_reference<>())
       .def<ExternalWrenchContact& (DynamicsSolver::*)(std::string, std::string)>(
           "add_external_wrench_contact", &DynamicsSolver::add_external_wrench_contact, return_internal_reference<>())
       .def("add_puppet_contact", &DynamicsSolver::add_puppet_contact, return_internal_reference<>())
@@ -213,7 +227,7 @@ void exposeDynamics()
       .def(
           "orientation", +[](const FrameTask& task) -> OrientationTask& { return *task.orientation; },
           return_internal_reference<>())
-      .def("configure", &FrameTask::configure)
+      .def("configure", &FrameTask::configure, frame_configure_overloads())
       .add_property("T_world_frame", &FrameTask::get_T_world_frame, &FrameTask::set_T_world_frame);
 
   class__<RelativeFrameTask>("DynamicsRelativeFrameTask", init<>())

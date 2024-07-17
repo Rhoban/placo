@@ -158,6 +158,44 @@ public:
   virtual void add_constraints(problem::Problem& problem);
 };
 
+class LineContact : public Contact
+{
+public:
+  /**
+   * @brief see \ref DynamicsSolver::add_fixed_planar_contact and \ref DynamicsSolver::add_unilateral_planar_contact
+   */
+  LineContact(FrameTask& frame_task, bool unilateral);
+
+  /**
+   * @brief Associated position task
+   */
+  PositionTask* position_task;
+
+  /**
+   * @brief Associated orientation task
+   */
+  OrientationTask* orientation_task;
+
+  /**
+   * @brief true for unilateral contact with the ground
+   */
+  bool unilateral;
+
+  /**
+   * @brief Rectangular contact length along local x-axis
+   */
+  double length = 0.;
+
+  /**
+   * @brief Returns the contact ZMP in the local frame
+   * @return zmp
+   */
+  Eigen::Vector3d zmp();
+
+  virtual void update();
+  virtual void add_constraints(problem::Problem& problem);
+};
+
 class ExternalWrenchContact : public Contact
 {
 public:

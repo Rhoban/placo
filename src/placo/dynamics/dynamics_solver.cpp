@@ -25,6 +25,16 @@ Contact6D& DynamicsSolver::add_fixed_contact(FrameTask& frame_task)
   return add_contact(new Contact6D(frame_task, false));
 }
 
+LineContact& DynamicsSolver::add_line_contact(FrameTask& frame_task)
+{
+  return add_contact(new LineContact(frame_task, false));
+}
+
+LineContact& DynamicsSolver::add_unilateral_line_contact(FrameTask& frame_task)
+{
+  return add_contact(new LineContact(frame_task, true));
+}
+
 ExternalWrenchContact& DynamicsSolver::add_external_wrench_contact(model::RobotWrapper::FrameIndex frame_index,
                                                                    pinocchio::ReferenceFrame reference)
 {
