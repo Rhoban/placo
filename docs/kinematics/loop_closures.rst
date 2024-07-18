@@ -62,12 +62,16 @@ Here:
 Moving joints in a parallel robot
 ---------------------------------
 
-In serial robots, forward kinematics is straightforward computation from the joints configuration. It is not the
-case for parallel robots.
-
-In that case, you might also want to use the solver with a :doc:`joints task <joints_task>` to move the joints
+In serial robots, forward kinematics is straightforward computation from the joints configuration. 
+However, for a parallel robot, the loop closure constraints need to be enforced all the times.
+To do that you might also want to use a solver with a :doc:`joints task <joints_task>` to move the joints
 while enforcing the loop closure constraint. 
 Note that your initial configuration will affect the result, since this is a numerical solution and not an analytical one.
+
+.. note::
+
+    If needed, it is possible to create multiple solvers for the same robot, each with a different set of tasks
+    (e.g.: one for joint control and the other for task-space control).
 
 If you want to do both state estimation and control, you might then want to instantiate multiple kinematic solver
 with different tasks sets. In the :doc:`examples gallery <examples_gallery>`, you can find both joint and task
