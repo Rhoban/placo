@@ -10,6 +10,7 @@ Dynamics
     concepts
     limits
     regularization
+    solver_status
     loop_closures
 
 .. toctree::
