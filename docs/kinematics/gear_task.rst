@@ -28,8 +28,19 @@ Relations can then be set by calling :func:`set_gear() <placo.GearTask.set_gear>
     # Setting up the relations
     gear_task.set_gear("joint1", "joint2", 2.0)
 
+    # After that, joint1 = 2 * joint2
+
 The first two arguments are the names of the degrees of freedom that are linked together. The third argument is the
-ratio between the two degrees of freedom.
+ratio between the two degrees of freedom. You can also call :func:`add_gear() <placo.GearTask.add_gear>` to make
+the relation multiple:
+
+.. code-block:: python
+
+    # Adding a gear relation
+    gear_task.set_gear("joint1", "joint2", 2.0)
+    gear_task.add_gear("joint1", "joint3", 3.0)
+
+    # After that, joint1 = 2 * joint2 + 3 * joint3
 
 Example
 -------
@@ -46,3 +57,16 @@ one moving in the opposite direction.
         :loop:
 
     :example:`kinematics/planar_2dof_gear.py`
+
+In this other example, gears are coupled with more complex relations:
+
+.. admonition:: Differential
+    
+    .. video:: https://github.com/Rhoban/placo-examples/raw/master/kinematics/videos/differential.mp4
+        :autoplay:
+        :muted:
+        :loop:
+
+    A differential gear system.
+
+    :example:`kinematics/differential.py`

@@ -101,3 +101,12 @@ Examples gallery
         :loop:
 
     :example:`kinematics/orbita_task.py`
+
+.. admonition:: Differential
+    
+    .. video:: https://github.com/Rhoban/placo-examples/raw/master/kinematics/videos/differential.mp4
+        :autoplay:
+        :muted:
+        :loop:
+
+    :example:`kinematics/differential.py`
