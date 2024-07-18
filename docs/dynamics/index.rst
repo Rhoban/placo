@@ -2,7 +2,7 @@ Dynamics
 ========
 
  .. toctree::
-    :caption: Dynamics solver (work in progress)
+    :caption: Dynamics solver
     :maxdepth: 2
 
     introduction
