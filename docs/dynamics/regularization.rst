@@ -23,5 +23,19 @@ This weight can be adjusted with :func:`solver.torque_cost <placo.DynamicsSolver
 Pose regularization
 -------------------
 
-**(WORK IN PROGRESS)**
+Another type of regularization is to use a :doc:`joint task <joint_task>` or a
+:doc:`position, orientation or frame task <position_orientation_frame_task>` to regularize
+the pose of the robot.
+
+To do that, simply give a very low weight to the task, for example:
+
+.. code-block:: python
+
+    # Adding a task with a very low priority to take the DoFs back to 0
+    joints_task = solver.add_joints_task()
+    joints_task.set_joints({
+        joint: 0.0
+        for joint in robot.joint_names()
+    })
+    joints_task.configure("joints_regularization", "soft", 1e-5)
 
