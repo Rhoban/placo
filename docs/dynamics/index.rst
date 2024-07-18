@@ -35,3 +35,9 @@ Dynamics
    task_contact
    weighting_deactivating_contacts
    
+.. toctree::
+   :caption: Examples
+   :maxdepth: 2
+
+   examples_gallery
+   
