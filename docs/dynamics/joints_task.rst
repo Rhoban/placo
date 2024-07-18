@@ -56,14 +56,14 @@ Example
 Here is a complete example using a UR5 robot tracking a target frame.
 Its target velocity is also set for better tracking.
 
-.. admonition:: UR5 with fixed contact
+.. admonition:: UR5 controlled with joints
     
-    .. video:: https://github.com/Rhoban/placo-examples/raw/master/dynamics/videos/ur5_fixed_contact.mp4
+    .. video:: https://github.com/Rhoban/placo-examples/raw/master/dynamics/videos/ur5_joints.mp4
         :autoplay:
         :muted:
         :loop:
 
-    In this example, a fixed contact is used on the base of the UR5 robot.
-    The :func:`contacts_viz <placo_utils.visualization.contacts_viz>` helper is used to visualize the contacts.
+    In this example, a fixed contact is used on the base of the UR5 robot, which is following a sinusoidal
+    joint-space trajectory.
 
-    :example:`dynamics/ur5_fixed_contact.py`
+    :example:`dynamics/ur5_joints.py`
