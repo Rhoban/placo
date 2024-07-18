@@ -64,6 +64,14 @@ Examples gallery
 
     :example:`dynamics/quadruped.py`
 
+.. admonition:: Planar 2DoF
+
+    .. video:: https://github.com/Rhoban/placo-examples/raw/master/dynamics/videos/planar_2dof.mp4
+        :autoplay:
+        :muted:
+        :loop:
+
+    :example:`dynamics/planar_2dof.py`
 
 .. admonition:: Differential
     
