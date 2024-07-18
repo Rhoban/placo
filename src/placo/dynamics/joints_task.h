@@ -40,6 +40,13 @@ public:
    */
   void set_joint(std::string joint, double target, double velocity = 0., double acceleration = 0.);
 
+  /**
+   * @brief Returns the current target position of a joint
+   * @param joint joint name
+   * @return current target position
+   */
+  double get_joint(std::string joint);
+
   void update() override;
   std::string type_name() override;
   std::string error_unit() override;

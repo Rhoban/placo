@@ -14,6 +14,16 @@ void JointsTask::set_joint(std::string joint, double target, double velocity, do
   ddjoints[joint] = acceleration;
 }
 
+double JointsTask::get_joint(std::string joint)
+{
+  if (!joints.count(joint))
+  {
+    throw std::runtime_error("Joint '" + joint + "' not found in task");
+  }
+
+  return joints[joint];
+}
+
 void JointsTask::update()
 {
   A = Eigen::MatrixXd(joints.size(), solver->N);

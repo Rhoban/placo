@@ -246,6 +246,7 @@ void exposeDynamics()
 
   class__<JointsTask, bases<Task>>("DynamicsJointsTask", init<>())
       .def("set_joint", &JointsTask::set_joint, set_joint_overloads())
+      .def("get_joint", &JointsTask::get_joint)
       .def(
           "set_joints", +[](JointsTask& task,
                             boost::python::dict& py_dict) { update_map<std::string, double>(task.joints, py_dict); })
