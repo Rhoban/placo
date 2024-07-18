@@ -435,20 +435,10 @@ DynamicsSolver::Result DynamicsSolver::solve(bool integrate)
     {
       contact->update();
 
-      ExternalWrenchContact* ext = dynamic_cast<ExternalWrenchContact*>(contact);
-      if (ext != nullptr)
-      {
-        Eigen::VectorXd w_ext = ext->w_ext;
-        tau.b -= contact->J.transpose() * w_ext;
-        contact->f = Expression::from_vector(w_ext);
-      }
-      else
-      {
-        // This contact will be an actual decision variable
-        Variable& f_variable = problem.add_variable(contact->size());
-        contact->f = f_variable.expr();
-        contact->add_constraints(problem);
-      }
+      // This contact will be an actual decision variable
+      Variable& f_variable = problem.add_variable(contact->size());
+      contact->f = f_variable.expr();
+      contact->add_constraints(problem);
     }
   }
 
@@ -464,11 +454,6 @@ DynamicsSolver::Result DynamicsSolver::solve(bool integrate)
   {
     if (contact->active)
     {
-      if (dynamic_cast<ExternalWrenchContact*>(contact) != nullptr)
-      {
-        continue;
-      }
-
       tau.A.block(0, k, N, contact->J.rows()) = -contact->J.transpose();
       tau.b -= contact->J.transpose() * contact->f.b;
       k += contact->J.rows();

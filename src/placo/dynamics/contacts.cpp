@@ -237,6 +237,11 @@ void ExternalWrenchContact::update()
   J = solver->robot.frame_jacobian(frame_index, reference);
 }
 
+void ExternalWrenchContact::add_constraints(problem::Problem& problem)
+{
+  problem.add_constraint(f == w_ext);
+}
+
 PuppetContact::PuppetContact()
 {
 }

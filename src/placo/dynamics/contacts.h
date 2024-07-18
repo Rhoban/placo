@@ -215,6 +215,7 @@ public:
   pinocchio::ReferenceFrame reference;
 
   virtual void update();
+  virtual void add_constraints(problem::Problem& problem);
 };
 
 class PuppetContact : public Contact
