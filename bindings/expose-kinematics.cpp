@@ -192,6 +192,7 @@ void exposeKinematics()
 
   class__<JointsTask, bases<Task>>("JointsTask", init<>())
       .def("set_joint", &JointsTask::set_joint)
+      .def("get_joint", &JointsTask::get_joint)
       .def(
           "set_joints", +[](JointsTask& task, boost::python::dict& py_dict) {
             update_map<std::string, double>(task.joints, py_dict);

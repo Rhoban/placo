@@ -24,6 +24,13 @@ struct JointsTask : public Task
    */
   void set_joint(std::string joint, double target);
 
+  /**
+   * @brief Returns the target value of a joint
+   * @param joint joint
+   * @return target value
+   */
+  double get_joint(std::string joint);
+
   virtual void update();
   virtual std::string type_name();
   virtual std::string error_unit();
