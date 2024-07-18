@@ -23,7 +23,7 @@ This weight can be adjusted with :func:`solver.torque_cost <placo.DynamicsSolver
 Pose regularization
 -------------------
 
-Another type of regularization is to use a :doc:`joint task <joint_task>` or a
+Another type of regularization is to use a :doc:`joint task <joints_task>` or a
 :doc:`position, orientation or frame task <position_orientation_frame_task>` to regularize
 the pose of the robot.
 

@@ -21,8 +21,8 @@ solver:
     com_task = solver.add_com_task(np.array([0., 0., 0.3]))
     com_task.configure("com", "soft", 1.0)
 
-Update the task
----------------
+Task update
+-----------
 
 The task can be updated by setting :func:`target_world <placo.CoMTask.target_world>`:
 

@@ -36,9 +36,6 @@ Orientation tasks can be initialized and updated this way:
 Frame task
 ----------
 
-Initialization
-~~~~~~~~~~~~~~
-
 Frame task are lumping together a position and an orientation task, and can be initialized this way:
 
 .. code-block:: python
@@ -48,6 +45,10 @@ Frame task are lumping together a position and an orientation task, and can be i
     # Configuring the frame task, the two weights are for the position and orientation tasks respectively
     effector_frame.configure("effector_frame", "soft", 1.0, 1.0)
 
+    # Updating the effector target in the world (transformation matrix)
+    # Internally, this will update the position and orientation tasks
+    effector_frame.T_world_frame = np.eye(4)
+
 The underlying position and orientation tasks can be accessed with the :func:`position() <placo.FrameTask.position>`
 and :func:`orientation() <placo.FrameTask.orientation>` methods:
 
@@ -55,16 +56,6 @@ and :func:`orientation() <placo.FrameTask.orientation>` methods:
 
     effector_frame.position() # Access the position task
     effector_frame.orientation() # Access the orientation task
-
-Update
-~~~~~~
-
-You can update the frame task by setting the target pose:
-
-.. code-block:: python
-
-    # Updating the effector target in the world (transformation matrix)
-    effector_frame.T_world_frame = np.eye(4)
 
 Relative position and orientation tasks
 ---------------------------------------
