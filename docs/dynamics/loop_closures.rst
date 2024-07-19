@@ -74,10 +74,10 @@ Finally, the following line:
 Ensure that the passive degrees of freedom have zero-torque constraint. This is done with a
 :doc:`torque task <torque_task>`, which is configured as a hard constraint.
 
-Example
+Examples
 -------
 
-Another example involving more loop closure is the following robot:
+With a similar pattern, many loop closures are used un Megabot:
 
 .. admonition:: Megabot
 
@@ -90,3 +90,18 @@ Another example involving more loop closure is the following robot:
     Many loop closures are present in its design.
 
     :example:`dynamics/megabot.py`
+
+In this other example, gear tasks are used with task contact to simulate a differential gear system:
+
+.. admonition:: Differential
+    
+    .. video:: https://github.com/Rhoban/placo-examples/raw/master/dynamics/videos/differential.mp4
+        :autoplay:
+        :muted:
+        :loop:
+
+    A differential gear system.
+    At the end of the video, the torque is forced to zero to show the system's behaviour when only subject
+    to gravity.
+
+    :example:`dynamics/differential.py`
