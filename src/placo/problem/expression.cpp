@@ -39,7 +39,12 @@ Expression::Expression(const Eigen::VectorXd& v)
 
 bool Expression::is_scalar() const
 {
-  return rows() == 1 && cols() == 0;
+  return rows() == 1;
+}
+
+bool Expression::is_constant() const
+{
+  return cols() == 0;
 }
 
 Expression Expression::slice(int start, int rows) const
@@ -82,11 +87,11 @@ Expression Expression::piecewise_add(double f) const
 
 Expression Expression::operator+(const Expression& other) const
 {
-  if (is_scalar())
+  if (is_scalar() && is_constant())
   {
     return other.piecewise_add(b(0, 0));
   }
-  else if (other.is_scalar())
+  else if (other.is_scalar() && other.is_constant())
   {
     return piecewise_add(other.b(0, 0));
   }
@@ -135,6 +140,31 @@ Expression Expression::operator*(double f) const
   e.b *= f;
 
   return e;
+}
+
+Expression Expression::operator*(const Expression& other) const
+{
+  if (is_scalar() && other.is_constant())
+  {
+    Expression e;
+    e.A.resize(other.rows(), cols());
+    e.b.resize(other.rows());
+    for (int k = 0; k < other.rows(); k++)
+    {
+      e.A.row(k) = A.row(0) * other.b(k);
+      e.b(k) = b(0) * other.b(k);
+    }
+
+    return e;
+  }
+  else if (other.is_scalar() && is_constant())
+  {
+    return other * (*this);
+  }
+  else
+  {
+    throw std::runtime_error("Two expression can only be multiplied if one is scalar and the other constant");
+  }
 }
 
 Expression Expression::operator+(const Eigen::VectorXd v) const
@@ -339,5 +369,4 @@ ProblemConstraint operator==(double f, const Expression& e)
 {
   return e == f;
 }
-
 };  // namespace placo::problem
