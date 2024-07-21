@@ -31,7 +31,7 @@ class TestProblem(unittest.TestCase):
         # self.assertTrue(np.linalg.norm((np.ones(16) + e).b - np.ones(16)) < 1e-6)
 
         # Checking multiplication
-        self.assertNumpyEqual(e.multiply(np.eye(16) * 2).A, 2 * np.eye(16))
+        self.assertNumpyEqual(e.left_multiply(np.eye(16) * 2).A, 2 * np.eye(16))
 
     def test_expressions(self):
         """

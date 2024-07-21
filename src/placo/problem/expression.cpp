@@ -198,7 +198,7 @@ Expression operator*(const Eigen::MatrixXd M, const Expression& e_)
   return e;
 }
 
-Expression Expression::multiply(const Eigen::MatrixXd M)
+Expression Expression::left_multiply(const Eigen::MatrixXd M)
 {
   return M * (*this);
 }

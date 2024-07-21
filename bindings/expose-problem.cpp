@@ -159,7 +159,7 @@ void exposeProblem()
       .def(self - float())
       .def(float() - self)
       .def(other<Eigen::MatrixXd>() * self)
-      .def("multiply", &Expression::multiply)
+      .def("left_multiply", &Expression::left_multiply)
       // Compare to build constraints
       .def(self >= self)
       .def(self <= self)

@@ -95,7 +95,7 @@ public:
    * @param M matrix
    * @return expression
    */
-  Expression multiply(const Eigen::MatrixXd M);
+  Expression left_multiply(const Eigen::MatrixXd M);
 
   /**
    * @brief Reduces a multi-rows expression to the sum of its items
