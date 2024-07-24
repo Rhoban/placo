@@ -9,11 +9,11 @@ Its main features are:
 * Built on the top of [pinocchio](https://github.com/stack-of-tasks/pinocchio)
 * Written in C++ with Python bindings
 
-https://github.com/Rhoban/placo-examples/raw/master/kinematics/videos/quadruped_targets.mp4
+[![Megabot demo](file:///home/gregwar/placo-examples/kinematics/videos/quadruped_targets.gif)](file:///home/gregwar/placo-examples/kinematics/videos/.mp4)
 
 *Inverse Kinematics Example: a quadruped robot hitting targets with a leg while keeping its three legs on the ground*
 
-https://github.com/Rhoban/placo-examples/raw/master/dynamics/videos/megabot.mp4
+[![Megabot demo](file:///home/gregwar/placo-examples/dynamics/videos/megabot.gif)](file:///home/gregwar/placo-examples/dynamics/videos/megabot.mp4)
 
 *Inverse Dynamics Example: a quadruped with many loop closure joints*
 
