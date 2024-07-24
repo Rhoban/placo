@@ -17,10 +17,14 @@ Its main features are:
 
 *Inverse Dynamics Example: a quadruped with many loop closure joints*
 
+## Installing
+
+PlaCo is available from [pip](https://placo.readthedocs.io/en/latest/basics/installation_pip.html),
+or can be [built from sources](https://placo.readthedocs.io/en/latest/basics/installation_source.html).
+
 ## Documentation
 
-Everything needed to get started, along with many examples can be found in the
-[documentation](https://placo.readthedocs.io/en/latest/)
+Here is the [official documentation](https://placo.readthedocs.io/en/latest/)
 
 You can also find many examples in the [placo-examples](https://github.com/rhoban/placo-examples)
 repository.
