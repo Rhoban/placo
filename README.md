@@ -3,17 +3,17 @@
 PlaCo is Rhoban's planning and control library.
 Its main features are:
 
-* Inverse Kinematics with constraints,
-* Inverse Dynamics with constraints,
+* Task-space Inverse Kinematics with constraints,
+* Task-space Inverse Dynamics with constraints,
 * QP problem formulation,
 * Built on the top of [pinocchio](https://github.com/stack-of-tasks/pinocchio)
 * Written in C++ with Python bindings
 
-[![Megabot demo](file:///home/gregwar/placo-examples/kinematics/videos/quadruped_targets.gif)](file:///home/gregwar/placo-examples/kinematics/videos/.mp4)
+[![Megabot demo](https://github.com/Rhoban/placo-examples/blob/master/kinematics/videos/quadruped_targets.gif?raw=true)](https://github.com/Rhoban/placo-examples/blob/master/kinematics/videos/quadruped_targets.mp4?raw=true)
 
 *Inverse Kinematics Example: a quadruped robot hitting targets with a leg while keeping its three legs on the ground*
 
-[![Megabot demo](file:///home/gregwar/placo-examples/dynamics/videos/megabot.gif)](file:///home/gregwar/placo-examples/dynamics/videos/megabot.mp4)
+[![Megabot demo](https://github.com/Rhoban/placo-examples/blob/master/dynamics/videos/megabot.gif?raw=true)](https://github.com/Rhoban/placo-examples/blob/master/dynamics/videos/megabot.mp4?raw=true)
 
 *Inverse Dynamics Example: a quadruped with many loop closure joints*
 
