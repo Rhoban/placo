@@ -12,12 +12,14 @@ Its main features are:
 [![Megabot demo](https://github.com/Rhoban/placo-examples/blob/master/kinematics/videos/quadruped_targets.gif?raw=true)](https://github.com/Rhoban/placo-examples/blob/master/kinematics/videos/quadruped_targets.mp4?raw=true)
 
 *Inverse Kinematics Example: a quadruped robot hitting targets with a leg while keeping its three legs on the ground*
-[source code (quadruped_targets.py)](https://github.com/Rhoban/placo-examples/blob/master/kinematics/quadruped_targets.py)
+
+[source code (quadruped_targets.py)](https://github.com/Rhoban/placo-examples/blob/master/kinematics/quadruped_targets.py) / [more kinematics examples](https://placo.readthedocs.io/en/latest/kinematics/examples_gallery.html)
 
 [![Megabot demo](https://github.com/Rhoban/placo-examples/blob/master/dynamics/videos/megabot.gif?raw=true)](https://github.com/Rhoban/placo-examples/blob/master/dynamics/videos/megabot.mp4?raw=true)
 
 *Inverse Dynamics Example: a quadruped with many loop closure joints*
-[source code (megabot.py)](https://github.com/Rhoban/placo-examples/blob/master/dynamics/megabot.py)
+
+[source code (megabot.py)](https://github.com/Rhoban/placo-examples/blob/master/dynamics/megabot.py) / [more dynamics examples](https://placo.readthedocs.io/en/latest/dynamics/examples_gallery.html)
 
 ## Installing
 
