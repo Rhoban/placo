@@ -80,3 +80,8 @@ by calling :func:`set_rotor_inertia() <placo.RobotWrapper.set_rotor_inertia>` an
 
         # Sets the gear ratio of the head_pan joint to 100
         robot.set_gear_ratio("head_pan", 100)
+
+.. admonition:: Note
+
+    A rotor inertia of :math:`I_{rotor}` and a gear ratio of :math:`G` will modify the apparent inertia of the joint
+    by :math:`I_{rotor} \times G^2`.
