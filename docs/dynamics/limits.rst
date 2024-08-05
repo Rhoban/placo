@@ -84,6 +84,25 @@ As a result, the following restriction will be enforced:
     :width: 300px
     :align: center
 
+.. admonition:: Using DC motor characteristics
+
+    Assume you know DC motor characteristics:
+
+    * :math:`k_t`: torque constant [Nm/A]
+    * :math:`R`: motor resistance [Ohm]
+    * :math:`V_{in}`: input voltage [V]
+
+    You can set the following limits:
+
+    * :math:`\tau_{stall} = k_t V_{in} / R`: stall torque, ``effort`` in the URDF, or using :func:`set_torque_limit() <placo.RobotWrapper.set_torque_limit>`.
+    * :math:`\omega_0 = V_{in} / k_t`: no-load speed, ``velocity`` in the URDF, or using :func:`set_velocity_limit() <placo.RobotWrapper.set_velocity_limit>`.
+
+    To recover the DC motor limits, that are:
+
+    .. math::
+
+        \tau \in [-\frac{k_t}{R} V_{in} - \frac{k_t^2}{R} \omega, \frac{k_t}{R} V_{in} - \frac{k_t^2}{R} \omega]
+
 Joint limits
 ------------
 
