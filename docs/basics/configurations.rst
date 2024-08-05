@@ -65,3 +65,18 @@ You can call the method :func:`add_q_noise <placo.RobotWrapper.add_q_noise>` to 
 The noise parameters is a value between 0 and 1.
 A random configuration will be sampled within the ranges of the robot, and the configuration will be updated towards
 this configuration.
+
+Rotor inertia and gear ratio
+----------------------------
+
+In order to take apparent inertia in account, you can set the rotor inertia and gear ratio of the joints,
+by calling :func:`set_rotor_inertia() <placo.RobotWrapper.set_rotor_inertia>` and
+:func:`set_gear_ratio() <placo.RobotWrapper.set_gear_ratio>`:
+
+.. code-block:: python
+    
+        # Sets the rotor inertia to 1e-5 N.m.s^2
+        robot.set_rotor_inertia("head_pan", 1e-5)
+
+        # Sets the gear ratio of the head_pan joint to 100
+        robot.set_gear_ratio("head_pan", 100)
