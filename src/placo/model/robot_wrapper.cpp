@@ -588,6 +588,16 @@ Eigen::VectorXd RobotWrapper::non_linear_effects()
   return pinocchio::nonLinearEffects(model, *data, state.q, state.qd);
 }
 
+void RobotWrapper::set_rotor_inertia(const std::string& joint, double inertia)
+{
+  model.rotorInertia[get_joint_v_offset(joint)] = inertia;
+}
+
+void RobotWrapper::set_gear_ratio(const std::string& joint, double ratio)
+{
+  model.rotorGearRatio[get_joint_v_offset(joint)] = ratio;
+}
+
 Eigen::MatrixXd RobotWrapper::mass_matrix()
 {
   pinocchio::crba(model, *data, state.q);

@@ -561,6 +561,16 @@ public:
   Eigen::VectorXd non_linear_effects();
 
   /**
+   * @brief Updates the rotor inertia (used for apparent inertia computation in the dynamics)
+   */
+  void set_rotor_inertia(const std::string& joint_name, double rotor_inertia);
+
+  /**
+   * @brief Updates the rotor gear ratio (used for apparent inertia computation in the dynamics)
+   */
+  void set_gear_ratio(const std::string& joint_name, double rotor_gear_ratio);
+
+  /**
    * @brief Computes the mass matrix
    */
   Eigen::MatrixXd mass_matrix();
