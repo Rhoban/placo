@@ -51,9 +51,8 @@ We will now enable all possible limits, since the UR5 URDF file is specifying pr
 
 .. code-block:: python
 
-    # Torque limits (enabled by default)
+    # Enabling limits (disabled by default)
     solver.enable_torque_limits(True)
-    # Joints and velocity limits (disabled by default)
     solver.enable_velocity_limits(True)
     solver.enable_joint_limits(True)
 
