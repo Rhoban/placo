@@ -3,7 +3,7 @@ Contacts
 
 .. admonition:: What are contacts ?
 
-    Contacts model the constraints imposed by the **interaction with physical constraints**.
+    Contacts model the constraints imposed by the **interaction with physical environment**.
     For example, the fact that a foot can't penetrate the ground, or can't (easily) slide on it is a contact.
 
     In some sense, contacts are **tasks that are taken care of by the physics**, instead of the robot.
