@@ -105,6 +105,11 @@ As a result, the following restriction will be enforced:
 
         \tau \in [-\frac{k_t}{R} V_{in} - \frac{k_t^2}{R} \omega, \frac{k_t}{R} V_{in} - \frac{k_t^2}{R} \omega]
 
+    You can use the following equation to recover either :math:`I` or :math:`U` from the computed torque:
+
+    * :math:`I = \frac{\tau}{k_t}`: current
+    * :math:`U = R I + k_t \omega`: voltage
+
 Joint limits
 ------------
 
