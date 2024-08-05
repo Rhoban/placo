@@ -95,8 +95,8 @@ As a result, the following restriction will be enforced:
 
     You can set the following limits:
 
-    * :math:`\tau_{stall} = k_t V_{in} / R`: stall torque, ``effort`` in the URDF, or using :func:`set_torque_limit() <placo.RobotWrapper.set_torque_limit>`.
-    * :math:`\omega_0 = V_{in} / k_t`: no-load speed, ``velocity`` in the URDF, or using :func:`set_velocity_limit() <placo.RobotWrapper.set_velocity_limit>`.
+    * :math:`\tau_{stall} = k_t V_{in} / R`: stall torque, ``effort`` in the URDF, or using :func:`set_torque_limit() <placo.RobotWrapper.set_torque_limit>` on the robot wrapper,
+    * :math:`\omega_0 = V_{in} / k_t`: no-load speed, ``velocity`` in the URDF, or using :func:`set_velocity_limit() <placo.RobotWrapper.set_velocity_limit>` on the robot wrapper,
     * Optionally, pass :math:`\tau_{max} = kt \times I_{max}` to the solver's :func:`set_torque_limit() <placo.DynamicsSolver.set_torque_limit>` to set the maximum torque allowable (e.g because of heat).
 
     To recover the DC motor limits, that are:
