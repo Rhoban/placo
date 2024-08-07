@@ -13,6 +13,7 @@
 #ifdef HAVE_RHOBAN_UTILS
 #include "rhoban_utils/history/history.h"
 #endif
+#include <eigenpy/eigen-to-python.hpp>
 
 using namespace boost::python;
 using namespace placo::tools;
@@ -45,12 +46,8 @@ void exposeTools()
   class__<AxisesMask>("AxisesMask", init<>())
       .def<void (AxisesMask::*)(std::string, std::string)>("set_axises", &AxisesMask::set_axises,
                                                            set_axises_overloads())
-      .add_property(
-          "R_local_world", +[](AxisesMask& mask) { return mask.R_local_world; },
-          +[](AxisesMask& mask, Eigen::Matrix3d R) { mask.R_local_world = R; })
-      .add_property(
-          "R_custom_world", +[](AxisesMask& mask) { return mask.R_custom_world; },
-          +[](AxisesMask& mask, Eigen::Matrix3d R) { mask.R_custom_world = R; })
+      .def_readwrite("R_local_world", &AxisesMask::R_local_world)
+      .def_readwrite("R_custom_world", &AxisesMask::R_custom_world)
       .def("apply", &AxisesMask::apply);
 
   class__<Prioritized, boost::noncopyable>("Prioritized", no_init)

@@ -8,6 +8,7 @@
 #include "placo/kinematics/kinematics_solver.h"
 #include <Eigen/Dense>
 #include <boost/python.hpp>
+#include <eigenpy/eigen-to-python.hpp>
 
 using namespace boost::python;
 using namespace placo;
@@ -138,16 +139,9 @@ void exposeRobotWrapper()
       .value("ignore_collisions", RobotWrapper::Flags::IGNORE_COLLISIONS);
 
   class__<RobotWrapper::State>("RobotWrapper_State")
-      .add_property(
-          "q", +[](const RobotWrapper::State& state) { return state.q; },
-          +[](RobotWrapper::State& state, const Eigen::VectorXd& q) { state.q = q; })
-      .add_property(
-          "qd", +[](const RobotWrapper::State& state) { return state.qd; },
-          +[](RobotWrapper::State& state, const Eigen::VectorXd& qd) { state.qd = qd; })
-      .add_property(
-          "qdd", +[](const RobotWrapper::State& state) { return state.qdd; },
-          +[](RobotWrapper::State& state, const Eigen::VectorXd& qdd) { state.qdd = qdd; });
-  ;
+      .def_readwrite("q", &RobotWrapper::State::q)
+      .def_readwrite("qd", &RobotWrapper::State::qd)
+      .def_readwrite("qdd", &RobotWrapper::State::qdd);
 
   class__<RobotWrapper::Collision>("Collision")
       .add_property("objA", &RobotWrapper::Collision::objA)
@@ -164,10 +158,8 @@ void exposeRobotWrapper()
       .add_property("objB", &RobotWrapper::Distance::objB)
       .add_property("parentA", &RobotWrapper::Distance::parentA)
       .add_property("parentB", &RobotWrapper::Distance::parentB)
-      .add_property(
-          "pointA", +[](RobotWrapper::Distance& distance) { return distance.pointA; })
-      .add_property(
-          "pointB", +[](RobotWrapper::Distance& distance) { return distance.pointB; })
+      .def_readwrite("pointA", &RobotWrapper::Distance::pointA)
+      .def_readwrite("pointB", &RobotWrapper::Distance::pointB)
       .add_property("min_distance", &RobotWrapper::Distance::min_distance);
 
   class_<RobotWrapper> robotWrapper =
@@ -210,9 +202,7 @@ void exposeRobotWrapper()
       .def(
           "get_support_side", +[](const HumanoidRobot& robot) { return robot.support_side; })
       .add_property("support_is_both", &HumanoidRobot::support_is_both, &HumanoidRobot::support_is_both)
-      .add_property(
-          "T_world_support", +[](HumanoidRobot& robot) { return robot.T_world_support; },
-          +[](HumanoidRobot& robot, Eigen::Affine3d T_world_support_) { robot.T_world_support = T_world_support_; });
+      .def_readwrite("T_world_support", &HumanoidRobot::T_world_support);
 
   exposeStdVector<RobotWrapper::Collision>("vector_Collision");
   exposeStdVector<RobotWrapper::Distance>("vector_Distance");

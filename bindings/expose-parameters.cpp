@@ -8,6 +8,7 @@
 #include "placo/humanoid/humanoid_parameters.h"
 #include <Eigen/Dense>
 #include <boost/python.hpp>
+#include <eigenpy/eigen-to-python.hpp>
 
 using namespace boost::python;
 using namespace placo;

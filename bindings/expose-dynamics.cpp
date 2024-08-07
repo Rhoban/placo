@@ -7,6 +7,7 @@
 #include "placo/dynamics/dynamics_solver.h"
 #include <Eigen/Dense>
 #include <boost/python.hpp>
+#include <eigenpy/eigen-to-python.hpp>
 
 using namespace placo;
 using namespace placo::dynamics;
@@ -22,12 +23,9 @@ void exposeDynamics()
 {
   class__<DynamicsSolver::Result>("DynamicsSolverResult")
       .add_property("success", &DynamicsSolver::Result::success)
-      .add_property(
-          "tau", +[](const DynamicsSolver::Result& result) { return result.tau; })
-      .add_property(
-          "qdd", +[](const DynamicsSolver::Result& result) { return result.qdd; })
-      .add_property(
-          "tau_contacts", +[](const DynamicsSolver::Result& result) { return result.tau_contacts; })
+      .def_readwrite("tau", &DynamicsSolver::Result::tau)
+      .def_readwrite("qdd", &DynamicsSolver::Result::qdd)
+      .def_readwrite("tau_contacts", &DynamicsSolver::Result::tau_contacts)
       .def(
           "tau_dict", +[](const DynamicsSolver::Result& result, RobotWrapper& robot) {
             boost::python::dict dict;
@@ -46,17 +44,14 @@ void exposeDynamics()
       .def_readwrite("weight_forces", &Contact::weight_forces)
       .def_readwrite("weight_tangentials", &Contact::weight_tangentials)
       .def_readwrite("weight_moments", &Contact::weight_moments)
-      .add_property(
-          "wrench", +[](Contact& contact) { return contact.wrench; });
+      .def_readonly("wrench", &Contact::wrench);
 
   class__<PointContact, bases<Contact>>("PointContact", init<PositionTask&, bool>())
       .def(
           "position_task", +[](PointContact& contact) -> PositionTask& { return *contact.position_task; },
           return_internal_reference<>())
       .def_readwrite("unilateral", &PointContact::unilateral)
-      .add_property(
-          "R_world_surface", +[](PointContact& contact) { return contact.R_world_surface; },
-          +[](PointContact& contact, Eigen::Matrix3d R) { contact.R_world_surface = R; });
+      .def_readwrite("R_world_surface", &PointContact::R_world_surface);
 
   class__<Contact6D, bases<Contact>>("Contact6D", init<FrameTask&, bool>())
       .def(
@@ -86,8 +81,7 @@ void exposeDynamics()
 
   class__<ExternalWrenchContact, bases<Contact>>("ExternalWrenchContact", init<RobotWrapper::FrameIndex>())
       .add_property("frame_index", &ExternalWrenchContact::frame_index)
-      .add_property(
-          "w_ext", +[](ExternalWrenchContact& contact) { return contact.w_ext; }, &ExternalWrenchContact::w_ext);
+      .def_readwrite("w_ext", &ExternalWrenchContact::w_ext);
 
   class__<PuppetContact, bases<Contact>>("PuppetContact", init<>());
 
@@ -164,10 +158,8 @@ void exposeDynamics()
                                                                         &DynamicsSolver::add_frame_task);
 
   class__<Task, bases<tools::Prioritized>, boost::noncopyable>("DynamicsTask", no_init)
-      .add_property(
-          "A", +[](const Task& task) { return task.A; })
-      .add_property(
-          "b", +[](const Task& task) { return task.b; })
+      .def_readwrite("A", &Task::A)
+      .def_readwrite("b", &Task::b)
       .add_property("kp", &Task::kp, &Task::kp)
       .add_property("kd", &Task::kd, &Task::kd)
       .add_property("error", &Task::error)
@@ -175,54 +167,35 @@ void exposeDynamics()
 
   class__<PositionTask, bases<Task>>("DynamicsPositionTask", init<RobotWrapper::FrameIndex, Eigen::Vector3d>())
       .add_property("frame_index", &PositionTask::frame_index)
-      .add_property(
-          "target_world", +[](const PositionTask& task) { return task.target_world; }, &PositionTask::target_world)
-      .add_property(
-          "dtarget_world", +[](const PositionTask& task) { return task.dtarget_world; }, &PositionTask::dtarget_world)
-      .add_property(
-          "ddtarget_world", +[](const PositionTask& task) { return task.dtarget_world; }, &PositionTask::ddtarget_world)
+      .def_readwrite("target_world", &PositionTask::target_world)
+      .def_readwrite("dtarget_world", &PositionTask::dtarget_world)
+      .def_readwrite("ddtarget_world", &PositionTask::ddtarget_world)
       .add_property("mask", &PositionTask::mask, &PositionTask::mask);
 
   class__<CoMTask, bases<Task>>("DynamicsCoMTask", init<Eigen::Vector3d>())
-      .add_property(
-          "target_world", +[](const CoMTask& task) { return task.target_world; }, &CoMTask::target_world)
-      .add_property(
-          "dtarget_world", +[](const CoMTask& task) { return task.dtarget_world; }, &CoMTask::dtarget_world)
-      .add_property(
-          "ddtarget_world", +[](const CoMTask& task) { return task.dtarget_world; }, &CoMTask::ddtarget_world)
+      .def_readwrite("target_world", &CoMTask::target_world)
+      .def_readwrite("dtarget_world", &CoMTask::dtarget_world)
+      .def_readwrite("ddtarget_world", &CoMTask::ddtarget_world)
       .add_property("mask", &CoMTask::mask, &CoMTask::mask);
 
   class__<RelativePositionTask, bases<Task>>(
       "DynamicsRelativePositionTask", init<RobotWrapper::FrameIndex, RobotWrapper::FrameIndex, Eigen::Vector3d>())
-      .add_property(
-          "target", +[](const RelativePositionTask& task) { return task.target; }, &RelativePositionTask::target)
-      .add_property(
-          "dtarget", +[](const RelativePositionTask& task) { return task.dtarget; }, &RelativePositionTask::dtarget)
-      .add_property(
-          "ddtarget", +[](const RelativePositionTask& task) { return task.ddtarget; }, &RelativePositionTask::ddtarget)
+      .def_readwrite("target", &RelativePositionTask::target)
+      .def_readwrite("dtarget", &RelativePositionTask::dtarget)
+      .def_readwrite("ddtarget", &RelativePositionTask::ddtarget)
       .add_property("mask", &RelativePositionTask::mask, &RelativePositionTask::mask);
 
   class__<RelativeOrientationTask, bases<Task>>(
       "DynamicsRelativeOrientationTask", init<RobotWrapper::FrameIndex, RobotWrapper::FrameIndex, Eigen::Matrix3d>())
-      .add_property(
-          "R_a_b", +[](const RelativeOrientationTask& task) { return task.R_a_b; }, &RelativeOrientationTask::R_a_b)
-      .add_property(
-          "omega_a_b", +[](const RelativeOrientationTask& task) { return task.omega_a_b; },
-          &RelativeOrientationTask::omega_a_b)
-      .add_property(
-          "domega_a_b", +[](const RelativeOrientationTask& task) { return task.domega_a_b; },
-          &RelativeOrientationTask::domega_a_b)
+      .def_readwrite("R_a_b", &RelativeOrientationTask::R_a_b)
+      .def_readwrite("omega_a_b", &RelativeOrientationTask::omega_a_b)
+      .def_readwrite("domega_a_b", &RelativeOrientationTask::domega_a_b)
       .add_property("mask", &RelativeOrientationTask::mask, &RelativeOrientationTask::mask);
 
   class__<OrientationTask, bases<Task>>("DynamicsOrientationTask", init<RobotWrapper::FrameIndex, Eigen::Matrix3d>())
-      .add_property(
-          "R_world_frame", +[](const OrientationTask& task) { return task.R_world_frame; },
-          &OrientationTask::R_world_frame)
-      .add_property(
-          "omega_world", +[](const OrientationTask& task) { return task.omega_world; }, &OrientationTask::omega_world)
-      .add_property(
-          "domega_world", +[](const OrientationTask& task) { return task.domega_world; },
-          &OrientationTask::domega_world)
+      .def_readwrite("R_world_frame", &OrientationTask::R_world_frame)
+      .def_readwrite("omega_world", &OrientationTask::omega_world)
+      .def_readwrite("domega_world", &OrientationTask::domega_world)
       .add_property("mask", &OrientationTask::mask, &OrientationTask::mask);
 
   class__<FrameTask>("DynamicsFrameTask", init<>())

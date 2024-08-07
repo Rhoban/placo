@@ -8,6 +8,7 @@
 #include "placo/humanoid/footsteps_planner_repetitive.h"
 #include <Eigen/Dense>
 #include <boost/python.hpp>
+#include <eigenpy/eigen-to-python.hpp>
 
 using namespace boost::python;
 using namespace placo::humanoid;
@@ -22,9 +23,7 @@ void exposeFootsteps()
   class__<FootstepsPlanner::Footstep>("Footstep", init<double, double>())
       .def("support_polygon", &FootstepsPlanner::Footstep::support_polygon)
       .add_property("side", &FootstepsPlanner::Footstep::side, &FootstepsPlanner::Footstep::side)
-      .add_property(
-          "frame", +[](const FootstepsPlanner::Footstep& footstep) { return footstep.frame; },
-          &FootstepsPlanner::Footstep::frame)
+      .def_readwrite("frame", &FootstepsPlanner::Footstep::frame)
       .add_property("foot_length", &FootstepsPlanner::Footstep::foot_length, &FootstepsPlanner::Footstep::foot_length)
       .add_property("foot_width", &FootstepsPlanner::Footstep::foot_width, &FootstepsPlanner::Footstep::foot_width)
       .def("support_polygon", &FootstepsPlanner::Footstep::support_polygon)

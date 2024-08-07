@@ -13,6 +13,7 @@
 #include "placo/humanoid/lipm.h"
 #include <Eigen/Dense>
 #include <boost/python.hpp>
+#include <eigenpy/eigen-to-python.hpp>
 
 using namespace placo;
 using namespace boost::python;

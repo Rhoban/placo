@@ -7,6 +7,7 @@
 #include <boost/python/return_internal_reference.hpp>
 #include <Eigen/Dense>
 #include <boost/python.hpp>
+#include <eigenpy/eigen-to-python.hpp>
 
 using namespace boost::python;
 using namespace placo;
@@ -117,10 +118,8 @@ void exposeKinematics()
           .def("solve", &KinematicsSolver::solve);
 
   class__<Task, bases<tools::Prioritized>, boost::noncopyable>("Task", no_init)
-      .add_property(
-          "A", +[](const Task& task) { return task.A; })
-      .add_property(
-          "b", +[](const Task& task) { return task.b; })
+      .def_readonly("A", &Task::A)
+      .def_readonly("b", &Task::b)
       .def("error", &Task::error)
       .def("error_norm", &Task::error_norm)
       .def("update", &Task::update);
@@ -135,8 +134,7 @@ void exposeKinematics()
       "RelativePositionTask", init<RobotWrapper::FrameIndex, RobotWrapper::FrameIndex, Eigen::Vector3d>())
       .add_property("frame_a", &RelativePositionTask::frame_a)
       .add_property("frame_b", &RelativePositionTask::frame_b)
-      .add_property(
-          "target", +[](const RelativePositionTask& task) { return task.target; }, &RelativePositionTask::target)
+      .def_readwrite("target", &RelativePositionTask::target)
       .add_property("mask", &RelativePositionTask::mask, &RelativePositionTask::mask);
 
   class__<CoMTask, bases<Task>>("CoMTask", init<Eigen::Vector3d>())
@@ -146,17 +144,14 @@ void exposeKinematics()
 
   class__<OrientationTask, bases<Task>>("OrientationTask", init<RobotWrapper::FrameIndex, Eigen::Matrix3d>())
       .add_property("frame_index", &OrientationTask::frame_index)
-      .add_property(
-          "R_world_frame", +[](const OrientationTask& task) { return task.R_world_frame; },
-          &OrientationTask::R_world_frame)
+      .def_readwrite("R_world_frame", &OrientationTask::R_world_frame)
       .add_property("mask", &OrientationTask::mask, &OrientationTask::mask);
 
   class__<RelativeOrientationTask, bases<Task>>(
       "RelativeOrientationTask", init<RobotWrapper::FrameIndex, RobotWrapper::FrameIndex, Eigen::Matrix3d>())
       .add_property("frame_a", &RelativeOrientationTask::frame_a)
       .add_property("frame_b", &RelativeOrientationTask::frame_b)
-      .add_property(
-          "R_a_b", +[](const RelativeOrientationTask& task) { return task.R_a_b; }, &RelativeOrientationTask::R_a_b)
+      .def_readwrite("R_a_b", &RelativeOrientationTask::R_a_b)
       .add_property("mask", &RelativeOrientationTask::mask, &RelativeOrientationTask::mask);
 
   class__<FrameTask>("FrameTask", init<>())
@@ -186,9 +181,7 @@ void exposeKinematics()
       .add_property("frame_index", &AxisAlignTask::frame_index)
       .add_property(
           "axis_frame", +[](const AxisAlignTask& task) { return task.axis_frame; }, &AxisAlignTask::axis_frame)
-      .add_property(
-          "targetAxis_world", +[](const AxisAlignTask& task) { return task.targetAxis_world; },
-          &AxisAlignTask::targetAxis_world);
+      .def_readwrite("targetAxis_world", &AxisAlignTask::targetAxis_world);
 
   class__<JointsTask, bases<Task>>("JointsTask", init<>())
       .def("set_joint", &JointsTask::set_joint)
@@ -206,8 +199,7 @@ void exposeKinematics()
       .add_property("joint", &WheelTask::joint)
       .add_property("radius", &WheelTask::radius)
       .add_property("omniwheel", &WheelTask::omniwheel)
-      .add_property(
-          "T_world_surface", +[](const WheelTask& task) { return task.T_world_surface; }, &WheelTask::T_world_surface);
+      .def_readwrite("T_world_surface", &WheelTask::T_world_surface);
 
   class__<DistanceTask, bases<Task>>("DistanceTask", init<RobotWrapper::FrameIndex, RobotWrapper::FrameIndex, double>())
       .add_property("frame_a", &DistanceTask::frame_a)

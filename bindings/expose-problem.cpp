@@ -16,6 +16,7 @@
 #include "placo/problem/qp_error.h"
 #include <Eigen/Dense>
 #include <boost/python.hpp>
+#include <eigenpy/eigen-to-python.hpp>
 
 using namespace boost::python;
 using namespace placo;
@@ -84,14 +85,10 @@ void exposeProblem()
       .def("upper_shift_matrix", &Integrator::upper_shift_matrix)
       .staticmethod("upper_shift_matrix")
       .add_property("t_start", &Integrator::t_start, &Integrator::t_start)
-      .add_property(
-          "M", +[](const Integrator& i) { return i.M; })
-      .add_property(
-          "A", +[](const Integrator& i) { return i.A; })
-      .add_property(
-          "B", +[](const Integrator& i) { return i.B; })
-      .add_property(
-          "final_transition_matrix", +[](const Integrator& i) { return i.final_transition_matrix; })
+      .def_readonly("M", &Integrator::M)
+      .def_readonly("A", &Integrator::A)
+      .def_readonly("B", &Integrator::B)
+      .def_readonly("final_transition_matrix", &Integrator::final_transition_matrix)
       .def("expr", &Integrator::expr, integrator_expr_overloads())
       .def("expr_t", &Integrator::expr_t)
       .def("value", &Integrator::value)
@@ -129,10 +126,8 @@ void exposeProblem()
       .def("expr", &Variable::expr, expr_overloads());
 
   class__<Expression>("Expression")
-      .add_property(
-          "A", +[](Expression& e) { return e.A; })
-      .add_property(
-          "b", +[](Expression& e) { return e.b; })
+      .def_readwrite("A", &Expression::A)
+      .def_readwrite("b", &Expression::b)
       .def("__len__", &Expression::rows)
       .def("is_scalar", &Expression::is_scalar)
       .def("is_constant", &Expression::is_constant)
