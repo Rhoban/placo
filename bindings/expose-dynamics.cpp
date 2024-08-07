@@ -101,6 +101,9 @@ void exposeDynamics()
       .def("set_torque_limit", &DynamicsSolver::set_torque_limit)
       .def_readwrite("gravity_only", &DynamicsSolver::gravity_only)
       .def_readwrite("torque_cost", &DynamicsSolver::torque_cost)
+      .add_property(
+          "extra_force", +[](DynamicsSolver& solver) { return solver.extra_force; },
+          +[](DynamicsSolver& solver, Eigen::VectorXd force) { solver.extra_force = force; })
       .def("mask_fbase", &DynamicsSolver::mask_fbase)
       .def("add_point_contact", &DynamicsSolver::add_point_contact, return_internal_reference<>())
       .def("add_unilateral_point_contact", &DynamicsSolver::add_unilateral_point_contact, return_internal_reference<>())
