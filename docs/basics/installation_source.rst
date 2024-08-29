@@ -36,6 +36,10 @@ You can then install the following dependencies:
 .. note::
     Versions above are frozen to ensure compatiblity. Placo has not yet switched to Pinocchio 3.
 
+  .. note::
+    If you use a different version of Python, you will have to adapt the version of the packages
+    (e.g. replace ``py310`` by ``py38`` for Python 3.8).
+
 Cloning and building
 ~~~~~~~~~~~~~~~~~~~~
 
