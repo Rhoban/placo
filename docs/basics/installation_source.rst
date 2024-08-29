@@ -24,6 +24,7 @@ You can then install the following dependencies:
 
 .. code-block:: bash
 
+    # Install dependencies (Ubuntu 22.04)
     sudo apt-get install \
             robotpkg-py310-eigenpy=3.1.1 \
             robotpkg-hpp-fcl=2.3.6 \
@@ -33,12 +34,15 @@ You can then install the following dependencies:
             robotpkg-py310-pinocchio=2.6.20 \
             robotpkg-eiquadprog
 
+.. admonition:: Building on older versions
+
+  Above scenario was tested on Ubuntu 22.04. If you want to build on an older version, you might need to adapt the following:
+
+  * Adapt Python's version in above `apt` command (e.g. replace ``py310`` by ``py38`` for Python 3.8)
+  * Install `Eigen <https://eigen.tuxfamily.org/index.php?title=Main_Page>`_ with at least version 3.4.0
+
 .. note::
     Versions above are frozen to ensure compatiblity. Placo has not yet switched to Pinocchio 3.
-
-  .. note::
-    If you use a different version of Python, you will have to adapt the version of the packages
-    (e.g. replace ``py310`` by ``py38`` for Python 3.8).
 
 Cloning and building
 ~~~~~~~~~~~~~~~~~~~~
