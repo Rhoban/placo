@@ -1,5 +1,6 @@
 import glob
 import re
+from typing import Union
 import xml.etree.ElementTree as ET
 
 # Mapping member definitions (id) to all informations
@@ -148,7 +149,7 @@ def parse_xml(xml_file: str):
             parse_compound(compounddef_node)
 
 
-def resolve_doxygen_id(id: list|str):
+def resolve_doxygen_id(id: Union[list,str]):
     if type(id) == list:
         tpl = resolve_doxygen_id(id[0])
         typ = resolve_doxygen_id(id[1])
