@@ -51,6 +51,7 @@ add_library(libplaco SHARED
     src/placo/tools/prioritized.cpp
     src/placo/tools/cubic_spline.cpp
     src/placo/tools/cubic_spline_3d.cpp
+    src/placo/tools/directions.cpp
 
     # Problem formulation
     src/placo/problem/problem.cpp

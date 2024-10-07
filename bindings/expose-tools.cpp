@@ -9,6 +9,7 @@
 #include "placo/tools/cubic_spline_3d.h"
 #include "placo/tools/axises_mask.h"
 #include "placo/tools/prioritized.h"
+#include "placo/tools/directions.h"
 #include "expose-utils.hpp"
 #ifdef HAVE_RHOBAN_UTILS
 #include "rhoban_utils/history/history.h"
@@ -24,6 +25,7 @@ BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(loadReplays_overloads, loadReplays, 1, 2)
 
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(set_axises_overloads, set_axises, 1, 2);
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(configure_overloads, configure, 2, 3);
+BOOST_PYTHON_FUNCTION_OVERLOADS(directions_3d_overloads, directions_3d, 1, 2);
 
 void exposeTools()
 {
@@ -33,6 +35,8 @@ void exposeTools()
   def("frame_yaw", &frame_yaw);
   def("flatten_on_floor", &flatten_on_floor);
   def("optimal_transformation", &optimal_transformation);
+  def("directions_2d", &directions_2d);
+  def("directions_3d", &directions_3d, directions_3d_overloads());
 
   exposeStdVector<int>("vector_int");
   exposeStdVector<double>("vector_double");
