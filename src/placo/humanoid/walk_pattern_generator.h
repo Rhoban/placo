@@ -65,18 +65,18 @@ public:
 
     /**
      * @brief Returns the support corresponding to the given time in the trajectory
-    */
+     */
     FootstepsPlanner::Support get_support(double t);
 
     /**
      * @brief Returns the nth next support corresponding to the given time in the trajectory
      */
-    FootstepsPlanner::Support get_next_support(double t, int n=1);
+    FootstepsPlanner::Support get_next_support(double t, int n = 1);
 
     /**
      * @brief Returns the nth previous support corresponding to the given time in the trajectory
      */
-    FootstepsPlanner::Support get_prev_support(double t, int n=1);
+    FootstepsPlanner::Support get_prev_support(double t, int n = 1);
 
     std::vector<FootstepsPlanner::Support> get_supports();
     int remaining_supports(double t);

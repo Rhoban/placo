@@ -342,8 +342,7 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
     for (int timestep = 1; timestep < kept_timesteps; timestep++)
     {
       Eigen::Vector2d jerk = old_trajectory->get_j_world_CoM(trajectory.t_start + timestep * parameters.dt()).head(2);
-      problem.add_constraint(lipm.jerk(timestep) == jerk)
-          .configure(ProblemConstraint::Soft, 1e-4);
+      problem.add_constraint(lipm.jerk(timestep) == jerk).configure(ProblemConstraint::Soft, 1e-4);
     }
   }
 
@@ -355,7 +354,8 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
     current_support = trajectory.supports[i];
     int step_timesteps = support_timesteps(current_support);
 
-    for (int timestep = constrained_timesteps; timestep < fmin(timesteps, constrained_timesteps + step_timesteps); timestep++)
+    for (int timestep = constrained_timesteps; timestep < fmin(timesteps, constrained_timesteps + step_timesteps);
+         timestep++)
     {
       // Ensuring ZMP remains in the support polygon
       if (timestep > kept_timesteps)
@@ -363,7 +363,7 @@ void WalkPatternGenerator::planCoM(Trajectory& trajectory, Eigen::Vector2d initi
         problem.add_constraint(PolygonConstraint::in_polygon_xy(
             lipm.zmp(timestep, omega_2), current_support.support_polygon(), parameters.zmp_margin));
       }
-      
+
       // ZMP reference trajectory : aiming for the center of single supports
       if (!current_support.is_both() || current_support.start || current_support.end)
       {
@@ -509,7 +509,10 @@ void WalkPatternGenerator::planSingleSupportTrajectory(TrajectoryPart& part, Tra
   trajectory.yaw(flying_side).add_point(t, frame_yaw(T_world_flyingTarget.rotation()), 0);
 
   // The trunk orientation follow the steps orientation
-  trajectory.trunk_yaw.add_point(t, frame_yaw(T_world_flyingTarget.rotation()), 0);
+  if (!parameters.has_double_support())
+  {
+    trajectory.trunk_yaw.add_point(t, frame_yaw(T_world_flyingTarget.rotation()), 0);
+  }
 
   // Support foot remaining steady
   trajectory.add_supports(t, part.support);
@@ -522,7 +525,14 @@ void WalkPatternGenerator::planFeetTrajectories(Trajectory& trajectory, Trajecto
   // Add the initial position to the trajectory
   trajectory.add_supports(t, trajectory.supports[0]);
 
-  trajectory.trunk_yaw.add_point(t, frame_yaw(trajectory.supports[0].frame().rotation()), 0);
+  if (old_trajectory == nullptr)
+  {
+    trajectory.trunk_yaw.add_point(t, frame_yaw(trajectory.supports[0].frame().rotation()), 0);
+  }
+  else
+  {
+    trajectory.trunk_yaw.add_point(t, old_trajectory->trunk_yaw.pos(t), old_trajectory->trunk_yaw.vel(t));
+  }
 
   if (!trajectory.supports[0].is_both())
   {
@@ -556,7 +566,6 @@ void WalkPatternGenerator::planFeetTrajectories(Trajectory& trajectory, Trajecto
         planSingleSupportTrajectory(part, trajectory, step, t, old_trajectory, t_replan);
       }
     }
-
     // Double support
     else
     {
@@ -625,7 +634,7 @@ WalkPatternGenerator::Trajectory WalkPatternGenerator::replan(std::vector<Footst
 bool WalkPatternGenerator::can_replan_supports(Trajectory& trajectory, double t_replan)
 {
   // We can't replan from an "end", a "start" or a "kick"
-  if (trajectory.get_support(t_replan).end || trajectory.get_support(t_replan).start || 
+  if (trajectory.get_support(t_replan).end || trajectory.get_support(t_replan).start ||
       trajectory.get_next_support(t_replan).end || trajectory.get_support(t_replan).kick())
   {
     return false;
@@ -673,7 +682,7 @@ std::vector<FootstepsPlanner::Support> WalkPatternGenerator::replan_supports(Foo
 
   std::vector<FootstepsPlanner::Support> supports;
   supports = FootstepsPlanner::make_supports(footsteps, false, parameters.has_double_support(), true);
-  
+
   if (current_support.is_both())
   {
     supports.erase(supports.begin());
