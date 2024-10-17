@@ -531,7 +531,8 @@ void WalkPatternGenerator::planFeetTrajectories(Trajectory& trajectory, Trajecto
   }
   else
   {
-    trajectory.trunk_yaw.add_point(t, old_trajectory->trunk_yaw.pos(t), old_trajectory->trunk_yaw.vel(t));
+    trajectory.trunk_yaw.add_point(t, frame_yaw(old_trajectory->get_R_world_trunk(t)),
+                                   old_trajectory->trunk_yaw.vel(t));
   }
 
   if (!trajectory.supports[0].is_both())
