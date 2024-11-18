@@ -5,6 +5,20 @@ PlaCo comes with some basics visualization tools based on
 `meshcat <https://github.com/meshcat-dev/meshcat>`_. Those helpers are written in
 Python and available in the ``placo_utils`` package.
 
+Command-line visualization
+--------------------------
+
+The following utils is provided to visualize a robot:
+
+.. code-block:: bash
+
+    python -m placo_utils.view path_to_robot/robot.urdf
+
+You can provide the following arguments:
+
+* ``--frames [frame1 [frame2 [...]]]``: List of frames to visualize
+* ``--animate`` to animate the robot (a sinusoïdal motion is applied to the joints)
+
 Robot visualization
 -------------------
 
