@@ -3,64 +3,20 @@
 
 namespace placo::humanoid
 {
-double HumanoidParameters::dt()
-{
-  return single_support_duration / ((double)single_support_timesteps);
-}
 
-double HumanoidParameters::double_support_duration()
+int HumanoidParameters::single_support_timesteps()
 {
-  return ratio_duration(double_support_ratio);
-}
-
-double HumanoidParameters::startend_double_support_duration()
-{
-  return ratio_duration(startend_double_support_ratio);
+  return std::round(single_support_duration / dt);
 }
 
 int HumanoidParameters::double_support_timesteps()
 {
-  return ratio_timesteps(double_support_ratio);
+  return std::round(double_support_duration / dt);
 }
 
 int HumanoidParameters::startend_double_support_timesteps()
 {
-  return ratio_timesteps(startend_double_support_ratio);
-}
-
-double HumanoidParameters::kick_up_duration()
-{
-  return ratio_duration(kick_ratio_up);
-}
-
-double HumanoidParameters::kick_shot_duration()
-{
-  return ratio_duration(kick_ratio_shot);
-}
-
-double HumanoidParameters::kick_neutral_duration()
-{
-  return ratio_duration(kick_ratio_neutral);
-}
-
-double HumanoidParameters::kick_down_duration()
-{
-  return ratio_duration(kick_ratio_down);
-}
-
-double HumanoidParameters::kick_support_ratio()
-{
-  return kick_ratio_up + kick_ratio_shot + kick_ratio_neutral + kick_ratio_down;
-}
-
-double HumanoidParameters::kick_support_duration()
-{
-  return ratio_duration(kick_support_ratio());
-}
-
-int HumanoidParameters::kick_support_timesteps()
-{
-  return ratio_timesteps(kick_support_ratio());
+  return std::round(startend_double_support_duration / dt);
 }
 
 bool HumanoidParameters::has_double_support()
@@ -122,15 +78,5 @@ Eigen::Affine3d HumanoidParameters::neutral_frame(HumanoidRobot::Side side, Eige
   frame.translate(Eigen::Vector3d(d_x, d_y, 0));
   frame.rotate(Eigen::AngleAxisd(d_theta, Eigen::Vector3d::UnitZ()));
   return frame;
-}
-
-int HumanoidParameters::ratio_timesteps(double ratio)
-{
-  return std::round(ratio * single_support_timesteps);
-}
-
-double HumanoidParameters::ratio_duration(double ratio)
-{
-  return ratio_timesteps(ratio) * dt();
 }
 }  // namespace placo::humanoid

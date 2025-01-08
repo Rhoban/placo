@@ -17,17 +17,11 @@ using namespace placo::humanoid;
 
 void exposeParameters()
 {
-  class__<HumanoidParameters>("HumanoidParameters")
-      .add_property("single_support_duration", &HumanoidParameters::single_support_duration,
-                    &HumanoidParameters::single_support_duration)
-      .add_property("single_support_timesteps", &HumanoidParameters::single_support_timesteps,
-                    &HumanoidParameters::single_support_timesteps)
-      .add_property("double_support_ratio", &HumanoidParameters::double_support_ratio,
-                    &HumanoidParameters::double_support_ratio)
-      .add_property("startend_double_support_ratio", &HumanoidParameters::startend_double_support_ratio,
-                    &HumanoidParameters::startend_double_support_ratio)
-      .add_property("kick_support_ratio", &HumanoidParameters::kick_support_ratio,
-                    &HumanoidParameters::kick_support_ratio)
+  class__<HumanoidParameters>("HumanoidParameters")      
+      .add_property("dt", &HumanoidParameters::dt, &HumanoidParameters::dt)
+      .add_property("single_support_duration", &HumanoidParameters::single_support_duration, &HumanoidParameters::single_support_duration)
+      .add_property("double_support_duration", &HumanoidParameters::double_support_duration, &HumanoidParameters::double_support_duration)
+      .add_property("startend_double_support_duration", &HumanoidParameters::startend_double_support_duration, &HumanoidParameters::startend_double_support_duration)
       .add_property("planned_timesteps", &HumanoidParameters::planned_timesteps, &HumanoidParameters::planned_timesteps)
       .add_property("replan_timesteps", &HumanoidParameters::replan_timesteps, &HumanoidParameters::replan_timesteps)
       .add_property("zmp_margin", &HumanoidParameters::zmp_margin, &HumanoidParameters::zmp_margin)
@@ -51,13 +45,9 @@ void exposeParameters()
       .add_property("walk_max_dtheta", &HumanoidParameters::walk_max_dtheta, &HumanoidParameters::walk_max_dtheta)
       .add_property("walk_dtheta_spacing", &HumanoidParameters::walk_dtheta_spacing,
                     &HumanoidParameters::walk_dtheta_spacing)
-      .def("dt", &HumanoidParameters::dt)
-      .def("double_support_duration", &HumanoidParameters::double_support_duration)
-      .def("startend_double_support_duration", &HumanoidParameters::startend_double_support_duration)
-      .def("kick_support_duration", &HumanoidParameters::kick_support_duration)
+      .def("single_support_timesteps", &HumanoidParameters::single_support_timesteps)
       .def("double_support_timesteps", &HumanoidParameters::double_support_timesteps)
       .def("startend_double_support_timesteps", &HumanoidParameters::startend_double_support_timesteps)
-      .def("kick_support_timesteps", &HumanoidParameters::kick_support_timesteps)
       .def("has_double_support", &HumanoidParameters::has_double_support)
       .def("ellipsoid_clip", &HumanoidParameters::ellipsoid_clip);
 }

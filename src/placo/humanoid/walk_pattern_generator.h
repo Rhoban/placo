@@ -27,7 +27,6 @@ public:
 
     bool kick_part = false;
     SwingFootCubic::Trajectory swing_trajectory;
-    Kick::KickTrajectory kick_trajectory;
 
     FootstepsPlanner::Support support;
   };
@@ -100,9 +99,6 @@ public:
      */
     double get_part_t_end(double t);
 
-    // Number of dt planned by the jerk planner
-    int jerk_planner_timesteps = 0;
-
   protected:
     /**
      * @brief Retrieves the yaw value
@@ -167,6 +163,11 @@ public:
   std::vector<FootstepsPlanner::Support> replan_supports(FootstepsPlanner& planner, Trajectory& trajectory,
                                                          double t_replan);
 
+  double last_com_planning_duration = 0.;
+  double last_feet_planning_duration = 0.;
+
+  Eigen::VectorXd get_zmp_ref();
+
 protected:
   // Robot associated to the WPG
   HumanoidRobot& robot;
@@ -177,18 +178,30 @@ protected:
   double omega;
   double omega_2;
 
-  void planCoM(Trajectory& trajectory, Eigen::Vector2d initial_pos,
-               Eigen::Vector2d initial_vel = Eigen::Vector2d::Zero(),
-               Eigen::Vector2d initial_acc = Eigen::Vector2d::Zero(), Trajectory* old_trajectory = nullptr,
-               double t_replan = 0.);
+  /**
+   * @brief Plan the ZMP reference trajectory for a given set of supports
+   * @param supports Supports to follow
+   * @param elapsed_timesteps Number of timesteps already planned on these supports
+   */
+  Eigen::VectorXd plan_zmp(std::vector<FootstepsPlanner::Support>& supports, int elapsed_timesteps = 0);
+  
+  Eigen::VectorXd zmp_ref;
 
-  void planFeetTrajectories(Trajectory& trajectory, Trajectory* old_trajectory = nullptr, double t_replan = 0.);
-
-  void planKickTrajectory(TrajectoryPart& part, Trajectory& trajectory, int step, double& t);
-  void planDoubleSupportTrajectory(TrajectoryPart& part, Trajectory& trajectory, double& t);
-  void planSingleSupportTrajectory(TrajectoryPart& part, Trajectory& trajectory, int step, double& t,
-                                   Trajectory* old_trajectory, double t_replan);
+  double plan_com(Trajectory& trajectory, Eigen::VectorXd zmp_ref, 
+                 Eigen::Vector2d initial_pos, Eigen::Vector2d initial_vel = Eigen::Vector2d::Zero(),
+                 Eigen::Vector2d initial_acc = Eigen::Vector2d::Zero(), std::vector<Eigen::Vector2d>* previous_jerks = nullptr);
+            
+  void plan_dbl_support(TrajectoryPart& part, Trajectory& trajectory, double& t);
+  void plan_sgl_support(TrajectoryPart& part, Trajectory& trajectory, int step, double& t, Trajectory* old_trajectory, double t_replan);
+  double plan_feet_trajectories(Trajectory& trajectory, Trajectory* old_trajectory = nullptr, double t_replan = 0.);
 
   int support_timesteps(FootstepsPlanner::Support& support);
+
+  // XXX: to remove
+  double planCoM_old(Trajectory& trajectory, 
+                 Eigen::Vector2d initial_pos, Eigen::Vector2d initial_vel = Eigen::Vector2d::Zero(),
+                 Eigen::Vector2d initial_acc = Eigen::Vector2d::Zero(), Trajectory* old_trajectory = nullptr,
+                 double t_replan = 0.);
+
 };
 }  // namespace placo::humanoid
