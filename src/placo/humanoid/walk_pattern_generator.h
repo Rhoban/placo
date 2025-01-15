@@ -27,7 +27,6 @@ public:
 
     bool kick_part = false;
     SwingFootCubic::Trajectory swing_trajectory;
-    Kick::KickTrajectory kick_trajectory;
 
     FootstepsPlanner::Support support;
   };
@@ -100,9 +99,6 @@ public:
      */
     double get_part_t_end(double t);
 
-    // Number of dt planned by the jerk planner
-    int jerk_planner_timesteps = 0;
-
   protected:
     /**
      * @brief Retrieves the yaw value
@@ -152,7 +148,7 @@ public:
    * ones to follow. Contain the current support
    * @param old_trajectory Current walk trajectory
    * @param t_replan The time (in the original trajectory) where the replan happens
-   * @return True if the trajectory have been replanned, false it hasn't
+   * @return Updated trajectory
    */
   Trajectory replan(std::vector<FootstepsPlanner::Support>& supports, Trajectory& old_trajectory, double t_replan);
 
@@ -167,6 +163,9 @@ public:
   std::vector<FootstepsPlanner::Support> replan_supports(FootstepsPlanner& planner, Trajectory& trajectory,
                                                          double t_replan);
 
+  double last_com_planning_duration = 0.;
+  double last_feet_planning_duration = 0.;
+
 protected:
   // Robot associated to the WPG
   HumanoidRobot& robot;
@@ -177,17 +176,12 @@ protected:
   double omega;
   double omega_2;
 
-  void planCoM(Trajectory& trajectory, Eigen::Vector2d initial_pos,
-               Eigen::Vector2d initial_vel = Eigen::Vector2d::Zero(),
-               Eigen::Vector2d initial_acc = Eigen::Vector2d::Zero(), Trajectory* old_trajectory = nullptr,
-               double t_replan = 0.);
+  double plan_com(Trajectory& trajectory, Eigen::Vector2d initial_pos, Eigen::Vector2d initial_vel = Eigen::Vector2d::Zero(),
+                 Eigen::Vector2d initial_acc = Eigen::Vector2d::Zero(), std::vector<Eigen::Vector2d>* previous_jerks = nullptr);
 
-  void planFeetTrajectories(Trajectory& trajectory, Trajectory* old_trajectory = nullptr, double t_replan = 0.);
-
-  void planKickTrajectory(TrajectoryPart& part, Trajectory& trajectory, int step, double& t);
-  void planDoubleSupportTrajectory(TrajectoryPart& part, Trajectory& trajectory, double& t);
-  void planSingleSupportTrajectory(TrajectoryPart& part, Trajectory& trajectory, int step, double& t,
-                                   Trajectory* old_trajectory, double t_replan);
+  void plan_dbl_support(TrajectoryPart& part, Trajectory& trajectory, double& t);
+  void plan_sgl_support(TrajectoryPart& part, Trajectory& trajectory, int step, double& t, Trajectory* old_trajectory, double t_replan);
+  double plan_feet_trajectories(Trajectory& trajectory, Trajectory* old_trajectory = nullptr, double t_replan = 0.);
 
   int support_timesteps(FootstepsPlanner::Support& support);
 };
