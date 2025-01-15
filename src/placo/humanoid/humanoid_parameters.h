@@ -60,8 +60,7 @@ public:
   int planned_timesteps = 100;
 
   /**
-   * @brief Number of timesteps between each replan.
-   * Support phases have to last longer than [replan_frequency * dt] or their duration has to be equal to 0
+   * @brief Number of timesteps between each replan for the CoM trajectory
    */
   int replan_timesteps = 10;
 

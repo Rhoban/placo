@@ -148,7 +148,7 @@ public:
    * ones to follow. Contain the current support
    * @param old_trajectory Current walk trajectory
    * @param t_replan The time (in the original trajectory) where the replan happens
-   * @return True if the trajectory have been replanned, false it hasn't
+   * @return Updated trajectory
    */
   Trajectory replan(std::vector<FootstepsPlanner::Support>& supports, Trajectory& old_trajectory, double t_replan);
 
@@ -166,8 +166,6 @@ public:
   double last_com_planning_duration = 0.;
   double last_feet_planning_duration = 0.;
 
-  Eigen::VectorXd get_zmp_ref();
-
 protected:
   // Robot associated to the WPG
   HumanoidRobot& robot;
@@ -178,30 +176,13 @@ protected:
   double omega;
   double omega_2;
 
-  /**
-   * @brief Plan the ZMP reference trajectory for a given set of supports
-   * @param supports Supports to follow
-   * @param elapsed_timesteps Number of timesteps already planned on these supports
-   */
-  Eigen::VectorXd plan_zmp(std::vector<FootstepsPlanner::Support>& supports, int elapsed_timesteps = 0);
-  
-  Eigen::VectorXd zmp_ref;
-
-  double plan_com(Trajectory& trajectory, Eigen::VectorXd zmp_ref, 
-                 Eigen::Vector2d initial_pos, Eigen::Vector2d initial_vel = Eigen::Vector2d::Zero(),
+  double plan_com(Trajectory& trajectory, Eigen::Vector2d initial_pos, Eigen::Vector2d initial_vel = Eigen::Vector2d::Zero(),
                  Eigen::Vector2d initial_acc = Eigen::Vector2d::Zero(), std::vector<Eigen::Vector2d>* previous_jerks = nullptr);
-            
+
   void plan_dbl_support(TrajectoryPart& part, Trajectory& trajectory, double& t);
   void plan_sgl_support(TrajectoryPart& part, Trajectory& trajectory, int step, double& t, Trajectory* old_trajectory, double t_replan);
   double plan_feet_trajectories(Trajectory& trajectory, Trajectory* old_trajectory = nullptr, double t_replan = 0.);
 
   int support_timesteps(FootstepsPlanner::Support& support);
-
-  // XXX: to remove
-  double planCoM_old(Trajectory& trajectory, 
-                 Eigen::Vector2d initial_pos, Eigen::Vector2d initial_vel = Eigen::Vector2d::Zero(),
-                 Eigen::Vector2d initial_acc = Eigen::Vector2d::Zero(), Trajectory* old_trajectory = nullptr,
-                 double t_replan = 0.);
-
 };
 }  // namespace placo::humanoid
