@@ -128,6 +128,20 @@ void WalkTasks::remove_tasks()
   }
 }
 
+void WalkTasks::update_tasks_and_pid(WalkPatternGenerator::Trajectory& trajectory, double t, Eigen::Vector2d dcm, double omega, double elapsed)
+{
+  Eigen::Vector2d error = dcm - trajectory.get_p_world_DCM(t + com_delay, omega);
+  integral = (1.0 - lambda) * integral + error * elapsed;
+  Eigen::Vector2d derivative = (error - last_error) / elapsed;
+  last_error = error;
+
+  Eigen::Vector2d com_offset = K_p * error + K_i * integral + K_d * derivative;
+
+  update_tasks(trajectory.get_T_world_left(t), trajectory.get_T_world_right(t),
+               trajectory.get_p_world_CoM(t + com_delay) + Eigen::Vector3d(com_offset[0], com_offset[1], 0.), 
+               trajectory.get_R_world_trunk(t));
+}
+
 std::map<std::string, Eigen::Vector3d> WalkTasks::get_tasks_error()
 {
   std::map<std::string, Eigen::Vector3d> error;

@@ -38,5 +38,16 @@ public:
   double com_delay = 0.;
   double com_x = 0.;
   double com_y = 0.;
+
+  // DCM error PID
+  void update_tasks_and_pid(WalkPatternGenerator::Trajectory& trajectory, double t, Eigen::Vector2d dcm, double omega, double elapsed);
+
+  double K_p = 0.;
+  double K_i = 0.;
+  double K_d = 0.;
+
+  double lambda = 0.01;
+  Eigen::Vector2d integral;
+  Eigen::Vector2d last_error;
 };
 }  // namespace placo::humanoid
