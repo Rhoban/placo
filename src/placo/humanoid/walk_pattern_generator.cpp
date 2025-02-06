@@ -263,7 +263,7 @@ int WalkPatternGenerator::support_timesteps(FootstepsPlanner::Support& support)
 {
   if (support.footsteps.size() == 1)
   {
-    return parameters.single_support_timesteps();
+    return parameters.single_support_timesteps;
   }
 
   if (support.start || support.end)
@@ -291,7 +291,7 @@ double WalkPatternGenerator::plan_com(Trajectory& trajectory, Eigen::Vector2d in
 
   // Creating the planner
   Problem problem = Problem();
-  LIPM lipm = LIPM(problem, lipm_timesteps, parameters.dt, initial_pos, initial_vel, initial_acc);
+  LIPM lipm = LIPM(problem, lipm_timesteps, parameters.dt(), initial_pos, initial_vel, initial_acc);
   lipm.t_start = trajectory.t_start;
 
   // Adding ZMP constraint and reference trajectory
@@ -351,7 +351,7 @@ double WalkPatternGenerator::plan_com(Trajectory& trajectory, Eigen::Vector2d in
     problem.add_constraint(lipm.vel(constrained_timesteps) == Eigen::Vector2d(0., 0.));
     problem.add_constraint(lipm.acc(constrained_timesteps) == Eigen::Vector2d(0., 0.));
   }
-
+  
   problem.solve();
   trajectory.com = lipm.get_trajectory();
 
@@ -373,11 +373,11 @@ void WalkPatternGenerator::plan_dbl_support(TrajectoryPart& part, Trajectory& tr
 {
   if (part.support.start || part.support.end)
   {
-    t += parameters.startend_double_support_duration;
+    t += parameters.startend_double_support_duration();
   }
   else
   {
-    t += parameters.double_support_duration;
+    t += parameters.double_support_duration();
   }
   trajectory.add_supports(t, part.support);
   trajectory.trunk_yaw.add_point(t, frame_yaw(part.support.frame().rotation()), 0);
@@ -533,14 +533,14 @@ WalkPatternGenerator::Trajectory WalkPatternGenerator::replan(std::vector<Footst
   int elapsed_timesteps = 0;
   if (trajectory.supports[0].replanned)
   {
-    elapsed_timesteps = int((t_replan - trajectory.t_start) / parameters.dt) + 1;
+    elapsed_timesteps = int((t_replan - trajectory.t_start) / parameters.dt()) + 1;
   }
 
   // Past jerks are kept
   std::vector<Eigen::Vector2d> previous_jerks;
   for (int timestep = 0; timestep < elapsed_timesteps; timestep++)
   {
-    previous_jerks.push_back(old_trajectory.get_j_world_CoM(trajectory.t_start + timestep * parameters.dt).head(2));
+    previous_jerks.push_back(old_trajectory.get_j_world_CoM(trajectory.t_start + timestep * parameters.dt()).head(2));
   }
 
   Eigen::Vector2d com_pos = old_trajectory.get_p_world_CoM(trajectory.t_start).head(2);

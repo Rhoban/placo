@@ -3,20 +3,29 @@
 
 namespace placo::humanoid
 {
-
-int HumanoidParameters::single_support_timesteps()
+double HumanoidParameters::dt()
 {
-  return std::round(single_support_duration / dt);
+  return single_support_duration / single_support_timesteps;
 }
 
 int HumanoidParameters::double_support_timesteps()
 {
-  return std::round(double_support_duration / dt);
+  return std::round(double_support_ratio * single_support_timesteps);
+}
+
+double HumanoidParameters::double_support_duration()
+{
+  return double_support_timesteps() * dt();
 }
 
 int HumanoidParameters::startend_double_support_timesteps()
 {
-  return std::round(startend_double_support_duration / dt);
+  return std::round(startend_double_support_ratio * single_support_timesteps);
+}
+
+double HumanoidParameters::startend_double_support_duration()
+{
+  return startend_double_support_timesteps() * dt();
 }
 
 bool HumanoidParameters::has_double_support()

@@ -139,12 +139,12 @@ Eigen::Vector3d HumanoidRobot::get_com_velocity(Side support, Eigen::Vector3d om
   Eigen::MatrixXd J_u = J.leftCols(6);
   Eigen::MatrixXd J_a = J.rightCols(20);
 
-  Eigen::MatrixXd J_u_pinv = J_u.completeOrthogonalDecomposition().pseudoInverse();
+  Eigen::MatrixXd J_u_inv = J_u.inverse();
 
   Eigen::VectorXd M(6);
   M << 0, 0, 0, omega_b;
 
-  return J_u_C * J_u_pinv * M + (J_a_C - J_u_C * J_u_pinv * J_a) * state.qd.block(6, 0, model.nv - 6, 1);
+  return J_u_C * J_u_inv * M + (J_a_C - J_u_C * J_u_inv * J_a) * state.qd.block(6, 0, model.nv - 6, 1);
 }
 
 Eigen::VectorXd HumanoidRobot::get_torques(Eigen::VectorXd acc_a, Eigen::VectorXd contact_forces,

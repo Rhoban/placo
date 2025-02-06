@@ -15,37 +15,47 @@ class HumanoidParameters
 {
 public:
   /**
-   * @brief dt for planning [s]
+   * @brief Timestep duration for planning [s]
    */
-  double dt;
+  double dt();
 
   /**
-   * @brief SSP duration [s]
+   * @brief Single support duration [s]
    */
   double single_support_duration = 1.;
 
   /**
+   * @brief Number of timesteps for one single support
+   */
+  int single_support_timesteps = 10;
+
+  /**
+   * @brief Duration ratio between single support and double support
+   */
+  double double_support_ratio = 1.;
+
+  /**
+   * @brief Duration ratio between single support and start/end double support
+   */
+  double startend_double_support_ratio = 1.;
+
+  /**
    * @brief Duration [s] of a double support
    */
-  double double_support_duration = 1.;
+  double double_support_duration();
 
   /**
    * @brief Duration [s] of a start/end double support
    */
-  double startend_double_support_duration = 1.;
+  double startend_double_support_duration();
 
   /**
-   * @brief Number of timesteps for one single support
-   */
-  int single_support_timesteps();
-
-  /**
-   * @brief Duration [timesteps] of a double support
+   * @brief Number of timesteps for one double support
    */
   int double_support_timesteps();
 
   /**
-   * @brief Duration [timesteps] of a start/end double support
+   * @brief Number of timesteps for one start/end double support
    */
   int startend_double_support_timesteps();
 
