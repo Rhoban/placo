@@ -29,10 +29,9 @@ void exposeFootsteps()
       .def("support_polygon", &FootstepsPlanner::Footstep::support_polygon)
       .def("overlap", &FootstepsPlanner::Footstep::overlap)
       .def("polygon_contains", &FootstepsPlanner::Footstep::polygon_contains)
-      .staticmethod("polygon_contains")
-      .add_property("kick", &FootstepsPlanner::Footstep::kick, &FootstepsPlanner::Footstep::kick);
+      .staticmethod("polygon_contains");
 
-  class__<FootstepsPlanner::Support>("Support")
+  class__<FootstepsPlanner::Support>("Support", init<std::vector<FootstepsPlanner::Footstep>>())
       .def("support_polygon", &FootstepsPlanner::Support::support_polygon)
       .def("frame", &FootstepsPlanner::Support::frame)
       .def("footstep_frame", &FootstepsPlanner::Support::footstep_frame)
@@ -42,14 +41,16 @@ void exposeFootsteps()
           "set_start", +[](FootstepsPlanner::Support& support, bool b) { support.start = b; })
       .def(
           "set_end", +[](FootstepsPlanner::Support& support, bool b) { support.end = b; })
-      .def("kick", &FootstepsPlanner::Support::kick)
       .add_property("footsteps", &FootstepsPlanner::Support::footsteps)
+      .add_property("t_start", &FootstepsPlanner::Support::t_start, &FootstepsPlanner::Support::t_start)
+      .add_property("elapsed_ratio", &FootstepsPlanner::Support::elapsed_ratio, &FootstepsPlanner::Support::elapsed_ratio)
+      .add_property("time_ratio", &FootstepsPlanner::Support::time_ratio, &FootstepsPlanner::Support::time_ratio)
       .add_property("start", &FootstepsPlanner::Support::start, &FootstepsPlanner::Support::start)
-      .add_property("end", &FootstepsPlanner::Support::end, &FootstepsPlanner::Support::end);
+      .add_property("end", &FootstepsPlanner::Support::end, &FootstepsPlanner::Support::end)
+      .add_property("replanned", &FootstepsPlanner::Support::replanned, &FootstepsPlanner::Support::replanned);
 
   class__<FootstepsPlanner, boost::noncopyable>("FootstepsPlanner", no_init)
       .def("make_supports", &FootstepsPlanner::make_supports)
-      .def("add_first_support", &FootstepsPlanner::add_first_support)
       .def("opposite_footstep", &FootstepsPlanner::opposite_footstep);
 
   class__<FootstepsPlannerNaive, bases<FootstepsPlanner>>("FootstepsPlannerNaive", init<HumanoidParameters&>())

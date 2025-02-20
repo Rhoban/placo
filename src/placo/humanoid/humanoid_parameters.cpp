@@ -13,14 +13,14 @@ int HumanoidParameters::double_support_timesteps()
   return std::round(double_support_ratio * single_support_timesteps);
 }
 
-double HumanoidParameters::double_support_duration()
-{
-  return double_support_timesteps() * dt();
-}
-
 int HumanoidParameters::startend_double_support_timesteps()
 {
   return std::round(startend_double_support_ratio * single_support_timesteps);
+}
+
+double HumanoidParameters::double_support_duration()
+{
+  return double_support_timesteps() * dt();
 }
 
 double HumanoidParameters::startend_double_support_duration()

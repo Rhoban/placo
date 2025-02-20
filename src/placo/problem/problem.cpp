@@ -415,5 +415,4 @@ void Problem::dump_status()
     std::cout << "  - Not using sparsity" << std::endl;
   }
 }
-
 };  // namespace placo::problem

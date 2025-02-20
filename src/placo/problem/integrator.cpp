@@ -126,6 +126,11 @@ Expression Integrator::expr(int step, int diff)
 {
   check_diff(order, diff, true);
 
+  if (step == -1)
+  {
+    step = variable->size();
+  }
+
   if (step < 0 || step > variable->size())
   {
     std::ostringstream oss;

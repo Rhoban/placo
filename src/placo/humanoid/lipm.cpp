@@ -40,15 +40,45 @@ Eigen::VectorXd LIPM::Trajectory::dzmp(double t, double omega_2)
   return vel(t) + (1 / omega_2) * jerk(t);
 }
 
-LIPM::LIPM(Problem& problem, int timesteps, double dt, Eigen::Vector2d initial_pos, Eigen::Vector2d initial_vel,
-           Eigen::Vector2d initial_acc)
-  : timesteps(timesteps), dt(dt)
+LIPM::LIPM()
+{
+}
+
+LIPM::LIPM(problem::Problem& problem, double dt, int timesteps, double t_start,
+           Eigen::Vector2d initial_pos, Eigen::Vector2d initial_vel, Eigen::Vector2d initial_acc)
+  : dt(dt)
+  , timesteps(timesteps)
+  , t_start(t_start)
 {
   x_var = &problem.add_variable(timesteps);
   y_var = &problem.add_variable(timesteps);
-
   x = Integrator(*x_var, Eigen::VectorXd(Eigen::Vector3d(initial_pos.x(), initial_vel.x(), initial_acc.x())), 3, dt);
   y = Integrator(*y_var, Eigen::VectorXd(Eigen::Vector3d(initial_pos.y(), initial_vel.y(), initial_acc.y())), 3, dt);
+  x.t_start = t_start;
+  y.t_start = t_start;
+}
+
+LIPM::LIPM(problem::Problem& problem, double dt, int timesteps, double t_start, LIPM& previous)
+  : dt(dt)
+  , timesteps(timesteps)
+  , t_start(t_start)
+{
+  x_var = &problem.add_variable(timesteps);
+  y_var = &problem.add_variable(timesteps);
+  x = Integrator(*x_var, previous.x.expr(-1), 3, dt);
+  y = Integrator(*y_var, previous.y.expr(-1), 3, dt);
+  x.t_start = t_start;
+  y.t_start = t_start;
+}
+
+LIPM LIPM::build_LIPM_from_previous(problem::Problem& problem, double dt, int timesteps, double t_start, LIPM& previous)
+{
+  return LIPM(problem, dt, timesteps, t_start, previous);
+}
+
+double LIPM::t_end()
+{
+  return t_start + timesteps * dt;
 }
 
 Expression LIPM::pos(int timestep)
@@ -100,11 +130,9 @@ LIPM::Trajectory LIPM::get_trajectory()
 
   trajectory.x = x.get_trajectory();
   trajectory.y = y.get_trajectory();
-
-  trajectory.x.t_start = t_start;
-  trajectory.y.t_start = t_start;
+  trajectory.x.t_start = x.t_start;
+  trajectory.y.t_start = y.t_start;
 
   return trajectory;
 }
-
 }  // namespace placo::humanoid

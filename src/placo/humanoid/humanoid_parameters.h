@@ -40,22 +40,22 @@ public:
   double startend_double_support_ratio = 1.;
 
   /**
-   * @brief Duration [s] of a double support
+   * @brief Default duration [s] of a double support
    */
   double double_support_duration();
 
   /**
-   * @brief Duration [s] of a start/end double support
+   * @brief Default duration [s] of a start/end double support
    */
   double startend_double_support_duration();
 
   /**
-   * @brief Number of timesteps for one double support
+   * @brief Default number of timesteps for one double support
    */
   int double_support_timesteps();
 
   /**
-   * @brief Number of timesteps for one start/end double support
+   * @brief Default number of timesteps for one start/end double support
    */
   int startend_double_support_timesteps();
 

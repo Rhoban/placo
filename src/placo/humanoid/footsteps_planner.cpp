@@ -93,6 +93,16 @@ bool FootstepsPlanner::Footstep::overlap(Footstep& other, double margin)
   return false;
 }
 
+bool FootstepsPlanner::Footstep::operator==(const Footstep& other)
+{
+  return side == other.side && frame.isApprox(other.frame);
+}
+
+FootstepsPlanner::Support::Support(std::vector<Footstep> footsteps) 
+  : footsteps(footsteps)
+{
+}
+
 std::vector<Eigen::Vector2d> FootstepsPlanner::Support::support_polygon()
 {
   if (!computed_polygon)
@@ -120,16 +130,6 @@ std::vector<Eigen::Vector2d> FootstepsPlanner::Support::support_polygon()
   }
 
   return polygon;
-}
-
-bool FootstepsPlanner::Support::kick()
-{
-  if (is_both())
-  {
-    return false;
-  }
-
-  return footsteps[0].kick;
 }
 
 Eigen::Affine3d FootstepsPlanner::Support::frame()
@@ -167,32 +167,6 @@ Eigen::Affine3d FootstepsPlanner::Support::footstep_frame(HumanoidRobot::Side si
   throw std::logic_error("Asked for a frame that doesn't exist");
 }
 
-FootstepsPlanner::FootstepsPlanner(HumanoidParameters& parameters) : parameters(parameters)
-{
-}
-
-bool FootstepsPlanner::Footstep::operator==(const Footstep& other)
-{
-  return side == other.side && frame.isApprox(other.frame);
-}
-
-bool FootstepsPlanner::Support::operator==(const Support& other)
-{
-  if (footsteps.size() != other.footsteps.size())
-  {
-    return false;
-  }
-  for (int k = 0; k < footsteps.size(); k++)
-  {
-    if (!(footsteps[k] == other.footsteps[k]))
-    {
-      return false;
-    }
-  }
-
-  return true;
-}
-
 HumanoidRobot::Side FootstepsPlanner::Support::side()
 {
   if (footsteps.size() > 1)
@@ -222,8 +196,29 @@ FootstepsPlanner::Support operator*(Eigen::Affine3d T, const FootstepsPlanner::S
   return new_support;
 }
 
+bool FootstepsPlanner::Support::operator==(const Support& other)
+{
+  if (footsteps.size() != other.footsteps.size())
+  {
+    return false;
+  }
+  for (int k = 0; k < footsteps.size(); k++)
+  {
+    if (!(footsteps[k] == other.footsteps[k]))
+    {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+FootstepsPlanner::FootstepsPlanner(HumanoidParameters& parameters) : parameters(parameters)
+{
+}
+
 std::vector<FootstepsPlanner::Support>
-FootstepsPlanner::make_supports(std::vector<FootstepsPlanner::Footstep> footsteps, bool start, bool middle, bool end)
+FootstepsPlanner::make_supports(std::vector<FootstepsPlanner::Footstep> footsteps, double t_start, bool start, bool middle, bool end)
 {
   std::vector<Support> supports;
 
@@ -232,22 +227,21 @@ FootstepsPlanner::make_supports(std::vector<FootstepsPlanner::Footstep> footstep
     if (start)
     {
       // Creating the first (double-support) initial state
-      Support support;
+      Support support({footsteps[0], footsteps[1]});
       support.start = true;
-      support.footsteps = { footsteps[0], footsteps[1] };
+      support.t_start = t_start;
       supports.push_back(support);
     }
     else
     {
-      Support support;
-      support.footsteps = { footsteps[0] };
+      Support support({footsteps[0]});
+      support.t_start = t_start;
       supports.push_back(support);
 
       if (middle)
       {
-        Support double_support;
-        double_support.footsteps = { footsteps[0], footsteps[1] };
-
+        Support double_support({footsteps[0], footsteps[1]});
+        double_support.t_start = t_start;
         supports.push_back(double_support);
       }
     }
@@ -255,17 +249,14 @@ FootstepsPlanner::make_supports(std::vector<FootstepsPlanner::Footstep> footstep
     // Adding single/double support phases
     for (int step = 1; step < footsteps.size() - 1; step++)
     {
-      Support single_support;
-      single_support.footsteps = { footsteps[step] };
+      Support single_support({footsteps[step]});
       supports.push_back(single_support);
 
       bool is_end = (step == footsteps.size() - 2);
 
       if ((!is_end && middle))
       {
-        Support double_support;
-        double_support.footsteps = { footsteps[step], footsteps[step + 1] };
-
+        Support double_support({footsteps[step], footsteps[step + 1]});
         supports.push_back(double_support);
       }
     }
@@ -274,20 +265,12 @@ FootstepsPlanner::make_supports(std::vector<FootstepsPlanner::Footstep> footstep
   if (end)
   {
     // Creating the first (double-support) initial state
-    Support support;
+    Support support({footsteps[footsteps.size() - 2], footsteps[footsteps.size() - 1]});
     support.end = true;
-    support.footsteps = { footsteps[footsteps.size() - 2], footsteps[footsteps.size() - 1] };
     supports.push_back(support);
   }
 
   return supports;
-}
-
-void FootstepsPlanner::add_first_support(std::vector<Support>& supports, Support support)
-{
-  supports[0].start = false;
-  supports.insert(supports.begin(), support);
-  supports[0].start = true;
 }
 
 FootstepsPlanner::Footstep FootstepsPlanner::create_footstep(HumanoidRobot::Side side, Eigen::Affine3d T_world_foot)

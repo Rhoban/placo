@@ -17,18 +17,20 @@ public:
   struct Footstep
   {
     Footstep(double foot_width, double foot_length);
+
     double foot_width;
     double foot_length;
+
     HumanoidRobot::Side side;
     Eigen::Affine3d frame;
+
     std::vector<Eigen::Vector2d> polygon;
     bool computed_polygon = false;
-    bool kick = false;
-
-    bool operator==(const Footstep& other);
 
     std::vector<Eigen::Vector2d> support_polygon();
     std::vector<Eigen::Vector2d> compute_polygon(double margin = 0.);
+
+    bool operator==(const Footstep& other);
 
     bool overlap(Footstep& other, double margin = 0.);
 
@@ -41,13 +43,21 @@ public:
    */
   struct Support
   {
+    Support(std::vector<Footstep> footsteps);
+
     std::vector<Footstep> footsteps;
-    std::vector<Eigen::Vector2d> polygon;
-    bool computed_polygon = false;
+
+    double t_start = -1.; // Time at which the support starts. Is set to -1 if not initialized
+    double elapsed_ratio = 0.; // Elapsed ratio of the support phase, ranging from 0 to 1
+    double time_ratio = 1.; // Time ratio for the remaining part of the support phase
+
     bool start = false;
     bool end = false;
     bool replanned = false;
-    bool kick();
+
+    std::vector<Eigen::Vector2d> polygon;
+    bool computed_polygon = false;
+
     std::vector<Eigen::Vector2d> support_polygon();
 
     /**
@@ -105,15 +115,12 @@ public:
    * @return vector of supports to use. It starts with initial double supports,
    * and add double support phases between footsteps.
    */
-  static std::vector<Support> make_supports(std::vector<Footstep> footsteps, bool start = true, bool middle = false,
-                                            bool end = true);
+  static std::vector<Support> make_supports(std::vector<Footstep> footsteps, double t_start, bool start = true, bool middle = false, bool end = true);
 
   /**
    * @brief Return the type of footsteps planner
    */
   virtual std::string name() = 0;
-
-  static void add_first_support(std::vector<Support>& supports, Support support);
 
   /**
    * @brief Return the opposite footstep in a neutral position (i.e. at a
