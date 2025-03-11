@@ -34,7 +34,7 @@ void exposeFootsteps()
       .def("frame", &FootstepsPlanner::Footstep::frame)
       .staticmethod("polygon_contains");
 
-  class__<FootstepsPlanner::Support>("Support", init<std::vector<FootstepsPlanner::Footstep>>())
+  class__<FootstepsPlanner::Support>("Support", init<>())
       .def("support_polygon", &FootstepsPlanner::Support::support_polygon)
       .def("frame", &FootstepsPlanner::Support::frame)
       .def("footstep_frame", &FootstepsPlanner::Support::footstep_frame)

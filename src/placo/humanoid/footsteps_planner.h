@@ -47,6 +47,7 @@ public:
    */
   struct Support
   {
+    Support();
     Support(std::vector<Footstep> footsteps);
 
     std::vector<Footstep> footsteps;

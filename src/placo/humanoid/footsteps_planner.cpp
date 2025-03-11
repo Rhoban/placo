@@ -106,6 +106,10 @@ bool FootstepsPlanner::Footstep::operator==(const Footstep& other)
   return side == other.side && raw_frame.isApprox(other.raw_frame) && dx == other.dx && dy == other.dy;
 }
 
+FootstepsPlanner::Support::Support() 
+{
+}
+
 FootstepsPlanner::Support::Support(std::vector<Footstep> footsteps) 
   : footsteps(footsteps)
 {
