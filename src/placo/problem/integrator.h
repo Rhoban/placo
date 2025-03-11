@@ -123,7 +123,7 @@ public:
 
   /**
    * @brief Builds an expression for the given step and differentiation
-   * @param step the step
+   * @param step the step, (if -1 the last step will be used)
    * @param diff differentiation (if -1, the expression will be a vector of size order with all orders)
    * @return an expression
    */

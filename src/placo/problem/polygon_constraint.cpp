@@ -10,7 +10,7 @@ problem::ProblemConstraint PolygonConstraint::in_polygon_xy(const Expression& ex
   {
     throw std::runtime_error("add_polygon_constraint should be called with a 2 rows expressions");
   }
-
+  
   problem::Expression values;
   values.A.resize(polygon.size(), expression_xy.cols());
   values.b.resize(polygon.size());

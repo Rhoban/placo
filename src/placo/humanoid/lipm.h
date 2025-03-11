@@ -27,11 +27,26 @@ public:
     problem::Integrator::Trajectory y;
   };
 
-  LIPM(problem::Problem& problem, int timesteps, double dt, Eigen::Vector2d initial_pos,
-       Eigen::Vector2d initial_vel = Eigen::Vector2d(0., 0.), Eigen::Vector2d initial_acc = Eigen::Vector2d(0., 0.));
+  LIPM();
+  LIPM(problem::Problem& problem, double dt, int timesteps, double t_start, LIPM& previous);
+  LIPM(problem::Problem& problem, double dt, int timesteps, double t_start, Eigen::Vector2d initial_pos, 
+       Eigen::Vector2d initial_vel = Eigen::Vector2d::Zero(), Eigen::Vector2d initial_acc = Eigen::Vector2d::Zero());
 
-  Trajectory get_trajectory();
+  // Build a LIPM from a previous one. Necessary for python bindings.
+  static LIPM build_LIPM_from_previous(problem::Problem& problem, double dt, int timesteps, double t_start, LIPM& previous);
 
+  // Timestep duration
+  double dt;
+
+  // Number of timesteps
+  int timesteps;
+
+  // Time at the start of the LIPM trajectory
+  double t_start;
+
+  // Time at the end of the LIPM trajectory
+  double t_end();
+  
   problem::Expression pos(int timestep);
   problem::Expression vel(int timestep);
   problem::Expression acc(int timestep);
@@ -41,12 +56,7 @@ public:
   problem::Expression zmp(int timestep, double omega_2);
   problem::Expression dzmp(int timestep, double omega_2);
 
-  /**
-   * @brief Compute the natural frequency of a LIPM given its height (omega = sqrt(g / h))
-   */
-  static double compute_omega(double com_height);
-
-  // x and y integrators
+  // Integrators
   problem::Integrator x;
   problem::Integrator y;
 
@@ -54,9 +64,14 @@ public:
   problem::Variable* x_var;
   problem::Variable* y_var;
 
-  int timesteps;
-  double dt;
+  /**
+   * @brief Get the LIPM trajectory. Should be used after solving the problem.
+   */
+  Trajectory get_trajectory();
 
-  double t_start = 0.;
+  /**
+   * @brief Compute the natural frequency of a LIPM given its height (omega = sqrt(g / h))
+   */
+  static double compute_omega(double com_height);
 };
 }  // namespace placo::humanoid

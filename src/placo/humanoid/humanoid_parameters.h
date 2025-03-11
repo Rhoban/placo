@@ -40,22 +40,22 @@ public:
   double startend_double_support_ratio = 1.;
 
   /**
-   * @brief Duration [s] of a double support
+   * @brief Default duration [s] of a double support
    */
   double double_support_duration();
 
   /**
-   * @brief Duration [s] of a start/end double support
+   * @brief Default duration [s] of a start/end double support
    */
   double startend_double_support_duration();
 
   /**
-   * @brief Number of timesteps for one double support
+   * @brief Default number of timesteps for one double support
    */
   int double_support_timesteps();
 
   /**
-   * @brief Number of timesteps for one start/end double support
+   * @brief Default number of timesteps for one start/end double support
    */
   int startend_double_support_timesteps();
 
@@ -153,6 +153,16 @@ public:
    * @brief Weight for ZMP reference in the solver
    */
   double zmp_reference_weight = 1e-1;
+
+  // TODO: use this operational space with the FootstepsPlanners
+  
+  // Operational space of the flying foot (half-ellipse)
+  double op_space_y_offset = 0.1;
+  double op_space_x_radius = 0.35;
+  double op_space_y_radius = 0.3;
+
+  // Operational space of the flying foot (polygon)
+  std::vector<Eigen::Vector2d> op_space_polygon;
 
   /**
    * @brief Applies the ellipsoid clipping to a given step size (dx, dy, dtheta)
