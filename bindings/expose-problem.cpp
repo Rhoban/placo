@@ -12,6 +12,7 @@
 #include "placo/problem/constraint.h"
 #include "placo/problem/polygon_constraint.h"
 #include "placo/problem/integrator.h"
+#include "placo/problem/problem_polynom.h"
 #include "placo/problem/sparsity.h"
 #include "placo/problem/qp_error.h"
 #include <Eigen/Dense>
@@ -25,6 +26,7 @@ using namespace placo::problem;
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(expr_overloads, expr, 0, 2);
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(integrator_expr_overloads, expr, 1, 2);
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(integrator_expr_t_overloads, expr_t, 1, 2);
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(problem_polynom_expr_overloads, expr, 1, 2);
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(configure_overloads, configure, 1, 2);
 
 void exposeProblem()
@@ -94,6 +96,10 @@ void exposeProblem()
       .def("expr_t", &Integrator::expr_t, integrator_expr_t_overloads())
       .def("value", &Integrator::value)
       .def("get_trajectory", &Integrator::get_trajectory);
+
+  class__<ProblemPolynom>("ProblemPolynom", init<Variable&>())
+      .def("expr", &ProblemPolynom::expr, problem_polynom_expr_overloads())
+      .def("get_polynom", &ProblemPolynom::get_polynom);
 
   class__<Integrator::Trajectory>("IntegratorTrajectory")
       .def("value", &Integrator::Trajectory::value)

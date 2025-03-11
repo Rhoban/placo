@@ -33,6 +33,18 @@ class TestTools(unittest.TestCase):
 
         self.assertNumpyEqual(T_a_b, T_a_b_est)
 
+    def test_polynom(self):
+        for order in range(8):
+            for derivative in range(8):
+                p = np.random.rand(order)
+                polynom = placo.Polynom(p)
+
+                xs = np.linspace(0, 1, 100)
+                placo_poly = np.array([polynom.value(x, derivative) for x in xs])
+                np_poly = np.array([np.polyval(np.polyder(p, derivative), x) for x in xs])
+
+                self.assertNumpyEqual(placo_poly, np_poly)
+
 
 if __name__ == "__main__":
     unittest.main()

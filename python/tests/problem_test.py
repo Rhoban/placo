@@ -371,6 +371,26 @@ class TestProblem(unittest.TestCase):
         self.assertNumpyEqual(x.value, 1.5)
         self.assertNumpyEqual(y.value, 0.5)
 
+    def test_problem_polynom(self):
+        problem = placo.Problem()
+
+        coeffs = problem.add_variable(4)
+        pp = placo.ProblemPolynom(coeffs)
+
+        problem.add_constraint(pp.expr(0, 0) == 0)
+        problem.add_constraint(pp.expr(0, 1) == 0)
+        problem.add_constraint(pp.expr(1, 0) == 1)
+        problem.add_constraint(pp.expr(1, 1) == 0)
+
+        problem.solve()
+
+        polynom = pp.get_polynom()
+        self.assertEquals(len(polynom.coefficients), 4)
+        self.assertNumpyEqual(polynom.value(0, 0), 0)
+        self.assertNumpyEqual(polynom.value(0, 1), 0)
+        self.assertNumpyEqual(polynom.value(1, 0), 1)
+        self.assertNumpyEqual(polynom.value(1, 1), 0)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -52,6 +52,7 @@ add_library(libplaco SHARED
     src/placo/tools/cubic_spline.cpp
     src/placo/tools/cubic_spline_3d.cpp
     src/placo/tools/directions.cpp
+    src/placo/tools/polynom.cpp
 
     # Problem formulation
     src/placo/problem/problem.cpp
@@ -59,6 +60,7 @@ add_library(libplaco SHARED
     src/placo/problem/variable.cpp
     src/placo/problem/expression.cpp
     src/placo/problem/integrator.cpp
+    src/placo/problem/problem_polynom.cpp
     src/placo/problem/constraint.cpp
     src/placo/problem/polygon_constraint.cpp
     src/placo/problem/sparsity.cpp

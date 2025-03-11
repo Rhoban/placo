@@ -10,6 +10,7 @@
 #include "placo/tools/axises_mask.h"
 #include "placo/tools/prioritized.h"
 #include "placo/tools/directions.h"
+#include "placo/tools/polynom.h"
 #include "expose-utils.hpp"
 #ifdef HAVE_RHOBAN_UTILS
 #include "rhoban_utils/history/history.h"
@@ -26,6 +27,7 @@ BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(loadReplays_overloads, loadReplays, 1, 2)
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(set_axises_overloads, set_axises, 1, 2);
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(configure_overloads, configure, 2, 3);
 BOOST_PYTHON_FUNCTION_OVERLOADS(directions_3d_overloads, directions_3d, 1, 2);
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(value_overloads, value, 1, 2);
 
 void exposeTools()
 {
@@ -76,6 +78,12 @@ void exposeTools()
       .def("add_point", &CubicSpline3D::add_point)
       .def("clear", &CubicSpline3D::clear)
       .def("duration", &CubicSpline3D::duration);
+
+  class__<Polynom>("Polynom", init<Eigen::VectorXd>())
+      .def("value", &Polynom::value, value_overloads())
+      .def("derivative_coefficient", &Polynom::derivative_coefficient)
+      .staticmethod("derivative_coefficient")
+      .def_readwrite("coefficients", &Polynom::coefficients);
 
 #ifdef HAVE_RHOBAN_UTILS
   using namespace rhoban_utils;
