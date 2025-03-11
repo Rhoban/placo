@@ -122,7 +122,7 @@ public:
     placo::tools::CubicSpline& foot_yaw(HumanoidRobot::Side side);
 
     /**
-     * @brief Add a support to the trajectory
+     * @brief Adds a support to the trajectory
      */
     void add_supports(double t, FootstepsPlanner::Support& support);
 
@@ -140,7 +140,7 @@ public:
   WalkPatternGenerator(HumanoidRobot& robot, HumanoidParameters& parameters);
 
   /**
-   * @brief Plan a walk trajectory following given footsteps based on the parameters of the WPG
+   * @brief Plans a walk trajectory following given footsteps based on the parameters of the WPG
    * @param supports Supports generated from the foosteps to follow
    * @return Planned trajectory
    */
@@ -148,7 +148,7 @@ public:
                   double t_start = 0.);
 
   /**
-   * @brief Update the walk trajectory to follow given footsteps based on the parameters of the WPG.
+   * @brief Updates the walk trajectory to follow given footsteps based on the parameters of the WPG.
    * @param supports Supports generated from the current foosteps or the new
    * ones to follow. Contain the current support
    * @param old_trajectory Current walk trajectory
@@ -163,13 +163,21 @@ public:
   bool can_replan_supports(Trajectory& trajectory, double t_replan);
 
   /**
-   * @brief Replan the supports for a given trajectory given a footsteps planner
+   * @brief Replans the supports for a given trajectory given a footsteps planner
    */
   std::vector<FootstepsPlanner::Support> replan_supports(FootstepsPlanner& planner, Trajectory& trajectory, double t_replan, double t_last_replan);
 
   double last_com_planning_duration = 0.;
   double last_feet_planning_duration = 0.;
 
+  /**
+   * @brief Computes the position and time of the next support ensuring the DCM viability
+   * based on the measured DCM.
+   * @param TODO
+   */
+  std::pair<Eigen::Vector2d, double> compute_next_support(double t, FootstepsPlanner::Support& current_support, 
+    FootstepsPlanner::Support& next_support, Eigen::Vector2d world_measured_dcm, Eigen::Vector2d world_initial_dcm, double omega);
+  
 protected:
   // Robot associated to the WPG
   HumanoidRobot& robot;

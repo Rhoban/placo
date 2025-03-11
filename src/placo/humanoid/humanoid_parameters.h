@@ -154,6 +154,16 @@ public:
    */
   double zmp_reference_weight = 1e-1;
 
+  // TODO: use this operational space with the FootstepsPlanners
+  
+  // Operational space of the flying foot (half-ellipse)
+  double op_space_y_offset = 0.1;
+  double op_space_x_radius = 0.35;
+  double op_space_y_radius = 0.3;
+
+  // Operational space of the flying foot (polygon)
+  std::vector<Eigen::Vector2d> op_space_polygon;
+
   /**
    * @brief Applies the ellipsoid clipping to a given step size (dx, dy, dtheta)
    */

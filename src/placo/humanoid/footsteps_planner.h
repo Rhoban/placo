@@ -22,7 +22,11 @@ public:
     double foot_length;
 
     HumanoidRobot::Side side;
-    Eigen::Affine3d frame;
+    Eigen::Affine3d raw_frame;
+    Eigen::Affine3d frame();
+
+    double dx = 0.; // Footstep offset in x (m)
+    double dy = 0.; // Footstep offset in y (m)
 
     std::vector<Eigen::Vector2d> polygon;
     bool computed_polygon = false;
@@ -49,6 +53,7 @@ public:
 
     double t_start = -1.; // Time at which the support starts. Is set to -1 if not initialized
     double elapsed_ratio = 0.; // Elapsed ratio of the support phase, ranging from 0 to 1
+
     double time_ratio = 1.; // Time ratio for the remaining part of the support phase
 
     bool start = false;
