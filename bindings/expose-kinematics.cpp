@@ -93,6 +93,10 @@ void exposeKinematics()
           .def("add_com_polygon_constraint", &KinematicsSolver::add_com_polygon_constraint,
                return_internal_reference<>())
 
+          // Joint-space half-spaces
+          .def("add_joint_space_half_spaces_constraint", &KinematicsSolver::add_joint_space_half_spaces_constraint,
+               return_internal_reference<>())
+
           // Cone constraint
           .def<ConeConstraint& (KinematicsSolver::*)(std::string, std::string, double)>(
               "add_cone_constraint", &KinematicsSolver::add_cone_constraint, return_internal_reference<>())
@@ -231,6 +235,11 @@ void exposeKinematics()
       .def_readwrite("dcm", &CoMPolygonConstraint::dcm)
       .def_readwrite("omega", &CoMPolygonConstraint::omega)
       .def_readwrite("margin", &CoMPolygonConstraint::margin);
+
+  class__<JointSpaceHalfSpacesConstraint, bases<Constraint>>("JointSpaceHalfSpacesConstraint",
+                                                             init<Eigen::MatrixXd, Eigen::VectorXd>())
+      .def_readwrite("A", &JointSpaceHalfSpacesConstraint::A)
+      .def_readwrite("b", &JointSpaceHalfSpacesConstraint::b);
 
   class__<ConeConstraint, bases<Constraint>>(
       "ConeConstraint", init<model::RobotWrapper::FrameIndex, model::RobotWrapper::FrameIndex, double>())
