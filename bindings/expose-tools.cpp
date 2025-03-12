@@ -11,6 +11,7 @@
 #include "placo/tools/prioritized.h"
 #include "placo/tools/directions.h"
 #include "placo/tools/polynom.h"
+#include "placo/tools/segment.h"
 #include "expose-utils.hpp"
 #ifdef HAVE_RHOBAN_UTILS
 #include "rhoban_utils/history/history.h"
@@ -84,6 +85,17 @@ void exposeTools()
       .def("derivative_coefficient", &Polynom::derivative_coefficient)
       .staticmethod("derivative_coefficient")
       .def_readwrite("coefficients", &Polynom::coefficients);
+
+  class__<Segment>("Segment", init<Eigen::Vector2d, Eigen::Vector2d>())
+      .add_property("start", &Segment::start, &Segment::start)
+      .add_property("end", &Segment::end, &Segment::start)
+      .def("is_parallel", +[](Segment& s1, const Segment& s2) { return s1.is_parallel(s2); })
+      .def("is_point_aligned", +[](Segment& s, const Eigen::Vector2d& point) { return s.is_point_aligned(point); })
+      .def("is_collinear", +[](Segment& s1, const Segment& s2) { return s1.is_collinear(s2); })
+      .def("is_point_in_segment", +[](Segment& s, const Eigen::Vector2d& point) { return s.is_point_in_segment(point); })
+      .def("intersects", &Segment::intersects)
+      .def("line_pass_through", &Segment::line_pass_through)
+      .def("lines_intersection", &Segment::lines_intersection);
 
 #ifdef HAVE_RHOBAN_UTILS
   using namespace rhoban_utils;
