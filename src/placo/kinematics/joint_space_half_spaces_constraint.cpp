@@ -14,16 +14,24 @@ void JointSpaceHalfSpacesConstraint::add_constraint(placo::problem::Problem& pro
   {
     throw std::runtime_error("Matrix A and b should have name number of rows in joint-space half-spaces constraint");
   }
-  if (A.cols() != solver->N)
+  if (A.cols() != solver->robot.state.q.rows())
   {
-    throw std::runtime_error("Matrix A should have nv cols in joint-space half-spaces constraint");
+    throw std::runtime_error("Matrix A should have ndof cols in joint-space half-spaces constraint");
   }
+
+  Eigen::MatrixXd A_no_fbase = A.block(0, 7, A.rows(), A.cols() - 7);
+  int ndof = solver->N - 6;
 
   // We want Aq <= b
   // So A(q0 + dq) <= b
   placo::problem::Expression expression;
-  expression.A = A;
-  expression.b = A * solver->robot.state.q;
+  expression.A = Eigen::MatrixXd(A.rows(), solver->N);
+  expression.A.setZero();
+  expression.A.block(0, 6, A_no_fbase.rows(), ndof) = A_no_fbase;
+
+  expression.b = Eigen::VectorXd(A.rows());
+  expression.b.setZero();
+  expression.b = A_no_fbase * solver->robot.state.q.block(7, 0, ndof, 1);
 
   problem.add_constraint(expression <= b)
       .configure(priority == Prioritized::Priority::Hard ? problem::ProblemConstraint::Hard :
