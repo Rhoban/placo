@@ -12,6 +12,8 @@ class JointSpaceHalfSpacesConstraint : public Constraint
 public:
   /**
    * @brief Ensures that, in joint-space we have Aq <= b
+   *        Note that the floating base terms will be ignored in A. However, A should still be of
+   *        dimension n_constraints x n_q
    */
   JointSpaceHalfSpacesConstraint(const Eigen::MatrixXd A, Eigen::VectorXd b);
 
