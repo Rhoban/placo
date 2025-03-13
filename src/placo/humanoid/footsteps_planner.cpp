@@ -31,7 +31,7 @@ std::vector<Eigen::Vector2d> FootstepsPlanner::Footstep::compute_polygon(double 
   for (auto sxsy : contour)
   {
     Eigen::Vector3d corner =
-        frame() * Eigen::Vector3d(sxsy.first * (margin + foot_length / 2), sxsy.second * (margin + foot_width / 2), 0.);
+        frame * Eigen::Vector3d(sxsy.first * (margin + foot_length / 2), sxsy.second * (margin + foot_width / 2), 0.);
     Eigen::Vector2d point(corner.x(), corner.y());
     polygon.push_back(point);
   }
@@ -93,17 +93,9 @@ bool FootstepsPlanner::Footstep::overlap(Footstep& other, double margin)
   return false;
 }
 
-Eigen::Affine3d FootstepsPlanner::Footstep::frame()
-{
-  Eigen::Affine3d f = raw_frame;
-  f.translation().x() += dx;
-  f.translation().y() += dy;
-  return f;
-}
-
 bool FootstepsPlanner::Footstep::operator==(const Footstep& other)
 {
-  return side == other.side && raw_frame.isApprox(other.raw_frame) && dx == other.dx && dy == other.dy;
+  return side == other.side && frame.isApprox(other.frame);
 }
 
 FootstepsPlanner::Support::Support() 
@@ -153,11 +145,11 @@ Eigen::Affine3d FootstepsPlanner::Support::frame()
   {
     if (n == 1)
     {
-      f = footstep.frame();
+      f = footstep.frame;
     }
     else
     {
-      f = tools::interpolate_frames(f, footstep.frame(), 1. / n);
+      f = tools::interpolate_frames(f, footstep.frame, 1. / n);
     }
 
     n += 1;
@@ -171,11 +163,22 @@ Eigen::Affine3d FootstepsPlanner::Support::footstep_frame(HumanoidRobot::Side si
   {
     if (footstep.side == side)
     {
-      return footstep.frame();
+      return footstep.frame;
     }
   }
 
   throw std::logic_error("Asked for a frame that doesn't exist");
+}
+
+void FootstepsPlanner::Support::apply_offset(Eigen::Vector2d offset)
+{
+  for (auto& footstep : footsteps)
+  {
+    footstep.frame.translation().x() += offset.x();
+    footstep.frame.translation().y() += offset.y();
+    footstep.computed_polygon = false;
+  }
+  computed_polygon = false;
 }
 
 HumanoidRobot::Side FootstepsPlanner::Support::side()
@@ -199,7 +202,7 @@ FootstepsPlanner::Support operator*(Eigen::Affine3d T, const FootstepsPlanner::S
 
   for (auto& footstep : new_support.footsteps)
   {
-    footstep.raw_frame = T * footstep.raw_frame;
+    footstep.frame = T * footstep.frame;
     footstep.computed_polygon = false;
   }
   new_support.computed_polygon = false;
@@ -289,7 +292,7 @@ FootstepsPlanner::Footstep FootstepsPlanner::create_footstep(HumanoidRobot::Side
   FootstepsPlanner::Footstep footstep(parameters.foot_width, parameters.foot_length);
 
   footstep.side = side;
-  footstep.raw_frame = T_world_foot;
+  footstep.frame = T_world_foot;
 
   return footstep;
 }
@@ -297,7 +300,7 @@ FootstepsPlanner::Footstep FootstepsPlanner::create_footstep(HumanoidRobot::Side
 FootstepsPlanner::Footstep FootstepsPlanner::opposite_footstep(FootstepsPlanner::Footstep footstep, double d_x,
                                                                double d_y, double d_theta)
 {
-  footstep.raw_frame = parameters.opposite_frame(footstep.side, footstep.raw_frame, d_x, d_y, d_theta);
+  footstep.frame = parameters.opposite_frame(footstep.side, footstep.frame, d_x, d_y, d_theta);
   footstep.side = HumanoidRobot::other_side(footstep.side);
 
   return footstep;

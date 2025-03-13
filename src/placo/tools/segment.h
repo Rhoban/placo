@@ -62,6 +62,14 @@ public:
     bool line_pass_through(const Segment& s);
 
     /**
+     * @brief Checks if the half-line starting from the start of this segment and 
+     * going through its end pass through another segment.
+     * @param s The other segment.
+     * @return True if the intersection is a point of the other segment.
+     */
+    bool half_line_pass_through(const Segment& s);
+
+    /**
      * @brief Return the intersection between the guiding lines of this segment and another one.
      * @param s The other segment.
      * @return The intersection point.

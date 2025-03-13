@@ -51,6 +51,7 @@ class TestProblem(unittest.TestCase):
         p4 = np.array([0.5, 0.5])
         p5 = np.array([2, 2])
         p6 = np.array([3, 3])
+        p7 = np.array([-1, 2])
         # Intersect
         self.assertTrue(placo.Segment(p0, p1).intersects(placo.Segment(p2, p3)))
         self.assertFalse(placo.Segment(p5, p6).intersects(placo.Segment(p2, p3)))
@@ -65,6 +66,10 @@ class TestProblem(unittest.TestCase):
         self.assertTrue(placo.Segment(p2, p3).line_pass_through(placo.Segment(p0, p1)))
         self.assertTrue(placo.Segment(p2, p3).line_pass_through(placo.Segment(p5, p6)))
         self.assertFalse(placo.Segment(p5, p6).line_pass_through(placo.Segment(p2, p3)))
+        # Half-line pass through
+        self.assertTrue(placo.Segment(p0, p1).half_line_pass_through(placo.Segment(p7, p3)))
+        self.assertFalse(placo.Segment(p0, p1).half_line_pass_through(placo.Segment(p3, p7)))
+        self.assertFalse(placo.Segment(p1, p5).half_line_pass_through(placo.Segment(p7, p3)))
 
 if __name__ == "__main__":
     unittest.main()

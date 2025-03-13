@@ -22,11 +22,7 @@ public:
     double foot_length;
 
     HumanoidRobot::Side side;
-    Eigen::Affine3d raw_frame;
-    Eigen::Affine3d frame();
-
-    double dx = 0.; // Footstep offset in x (m)
-    double dy = 0.; // Footstep offset in y (m)
+    Eigen::Affine3d frame;
 
     std::vector<Eigen::Vector2d> polygon;
     bool computed_polygon = false;
@@ -79,6 +75,8 @@ public:
      * @return a frame
      */
     Eigen::Affine3d footstep_frame(HumanoidRobot::Side side);
+
+    void apply_offset(Eigen::Vector2d offset);
 
     bool operator==(const Support& other);
 
