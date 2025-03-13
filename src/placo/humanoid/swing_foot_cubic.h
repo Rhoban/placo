@@ -22,10 +22,11 @@ public:
     placo::tools::CubicSpline y;
     placo::tools::CubicSpline z;
 
-    double t_start, t_end;
+    double t_start;
+    double virt_duration;
   };
 
-  static Trajectory make_trajectory(double t_start, double t_end, double height, double rise_ratio,
-                                    Eigen::Vector3d start, Eigen::Vector3d target);
+  static Trajectory make_trajectory(double t_start, double virt_duration, double height, double rise_ratio, Eigen::Vector3d start, 
+    Eigen::Vector3d target, double elapsed_ratio = 0., Eigen::Vector3d start_vel = Eigen::Vector3d::Zero());
 };
 }  // namespace placo::humanoid

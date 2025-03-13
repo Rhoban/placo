@@ -53,6 +53,7 @@ add_library(libplaco SHARED
     src/placo/tools/cubic_spline_3d.cpp
     src/placo/tools/directions.cpp
     src/placo/tools/polynom.cpp
+    src/placo/tools/segment.cpp
 
     # Problem formulation
     src/placo/problem/problem.cpp
