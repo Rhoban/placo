@@ -9,13 +9,13 @@ a task defines something that the robot should do, like "reaching a given target
 In the context of the dynamics solver, a task eventually boils down into expressing a desired
 acceleration.
 
-As explained in the :doc:`introduction <dynamics/introduction>`, a task structure will look like:
+As explained in the introduction, a task structure will look like:
 
 :math:`\ddot x^{desired} = K_p (x^{task} - x) + K_d (\dot x^{task} - \dot x) + \ddot x^{task}`.
 
 Where the :math:`task` superscript denotes the values produced by the task, and :math:`x` is the quantity
 you want to control (joint position, effector position, effector orientation etc.).
-In a :doc:`joint task <dynamics/joints_task>`, these values are simply the desired joint position, velocity and acceleration,
+In a :doc:`joint task </dynamics/joints_task>`, these values are simply the desired joint position, velocity and acceleration,
 *i.e* :math:`x = q`.
 
 Each task has a :func:`kp <placo.DynamicsTask.kp>` attribute, allowing to adjust the proportional gain and adjust

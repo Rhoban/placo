@@ -75,7 +75,7 @@ Ensure that the passive degrees of freedom have zero-torque constraint. This is 
 :doc:`torque task <torque_task>`, which is configured as a hard constraint.
 
 Examples
--------
+--------
 
 With a similar pattern, many loop closures are used un Megabot:
 
