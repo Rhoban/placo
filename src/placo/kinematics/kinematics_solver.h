@@ -28,6 +28,7 @@
 #include "placo/kinematics/constraint.h"
 #include "placo/kinematics/avoid_self_collisions_constraint.h"
 #include "placo/kinematics/com_polygon_constraint.h"
+#include "placo/kinematics/joint_space_half_spaces_constraint.h"
 #include "placo/kinematics/cone_constraint.h"
 
 // Problem formulation
@@ -285,6 +286,14 @@ public:
    * @return constraint
    */
   CoMPolygonConstraint& add_com_polygon_constraint(std::vector<Eigen::Vector2d> polygon, double margin = 0.);
+
+  /**
+   * @brief Adds a joint-space half-spaces constraint, such that Aq <= b
+   * @param A matrix A in Aq <= b
+   * @param b vector b in Aq <= b
+   * @return the constraint
+   */
+  JointSpaceHalfSpacesConstraint& add_joint_space_half_spaces_constraint(Eigen::MatrixXd A, Eigen::VectorXd b);
 
   /**
    * @brief Adds a Cone constraint

@@ -209,6 +209,12 @@ CoMPolygonConstraint& KinematicsSolver::add_com_polygon_constraint(std::vector<E
   return add_constraint(new CoMPolygonConstraint(polygon, margin));
 }
 
+JointSpaceHalfSpacesConstraint& KinematicsSolver::add_joint_space_half_spaces_constraint(Eigen::MatrixXd A,
+                                                                                         Eigen::VectorXd b)
+{
+  return add_constraint(new JointSpaceHalfSpacesConstraint(A, b));
+}
+
 ConeConstraint& KinematicsSolver::add_cone_constraint(model::RobotWrapper::FrameIndex frame_a,
                                                       model::RobotWrapper::FrameIndex frame_b, double angle_max)
 {
