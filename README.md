@@ -1,6 +1,6 @@
 <img width="400" src="https://placo.readthedocs.io/en/latest/_static/placo.png" />
 
-## PlaCo / Planning & Control
+## Planning & Control
 
 PlaCo is Rhoban's planning and control library. It is built on the top of [pinocchio](https://github.com/stack-of-tasks/pinocchio), [eiquadprog](https://github.com/stack-of-tasks/eiquadprog) QP solver, and fully written in C++ with Python bindings, allowing fast prototyping with good runtime performances. It features task-space inverse kinematics and dynamics (see below) high-level API for whole-body control tasks.
 
@@ -31,9 +31,9 @@ PlaCo can be installed from ``pip``
 pip install placo
 ```
 
-Or [built from sources](https://placo.readthedocs.io/en/latest/basics/installation_source.html).
+Or [built from sources](https://placo.readthedocs.io/en/latest/basics/installation_source.html)
 
 ## Resources
 
-* [PlaCo documentation](https://placo.readthedocs.io/en/latest/)
-* [PlaCo examples](https://github.com/rhoban/placo-examples) repository.
+* [Documentation](https://placo.readthedocs.io/en/latest/)
+* [Examples](https://github.com/rhoban/placo-examples) repository
