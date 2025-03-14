@@ -176,7 +176,7 @@ public:
    * @param TODO
    */
   std::pair<Eigen::Vector2d, double> compute_next_support(double t, FootstepsPlanner::Support& current_support, 
-    FootstepsPlanner::Support& next_support, Eigen::Vector2d world_measured_dcm, Eigen::Vector2d world_initial_dcm, double omega);
+    FootstepsPlanner::Support& next_support, Eigen::Vector2d world_measured_dcm, Eigen::Vector2d world_initial_dcm);
   
 protected:
   // Robot associated to the WPG

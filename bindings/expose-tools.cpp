@@ -95,6 +95,7 @@ void exposeTools()
       .def("is_point_in_segment", +[](Segment& s, const Eigen::Vector2d& point) { return s.is_point_in_segment(point); })
       .def("intersects", &Segment::intersects)
       .def("line_pass_through", &Segment::line_pass_through)
+      .def("half_line_pass_through", &Segment::half_line_pass_through)
       .def("lines_intersection", &Segment::lines_intersection);
 
 #ifdef HAVE_RHOBAN_UTILS

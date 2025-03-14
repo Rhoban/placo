@@ -67,6 +67,23 @@ bool Segment::line_pass_through(const Segment& s)
     return t >= 0 && t <= 1;
 }
 
+bool Segment::half_line_pass_through(const Segment& s)
+{
+    if (is_parallel(s))
+    {
+        throw std::runtime_error("Can't compute intersection of parallels");
+    }
+
+    Eigen::Vector2d v1 = end - start;
+    Eigen::Vector2d v2 = s.end - s.start;
+    Eigen::Vector2d p1 = start;
+    Eigen::Vector2d p2 = s.start;
+    double det = v1.x() * v2.y() - v1.y() * v2.x();
+    double t_1 = (v2.y() * (p2.x() - p1.x()) + v2.x() * (p1.y() - p2.y())) / det;
+    double t_2 = (v1.y() * (p2.x() - p1.x()) + v1.x() * (p1.y() - p2.y())) / det;
+    return t_1 >= 0 && t_1 <= 1 && t_2 >= 0;
+}
+
 Eigen::Vector2d Segment::lines_intersection(const Segment& s)
 {
     if (is_parallel(s))

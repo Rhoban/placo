@@ -137,13 +137,13 @@ void FootstepsPlannerNaive::plan_impl(std::vector<FootstepsPlanner::Footstep>& f
     if (current_support_side == HumanoidRobot::Side::Left)
     {
       right_arrived = arrived;
-      T_world_currentRight = footstep.frame();
+      T_world_currentRight = footstep.frame;
       current_support_side = HumanoidRobot::Side::Right;
     }
     else
     {
       left_arrived = arrived;
-      T_world_currentLeft = footstep.frame();
+      T_world_currentLeft = footstep.frame;
       current_support_side = HumanoidRobot::Side::Left;
     }
   }

@@ -21,23 +21,20 @@ void exposeFootsteps()
       .value("right", HumanoidRobot::Side::Right);
 
   class__<FootstepsPlanner::Footstep>("Footstep", init<double, double>())
-      .def("support_polygon", &FootstepsPlanner::Footstep::support_polygon)
       .add_property("side", &FootstepsPlanner::Footstep::side, &FootstepsPlanner::Footstep::side)
-      .def_readwrite("raw_frame", &FootstepsPlanner::Footstep::raw_frame)
-      .add_property("dx", &FootstepsPlanner::Footstep::dx, &FootstepsPlanner::Footstep::dx)
-      .add_property("dy", &FootstepsPlanner::Footstep::dy, &FootstepsPlanner::Footstep::dy)
       .add_property("foot_length", &FootstepsPlanner::Footstep::foot_length, &FootstepsPlanner::Footstep::foot_length)
       .add_property("foot_width", &FootstepsPlanner::Footstep::foot_width, &FootstepsPlanner::Footstep::foot_width)
+      .add_property("frame", &FootstepsPlanner::Footstep::frame, &FootstepsPlanner::Footstep::frame)
       .def("support_polygon", &FootstepsPlanner::Footstep::support_polygon)
       .def("overlap", &FootstepsPlanner::Footstep::overlap)
       .def("polygon_contains", &FootstepsPlanner::Footstep::polygon_contains)
-      .def("frame", &FootstepsPlanner::Footstep::frame)
       .staticmethod("polygon_contains");
 
   class__<FootstepsPlanner::Support>("Support", init<>())
       .def("support_polygon", &FootstepsPlanner::Support::support_polygon)
       .def("frame", &FootstepsPlanner::Support::frame)
       .def("footstep_frame", &FootstepsPlanner::Support::footstep_frame)
+      .def("apply_offset", &FootstepsPlanner::Support::apply_offset)
       .def("side", &FootstepsPlanner::Support::side)
       .def("is_both", &FootstepsPlanner::Support::is_both)
       .def(

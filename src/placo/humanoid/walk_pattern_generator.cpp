@@ -283,7 +283,7 @@ void WalkPatternGenerator::Trajectory::add_supports(double t, FootstepsPlanner::
 {
   for (auto footstep : support.footsteps)
   {
-    auto T_world_foot = footstep.frame();
+    auto T_world_foot = footstep.frame;
     foot_yaw(footstep.side).add_point(t, frame_yaw(T_world_foot.rotation()), 0);
   }
 }
@@ -570,7 +570,7 @@ void WalkPatternGenerator::Trajectory::print_parts_timings()
 }
 
 std::pair<Eigen::Vector2d, double> WalkPatternGenerator::compute_next_support(double t, FootstepsPlanner::Support& current_support, 
-  FootstepsPlanner::Support& next_support, Eigen::Vector2d world_measured_dcm, Eigen::Vector2d world_initial_dcm, double omega)
+  FootstepsPlanner::Support& next_support, Eigen::Vector2d world_measured_dcm, Eigen::Vector2d world_initial_dcm)
 {
   if (current_support.is_both())
   {
@@ -625,7 +625,7 @@ std::pair<Eigen::Vector2d, double> WalkPatternGenerator::compute_next_support(do
   }
   
   // Time constraints
-  double T_min = t; // Should probably add an offset
+  double T_min = std::max(0.15, t); // Should probably add an offset to t
   double T_max = 3; // Arbitrary value of 3s
   problem.add_constraint(tau.expr() >= exp(omega * (T_min))).configure(ProblemConstraint::Hard);
   problem.add_constraint(tau.expr() <= exp(omega * (T_max))).configure(ProblemConstraint::Hard);
