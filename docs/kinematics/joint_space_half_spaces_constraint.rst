@@ -49,3 +49,17 @@ The polytope can be updated by setting :func:`A <placo.JointSpaceHalfSpacesConst
     # Updating the polytope
     hspace_hspaces_constraint.A = new_A
     hspace_hspaces_constraint.b = new_b
+
+Example
+-------
+
+The :func:`JointSpaceHalfSpacesConstraint <placo.JointSpaceHalfSpacesConstraint>` is used with a Polytope previously obtained with `workspace estimation <https://github.com/Rhoban/placo-examples/blob/master/workspace/workspace_estimation.py>`_
+
+.. admonition:: SPM workspace limitation
+    
+    .. video:: https://github.com/Rhoban/placo-examples/raw/master/workspace/videos/spm_workspace.mp4
+        :autoplay:
+        :muted:
+        :loop:
+
+    :example:`workspace/kinematics.py`
