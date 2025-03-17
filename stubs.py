@@ -59,6 +59,7 @@ for entry in cxx_registry:
     rewrite_types[entry] = cxx_registry[entry]
     py_registry[cxx_registry[entry]] = entry
 
+
 def get_member(class_name: str, member_name: str):
     if class_name in py_registry:
         cxx_name = py_registry[class_name]
@@ -131,13 +132,17 @@ def print_def_prototype(
 
     str_definition += f"{prefix}def {method_name}(\n"
     for arg_name, arg_type, defvalue, comment in args:
+        extra_comment = ""
         str_definition += f"{prefix}  {arg_name}: {arg_type}"
         if defvalue is not None:
             if arg_type in ["str", "float", "int", "bool"]:
                 str_definition += f" = {defvalue.capitalize()}"
+            else:
+                str_definition += f" = None"
+                extra_comment = f" (default: {defvalue})"
         str_definition += ","
         if comment is not None:
-            str_definition += f" # {comment}"
+            str_definition += f" # {comment}{extra_comment}"
         str_definition += "\n"
     str_definition += f"\n{prefix}) -> {return_type}:\n"
     if doc != "":
@@ -221,7 +226,7 @@ print("import typing")
 for name, object in inspect.getmembers(placo):
     if isinstance(object, type):
         class_name = object.__name__
-        print(f"{class_name} = typing.NewType(\"{class_name}\", None)")
+        print(f'{class_name} = typing.NewType("{class_name}", None)')
 
 groups = {}
 
@@ -234,10 +239,10 @@ for name, object in inspect.getmembers(placo):
             metadata = get_metadata(py_registry[class_name])
 
             if metadata is not None:
-              namespace = "::".join(metadata['name'].split("::")[:-1][:2])
-              if namespace not in groups:
-                  groups[namespace] = []
-              groups[namespace].append(class_name)
+                namespace = "::".join(metadata["name"].split("::")[:-1][:2])
+                if namespace not in groups:
+                    groups[namespace] = []
+                groups[namespace].append(class_name)
 
             if (
                 metadata is not None
