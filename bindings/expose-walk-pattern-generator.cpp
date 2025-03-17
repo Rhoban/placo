@@ -51,7 +51,9 @@ void exposeWalkPatternGenerator()
       .def("get_support", &WalkPatternGenerator::Trajectory::get_support)
       .def("get_next_support", &WalkPatternGenerator::Trajectory::get_next_support)
       .def("get_prev_support", &WalkPatternGenerator::Trajectory::get_prev_support)
+      .def("get_part_t_end", &WalkPatternGenerator::Trajectory::get_part_t_end)
       .def("get_part_t_start", &WalkPatternGenerator::Trajectory::get_part_t_start)
+      .def("get_part_initial_dcm", &WalkPatternGenerator::Trajectory::get_part_initial_dcm)
       .def("apply_transform", &WalkPatternGenerator::Trajectory::apply_transform)
       .def("print_parts_timings", &WalkPatternGenerator::Trajectory::print_parts_timings);
 

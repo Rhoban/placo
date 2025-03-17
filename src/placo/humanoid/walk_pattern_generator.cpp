@@ -279,6 +279,12 @@ double WalkPatternGenerator::Trajectory::get_part_t_end(double t)
   return part.t_end;
 }
 
+Eigen::Vector2d WalkPatternGenerator::Trajectory::get_part_initial_dcm(double t, double omega)
+{
+  TrajectoryPart& part = _findPart(parts, t);
+  return get_p_world_DCM(part.t_start, omega);
+}
+
 void WalkPatternGenerator::Trajectory::add_supports(double t, FootstepsPlanner::Support& support)
 {
   for (auto footstep : support.footsteps)
@@ -578,8 +584,8 @@ std::pair<Eigen::Vector2d, double> WalkPatternGenerator::compute_next_support(do
   }
 
   placo::problem::Problem problem;
-  double w1 = 1;
-  double w2 = 5;
+  double w1 = 5;
+  double w2 = 1;
   double w3 = 1000;
   double w_viability = 1e6;
 
@@ -595,13 +601,13 @@ std::pair<Eigen::Vector2d, double> WalkPatternGenerator::compute_next_support(do
   problem.add_constraint(support_next_zmp.expr() + support_dcm_offset.expr() == support_measured_dcm * exp(-omega * t) * tau.expr()).configure(ProblemConstraint::Hard);
 
   // ----------------- Objective functions: -----------------
-  // ZMP Reference (expressed in the world frame)
-  Expression world_next_zmp_expr = p_world_support + R_world_support.topRightCorner(2, 2) * support_next_zmp.expr();
-  problem.add_constraint(world_next_zmp_expr == next_support.frame().translation().head(2)).configure(ProblemConstraint::Soft, w1);
-
   // Time reference
   double T = support_default_duration(current_support);
-  problem.add_constraint(tau.expr() == exp(omega * T)).configure(ProblemConstraint::Soft, w2);
+  problem.add_constraint(tau.expr() == exp(omega * T)).configure(ProblemConstraint::Soft, w1);
+
+  // ZMP Reference (expressed in the world frame)
+  Expression world_next_zmp_expr = p_world_support + R_world_support.topRightCorner(2, 2) * support_next_zmp.expr();
+  problem.add_constraint(world_next_zmp_expr == next_support.frame().translation().head(2)).configure(ProblemConstraint::Soft, w2);
 
   // DCM offset reference (expressed in the world frame)
   Eigen::Vector2d world_target_dcm_offset = (world_initial_dcm - p_world_support) * exp(omega * T) + p_world_support - next_support.frame().translation().head(2);
@@ -609,10 +615,17 @@ std::pair<Eigen::Vector2d, double> WalkPatternGenerator::compute_next_support(do
   problem.add_constraint(world_dcm_offset_expr == world_target_dcm_offset).configure(ProblemConstraint::Soft, w3);
 
   // --------------------- Constraints: ---------------------
-  // ZMP constraints - operationnal space of the flying foot (expressed in the current support frame)
+  // Time constraints
+  // double T_min = std::max(current_support.t_start + 0.15, t); // Should probably add an offset to t
+  // double T_max = std::min(current_support.t_start + 3, t); // Arbitrary value of 3s
+  // problem.add_constraint(tau.expr() >= exp(omega * (T_min))).configure(ProblemConstraint::Hard);
+  // problem.add_constraint(tau.expr() <= exp(omega * (T_max))).configure(ProblemConstraint::Hard);
+
+  // ZMP and DCM offset constraints (expressed in the current support frame)
   if (current_support.side() == HumanoidRobot::Side::Right)
   {
     problem.add_constraint(PolygonConstraint::in_polygon_xy(support_next_zmp.expr(), parameters.op_space_polygon)).configure(ProblemConstraint::Hard);
+    problem.add_constraint(PolygonConstraint::in_polygon_xy(support_dcm_offset.expr(), parameters.op_space_polygon)).configure(ProblemConstraint::Soft, w_viability);
   }
   else
   {
@@ -622,17 +635,15 @@ std::pair<Eigen::Vector2d, double> WalkPatternGenerator::compute_next_support(do
       point(1) = -point(1);
     }
     problem.add_constraint(PolygonConstraint::in_polygon_xy(support_next_zmp.expr(), op_space_polygon)).configure(ProblemConstraint::Hard);
+
+    std::vector<Eigen::Vector2d> dcm_offset_polygon = parameters.dcm_offset_polygon;
+    for (auto& point : dcm_offset_polygon)
+    {
+      point(1) = -point(1);
+    }
+    problem.add_constraint(PolygonConstraint::in_polygon_xy(support_dcm_offset.expr(), dcm_offset_polygon)).configure(ProblemConstraint::Soft, w_viability);
   }
   
-  // Time constraints
-  double T_min = std::max(0.15, t); // Should probably add an offset to t
-  double T_max = 3; // Arbitrary value of 3s
-  problem.add_constraint(tau.expr() >= exp(omega * (T_min))).configure(ProblemConstraint::Hard);
-  problem.add_constraint(tau.expr() <= exp(omega * (T_max))).configure(ProblemConstraint::Hard);
-
-  // DCM offset constraints - viability constraint (expressed in the current support frame)
-  // TODO
-
   problem.solve();
   Eigen::Vector2d world_next_zmp_val = p_world_support + R_world_support.topRightCorner(2, 2) * support_next_zmp.value;
   double support_t_end = current_support.t_start + log(tau.value(0)) / omega;

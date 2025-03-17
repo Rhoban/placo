@@ -45,6 +45,8 @@ void exposeParameters()
       .add_property("walk_max_dtheta", &HumanoidParameters::walk_max_dtheta, &HumanoidParameters::walk_max_dtheta)
       .add_property("walk_dtheta_spacing", &HumanoidParameters::walk_dtheta_spacing,
                     &HumanoidParameters::walk_dtheta_spacing)
+      .add_property("op_space_polygon", &HumanoidParameters::op_space_polygon, &HumanoidParameters::op_space_polygon)
+      .add_property("dcm_offset_polygon", &HumanoidParameters::dcm_offset_polygon, &HumanoidParameters::dcm_offset_polygon)
       .def("dt", &HumanoidParameters::dt)
       .def("double_support_timesteps", &HumanoidParameters::double_support_timesteps)
       .def("startend_double_support_timesteps", &HumanoidParameters::startend_double_support_timesteps)
