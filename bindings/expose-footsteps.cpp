@@ -2,7 +2,7 @@
 
 #include "expose-utils.hpp"
 #include "module.h"
-#include "registry.h"
+#include "doxystub/registry.h"
 #include "placo/humanoid/footsteps_planner.h"
 #include "placo/humanoid/footsteps_planner_naive.h"
 #include "placo/humanoid/footsteps_planner_repetitive.h"
@@ -43,7 +43,8 @@ void exposeFootsteps()
           "set_end", +[](FootstepsPlanner::Support& support, bool b) { support.end = b; })
       .add_property("footsteps", &FootstepsPlanner::Support::footsteps)
       .add_property("t_start", &FootstepsPlanner::Support::t_start, &FootstepsPlanner::Support::t_start)
-      .add_property("elapsed_ratio", &FootstepsPlanner::Support::elapsed_ratio, &FootstepsPlanner::Support::elapsed_ratio)
+      .add_property("elapsed_ratio", &FootstepsPlanner::Support::elapsed_ratio,
+                    &FootstepsPlanner::Support::elapsed_ratio)
       .add_property("time_ratio", &FootstepsPlanner::Support::time_ratio, &FootstepsPlanner::Support::time_ratio)
       .add_property("start", &FootstepsPlanner::Support::start, &FootstepsPlanner::Support::start)
       .add_property("end", &FootstepsPlanner::Support::end, &FootstepsPlanner::Support::end)

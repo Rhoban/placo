@@ -2,7 +2,7 @@
 
 #include "expose-utils.hpp"
 #include "module.h"
-#include "registry.h"
+#include "doxystub/registry.h"
 #include "placo/model/robot_wrapper.h"
 #include "placo/humanoid/humanoid_robot.h"
 #include "placo/humanoid/humanoid_parameters.h"
@@ -18,10 +18,14 @@ using namespace placo::humanoid;
 void exposeParameters()
 {
   class__<HumanoidParameters>("HumanoidParameters")
-      .add_property("single_support_duration", &HumanoidParameters::single_support_duration, &HumanoidParameters::single_support_duration)
-      .add_property("single_support_timesteps", &HumanoidParameters::single_support_timesteps, &HumanoidParameters::single_support_timesteps)
-      .add_property("double_support_ratio", &HumanoidParameters::double_support_ratio, &HumanoidParameters::double_support_ratio)
-      .add_property("startend_double_support_ratio", &HumanoidParameters::startend_double_support_ratio, &HumanoidParameters::startend_double_support_ratio)
+      .add_property("single_support_duration", &HumanoidParameters::single_support_duration,
+                    &HumanoidParameters::single_support_duration)
+      .add_property("single_support_timesteps", &HumanoidParameters::single_support_timesteps,
+                    &HumanoidParameters::single_support_timesteps)
+      .add_property("double_support_ratio", &HumanoidParameters::double_support_ratio,
+                    &HumanoidParameters::double_support_ratio)
+      .add_property("startend_double_support_ratio", &HumanoidParameters::startend_double_support_ratio,
+                    &HumanoidParameters::startend_double_support_ratio)
       .add_property("planned_timesteps", &HumanoidParameters::planned_timesteps, &HumanoidParameters::planned_timesteps)
       .add_property("replan_timesteps", &HumanoidParameters::replan_timesteps, &HumanoidParameters::replan_timesteps)
       .add_property("zmp_margin", &HumanoidParameters::zmp_margin, &HumanoidParameters::zmp_margin)
