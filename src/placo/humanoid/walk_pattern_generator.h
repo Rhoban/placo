@@ -101,14 +101,19 @@ public:
     void apply_transform(Eigen::Affine3d T);
 
     /**
-     * @brief Returns the trajectory time start for the support corresponding to the given time
+     * @brief Returns the start time of the trajectory part corresponding to the given time
      */
     double get_part_t_start(double t);
 
     /**
-     * @brief Returns the trajectory time end for the support corresponding to the given time
+     * @brief Returns the end time of the trajectory part corresponding to the given time
      */
     double get_part_t_end(double t);
+
+    /**
+     * @brief Returns the DCM at the beginning of the trajectory part corresponding to the given time
+     */
+    Eigen::Vector2d get_part_initial_dcm(double t, double omega);
 
   protected:
     // Yaw trajectories
