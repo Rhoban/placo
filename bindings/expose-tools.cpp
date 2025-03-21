@@ -104,6 +104,7 @@ void exposeTools()
   // History collection
   class__<HistoryCollection>("HistoryCollection")
       .def("loadReplays", &HistoryCollection::loadReplays, loadReplays_overloads())
+      .def("exportToCSV", &HistoryCollection::exportToCSV)
       .def("smallestTimestamp", &HistoryCollection::smallestTimestamp)
       .def("biggestTimestamp", &HistoryCollection::biggestTimestamp)
       .def("startNamedLog", &HistoryCollection::startNamedLog)
