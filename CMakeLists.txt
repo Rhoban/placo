@@ -151,7 +151,7 @@ add_library(placo MODULE
     bindings/expose-walk-pattern-generator.cpp
     bindings/expose-dynamics.cpp
     bindings/module.cpp
-    bindings/registry.cpp
+    bindings/doxystub/registry.cpp
 )
 set_target_properties(placo PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${PYTHON_SITELIB})
 
@@ -159,7 +159,7 @@ target_link_libraries(placo ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} libplaco)
 target_include_directories(placo PRIVATE ${PYTHON_INCLUDE_DIRS})
 
 add_custom_command(TARGET placo POST_BUILD
-    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/stubs.py > placo.pyi
+    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/bindings/doxystub/stubs.py > placo.pyi
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${PYTHON_SITELIB}
     COMMENT "Generating stubs..."
 )

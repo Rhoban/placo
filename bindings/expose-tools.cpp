@@ -3,7 +3,7 @@
 #include <Eigen/Dense>
 #include <boost/python.hpp>
 #include "module.h"
-#include "registry.h"
+#include "doxystub/registry.h"
 #include "placo/tools/utils.h"
 #include "placo/tools/cubic_spline.h"
 #include "placo/tools/cubic_spline_3d.h"
@@ -89,10 +89,14 @@ void exposeTools()
   class__<Segment>("Segment", init<Eigen::Vector2d, Eigen::Vector2d>())
       .add_property("start", &Segment::start, &Segment::start)
       .add_property("end", &Segment::end, &Segment::start)
-      .def("is_parallel", +[](Segment& s1, const Segment& s2) { return s1.is_parallel(s2); })
-      .def("is_point_aligned", +[](Segment& s, const Eigen::Vector2d& point) { return s.is_point_aligned(point); })
-      .def("is_collinear", +[](Segment& s1, const Segment& s2) { return s1.is_collinear(s2); })
-      .def("is_point_in_segment", +[](Segment& s, const Eigen::Vector2d& point) { return s.is_point_in_segment(point); })
+      .def(
+          "is_parallel", +[](Segment& s1, const Segment& s2) { return s1.is_parallel(s2); })
+      .def(
+          "is_point_aligned", +[](Segment& s, const Eigen::Vector2d& point) { return s.is_point_aligned(point); })
+      .def(
+          "is_collinear", +[](Segment& s1, const Segment& s2) { return s1.is_collinear(s2); })
+      .def(
+          "is_point_in_segment", +[](Segment& s, const Eigen::Vector2d& point) { return s.is_point_in_segment(point); })
       .def("intersects", &Segment::intersects)
       .def("line_pass_through", &Segment::line_pass_through)
       .def("half_line_pass_through", &Segment::half_line_pass_through)

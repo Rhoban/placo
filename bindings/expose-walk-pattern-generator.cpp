@@ -2,7 +2,7 @@
 
 #include "expose-utils.hpp"
 #include "module.h"
-#include "registry.h"
+#include "doxystub/registry.h"
 #include "placo/humanoid/walk_pattern_generator.h"
 #include "placo/kinematics/kinematics_solver.h"
 #include "placo/humanoid/footsteps_planner.h"
@@ -139,7 +139,8 @@ void exposeWalkPatternGenerator()
       .def("dzmp", &LIPM::Trajectory::dzmp)
       .def("dcm", &LIPM::Trajectory::dcm);
 
-  class__<LIPM>("LIPM", init<problem::Problem&, double, int, double, Eigen::Vector2d, Eigen::Vector2d, Eigen::Vector2d>())
+  class__<LIPM>("LIPM",
+                init<problem::Problem&, double, int, double, Eigen::Vector2d, Eigen::Vector2d, Eigen::Vector2d>())
       .def("compute_omega", &LIPM::compute_omega)
       .def("get_trajectory", &LIPM::get_trajectory)
       .def("pos", &LIPM::pos)

@@ -2,7 +2,7 @@
 
 #include "expose-utils.hpp"
 #include "module.h"
-#include "registry.h"
+#include "doxystub/registry.h"
 #include "placo/model/robot_wrapper.h"
 #include "placo/humanoid/humanoid_robot.h"
 #include "placo/kinematics/kinematics_solver.h"

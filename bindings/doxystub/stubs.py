@@ -4,24 +4,25 @@ import inspect
 import sys
 import os
 import argparse
+from config import module_name, doxygen_path
 
 # Current script directory:
-repo_directory = os.path.dirname(os.path.realpath(__file__))
+repo_directory = os.path.dirname(os.path.realpath(__file__ + "/" + doxygen_path))
 
-# If placo.pyi file already exists next to stubs.py, we read it directly. This is a way to
-# avoid running Doxygen when building placo sdist release.
-if os.path.exists(f"{repo_directory}/placo.pyi"):
-    with open(f"{repo_directory}/placo.pyi", "r") as f:
+# If .pyi file already exists next to stubs.py, we read it directly. This is a way to
+# avoid running Doxygen when building sdist release.
+if os.path.exists(f"{repo_directory}/{module_name}.pyi"):
+    with open(f"{repo_directory}/{module_name}.pyi", "r") as f:
         print(f.read())
     exit(0)
 
 # Prepending current directory to PYTHONPATH
 sys.path = ["."] + sys.path
 
-import placo
+exec(f"import {module_name}")
 from doxygen_parse import parse_directory, get_members, get_metadata
 
-module: str = "placo"
+module = eval(f"{module_name}")
 
 # Ensure Doxygen is run
 if not os.path.exists(f"/usr/bin/doxygen"):
@@ -53,7 +54,7 @@ rewrite_types: dict = {
 }
 
 # Building registry and reverse registry for class names
-cxx_registry = placo.get_classes_registry()
+cxx_registry = module.get_classes_registry()
 py_registry = {"root": "root"}
 for entry in cxx_registry:
     rewrite_types[entry] = cxx_registry[entry]
@@ -219,18 +220,18 @@ def print_class_method(class_name: str, method_name: str, doc: str, prefix: str 
     else:
         print_def(method_name, doc, prefix)
 
-
+print("# Doxygen stubs generation")
 print("import numpy")
 print("import typing")
 
-for name, object in inspect.getmembers(placo):
+for name, object in inspect.getmembers(module):
     if isinstance(object, type):
         class_name = object.__name__
         print(f'{class_name} = typing.NewType("{class_name}", None)')
 
 groups = {}
 
-for name, object in inspect.getmembers(placo):
+for name, object in inspect.getmembers(module):
     if isinstance(object, type):
         class_name = object.__name__
         print(f"class {class_name}:")
