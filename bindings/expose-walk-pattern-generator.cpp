@@ -53,7 +53,7 @@ void exposeWalkPatternGenerator()
       .def("get_prev_support", &WalkPatternGenerator::Trajectory::get_prev_support)
       .def("get_part_t_end", &WalkPatternGenerator::Trajectory::get_part_t_end)
       .def("get_part_t_start", &WalkPatternGenerator::Trajectory::get_part_t_start)
-      .def("get_part_initial_dcm", &WalkPatternGenerator::Trajectory::get_part_initial_dcm)
+      .def("get_part_end_dcm", &WalkPatternGenerator::Trajectory::get_part_end_dcm)
       .def("apply_transform", &WalkPatternGenerator::Trajectory::apply_transform)
       .def("print_parts_timings", &WalkPatternGenerator::Trajectory::print_parts_timings);
 
@@ -62,7 +62,7 @@ void exposeWalkPatternGenerator()
       .def("replan", &WalkPatternGenerator::replan)
       .def("can_replan_supports", &WalkPatternGenerator::can_replan_supports)
       .def("replan_supports", &WalkPatternGenerator::replan_supports)
-      .def("compute_next_support", &WalkPatternGenerator::compute_next_support);
+      .def("update_supports", &WalkPatternGenerator::update_supports);
 
   class__<SwingFoot>("SwingFoot", init<>())
       .def("make_trajectory", &SwingFoot::make_trajectory)

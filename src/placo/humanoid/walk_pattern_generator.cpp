@@ -279,10 +279,10 @@ double WalkPatternGenerator::Trajectory::get_part_t_end(double t)
   return part.t_end;
 }
 
-Eigen::Vector2d WalkPatternGenerator::Trajectory::get_part_initial_dcm(double t, double omega)
+Eigen::Vector2d WalkPatternGenerator::Trajectory::get_part_end_dcm(double t, double omega)
 {
   TrajectoryPart& part = _findPart(parts, t);
-  return get_p_world_DCM(part.t_start, omega);
+  return get_p_world_DCM(part.t_end, omega);
 }
 
 void WalkPatternGenerator::Trajectory::add_supports(double t, FootstepsPlanner::Support& support)
@@ -317,6 +317,9 @@ void WalkPatternGenerator::plan_sgl_support(Trajectory& trajectory, int part_ind
     Eigen::Vector3d start_vel = old_trajectory->get_v_world_foot(flying_side, t_replan);
     part.swing_trajectory = SwingFootCubic::make_trajectory(part.t_start, virt_duration, parameters.walk_foot_height, 
           parameters.walk_foot_rise_ratio, start, T_world_end.translation(), part.support.elapsed_ratio, start_vel);
+
+    double replan_yaw = old_trajectory->foot_yaw(flying_side).pos(t_replan);
+    trajectory.foot_yaw(flying_side).add_point(t_replan, replan_yaw, 0);
   }
   else
   {
@@ -575,79 +578,99 @@ void WalkPatternGenerator::Trajectory::print_parts_timings()
   }
 }
 
-std::pair<Eigen::Vector2d, double> WalkPatternGenerator::compute_next_support(double t, FootstepsPlanner::Support& current_support, 
-  FootstepsPlanner::Support& next_support, Eigen::Vector2d world_measured_dcm, Eigen::Vector2d world_initial_dcm)
+std::vector<FootstepsPlanner::Support> WalkPatternGenerator::update_supports(double t, std::vector<FootstepsPlanner::Support> supports, 
+  Eigen::Vector2d world_measured_dcm, Eigen::Vector2d world_end_dcm)
 {
+  FootstepsPlanner::Support current_support = supports[0];
+  FootstepsPlanner::Support next_support = supports[1];
+  double elapsed_time = t - current_support.t_start;
+
   if (current_support.is_both())
   {
     throw std::runtime_error("Can't modify flying target and step duration if the current support is both");
   }
+  if (next_support.is_both())
+  {
+    throw std::runtime_error("Next support is both, not supported for now");
+  }
 
   placo::problem::Problem problem;
   double w1 = 5;
-  double w2 = 1;
+  double w2 = 100;
   double w3 = 1000;
   double w_viability = 1e6;
 
   // Decision variables
-  placo::problem::Variable support_next_zmp = problem.add_variable(2); // ZMP of the next support expressed in the current support frame
-  placo::problem::Variable tau = problem.add_variable(1); // exp(omega * T) where T is the end of the current support
-  placo::problem::Variable support_dcm_offset = problem.add_variable(2); // Offset of the DCM from the ZMP in the current support frame
+  placo::problem::Variable* support_next_zmp = &problem.add_variable(2); // ZMP of the next support expressed in the current support frame
+  placo::problem::Variable* tau = &problem.add_variable(1); // exp(omega * T) where T is the end of the current support
+  placo::problem::Variable* support_dcm_offset = &problem.add_variable(2); // Offset of the DCM from the ZMP in the current support frame
 
   // LIPM Dynamics (expressed in the current support frame)
-  Eigen::Matrix3d R_world_support = current_support.frame().rotation();
+  Eigen::Matrix2d R_world_support = current_support.frame().rotation().topLeftCorner(2, 2);
   Eigen::Vector2d p_world_support = current_support.frame().translation().head(2);
-  Eigen::Vector2d support_measured_dcm = p_world_support + R_world_support.topRightCorner(2, 2) * world_measured_dcm;
-  problem.add_constraint(support_next_zmp.expr() + support_dcm_offset.expr() == support_measured_dcm * exp(-omega * t) * tau.expr()).configure(ProblemConstraint::Hard);
+  Eigen::Vector2d support_measured_dcm = R_world_support.transpose() * (world_measured_dcm - p_world_support);
+  problem.add_constraint(support_next_zmp->expr() + support_dcm_offset->expr() == support_measured_dcm * exp(-omega * elapsed_time) * tau->expr()).configure(ProblemConstraint::Hard);
 
   // ----------------- Objective functions: -----------------
   // Time reference
   double T = support_default_duration(current_support);
-  problem.add_constraint(tau.expr() == exp(omega * T)).configure(ProblemConstraint::Soft, w1);
+  problem.add_constraint(tau->expr() == exp(omega * T)).configure(ProblemConstraint::Soft, w1);
 
   // ZMP Reference (expressed in the world frame)
-  Expression world_next_zmp_expr = p_world_support + R_world_support.topRightCorner(2, 2) * support_next_zmp.expr();
+  Expression world_next_zmp_expr = p_world_support + R_world_support * support_next_zmp->expr();
   problem.add_constraint(world_next_zmp_expr == next_support.frame().translation().head(2)).configure(ProblemConstraint::Soft, w2);
 
   // DCM offset reference (expressed in the world frame)
-  Eigen::Vector2d world_target_dcm_offset = (world_initial_dcm - p_world_support) * exp(omega * T) + p_world_support - next_support.frame().translation().head(2);
-  Expression world_dcm_offset_expr = R_world_support.topRightCorner(2, 2) * support_dcm_offset.expr();
+  Eigen::Vector2d world_target_dcm_offset = world_end_dcm - next_support.frame().translation().head(2);
+  Expression world_dcm_offset_expr = R_world_support * support_dcm_offset->expr();
   problem.add_constraint(world_dcm_offset_expr == world_target_dcm_offset).configure(ProblemConstraint::Soft, w3);
 
   // --------------------- Constraints: ---------------------
   // Time constraints
-  // double T_min = std::max(current_support.t_start + 0.15, t); // Should probably add an offset to t
-  // double T_max = std::min(current_support.t_start + 3, t); // Arbitrary value of 3s
-  // problem.add_constraint(tau.expr() >= exp(omega * (T_min))).configure(ProblemConstraint::Hard);
-  // problem.add_constraint(tau.expr() <= exp(omega * (T_max))).configure(ProblemConstraint::Hard);
+  double T_min = std::max(0.15, elapsed_time); // Should probably add an offset to elapsed_time
+  double T_max = std::max(3., elapsed_time); // Arbitrary value of 3s
+  problem.add_constraint(tau->expr() >= exp(omega * (T_min))).configure(ProblemConstraint::Hard);
+  problem.add_constraint(tau->expr() <= exp(omega * (T_max))).configure(ProblemConstraint::Hard);
 
   // ZMP and DCM offset constraints (expressed in the current support frame)
   if (current_support.side() == HumanoidRobot::Side::Right)
   {
-    problem.add_constraint(PolygonConstraint::in_polygon_xy(support_next_zmp.expr(), parameters.op_space_polygon)).configure(ProblemConstraint::Hard);
-    problem.add_constraint(PolygonConstraint::in_polygon_xy(support_dcm_offset.expr(), parameters.op_space_polygon)).configure(ProblemConstraint::Soft, w_viability);
+    problem.add_constraint(PolygonConstraint::in_polygon_xy(support_next_zmp->expr(), parameters.op_space_polygon)).configure(ProblemConstraint::Hard);
+
+    std::vector<Eigen::Vector2d> dcm_offset_polygon = parameters.dcm_offset_polygon;
+    for (auto& point : dcm_offset_polygon)
+    {
+      point(0) = -point(0);
+      point(1) = -point(1);
+    }
+    problem.add_constraint(PolygonConstraint::in_polygon_xy(support_dcm_offset->expr(), parameters.dcm_offset_polygon)).configure(ProblemConstraint::Soft, w_viability);
   }
   else
   {
     std::vector<Eigen::Vector2d> op_space_polygon = parameters.op_space_polygon;
     for (auto& point : op_space_polygon)
     {
+      point(0) = -point(0);
       point(1) = -point(1);
     }
-    problem.add_constraint(PolygonConstraint::in_polygon_xy(support_next_zmp.expr(), op_space_polygon)).configure(ProblemConstraint::Hard);
+    problem.add_constraint(PolygonConstraint::in_polygon_xy(support_next_zmp->expr(), op_space_polygon)).configure(ProblemConstraint::Hard);
 
-    std::vector<Eigen::Vector2d> dcm_offset_polygon = parameters.dcm_offset_polygon;
-    for (auto& point : dcm_offset_polygon)
-    {
-      point(1) = -point(1);
-    }
-    problem.add_constraint(PolygonConstraint::in_polygon_xy(support_dcm_offset.expr(), dcm_offset_polygon)).configure(ProblemConstraint::Soft, w_viability);
+    problem.add_constraint(PolygonConstraint::in_polygon_xy(support_dcm_offset->expr(), parameters.dcm_offset_polygon)).configure(ProblemConstraint::Soft, w_viability);
   }
   
+  std::cout << "Solving next support problem" << std::endl;
   problem.solve();
-  Eigen::Vector2d world_next_zmp_val = p_world_support + R_world_support.topRightCorner(2, 2) * support_next_zmp.value;
-  double support_t_end = current_support.t_start + log(tau.value(0)) / omega;
+  std::cout << "Next support problem solved" << std::endl;
 
-  return std::make_pair(world_next_zmp_val, support_t_end);
+  // Updating next support position
+  Eigen::Vector2d world_next_zmp_val = p_world_support + R_world_support * support_next_zmp->value;
+  supports[1].footsteps[0].frame.translation().x() = world_next_zmp_val(0);
+  supports[1].footsteps[0].frame.translation().y() = world_next_zmp_val(1);
+
+  // Updating current support remaining duration
+  double support_remaining_time = log(tau->value(0)) / omega - elapsed_time;
+  supports[0].time_ratio = support_remaining_time / (support_default_duration(current_support) * (1 - current_support.elapsed_ratio));
+
+  return supports;
 }
 }  // namespace placo::humanoid

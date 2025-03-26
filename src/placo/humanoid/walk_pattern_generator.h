@@ -111,9 +111,9 @@ public:
     double get_part_t_end(double t);
 
     /**
-     * @brief Returns the DCM at the beginning of the trajectory part corresponding to the given time
+     * @brief Returns the DCM at the end of the trajectory part corresponding to the given time
      */
-    Eigen::Vector2d get_part_initial_dcm(double t, double omega);
+    Eigen::Vector2d get_part_end_dcm(double t, double omega);
 
   protected:
     // Yaw trajectories
@@ -180,8 +180,8 @@ public:
    * based on the measured DCM.
    * @param TODO
    */
-  std::pair<Eigen::Vector2d, double> compute_next_support(double t, FootstepsPlanner::Support& current_support, 
-    FootstepsPlanner::Support& next_support, Eigen::Vector2d world_measured_dcm, Eigen::Vector2d world_initial_dcm);
+  std::vector<FootstepsPlanner::Support> update_supports(double t, std::vector<FootstepsPlanner::Support> supports, 
+    Eigen::Vector2d world_measured_dcm, Eigen::Vector2d world_next_initial_dcm);
   
 protected:
   // Robot associated to the WPG
