@@ -41,7 +41,7 @@ void exposeFootsteps()
           "set_start", +[](FootstepsPlanner::Support& support, bool b) { support.start = b; })
       .def(
           "set_end", +[](FootstepsPlanner::Support& support, bool b) { support.end = b; })
-      .add_property("footsteps", &FootstepsPlanner::Support::footsteps)
+      .add_property("footsteps", &FootstepsPlanner::Support::footsteps, &FootstepsPlanner::Support::footsteps)
       .add_property("t_start", &FootstepsPlanner::Support::t_start, &FootstepsPlanner::Support::t_start)
       .add_property("elapsed_ratio", &FootstepsPlanner::Support::elapsed_ratio,
                     &FootstepsPlanner::Support::elapsed_ratio)

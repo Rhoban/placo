@@ -163,12 +163,12 @@ public:
   Trajectory replan(std::vector<FootstepsPlanner::Support>& supports, Trajectory& old_trajectory, double t_replan);
 
   /**
-   * @brief Checks if a trajectory can be replanned for supports
+   * @brief Checks if a trajectory can be replanned for supports.
    */
   bool can_replan_supports(Trajectory& trajectory, double t_replan);
 
   /**
-   * @brief Replans the supports for a given trajectory given a footsteps planner
+   * @brief Replans the supports for a given trajectory given a footsteps planner.
    */
   std::vector<FootstepsPlanner::Support> replan_supports(FootstepsPlanner& planner, Trajectory& trajectory, double t_replan, double t_last_replan);
 
@@ -176,12 +176,26 @@ public:
   double last_feet_planning_duration = 0.;
 
   /**
-   * @brief Computes the position and time of the next support ensuring the DCM viability
-   * based on the measured DCM.
-   * @param TODO
+   * @brief Updates the supports to ensure DCM viability by adjusting the 
+   * duration and the target of the current swing trajectory.
+   * @param t The current time
+   * @param supports The planned supports
+   * @param world_measured_dcm The measured DCM in world frame
+   * @param world_end_dcm The desired DCM at the end of the current support phase
    */
   std::vector<FootstepsPlanner::Support> update_supports(double t, std::vector<FootstepsPlanner::Support> supports, 
-    Eigen::Vector2d world_measured_dcm, Eigen::Vector2d world_next_initial_dcm);
+    Eigen::Vector2d world_measured_dcm, Eigen::Vector2d world_end_dcm);
+
+  /**
+   * @brief Computes the best ZMP in the support polygon to move de DCM from 
+   * world_dcm_start to world_dcm_end in duration.
+   * @param world_dcm_start The initial DCM position in world frame
+   * @param world_dcm_end The desired final DCM position in world frame
+   * @param duration The duration
+   * @param support The support
+   */
+  Eigen::Vector2d get_optimal_zmp(Eigen::Vector2d world_dcm_start, Eigen::Vector2d world_dcm_end, 
+    double duration, FootstepsPlanner::Support& support);
   
 protected:
   // Robot associated to the WPG
@@ -194,13 +208,6 @@ protected:
   double omega_2;
 
   void constrain_lipm(problem::Problem& problem, LIPM& lipm, FootstepsPlanner::Support& support, double omega_2, HumanoidParameters& parameters);
-
-  // double plan_com(Trajectory& trajectory, Eigen::Vector2d initial_pos, Eigen::Vector2d initial_vel = Eigen::Vector2d::Zero(),
-  //                Eigen::Vector2d initial_acc = Eigen::Vector2d::Zero(), std::vector<Eigen::Vector2d>* previous_jerks = nullptr);
-
-  // void plan_dbl_support(TrajectoryPart& part, Trajectory& trajectory, double& t);
-  // void plan_sgl_support(TrajectoryPart& part, Trajectory& trajectory, int step, double& t, Trajectory* old_trajectory, double t_replan);
-  // double plan_feet_trajectories(Trajectory& trajectory, Trajectory* old_trajectory = nullptr, double t_replan = 0.):;
 
   void plan_com(Trajectory& trajectory, std::vector<FootstepsPlanner::Support>& supports, Eigen::Vector2d initial_pos, 
     Eigen::Vector2d initial_vel = Eigen::Vector2d::Zero(), Eigen::Vector2d initial_acc = Eigen::Vector2d::Zero());

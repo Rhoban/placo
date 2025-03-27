@@ -62,7 +62,8 @@ void exposeWalkPatternGenerator()
       .def("replan", &WalkPatternGenerator::replan)
       .def("can_replan_supports", &WalkPatternGenerator::can_replan_supports)
       .def("replan_supports", &WalkPatternGenerator::replan_supports)
-      .def("update_supports", &WalkPatternGenerator::update_supports);
+      .def("update_supports", &WalkPatternGenerator::update_supports)
+      .def("get_optimal_zmp", &WalkPatternGenerator::get_optimal_zmp);
 
   class__<SwingFoot>("SwingFoot", init<>())
       .def("make_trajectory", &SwingFoot::make_trajectory)

@@ -583,7 +583,6 @@ std::vector<FootstepsPlanner::Support> WalkPatternGenerator::update_supports(dou
 {
   FootstepsPlanner::Support current_support = supports[0];
   FootstepsPlanner::Support next_support = supports[1];
-  double elapsed_time = t - current_support.t_start;
 
   if (current_support.is_both())
   {
@@ -600,16 +599,14 @@ std::vector<FootstepsPlanner::Support> WalkPatternGenerator::update_supports(dou
   double w3 = 1000;
   double w_viability = 1e6;
 
+  double elapsed_time = t - current_support.t_start;
+  Eigen::Matrix2d R_world_support = current_support.frame().rotation().topLeftCorner(2, 2);
+  Eigen::Vector2d p_world_support = current_support.frame().translation().head(2);
+
   // Decision variables
   placo::problem::Variable* support_next_zmp = &problem.add_variable(2); // ZMP of the next support expressed in the current support frame
   placo::problem::Variable* tau = &problem.add_variable(1); // exp(omega * T) where T is the end of the current support
   placo::problem::Variable* support_dcm_offset = &problem.add_variable(2); // Offset of the DCM from the ZMP in the current support frame
-
-  // LIPM Dynamics (expressed in the current support frame)
-  Eigen::Matrix2d R_world_support = current_support.frame().rotation().topLeftCorner(2, 2);
-  Eigen::Vector2d p_world_support = current_support.frame().translation().head(2);
-  Eigen::Vector2d support_measured_dcm = R_world_support.transpose() * (world_measured_dcm - p_world_support);
-  problem.add_constraint(support_next_zmp->expr() + support_dcm_offset->expr() == support_measured_dcm * exp(-omega * elapsed_time) * tau->expr()).configure(ProblemConstraint::Hard);
 
   // ----------------- Objective functions: -----------------
   // Time reference
@@ -658,9 +655,12 @@ std::vector<FootstepsPlanner::Support> WalkPatternGenerator::update_supports(dou
     problem.add_constraint(PolygonConstraint::in_polygon_xy(support_dcm_offset->expr(), parameters.dcm_offset_polygon)).configure(ProblemConstraint::Soft, w_viability);
   }
   
-  std::cout << "Solving next support problem" << std::endl;
+  // LIPM Dynamics (expressed in the world frame)
+  double duration = std::max(0., T - elapsed_time);
+  Eigen::Vector2d world_virtual_zmp = get_optimal_zmp(world_measured_dcm, world_end_dcm, duration, current_support);
+  problem.add_constraint(world_next_zmp_expr + world_dcm_offset_expr == (world_measured_dcm - world_virtual_zmp) * exp(-omega * elapsed_time) * tau->expr() + world_virtual_zmp).configure(ProblemConstraint::Hard);
+
   problem.solve();
-  std::cout << "Next support problem solved" << std::endl;
 
   // Updating next support position
   Eigen::Vector2d world_next_zmp_val = p_world_support + R_world_support * support_next_zmp->value;
@@ -672,5 +672,24 @@ std::vector<FootstepsPlanner::Support> WalkPatternGenerator::update_supports(dou
   supports[0].time_ratio = support_remaining_time / (support_default_duration(current_support) * (1 - current_support.elapsed_ratio));
 
   return supports;
+}
+
+Eigen::Vector2d WalkPatternGenerator::get_optimal_zmp(Eigen::Vector2d world_dcm_start, 
+  Eigen::Vector2d world_dcm_end, double duration, FootstepsPlanner::Support& support)
+{
+  placo::problem::Problem problem;
+
+  // Decision variables
+  placo::problem::Variable* world_zmp = &problem.add_variable(2);
+
+  // LIPM Dynamics
+  // problem.add_constraint(world_dcm_end == (world_dcm_start - world_zmp->expr()) * exp(omega * duration) + world_zmp->expr()).configure(ProblemConstraint::Soft, 1);
+  problem.add_constraint(world_zmp->expr() == (world_dcm_end - world_dcm_start * exp(omega * duration)) / (1 - exp(omega * duration))).configure(ProblemConstraint::Soft, 1);
+
+  // ZMP constrained to stay in the support polygon
+  problem.add_constraint(PolygonConstraint::in_polygon_xy(world_zmp->expr(), support.support_polygon(), parameters.zmp_margin)).configure(ProblemConstraint::Hard);
+
+  problem.solve();
+  return world_zmp->value;
 }
 }  // namespace placo::humanoid
