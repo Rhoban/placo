@@ -51,7 +51,7 @@ def robot_viz(
 cylinders: dict = {}
 
 
-def frame_viz(name: str, T: np.ndarray, opacity: float = 1.0) -> None:
+def frame_viz(name: str, T: np.ndarray, opacity: float = 1.0, scale: float = 1.0) -> None:
     """
     Visualizes a given frame
     """
@@ -76,7 +76,7 @@ def frame_viz(name: str, T: np.ndarray, opacity: float = 1.0) -> None:
         obj = cylinders[node_name]
 
         obj.set_transform(
-            T @ tf.rotation_matrix(*rotate) @ tf.translation_matrix([0, 0.05, 0])
+            T @ tf.scale_matrix(scale) @ tf.rotation_matrix(*rotate) @ tf.translation_matrix([0, 0.05, 0])
         )
 
 
@@ -126,12 +126,12 @@ def points_viz(
     points_sizes[name] = len(points)
 
 
-def robot_frame_viz(robot: placo.RobotWrapper, frame: str) -> None:
+def robot_frame_viz(robot: placo.RobotWrapper, frame: str, opacity: float = 1.0, scale: float = 1.0) -> None:
     """
     Draw a frame from the robot
     """
     node_name = f"{robot_names[robot]}_{frame}"
-    frame_viz(node_name, robot.get_T_world_frame(frame))
+    frame_viz(node_name, robot.get_T_world_frame(frame), opacity, scale)
 
 
 steps: int = 0
