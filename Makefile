@@ -2,7 +2,7 @@
 # Building Python wheel
 all:
 	@rm -rf dist/*
-	python -m build --sdist --wheel
+	bash build_wheel.sh
 	bash tweak_sdist.sh
 
 upload:

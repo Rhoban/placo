@@ -139,6 +139,7 @@ set(CMAKE_SHARED_MODULE_PREFIX "")
 
 find_package(Python3 REQUIRED)
 find_package(Boost COMPONENTS python REQUIRED)
+find_package(Python REQUIRED COMPONENTS Interpreter)
 
 add_library(placo MODULE 
     bindings/expose-eigen.cpp
@@ -159,8 +160,8 @@ target_link_libraries(placo ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} libplaco)
 target_include_directories(placo PRIVATE ${PYTHON_INCLUDE_DIRS})
 
 add_custom_command(TARGET placo POST_BUILD
-    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/bindings/doxystub/stubs.sh "${CMAKE_BINARY_DIR}/${PYTHON_SITELIB}" >  "${CMAKE_BINARY_DIR}/${PYTHON_SITELIB}/placo.pyi"
-    WORKING DIRECTORY "/"
+    COMMAND 
+    ${CMAKE_CURRENT_SOURCE_DIR}/bindings/doxystub/stubs.sh "${Python_EXECUTABLE}" "${CMAKE_BINARY_DIR}/${PYTHON_SITELIB}" > "${CMAKE_BINARY_DIR}/${PYTHON_SITELIB}/placo.pyi"
     COMMENT "Generating stubs..."
 )
 
