@@ -127,7 +127,7 @@ target_link_libraries(libplaco PUBLIC
     ${PROTOBUF_LIBRARIES}
   ${PROTOBUF_LIBRARIES}
 )
-target_compile_definitions(libplaco PUBLIC -DPINOCCHIO_WITH_HPP_FCL)
+target_compile_definitions(libplaco PUBLIC)
 
 if(TARGET rhoban_utils)
   message("Placo: Rhoban utils is present, enabling it")
