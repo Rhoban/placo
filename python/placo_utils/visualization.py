@@ -1,5 +1,6 @@
 import meshcat
 import pinocchio as pin
+import pinocchio.visualize as pin_viz
 import numpy as np
 import meshcat.geometry as g
 import meshcat.transformations as tf
@@ -26,7 +27,7 @@ def get_viewer() -> meshcat.Visualizer:
 
 def robot_viz(
     robot: placo.RobotWrapper, name: str = "robot"
-) -> pin.visualize.MeshcatVisualizer:
+) -> pin_viz.MeshcatVisualizer:
     """
     Builds an instance of pinocchio MeshcatVisualizer, which allows to push the model to the meshcat
     visualizer passed as parameter
@@ -38,7 +39,7 @@ def robot_viz(
     global robot_names
 
     robot_names[robot] = name
-    viz = pin.visualize.MeshcatVisualizer(
+    viz = pin_viz.MeshcatVisualizer(
         robot.model, robot.collision_model, robot.visual_model
     )
     viz.initViewer(viewer=get_viewer())

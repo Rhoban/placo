@@ -40,6 +40,15 @@ struct custom_vector_from_seq
   }
 };
 
+template <typename T>
+bool is_registered()
+{
+  boost::python::type_info info = boost::python::type_id<T>();
+  const boost::python::converter::registration* reg = boost::python::converter::registry::query(info);
+
+  return reg == NULL || (*reg).m_to_python == NULL;
+}
+
 /**
  * @brief Exposes a given type for std::vector
  * @tparam T type
@@ -50,9 +59,12 @@ void exposeStdVector(const std::string& class_name)
 {
   typedef typename std::vector<T> vector_T;
 
-  class_<vector_T>(class_name.c_str()).def(vector_indexing_suite<vector_T>());
+  if (!is_registered<T>())
+  {
+    class_<vector_T>(class_name.c_str()).def(vector_indexing_suite<vector_T>());
 
-  custom_vector_from_seq<T>();
+    custom_vector_from_seq<T>();
+  }
 }
 
 template <typename K, typename V>
