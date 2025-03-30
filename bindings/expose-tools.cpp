@@ -32,14 +32,19 @@ BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(value_overloads, value, 1, 2);
 
 void exposeTools()
 {
-  def("interpolate_frames", &interpolate_frames);
-  def("wrap_angle", &wrap_angle);
-  def("rotation_from_axis", &rotation_from_axis);
-  def("frame_yaw", &frame_yaw);
-  def("flatten_on_floor", &flatten_on_floor);
-  def("optimal_transformation", &optimal_transformation);
-  def("directions_2d", &directions_2d);
-  def("directions_3d", &directions_3d, directions_3d_overloads());
+  def("interpolate_frames", &interpolate_frames, args("frameA", "frameB", "AtoB"),
+      "Interpolate between `frameA` and `frameB`. `AtoB` is a scalar from 0 (frame A) to 1 (frame B)");
+  def("wrap_angle", &wrap_angle, args("angle"), "Wrap given <angle> (in radians) between -PI and PI");
+  def("rotation_from_axis", &rotation_from_axis, args("axis", "vector"),
+      "Make a rotation matrix such that `axis` (x, y or z) is oriented towards `vector`");
+  def("frame_yaw", &frame_yaw, args("rotation_matrix"), "Computes the yaw heading for given `rotation_matrix`");
+  def("flatten_on_floor", &flatten_on_floor, args("transformation"),
+      "Put the given `transformation` on floor, with no pitch and roll");
+  def("optimal_transformation", &optimal_transformation, args("points_in_A", "points_in_B"),
+      "Provided two sets of points in frame A and B, finds the optimal transformation explaining those positions");
+  def("directions_2d", &directions_2d, args("n"), "Generate `n` uniformly distributed 2D vectors");
+  def("directions_3d", &directions_3d,
+      directions_3d_overloads(args("n"), "Generate `n` uniformly distributed 3D vectors"));
 
   exposeStdVector<int>("vector_int");
   exposeStdVector<double>("vector_double");
@@ -51,11 +56,15 @@ void exposeTools()
   class_<std::map<std::string, double>>("map_string_double").def(map_indexing_suite<std::map<std::string, double>>());
 
   class__<AxisesMask>("AxisesMask", init<>())
-      .def<void (AxisesMask::*)(std::string, std::string)>("set_axises", &AxisesMask::set_axises,
-                                                           set_axises_overloads())
-      .def_readwrite("R_local_world", &AxisesMask::R_local_world)
-      .def_readwrite("R_custom_world", &AxisesMask::R_custom_world)
-      .def("apply", &AxisesMask::apply);
+      .def<void (AxisesMask::*)(std::string, std::string)>  //
+      ("set_axises", &AxisesMask::set_axises,
+       set_axises_overloads(args("self", "axises", "frame"), "Specify the `axises` to mask (keep), in `frame` (task, "
+                                                             "local or custom)"))
+      .def_readwrite("R_local_world", &AxisesMask::R_local_world,
+                     np_docstring("Transformation from world to local frame"))
+      .def_readwrite("R_custom_world", &AxisesMask::R_custom_world,
+                     np_docstring("Transformation from world to custom frame"))
+      .def("apply", &AxisesMask::apply, args("self", "M"), "Apply the masking to M, keeping specified axises");
 
   class__<Prioritized, boost::noncopyable>("Prioritized", no_init)
       .add_property("name", &Prioritized::name)
@@ -76,7 +85,8 @@ void exposeTools()
       .def("pos", &CubicSpline3D::pos)
       .def("vel", &CubicSpline3D::vel)
       .def("acc", &CubicSpline3D::acc)
-      .def("add_point", &CubicSpline3D::add_point)
+      .def("add_point", &CubicSpline3D::add_point, boost::python::args("self", "t", "x", "dx"),
+           "Adds a point un the cubic spline")
       .def("clear", &CubicSpline3D::clear)
       .def("duration", &CubicSpline3D::duration);
 

@@ -142,6 +142,7 @@ find_package(Boost COMPONENTS python REQUIRED)
 find_package(Python REQUIRED COMPONENTS Interpreter)
 
 add_library(placo MODULE 
+    bindings/expose-utils.cpp
     bindings/expose-eigen.cpp
     bindings/expose-tools.cpp
     bindings/expose-problem.cpp
@@ -160,9 +161,15 @@ target_link_libraries(placo ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} libplaco)
 target_include_directories(placo PRIVATE ${PYTHON_INCLUDE_DIRS})
 
 add_custom_command(TARGET placo POST_BUILD
-    COMMAND 
-    ${CMAKE_CURRENT_SOURCE_DIR}/bindings/doxystub/stubs.sh "${Python_EXECUTABLE}" "${CMAKE_BINARY_DIR}/${PYTHON_SITELIB}" > "${CMAKE_BINARY_DIR}/${PYTHON_SITELIB}/placo.pyi"
+    COMMAND "${Python_EXECUTABLE}" -m pybind11_stubgen --boost-python --no-setup placo
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${PYTHON_SITELIB}
     COMMENT "Generating stubs..."
+)
+
+add_custom_command(TARGET placo POST_BUILD
+    COMMAND cp stubs/placo-stubs/__init__.pyi placo.pyi
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${PYTHON_SITELIB}
+    COMMENT "Copying stubs to placo.pyi"
 )
 
 ADD_CUSTOM_TARGET(placo_utils_files ALL
