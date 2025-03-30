@@ -67,50 +67,64 @@ void exposeTools()
       .def("apply", &AxisesMask::apply, args("self", "M"), "Apply the masking to M, keeping specified axises");
 
   class__<Prioritized, boost::noncopyable>("Prioritized", no_init)
-      .add_property("name", &Prioritized::name)
+      .add_property("name", &Prioritized::name, typed_docstring<std::string>("Name"))
       .add_property(
           "priority", +[](Prioritized& pri) { return pri.priority_name(); })
-      .def<void (Prioritized::*)(std::string, std::string, double)>("configure", &Prioritized::configure,
-                                                                    configure_overloads());
+      .def<void (Prioritized::*)(std::string, std::string, double)>(
+          "configure", &Prioritized::configure,
+          configure_overloads(args("self", "name", "priority", "weight"), "Configure the task with name `name`, "
+                                                                          "priority `priority` (soft or hard) and a "
+                                                                          "`weight` (only applicable for hard tasks)"));
 
   class__<CubicSpline>("CubicSpline", init<optional<bool>>())
-      .def("pos", &CubicSpline::pos)
-      .def("vel", &CubicSpline::vel)
-      .def("acc", &CubicSpline::acc)
-      .def("add_point", &CubicSpline::add_point)
-      .def("clear", &CubicSpline::clear)
-      .def("duration", &CubicSpline::duration);
+      .def("pos", &CubicSpline::pos, args("self", "t"), "Returns position at time `t`")
+      .def("vel", &CubicSpline::vel, args("self", "t"), "Returns velocity at time `t`")
+      .def("acc", &CubicSpline::acc, args("self", "t"), "Returns acceleration at time `t`")
+      .def("add_point", &CubicSpline::add_point, args("self", "t", "x", "dx"),
+           "Set target position `x` and velocity `dx` at time `t`")
+      .def("clear", &CubicSpline::clear, args("self"), "Clear all points from this spline")
+      .def("duration", &CubicSpline::duration, args("self"), "Total spline duration");
 
   class__<CubicSpline3D>("CubicSpline3D")
-      .def("pos", &CubicSpline3D::pos)
-      .def("vel", &CubicSpline3D::vel)
-      .def("acc", &CubicSpline3D::acc)
-      .def("add_point", &CubicSpline3D::add_point, boost::python::args("self", "t", "x", "dx"),
-           "Adds a point un the cubic spline")
-      .def("clear", &CubicSpline3D::clear)
-      .def("duration", &CubicSpline3D::duration);
+      .def("pos", &CubicSpline3D::pos, args("self", "t"), "Returns position at time `t`")
+      .def("vel", &CubicSpline3D::vel, args("self", "t"), "Returns velocity at time `t`")
+      .def("acc", &CubicSpline3D::acc, args("self", "t"), "Returns acceleration at time `t`")
+      .def("add_point", &CubicSpline3D::add_point, args("self", "t", "x", "dx"),
+           "Adds a point at position `x` and velocity `dx` at time `t`")
+      .def("clear", &CubicSpline3D::clear, args("self"), "Clear all points from this spline")
+      .def("duration", &CubicSpline3D::duration, args("self"), "Total spline duration");
 
   class__<Polynom>("Polynom", init<Eigen::VectorXd>())
-      .def("value", &Polynom::value, value_overloads())
-      .def("derivative_coefficient", &Polynom::derivative_coefficient)
+      .def("value", &Polynom::value,
+           value_overloads(args("self", "x", "differentiate"), "Computes polynom value at `x`, with `differentiate` "
+                                                               "differentiations"))
+      .def("derivative_coefficient", &Polynom::derivative_coefficient, args("degree", "derivative"),
+           "Computes the coefficient in front of the value of degree `degree` after `derivative` differentiations")
       .staticmethod("derivative_coefficient")
-      .def_readwrite("coefficients", &Polynom::coefficients);
+      .def_readwrite("coefficients", &Polynom::coefficients, np_docstring("Coefficients of this polynom"));
 
   class__<Segment>("Segment", init<Eigen::Vector2d, Eigen::Vector2d>())
-      .add_property("start", &Segment::start, &Segment::start)
-      .add_property("end", &Segment::end, &Segment::start)
+      .def_readwrite("start", &Segment::start, np_docstring("Segment start position"))
+      .def_readwrite("end", &Segment::end, np_docstring("Segmend end position"))
       .def(
-          "is_parallel", +[](Segment& s1, const Segment& s2) { return s1.is_parallel(s2); })
+          "is_parallel", +[](Segment& s1, const Segment& s2) { return s1.is_parallel(s2); }, args("self", "s2"),
+          "Tests if this segment is paralell to another segment s2")
       .def(
-          "is_point_aligned", +[](Segment& s, const Eigen::Vector2d& point) { return s.is_point_aligned(point); })
+          "is_point_aligned", +[](Segment& s, const Eigen::Vector2d& point) { return s.is_point_aligned(point); },
+          args("self", "point"), "Tests if a given point is aligned on the segment")
       .def(
-          "is_collinear", +[](Segment& s1, const Segment& s2) { return s1.is_collinear(s2); })
+          "is_collinear", +[](Segment& s1, const Segment& s2) { return s1.is_collinear(s2); }, args("self", "s2"),
+          "Tests if the segments are on the exact same line")
       .def(
-          "is_point_in_segment", +[](Segment& s, const Eigen::Vector2d& point) { return s.is_point_in_segment(point); })
-      .def("intersects", &Segment::intersects)
-      .def("line_pass_through", &Segment::line_pass_through)
-      .def("half_line_pass_through", &Segment::half_line_pass_through)
-      .def("lines_intersection", &Segment::lines_intersection);
+          "is_point_in_segment", +[](Segment& s, const Eigen::Vector2d& point) { return s.is_point_in_segment(point); },
+          args("self", "point"), "Tests if a point is on the segment")
+      .def("intersects", &Segment::intersects, args("self", "s2"), "Tests if the segment intersects")
+      .def("line_pass_through", &Segment::line_pass_through, args("self", "line"),
+           "Checks if a given line pass through this segment")
+      .def("half_line_pass_through", &Segment::half_line_pass_through, args("self", "half_line"),
+           "Checks if a given half-line passes through this segment")
+      .def("lines_intersection", &Segment::lines_intersection, args("self", "s2"),
+           "Find the intersection between the lines guided by the segments");
 
 #ifdef HAVE_RHOBAN_UTILS
   using namespace rhoban_utils;
