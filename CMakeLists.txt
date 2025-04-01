@@ -160,7 +160,7 @@ target_include_directories(placo PRIVATE ${PYTHON_INCLUDE_DIRS})
 
 add_custom_command(
     TARGET placo POST_BUILD
-    COMMAND  "${Python_EXECUTABLE}" doxystub
+    COMMAND doxystub
         --module placo
         --doxygen_directory "${CMAKE_CURRENT_SOURCE_DIR}"
         --output "${CMAKE_BINARY_DIR}/${PYTHON_SITELIB}/placo.pyi"
