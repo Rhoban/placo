@@ -4,41 +4,10 @@ import inspect
 import sys
 import os
 import argparse
-from config import module_name, doxygen_path
-
-# Current script directory:
-repo_directory = os.path.dirname(os.path.realpath(__file__ + "/" + doxygen_path))
-
-# If .pyi file already exists next to stubs.py, we read it directly. This is a way to
-# avoid running Doxygen when building sdist release.
-if os.path.exists(f"{repo_directory}/{module_name}.pyi"):
-    with open(f"{repo_directory}/{module_name}.pyi", "r") as f:
-        print(f.read())
-    exit(0)
-
-# Prepending current directory to PYTHONPATH
-sys.path = ["."] + sys.path
-
-exec(f"import {module_name}")
-from doxygen_parse import parse_directory, get_members, get_metadata
-
-module = eval(f"{module_name}")
-
-# Ensure Doxygen is run
-if not os.path.exists(f"/usr/bin/doxygen"):
-    sys.stderr.write("\n-----------------------\n")
-    sys.stderr.write("WARNING: Doxygen is not installed\n")
-    sys.stderr.write("         you should run: sudo apt install doxygen\n")
-    sys.stderr.write("-----------------------\n\n")
-    exit(1)
-
-result = os.system(f"cd {repo_directory} && doxygen 1>&2")
-
-# Read the Doxygen XML file
-parse_directory(repo_directory)
+from doxygen_parse import Doxygen
 
 # Translation for types from C++ to python
-rewrite_types: dict = {
+cxx_to_python_overrides: dict = {
     "std::string": "str",
     "double": "float",
     "int": "int",
@@ -53,29 +22,11 @@ rewrite_types: dict = {
     "Eigen::Affine3d": "numpy.ndarray",
 }
 
-# Building registry and reverse registry for class names
-cxx_registry = module.get_classes_registry()
-py_registry = {"root": "root"}
-for entry in cxx_registry:
-    rewrite_types[entry] = cxx_registry[entry]
-    py_registry[cxx_registry[entry]] = entry
-
-
-def get_member(class_name: str, member_name: str):
-    if class_name in py_registry:
-        cxx_name = py_registry[class_name]
-        members = get_members(cxx_name)
-        if members is not None and member_name in members:
-            return members[member_name]
-
-    return None
-
 
 def cxx_type_to_py(typename: str):
     """
     We apply here some heuristics to rewrite C++ types to Python
     """
-    typename_raw = typename
     if typename is not None:
         typename = typename.replace("&", "")
         typename = typename.replace("*", "")
@@ -170,7 +121,7 @@ def print_class_member(class_name: str, member_name: str):
         py_type = cxx_type_to_py(member["type"])
         print(f"  {member_name}: {py_type} # {member['type']}")
         if "brief" in member:
-            print(f'  """{member["brief"]}"""')
+            print(f'  """{member["brief"].strip()}"""')
     else:
         print(f"  {member_name}: any")
 
@@ -220,49 +171,125 @@ def print_class_method(class_name: str, method_name: str, doc: str, prefix: str 
     else:
         print_def(method_name, doc, prefix)
 
-print("# Doxygen stubs generation")
-print("import numpy")
-print("import typing")
 
-for name, object in inspect.getmembers(module):
-    if isinstance(object, type):
-        class_name = object.__name__
-        print(f'{class_name} = typing.NewType("{class_name}", None)')
+class DoxyStubs:
+    def __init__(self, module_name: str, doxygen_directory: str):
+        self.module_name: str = module_name
+        self.doxygen_directory: str = doxygen_directory
+        self.stubs: str = ""
+        self.groups: dict = {}
+        self.doxygen: Doxygen = Doxygen()
 
-groups = {}
+        # C++/Python types conversion mapping
+        self.cxx_to_python: dict = cxx_to_python_overrides.copy()
+        self.python_to_cxx: dict = {}
 
-for name, object in inspect.getmembers(module):
-    if isinstance(object, type):
-        class_name = object.__name__
-        print(f"class {class_name}:")
+    def process(self):
+        # Load the module to stub
+        exec(f"import {self.module_name}")
+        self.module = eval(f"{self.module_name}")
 
-        if class_name in py_registry:
-            metadata = get_metadata(py_registry[class_name])
+        # Running & parsing Doxygen
+        # self.run_doxygen()
+        self.doxygen.parse_directory(self.doxygen_directory)
 
-            if metadata is not None:
-                namespace = "::".join(metadata["name"].split("::")[:-1][:2])
-                if namespace not in groups:
-                    groups[namespace] = []
-                groups[namespace].append(class_name)
+        # Headers and forward types declaration
+        self.stubs += "# Doxygen stubs generation\n"
+        self.stubs += "import numpy\n"
+        self.stubs += "import typing\n"
 
-            if (
-                metadata is not None
-                and "brief" in metadata
-                and metadata["brief"] is not None
-            ):
-                print(f"  \"\"\"{metadata['brief']}\"\"\"")
+        for _, object in inspect.getmembers(self.module):
+            if isinstance(object, type):
+                class_name = object.__name__
+                self.stubs += (
+                    f'{class_name} = typing.NewType("{class_name}", None)' + "\n"
+                )
 
-        for _name, _object in inspect.getmembers(object):
-            if not _name.startswith("_") or _name == "__init__":
-                if callable(_object):
-                    print_class_method(class_name, _name, _object.__doc__, "  ")
-                else:
-                    print_class_member(class_name, _name)
-        print("")
-    elif callable(object):
-        print_class_method("root", name, object.__doc__)
-        print("")
-    else:
-        ...
+        # Building registry and reverse registry for class names
+        cxx_registry = self.module.get_classes_registry()
+        for cxx_type, python_type in cxx_registry.items():
+            self.cxx_to_python[cxx_type] = python_type
+            self.python_to_cxx[python_type] = cxx_type
 
-print(f"__groups__ = {groups}")
+        # Processing module members
+        self.process_module_members()
+
+        # Printing namespace groups
+        self.stubs += f"__groups__ = {self.groups}\n"
+
+    def run_doxygen(self):
+        """
+        Ensure Doxygen is run
+        """
+        if not os.path.exists(f"/usr/bin/doxygen"):
+            sys.stderr.write("\n-----------------------\n")
+            sys.stderr.write("WARNING: Doxygen is not installed\n")
+            sys.stderr.write("         you should run: sudo apt install doxygen\n")
+            sys.stderr.write("-----------------------\n\n")
+            exit(1)
+
+        os.system(f"cd {self.doxygen_directory} && doxygen 1>&2")
+
+    def process_module_members(self):
+        """
+        Parse members available in the module and generate stubs
+        """
+        for name, object in inspect.getmembers(self.module):
+            if isinstance(object, type):
+                # Object is a class
+                class_name = object.__name__
+                self.stubs += f"class {class_name}:\n"
+
+                if class_name in self.python_to_cxx:
+                    doxygen_class = self.doxygen.get_class(
+                        self.python_to_cxx[class_name]
+                    )
+
+                    # Adding the class to related groups
+                    if doxygen_class is not None:
+                        namespace = "::".join(doxygen_class.name.split("::")[:-1][:2])
+                        if namespace not in self.groups:
+                            self.groups[namespace] = []
+                        self.groups[namespace].append(class_name)
+
+                    if (
+                        metadata is not None
+                        and "brief" in metadata
+                        and metadata["brief"] is not None
+                    ):
+                        print(f"  \"\"\"{metadata['brief']}\"\"\"")
+
+                for _name, _object in inspect.getmembers(object):
+                    if not _name.startswith("_") or _name == "__init__":
+                        if callable(_object):
+                            print_class_method(class_name, _name, _object.__doc__, "  ")
+                        else:
+                            print_class_member(class_name, _name)
+                print("")
+            elif callable(object):
+                # Object is a function
+                print_class_method("root", name, object.__doc__)
+                print("")
+            else:
+                # Else, doing nothing
+                ...
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(prog="onshape-to-robot-bullet")
+    parser.add_argument("module")
+    parser.add_argument("doxygen_directory")
+    args = parser.parse_args()
+
+    # If .pyi file already exists next to stubs.py, we read it directly. This is a way to
+    # avoid running Doxygen when building sdist release.
+    if os.path.exists(f"{args.doxygen_directory}/{args.module}.pyi"):
+        with open(f"{args.doxygen_directory}/{args.module}.pyi", "r") as f:
+            print(f.read())
+        exit(0)
+
+    # Prepending current directory to PYTHONPATH
+    sys.path = ["."] + sys.path
+
+    doxy_stubs = DoxyStubs(args.module, args.doxygen_directory)
+    doxy_stubs.process()
