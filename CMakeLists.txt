@@ -161,7 +161,11 @@ target_include_directories(placo PRIVATE ${PYTHON_INCLUDE_DIRS})
 
 add_custom_command(TARGET placo POST_BUILD
     COMMAND 
-    ${CMAKE_CURRENT_SOURCE_DIR}/bindings/doxystub/stubs.sh "${Python_EXECUTABLE}" "${CMAKE_BINARY_DIR}/${PYTHON_SITELIB}" > "${CMAKE_BINARY_DIR}/${PYTHON_SITELIB}/placo.pyi"
+    "${Python_EXECUTABLE}"
+    ${CMAKE_CURRENT_SOURCE_DIR}/bindings/doxystub/stubs.py
+    placo
+    "${CMAKE_CURRENT_SOURCE_DIR}"
+    "${CMAKE_BINARY_DIR}/${PYTHON_SITELIB}/placo.pyi"
     COMMENT "Generating stubs..."
 )
 
