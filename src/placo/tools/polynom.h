@@ -9,6 +9,12 @@ class Polynom
 public:
   Polynom(Eigen::VectorXd coefficients);
 
+  /**
+   * @brief Computes the coefficient in front of term of degree ``degree`` after ``derivative`` differentiations
+   * @param degree degree
+   * @param derivative number of differentiations
+   * @return coefficient
+   */
   static int derivative_coefficient(int degree, int derivative);
 
   /**
