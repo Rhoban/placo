@@ -4,6 +4,7 @@ import inspect
 import sys
 import os
 import argparse
+import fnmatch
 from doxygen_parse import Doxygen, DoxygenVariable, DoxygenFunction
 
 # Translation for types from C++ to python
@@ -13,13 +14,9 @@ cxx_to_python_overrides: dict = {
     "int": "int",
     "bool": "bool",
     "void": "None",
-    "Eigen::MatrixXd": "numpy.ndarray",
-    "Eigen::VectorXd": "numpy.ndarray",
-    "Eigen::Matrix3d": "numpy.ndarray",
-    "Eigen::Vector3d": "numpy.ndarray",
-    "Eigen::Matrix2d": "numpy.ndarray",
-    "Eigen::Vector2d": "numpy.ndarray",
-    "Eigen::Affine3d": "numpy.ndarray",
+    "Eigen::Matrix*": "numpy.ndarray",
+    "Eigen::Vector*": "numpy.ndarray",
+    "Eigen::Affine*": "numpy.ndarray",
 }
 
 
@@ -144,14 +141,29 @@ class DoxyStubs:
             if typename.startswith("const "):
                 typename = typename[6:]
 
-            if typename in self.cxx_to_python:
-                return self.cxx_to_python[typename]
-            elif typename.startswith("std::vector"):
-                return "list[" + self.cxx_type_to_py(typename[12:-1]) + "]"
-            else:
-                return f"any"
+            # Searching for a match in the mapping
+            for cxx_type, python_type in self.cxx_to_python.items():
+                if fnmatch.fnmatch(typename, cxx_type):
+                    return python_type
 
-        return None
+            # Manually handling special case of vector and map template types
+            result = re.match(r"^(.+)<(.+)>$", typename)
+            if result:
+                tpl_class = result.group(1).strip()
+                tpl_args = [arg.strip() for arg in result.group(2).strip().split(",")]
+
+                if tpl_class == "std::vector" and len(tpl_args) == 1:
+                    return "list[" + self.cxx_type_to_py(tpl_args[0]) + "]"
+                elif tpl_class == "std::map" and len(tpl_args) == 2:
+                    return (
+                        "dict["
+                        + self.cxx_type_to_py(tpl_args[0])
+                        + ", "
+                        + self.cxx_type_to_py(tpl_args[1])
+                        + "]"
+                    )
+
+        return "any"
 
     def run_doxygen(self):
         """
