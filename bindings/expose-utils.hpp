@@ -59,12 +59,9 @@ void exposeStdVector(const std::string& class_name)
 {
   typedef typename std::vector<T> vector_T;
 
-  if (!is_registered<T>())
-  {
-    class_<vector_T>(class_name.c_str()).def(vector_indexing_suite<vector_T>());
+  class_<vector_T>(class_name.c_str()).def(vector_indexing_suite<vector_T>());
 
-    custom_vector_from_seq<T>();
-  }
+  custom_vector_from_seq<T>();
 }
 
 template <typename K, typename V>
