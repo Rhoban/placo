@@ -1,4 +1,3 @@
-#include <iostream>
 #include <pinocchio/fwd.hpp>
 
 #include <Eigen/Dense>
@@ -14,10 +13,10 @@ BOOST_PYTHON_MODULE(placo)
 
   exposeEigen();
   exposeTools();
-  exposeRobotWrapper();
   exposeDynamics();
   exposeFootsteps();
   exposeProblem();
+  exposeRobotWrapper();
   exposeParameters();
   exposeKinematics();
   exposeWalkPatternGenerator();

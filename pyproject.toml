@@ -4,8 +4,7 @@ requires = [
   "cmeel[build]",
   "eiquadprog >= 1.2.6, < 2",
   "pin[build] >=  3",
-  "rhoban-cmeel-jsoncpp",
-  "git+https://github.com/gregwar/pybind11-stubgen.git"
+  "rhoban-cmeel-jsoncpp"
 ]
 
 [project]
