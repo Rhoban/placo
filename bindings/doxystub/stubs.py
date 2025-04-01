@@ -118,10 +118,14 @@ class DoxyStubs:
                 )
 
         # Building registry and reverse registry for class names
-        cxx_registry = self.module.get_classes_registry()
-        for cxx_type, python_type in cxx_registry.items():
-            self.cxx_to_python[cxx_type] = python_type
-            self.python_to_cxx[python_type] = cxx_type
+        for _, object in inspect.getmembers(self.module):
+            try:
+                python_type = object.__name__
+                cxx_type = object.__cxx_class__()
+                self.cxx_to_python[cxx_type] = python_type
+                self.python_to_cxx[python_type] = cxx_type
+            except AttributeError:
+                pass
 
         # Processing module members
         self.process_module_members()
@@ -346,23 +350,37 @@ class DoxyStubs:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog="doxystubs")
-    parser.add_argument("module")
-    parser.add_argument("doxygen_directory")
-    parser.add_argument("output_pyi")
+
+    parser.add_argument(
+        "-m", "--module", type=str, required=True, help="Module to stub"
+    )
+    parser.add_argument(
+        "-d",
+        "--doxygen_directory",
+        type=str,
+        required=True,
+        help="Directory containing Doxyfile to use",
+    )
+    parser.add_argument(
+        "-o", "--output", type=str, required=True, help="Output .pyi filename"
+    )
     args = parser.parse_args()
+    stubs = None
 
     # If .pyi file already exists next to stubs.py, we read it directly. This is a way to
     # avoid running Doxygen when building sdist release.
     if os.path.exists(f"{args.doxygen_directory}/{args.module}.pyi"):
         with open(f"{args.doxygen_directory}/{args.module}.pyi", "r") as f:
-            print(f.read())
-        exit(0)
+            stubs = f.read()
 
-    # Prepending current directory to PYTHONPATH
-    sys.path = ["."] + sys.path
+    if stubs == None:
+        # Prepending current directory to PYTHONPATH
+        sys.path = ["."] + sys.path
 
-    doxy_stubs = DoxyStubs(args.module, args.doxygen_directory)
-    doxy_stubs.process()
+        doxy_stubs = DoxyStubs(args.module, args.doxygen_directory)
+        doxy_stubs.process()
+        stubs = doxy_stubs.stubs
 
-    with open(args.output_pyi, "w") as file:
-        file.write(doxy_stubs.stubs)
+    # Writing the output
+    with open(args.output, "w") as file:
+        file.write(stubs)
