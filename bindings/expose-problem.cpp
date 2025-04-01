@@ -5,7 +5,7 @@
 
 #include "expose-utils.hpp"
 #include "module.h"
-#include "doxystub/registry.h"
+#include "doxystub.h"
 #include "placo/problem/problem.h"
 #include "placo/problem/variable.h"
 #include "placo/problem/expression.h"

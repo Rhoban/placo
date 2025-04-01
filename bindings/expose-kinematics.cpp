@@ -2,7 +2,7 @@
 
 #include "expose-utils.hpp"
 #include "module.h"
-#include "doxystub/registry.h"
+#include "doxystub.h"
 #include "placo/kinematics/kinematics_solver.h"
 #include <boost/python/return_internal_reference.hpp>
 #include <Eigen/Dense>

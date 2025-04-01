@@ -3,7 +3,7 @@
 #include <Eigen/Dense>
 #include <boost/python.hpp>
 #include "module.h"
-#include "doxystub/registry.h"
+#include "doxystub.h"
 #include "placo/tools/utils.h"
 #include "placo/tools/cubic_spline.h"
 #include "placo/tools/cubic_spline_3d.h"
