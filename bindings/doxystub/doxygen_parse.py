@@ -88,10 +88,11 @@ class DoxygenParameter:
 
 
 class DoxygenFunction(DoxygenMember):
-    def __init__(self, id: str, name: str):
+    def __init__(self, id: str, name: str, class_member: bool = False):
         super().__init__(id, name)
         self.params: list[DoxygenParameter] = []
         self.returns_description = None
+        self.class_member = class_member
 
     def parse(self, node: ET.Element):
         super().parse(node)
@@ -114,9 +115,9 @@ class DoxygenFunction(DoxygenMember):
                     param.description = param_desc
 
         # Description of method returns
-        return_type = node.find("detaileddescription/para/simplesect[@kind='return']")
-        if return_type:
-            self.returns_description = return_type.find("para")
+        return_desc = node.find("detaileddescription/para/simplesect[@kind='return']")
+        if return_desc:
+            self.returns_description = return_desc.find("para")
 
 
 class DoxygenCompound(DoxygenElement):
@@ -125,6 +126,7 @@ class DoxygenCompound(DoxygenElement):
         self.brief: str | None = None
         self.members: dict[str, DoxygenMember] = {}
         self.types: dict[str, str] = {}
+        self.is_class: bool = False
 
     def parse(self, node: ET.Element):
         if node.find("briefdescription/para"):
@@ -147,7 +149,9 @@ class DoxygenCompound(DoxygenElement):
 
             member = None
             if kind == "function":
-                member = DoxygenFunction(id, member_node.find("name").text)
+                member = DoxygenFunction(
+                    id, member_node.find("name").text, self.is_class
+                )
                 member.parse(member_node)
             elif kind == "variable":
                 member = DoxygenVariable(id, member_node.find("name").text)
@@ -166,6 +170,7 @@ class DoxygenCompound(DoxygenElement):
 class DoxygenClass(DoxygenCompound):
     def __init__(self, id: str, name: str):
         super().__init__(id, name)
+        self.is_class: bool = True
 
 
 class DoxygenNamespace(DoxygenCompound):
@@ -198,6 +203,11 @@ class Doxygen:
             for member in compound.members.values():
                 member.type = self.resolve_type(member.type)
 
+                if isinstance(member, DoxygenFunction):
+                    function: DoxygenFunction = member
+                    for param in member.params:
+                        param.type = self.resolve_type(param.type)
+
     def resolve_type(self, id: Union[list, str]):
         if type(id) == list:
             tpl = self.resolve_type(id[0])
@@ -223,7 +233,7 @@ class Doxygen:
         compound_kind = compounddef_node.attrib["kind"]
         id = compounddef_node.attrib["id"]
 
-        if compound_kind == "class":
+        if compound_kind == "class" or compound_kind == "struct":
             compound = DoxygenClass(id, name)
         elif compound_kind == "namespace":
             compound = DoxygenNamespace(id, name)
@@ -233,11 +243,55 @@ class Doxygen:
         compound.parse(compounddef_node)
         self.compounds[id] = compound
 
-    def get_class(self, class_name: str) -> DoxygenClass|None:
+    def get_class(self, class_name: str) -> DoxygenClass | None:
         for compound in self.compounds.values():
             if compound.name == class_name:
                 return compound
-            
+
+        return None
+
+    def get_class_member(
+        self, class_name: str, member_name: str
+    ) -> DoxygenMember | None:
+        class_ = self.get_class(class_name)
+
+        if class_ is not None:
+            for member in class_.members.values():
+                if member.name == member_name:
+                    return member
+
+        return None
+
+    def get_function(self, function_name: str) -> DoxygenFunction | None:
+        for compound in self.compounds.values():
+            if isinstance(compound, DoxygenNamespace):
+                for member in compound.members.values():
+                    if (
+                        isinstance(member, DoxygenFunction)
+                        and member.name == function_name
+                    ):
+                        return member
+
+        return None
+
+    def get_class_function(
+        self, class_name: str, function_name: str
+    ) -> DoxygenFunction | None:
+        member = self.get_class_member(class_name, function_name)
+
+        if isinstance(member, DoxygenFunction):
+            return member
+
+        return None
+
+    def get_class_variable(
+        self, class_name: str, function_name: str
+    ) -> DoxygenVariable | None:
+        member = self.get_class_member(class_name, function_name)
+
+        if isinstance(member, DoxygenVariable):
+            return member
+
         return None
 
 

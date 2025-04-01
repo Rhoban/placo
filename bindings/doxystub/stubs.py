@@ -4,7 +4,7 @@ import inspect
 import sys
 import os
 import argparse
-from doxygen_parse import Doxygen
+from doxygen_parse import Doxygen, DoxygenVariable, DoxygenFunction
 
 # Translation for types from C++ to python
 cxx_to_python_overrides: dict = {
@@ -23,153 +23,68 @@ cxx_to_python_overrides: dict = {
 }
 
 
-def cxx_type_to_py(typename: str):
+class MethodArgument:
     """
-    We apply here some heuristics to rewrite C++ types to Python
+    Argument of a method
     """
-    if typename is not None:
-        typename = typename.replace("&", "")
-        typename = typename.replace("*", "")
-        typename = typename.strip()
-        if typename.startswith("const "):
-            typename = typename[6:]
 
-        if typename in rewrite_types:
-            return rewrite_types[typename]
-        elif typename.startswith("std::vector"):
-            return "list[" + cxx_type_to_py(typename[12:-1]) + "]"
-        else:
-            return f"any"
-
-    return None
+    def __init__(
+        self,
+        name: str,
+        type: str = "",
+        default_value: str | None = None,
+        comment: str | None = None,
+    ):
+        self.name: str = name
+        self.type: str = type
+        self.default_value: str | None = default_value
+        self.comment: str | None = comment
 
 
-def parse_doc(name: str, doc: str) -> dict:
-    """
-    Parses the docstring prototypes produced by Boost.Python to infer types
-    """
-    definition = {"name": name, "args": [], "returns": "any"}
+class MethodSignature:
+    def __init__(self, name: str):
+        self.name = name
+        self.arguments: list[MethodArgument] = []
+        self.return_type: str = "any"
+        self.doc: str = ""
+        self.static: bool = False
 
-    prototype = doc.strip().split("\n")[0].strip()
-    prototype = prototype.replace("[", "").replace("]", "")
+    def generate(self, prefix: str = "") -> str:
+        """
+        Generate python code for this method signature
+        """
+        str_definition = ""
 
-    result = re.fullmatch(r"^(.*?)\((.+)\) -> (.+) :$", prototype)
-    if result:
-        definition["name"] = result.group(1)
-        definition["returns"] = result.group(3)
+        if self.static:
+            str_definition += f"{prefix}@staticmethod\n"
 
-        args = result.group(2).split(",")
-        for arg in args:
-            arg = arg.strip()
-            arg = arg[1:]
-            arg_type = ")".join(arg.split(")")[:-1])
-            arg_name = arg.split(")")[-1]
-            definition["args"].append([arg_type, arg_name])
+        str_definition += f"{prefix}def {self.name}(\n"
+        for argument in self.arguments:
+            extra_comment = ""
+            str_definition += f"{prefix}  {argument.name}"
+            if argument.type:
+                str_definition += f": {argument.type}"
+            if argument.default_value is not None:
+                if argument.type in ["str", "float", "int", "bool"]:
+                    str_definition += f" = {argument.default_value.capitalize()}"
+                else:
+                    str_definition += f" = None"
+                    extra_comment = f" (default: {argument.default_value})"
+            str_definition += ","
+            if argument.comment is not None:
+                str_definition += f" # {argument.comment}{extra_comment}"
+            str_definition += "\n"
+        str_definition += f"{prefix}) -> {self.return_type}:\n"
 
-    return definition
+        if self.doc != "":
+            str_definition += f'{prefix}  """' + "\n"
+            for line in self.doc.strip().split("\n"):
+                str_definition += f"{prefix}  " + line + "\n"
+            str_definition += f'{prefix}  """' + "\n"
 
+        str_definition += f"{prefix}  ...\n\n"
 
-def print_def_prototype(
-    method_name: str,
-    args: list,
-    return_type: str = "any",
-    doc="",
-    prefix: str = "",
-    static: bool = False,
-):
-    str_definition = ""
-
-    if static:
-        str_definition += f"{prefix}@staticmethod\n"
-
-    str_definition += f"{prefix}def {method_name}(\n"
-    for arg_name, arg_type, defvalue, comment in args:
-        extra_comment = ""
-        str_definition += f"{prefix}  {arg_name}: {arg_type}"
-        if defvalue is not None:
-            if arg_type in ["str", "float", "int", "bool"]:
-                str_definition += f" = {defvalue.capitalize()}"
-            else:
-                str_definition += f" = None"
-                extra_comment = f" (default: {defvalue})"
-        str_definition += ","
-        if comment is not None:
-            str_definition += f" # {comment}{extra_comment}"
-        str_definition += "\n"
-    str_definition += f"\n{prefix}) -> {return_type}:\n"
-    if doc != "":
-        str_definition += f'{prefix}  """{doc.strip()}"""\n'
-    str_definition += f"{prefix}  ...\n"
-    print(str_definition)
-
-
-def print_def(name: str, doc: str, prefix: str = ""):
-    definition = parse_doc(name, doc)
-
-    print_def_prototype(
-        definition["name"],
-        [[arg_name, arg_type, None, None] for arg_type, arg_name in definition["args"]],
-        definition["returns"],
-        prefix=prefix,
-    )
-
-
-def print_class_member(class_name: str, member_name: str):
-    member = get_member(class_name, member_name)
-
-    if member is not None:
-        py_type = cxx_type_to_py(member["type"])
-        print(f"  {member_name}: {py_type} # {member['type']}")
-        if "brief" in member:
-            print(f'  """{member["brief"].strip()}"""')
-    else:
-        print(f"  {member_name}: any")
-
-    print("")
-
-
-def print_class_method(class_name: str, method_name: str, doc: str, prefix: str = ""):
-    if method_name == "__init__":
-        member = get_member(class_name, class_name)
-    else:
-        member = get_member(class_name, method_name)
-
-    if member is not None:
-        static = member["static"]
-
-        # Method arguments
-        args = [
-            [arg["name"], cxx_type_to_py(arg["type"]), arg["default"], arg["type"]]
-            for arg in member["params"]
-        ]
-        if class_name != "root" and not member["static"]:
-            args = [["self", class_name, None, None]] + args
-
-        # Return type
-        return_type = "any"
-        if member["type"]:
-            return_type = cxx_type_to_py(member["type"])
-
-        # Brief
-        doc = ""
-        if "brief" in member and member["brief"] is not None:
-            doc = member["brief"] + "\n"
-
-        if "detailed" in member:
-            for param in member["detailed"]:
-                doc += f"\n{prefix}  :param {param['name']}: {param['desc']}"
-
-        if "verbatim" in member:
-            doc += f"\n{prefix}  {member['verbatim']}"
-
-        if "returns" in member:
-            doc += f"\n{prefix}  :return: {member['returns']}"
-
-        print_def_prototype(
-            method_name, args, return_type, doc=doc, prefix=prefix, static=static
-        )
-    else:
-        print_def(method_name, doc, prefix)
+        return str_definition
 
 
 class DoxyStubs:
@@ -217,6 +132,27 @@ class DoxyStubs:
         # Printing namespace groups
         self.stubs += f"__groups__ = {self.groups}\n"
 
+    def cxx_type_to_py(self, typename: str):
+        """
+        We apply here some heuristics to rewrite C++ types to Python
+        """
+        if typename is not None:
+            # Removing references, pointers and const
+            typename = typename.replace("&", "")
+            typename = typename.replace("*", "")
+            typename = typename.strip()
+            if typename.startswith("const "):
+                typename = typename[6:]
+
+            if typename in self.cxx_to_python:
+                return self.cxx_to_python[typename]
+            elif typename.startswith("std::vector"):
+                return "list[" + self.cxx_type_to_py(typename[12:-1]) + "]"
+            else:
+                return f"any"
+
+        return None
+
     def run_doxygen(self):
         """
         Ensure Doxygen is run
@@ -252,33 +188,155 @@ class DoxyStubs:
                             self.groups[namespace] = []
                         self.groups[namespace].append(class_name)
 
-                    if (
-                        metadata is not None
-                        and "brief" in metadata
-                        and metadata["brief"] is not None
-                    ):
-                        print(f"  \"\"\"{metadata['brief']}\"\"\"")
+                        if doxygen_class.brief:
+                            self.stubs += f'  """' + "\n"
+                            self.stubs += f"  {doxygen_class.brief.strip()}\n"
+                            self.stubs += f'  """' + "\n"
 
+                # Walking through class members
                 for _name, _object in inspect.getmembers(object):
                     if not _name.startswith("_") or _name == "__init__":
                         if callable(_object):
-                            print_class_method(class_name, _name, _object.__doc__, "  ")
+                            # Class method
+                            self.process_class_method(
+                                class_name, _name, _object.__doc__
+                            )
                         else:
-                            print_class_member(class_name, _name)
-                print("")
+                            # Class variable
+                            self.process_class_variable(class_name, _name)
+                self.stubs += "\n"
             elif callable(object):
                 # Object is a function
-                print_class_method("root", name, object.__doc__)
-                print("")
+                self.process_method(name, object.__doc__)
+                self.stubs += "\n"
             else:
                 # Else, doing nothing
                 ...
 
+    def parse_boost_python_docstring(self, name: str, doc: str) -> MethodSignature:
+        """
+        Parses the docstring prototypes produced by Boost.Python to infer types
+        """
+        signature = MethodSignature(name)
+
+        doc = doc.replace("[", "").replace("]", "").strip()
+
+        result = re.match(
+            r"^([^\n]*?)\(([^\n]+)\) -> ([^\n]+) :(.*?)C\+\+ signature",
+            doc,
+            re.MULTILINE + re.DOTALL,
+        )
+
+        if result:
+            signature.name = result.group(1)
+            signature.return_type = result.group(3)
+            signature.doc = result.group(4).strip()
+
+            args = result.group(2).split(",")
+            for arg in args:
+                arg = arg.strip()
+                arg = arg[1:]
+                arg_type = ")".join(arg.split(")")[:-1])
+                arg_name = arg.split(")")[-1]
+                argument = MethodArgument(arg_name, arg_type)
+                signature.arguments.append(argument)
+
+        return signature
+
+    def build_signature_from_doxygen(
+        self, function: DoxygenFunction
+    ) -> MethodSignature:
+        signature = MethodSignature(function.name)
+        signature.static = function.static
+
+        # Method arguments
+        if function.class_member:
+            signature.arguments.append(MethodArgument("self"))
+        for parameter in function.params:
+            argument = MethodArgument(
+                parameter.name,
+                self.cxx_type_to_py(parameter.type),
+                parameter.default_value,
+                parameter.type,
+            )
+            signature.arguments.append(argument)
+
+        # Return type
+        signature.return_type = self.cxx_type_to_py(function.type)
+
+        # Brief
+        if function.brief:
+            signature.doc += function.brief.strip() + "\n"
+
+        # Parameters description
+        for parameter in function.params:
+            if parameter.description:
+                py_type = self.cxx_type_to_py(parameter.type)
+                signature.doc += (
+                    f"\n:param {py_type} {parameter.name}: {parameter.description}"
+                )
+
+        # Returns description
+        if function.returns_description:
+            signature.doc += f"\n:return: {function.returns_description}"
+
+        return signature
+
+    def process_class_method(self, class_name: str, method_name: str, doc: str):
+        function = None
+
+        if class_name in self.python_to_cxx:
+            if method_name == "__init__":
+                function = self.doxygen.get_class_function(
+                    self.python_to_cxx[class_name], class_name
+                )
+            else:
+                function = self.doxygen.get_class_function(
+                    self.python_to_cxx[class_name], method_name
+                )
+
+        if function is not None:
+            signature = self.build_signature_from_doxygen(function)
+        else:
+            signature = self.parse_boost_python_docstring(method_name, doc)
+
+        self.stubs += signature.generate("  ")
+
+    def process_method(self, function_name: str, doc: str):
+        function = self.doxygen.get_function(function_name)
+
+        if function is not None:
+            signature = self.build_signature_from_doxygen(function)
+        else:
+            signature = self.parse_boost_python_docstring(function_name, doc)
+
+        self.stubs += signature.generate()
+
+    def process_class_variable(self, class_name: str, member_name: str):
+        variable = None
+        if class_name in self.python_to_cxx:
+            variable = self.doxygen.get_class_variable(
+                self.python_to_cxx[class_name], member_name
+            )
+
+        if variable is not None:
+            py_type = self.cxx_type_to_py(variable.type)
+            self.stubs += f"  {member_name}: {py_type} # {variable.type}\n"
+            if variable.brief:
+                self.stubs += f'  """' + "\n"
+                self.stubs += f"  {variable.brief.strip()}\n"
+                self.stubs += f'  """' + "\n"
+        else:
+            self.stubs += f"  {member_name}: any\n"
+
+        self.stubs += "\n"
+
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(prog="onshape-to-robot-bullet")
+    parser = argparse.ArgumentParser(prog="doxystubs")
     parser.add_argument("module")
     parser.add_argument("doxygen_directory")
+    parser.add_argument("output_pyi")
     args = parser.parse_args()
 
     # If .pyi file already exists next to stubs.py, we read it directly. This is a way to
@@ -293,3 +351,6 @@ if __name__ == "__main__":
 
     doxy_stubs = DoxyStubs(args.module, args.doxygen_directory)
     doxy_stubs.process()
+
+    with open(args.output_pyi, "w") as file:
+        file.write(doxy_stubs.stubs)
