@@ -101,7 +101,8 @@ void exposeRobotType(class_<RobotType, W1>& type)
             }
 
             return dict;
-          })
+          },
+          args("self", "qdd_a", "frame"), "Computes the torque required to reach given acceleration in fixed frame")
       .def(
           "get_T_world_frame",
           +[](RobotType& robot, const std::string& frame) { return robot.get_T_world_frame(frame); })
