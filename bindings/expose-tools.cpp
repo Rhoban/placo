@@ -3,6 +3,7 @@
 #include <Eigen/Dense>
 #include <boost/python.hpp>
 #include "module.h"
+#include "doxystub/registry.h"
 #include "placo/tools/utils.h"
 #include "placo/tools/cubic_spline.h"
 #include "placo/tools/cubic_spline_3d.h"
@@ -54,7 +55,7 @@ void exposeTools()
 
   class_<std::map<std::string, double>>("map_string_double").def(map_indexing_suite<std::map<std::string, double>>());
 
-  class_<AxisesMask>("AxisesMask", init<>())
+  class__<AxisesMask>("AxisesMask", init<>())
       .def<void (AxisesMask::*)(std::string, std::string)>  //
       ("set_axises", &AxisesMask::set_axises,
        set_axises_overloads(args("self", "axises", "frame"), "Specify the `axises` to mask (keep), in `frame` (task, "
@@ -65,7 +66,7 @@ void exposeTools()
                      np_docstring("Transformation from world to custom frame"))
       .def("apply", &AxisesMask::apply, args("self", "M"), "Apply the masking to M, keeping specified axises");
 
-  class_<Prioritized, boost::noncopyable>("Prioritized", no_init)
+  class__<Prioritized, boost::noncopyable>("Prioritized", no_init)
       .add_property("name", &Prioritized::name, typed_docstring<std::string>("Name"))
       .add_property(
           "priority", +[](Prioritized& pri) { return pri.priority_name(); })
@@ -75,7 +76,7 @@ void exposeTools()
                                                                           "priority `priority` (soft or hard) and a "
                                                                           "`weight` (only applicable for hard tasks)"));
 
-  class_<CubicSpline>("CubicSpline", init<optional<bool>>())
+  class__<CubicSpline>("CubicSpline", init<optional<bool>>())
       .def("pos", &CubicSpline::pos, args("self", "t"), "Returns position at time `t`")
       .def("vel", &CubicSpline::vel, args("self", "t"), "Returns velocity at time `t`")
       .def("acc", &CubicSpline::acc, args("self", "t"), "Returns acceleration at time `t`")
@@ -84,7 +85,7 @@ void exposeTools()
       .def("clear", &CubicSpline::clear, args("self"), "Clear all points from this spline")
       .def("duration", &CubicSpline::duration, args("self"), "Total spline duration");
 
-  class_<CubicSpline3D>("CubicSpline3D")
+  class__<CubicSpline3D>("CubicSpline3D")
       .def("pos", &CubicSpline3D::pos, args("self", "t"), "Returns position at time `t`")
       .def("vel", &CubicSpline3D::vel, args("self", "t"), "Returns velocity at time `t`")
       .def("acc", &CubicSpline3D::acc, args("self", "t"), "Returns acceleration at time `t`")
@@ -93,7 +94,7 @@ void exposeTools()
       .def("clear", &CubicSpline3D::clear, args("self"), "Clear all points from this spline")
       .def("duration", &CubicSpline3D::duration, args("self"), "Total spline duration");
 
-  class_<Polynom>("Polynom", init<Eigen::VectorXd>())
+  class__<Polynom>("Polynom", init<Eigen::VectorXd>())
       .def("value", &Polynom::value,
            value_overloads(args("self", "x", "differentiate"), "Computes polynom value at `x`, with `differentiate` "
                                                                "differentiations"))
@@ -102,7 +103,7 @@ void exposeTools()
       .staticmethod("derivative_coefficient")
       .def_readwrite("coefficients", &Polynom::coefficients, np_docstring("Coefficients of this polynom"));
 
-  class_<Segment>("Segment", init<Eigen::Vector2d, Eigen::Vector2d>())
+  class__<Segment>("Segment", init<Eigen::Vector2d, Eigen::Vector2d>())
       .def_readwrite("start", &Segment::start, np_docstring("Segment start position"))
       .def_readwrite("end", &Segment::end, np_docstring("Segmend end position"))
       .def(
