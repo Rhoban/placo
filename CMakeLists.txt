@@ -166,6 +166,7 @@ add_custom_command(TARGET placo POST_BUILD
     placo
     "${CMAKE_CURRENT_SOURCE_DIR}"
     "${CMAKE_BINARY_DIR}/${PYTHON_SITELIB}/placo.pyi"
+    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/${PYTHON_SITELIB}"
     COMMENT "Generating stubs..."
 )
 
