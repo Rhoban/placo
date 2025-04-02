@@ -55,12 +55,12 @@ void exposeTools()
                                                            set_axises_overloads())
       .def_readwrite("R_local_world", &AxisesMask::R_local_world)
       .def_readwrite("R_custom_world", &AxisesMask::R_custom_world)
-      .def("apply", &AxisesMask::apply);
+      .def("apply", &AxisesMask::apply);  
 
   class__<Prioritized, boost::noncopyable>("Prioritized", no_init)
       .add_property("name", &Prioritized::name)
       .add_property(
-          "priority", +[](Prioritized& pri) { return pri.priority_name(); })
+          "priority", +[](Prioritized& priority) { return priority.priority_name(); }, "Priority [str]")
       .def<void (Prioritized::*)(std::string, std::string, double)>("configure", &Prioritized::configure,
                                                                     configure_overloads());
 
