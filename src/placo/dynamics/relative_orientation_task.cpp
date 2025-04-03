@@ -41,7 +41,7 @@ void RelativeOrientationTask::update()
 
   Eigen::Vector3d desired_acceleration = kp * orientation_error_world + get_kd() * velocity_error_world + domega_a_b;
 
-  Eigen::MatrixXd Jlog;
+  Eigen::Matrix3d Jlog;
   pinocchio::Jlog3(M, Jlog);
 
   // Acceleration is: J * qdd + dJ * qd

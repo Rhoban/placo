@@ -11,19 +11,19 @@ RelativeOrientationTask::RelativeOrientationTask(model::RobotWrapper::FrameIndex
 
 void RelativeOrientationTask::update()
 {
-  auto T_world_a = solver->robot.get_T_world_frame(frame_a);
-  auto T_world_b = solver->robot.get_T_world_frame(frame_b);
-  auto T_a_b = T_world_a.inverse() * T_world_b;
+  Eigen::Affine3d T_world_a = solver->robot.get_T_world_frame(frame_a);
+  Eigen::Affine3d T_world_b = solver->robot.get_T_world_frame(frame_b);
+  Eigen::Affine3d T_a_b = T_world_a.inverse() * T_world_b;
 
   Eigen::Vector3d error = pinocchio::log3(R_a_b * T_a_b.linear().transpose());
 
   Eigen::MatrixXd J_a = solver->robot.frame_jacobian(frame_a, pinocchio::WORLD);
   Eigen::MatrixXd J_b = solver->robot.frame_jacobian(frame_b, pinocchio::WORLD);
   Eigen::MatrixXd J_ab = T_world_a.linear().transpose() * (J_b - J_a).block(3, 0, 3, solver->N);
-  Eigen::MatrixXd Jlog;
+  Eigen::Matrix3d Jlog;
   pinocchio::Jlog3(R_a_b * T_a_b.linear().transpose(), Jlog);
 
-  A = mask.apply(Jlog * J_ab);
+  A = mask.apply(J_ab);
   b = mask.apply(error);
 }
 
