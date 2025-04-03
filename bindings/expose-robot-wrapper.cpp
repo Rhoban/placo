@@ -202,7 +202,11 @@ void exposeRobotWrapper()
       .def(
           "get_support_side", +[](const HumanoidRobot& robot) { return robot.support_side; })
       .add_property("support_is_both", &HumanoidRobot::support_is_both, &HumanoidRobot::support_is_both)
-      .def_readwrite("T_world_support", &HumanoidRobot::T_world_support);
+      .add_property("support_side", &HumanoidRobot::support_side)
+      .def("get_T_world_support", +[](const HumanoidRobot& robot) { return robot.T_world_support; })
+      .def("set_T_world_support", +[](HumanoidRobot& robot, const Eigen::Affine3d& T_world_support) {
+        robot.T_world_support = T_world_support;
+      });
 
   exposeStdVector<RobotWrapper::Collision>("vector_Collision");
   exposeStdVector<RobotWrapper::Distance>("vector_Distance");
