@@ -89,14 +89,11 @@ void exposeTools()
   class__<Segment>("Segment", init<Eigen::Vector2d, Eigen::Vector2d>())
       .add_property("start", &Segment::start, &Segment::start)
       .add_property("end", &Segment::end, &Segment::start)
-      .def(
-          "is_parallel", +[](Segment& s1, const Segment& s2) { return s1.is_parallel(s2); })
-      .def(
-          "is_point_aligned", +[](Segment& s, const Eigen::Vector2d& point) { return s.is_point_aligned(point); })
-      .def(
-          "is_collinear", +[](Segment& s1, const Segment& s2) { return s1.is_collinear(s2); })
-      .def(
-          "is_point_in_segment", +[](Segment& s, const Eigen::Vector2d& point) { return s.is_point_in_segment(point); })
+      .def("norm", &Segment::norm)
+      .def("is_parallel", &Segment::is_parallel)
+      .def("is_point_aligned", &Segment::is_point_aligned)
+      .def("is_segment_aligned", &Segment::is_segment_aligned)
+      .def("is_point_in_segment", &Segment::is_point_in_segment)
       .def("intersects", &Segment::intersects)
       .def("line_pass_through", &Segment::line_pass_through)
       .def("half_line_pass_through", &Segment::half_line_pass_through)
