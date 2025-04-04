@@ -43,6 +43,10 @@ void exposeRobotType(class_<RobotType, W1>& type)
       .def("set_velocity_limits", &RobotType::set_velocity_limits)
       .def("set_torque_limit", &RobotType::set_torque_limit)
       .def("set_joint_limits", &RobotType::set_joint_limits)
+      .def("get_joint_limits", +[](RobotType& robot, const std::string& joint) {
+        auto limits = robot.get_joint_limits(joint);
+        return Eigen::Vector2d(limits.first, limits.second);
+      })
       .def("update_kinematics", &RobotType::update_kinematics)
       .def("compute_hessians", &RobotType::compute_hessians)
       .def(
