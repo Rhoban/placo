@@ -41,7 +41,7 @@ struct custom_vector_from_seq
 };
 
 template <typename T>
-bool is_registered()
+bool is_not_registered()
 {
   boost::python::type_info info = boost::python::type_id<T>();
   const boost::python::converter::registration* reg = boost::python::converter::registry::query(info);
@@ -59,9 +59,11 @@ void exposeStdVector(const std::string& class_name)
 {
   typedef typename std::vector<T> vector_T;
 
-  class_<vector_T>(class_name.c_str()).def(vector_indexing_suite<vector_T>());
+  if (is_not_registered<vector_T>()) {
+    class_<vector_T>(class_name.c_str()).def(vector_indexing_suite<vector_T>());
 
-  custom_vector_from_seq<T>();
+    custom_vector_from_seq<T>();
+  }
 }
 
 template <typename K, typename V>
