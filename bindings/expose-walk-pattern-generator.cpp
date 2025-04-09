@@ -27,7 +27,7 @@ void exposeWalkPatternGenerator()
       .add_property("t_end", &WalkPatternGenerator::TrajectoryPart::t_end, &WalkPatternGenerator::TrajectoryPart::t_end)
       .add_property("support", &WalkPatternGenerator::TrajectoryPart::support);
 
-  class__<WalkPatternGenerator::Trajectory>("WPGTrajectory", init<double, double, double>())
+  class__<WalkPatternGenerator::Trajectory>("WPGTrajectory", init<double, double, double, double>())
       .add_property("t_start", &WalkPatternGenerator::Trajectory::t_start)
       .add_property("t_end", &WalkPatternGenerator::Trajectory::t_end)
       .add_property("com_target_z", &WalkPatternGenerator::Trajectory::com_target_z)

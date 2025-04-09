@@ -1,5 +1,6 @@
 #include "placo/humanoid/walk_tasks.h"
 #include "placo/humanoid/humanoid_robot.h"
+#include "pinocchio/math/rpy.hpp"
 
 namespace placo::humanoid
 {
@@ -57,23 +58,23 @@ void WalkTasks::reach_initial_pose(Eigen::Affine3d T_world_left, double feet_spa
                                    double trunk_pitch)
 {
   Eigen::Affine3d T_world_right = T_world_left;
-  T_world_right.translation().y() = -feet_spacing;
+  T_world_right.translation() = T_world_left.translation() + T_world_left.rotation() * Eigen::Vector3d(0, -feet_spacing, 0);
 
   Eigen::Vector3d com_world = interpolate_frames(T_world_left, T_world_right, .5).translation();
   com_world.z() = com_height;
 
-  Eigen::MatrixXd R_world_trunk = interpolate_frames(T_world_left, T_world_right, .5) *
-                                  Eigen::AngleAxisd(trunk_pitch, Eigen::Vector3d::UnitY()).matrix();
+  double trunk_yaw = pinocchio::rpy::matrixToRpy(T_world_left.rotation()).z();
+  Eigen::Matrix3d R_world_trunk = pinocchio::rpy::rpyToMatrix(Eigen::Vector3d(0, trunk_pitch, trunk_yaw));
   trunk_orientation_task->R_world_frame = R_world_trunk;
 
   update_tasks(T_world_left, T_world_right, com_world, R_world_trunk);
-
+  
   for (int i = 0; i < 100; i++)
   {
     if (i <= 10)
     {
-      // Adding strong noise to avoid singularities
-      solver->robot.add_q_noise(0.1);
+      // Adding noise to avoid singularities
+      solver->robot.add_q_noise(0.01);
     }
 
     robot->update_kinematics();

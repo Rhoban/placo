@@ -36,7 +36,7 @@ public:
   struct Trajectory
   {
     Trajectory();
-    Trajectory(double com_target_z, double t_start = 0., double trunk_pitch = 0.);
+    Trajectory(double com_target_z, double t_start = 0., double trunk_pitch = 0., double trunk_roll = 0.);
 
     // Debug
     void print_parts_timings();
@@ -213,8 +213,8 @@ protected:
     Eigen::Vector2d initial_vel = Eigen::Vector2d::Zero(), Eigen::Vector2d initial_acc = Eigen::Vector2d::Zero());
 
   void plan_dbl_support(Trajectory& trajectory, int part_index);
-  void plan_sgl_support(Trajectory& trajectory, int part_index, Trajectory* old_trajectory, double t_replan);
-  void plan_feet_trajectories(Trajectory& trajectory, Trajectory* old_trajectory = nullptr, double t_replan = 0.);
+  void plan_sgl_support(Trajectory& trajectory, int part_index, Trajectory* old_trajectory);
+  void plan_feet_trajectories(Trajectory& trajectory, Trajectory* old_trajectory = nullptr);
 
   int support_default_timesteps(FootstepsPlanner::Support& support);
   double support_default_duration(FootstepsPlanner::Support& support);
