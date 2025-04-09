@@ -127,7 +127,7 @@ target_link_libraries(libplaco PUBLIC
     ${PROTOBUF_LIBRARIES}
   ${PROTOBUF_LIBRARIES}
 )
-target_compile_definitions(libplaco PUBLIC -DPINOCCHIO_WITH_HPP_FCL)
+target_compile_definitions(libplaco PUBLIC)
 
 if(TARGET rhoban_utils)
   message("Placo: Rhoban utils is present, enabling it")
@@ -139,6 +139,7 @@ set(CMAKE_SHARED_MODULE_PREFIX "")
 
 find_package(Python3 REQUIRED)
 find_package(Boost COMPONENTS python REQUIRED)
+find_package(Python REQUIRED COMPONENTS Interpreter)
 
 add_library(placo MODULE 
     bindings/expose-eigen.cpp
@@ -151,16 +152,19 @@ add_library(placo MODULE
     bindings/expose-walk-pattern-generator.cpp
     bindings/expose-dynamics.cpp
     bindings/module.cpp
-    bindings/doxystub/registry.cpp
 )
 set_target_properties(placo PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${PYTHON_SITELIB})
 
 target_link_libraries(placo ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} libplaco)
 target_include_directories(placo PRIVATE ${PYTHON_INCLUDE_DIRS})
 
-add_custom_command(TARGET placo POST_BUILD
-    COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/bindings/doxystub/stubs.py > placo.pyi
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${PYTHON_SITELIB}
+add_custom_command(
+    TARGET placo POST_BUILD
+    COMMAND doxystub
+        --module placo
+        --doxygen_directory "${CMAKE_CURRENT_SOURCE_DIR}"
+        --output "${CMAKE_BINARY_DIR}/${PYTHON_SITELIB}/placo.pyi"
+    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/${PYTHON_SITELIB}"
     COMMENT "Generating stubs..."
 )
 

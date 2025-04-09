@@ -1,4 +1,5 @@
 import unittest
+import pinocchio
 import placo
 import numpy as np
 from placo_utils.tf import tf

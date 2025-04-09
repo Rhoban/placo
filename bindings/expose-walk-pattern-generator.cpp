@@ -2,7 +2,7 @@
 
 #include "expose-utils.hpp"
 #include "module.h"
-#include "doxystub/registry.h"
+#include "doxystub.h"
 #include "placo/humanoid/walk_pattern_generator.h"
 #include "placo/kinematics/kinematics_solver.h"
 #include "placo/humanoid/footsteps_planner.h"

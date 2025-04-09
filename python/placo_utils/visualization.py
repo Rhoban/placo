@@ -1,5 +1,6 @@
 import meshcat
 import pinocchio as pin
+import pinocchio.visualize as pin_viz
 import numpy as np
 import meshcat.geometry as g
 import meshcat.transformations as tf
@@ -26,7 +27,7 @@ def get_viewer() -> meshcat.Visualizer:
 
 def robot_viz(
     robot: placo.RobotWrapper, name: str = "robot"
-) -> pin.visualize.MeshcatVisualizer:
+) -> pin_viz.MeshcatVisualizer:
     """
     Builds an instance of pinocchio MeshcatVisualizer, which allows to push the model to the meshcat
     visualizer passed as parameter
@@ -38,7 +39,7 @@ def robot_viz(
     global robot_names
 
     robot_names[robot] = name
-    viz = pin.visualize.MeshcatVisualizer(
+    viz = pin_viz.MeshcatVisualizer(
         robot.model, robot.collision_model, robot.visual_model
     )
     viz.initViewer(viewer=get_viewer())
@@ -50,7 +51,7 @@ def robot_viz(
 cylinders: dict = {}
 
 
-def frame_viz(name: str, T: np.ndarray, opacity: float = 1.0) -> None:
+def frame_viz(name: str, T: np.ndarray, opacity: float = 1.0, scale: float = 1.0) -> None:
     """
     Visualizes a given frame
     """
@@ -75,7 +76,7 @@ def frame_viz(name: str, T: np.ndarray, opacity: float = 1.0) -> None:
         obj = cylinders[node_name]
 
         obj.set_transform(
-            T @ tf.rotation_matrix(*rotate) @ tf.translation_matrix([0, 0.05, 0])
+            T @ tf.scale_matrix(scale) @ tf.rotation_matrix(*rotate) @ tf.translation_matrix([0, 0.05, 0])
         )
 
 
@@ -125,12 +126,12 @@ def points_viz(
     points_sizes[name] = len(points)
 
 
-def robot_frame_viz(robot: placo.RobotWrapper, frame: str) -> None:
+def robot_frame_viz(robot: placo.RobotWrapper, frame: str, opacity: float = 1.0, scale: float = 1.0) -> None:
     """
     Draw a frame from the robot
     """
     node_name = f"{robot_names[robot]}_{frame}"
-    frame_viz(node_name, robot.get_T_world_frame(frame))
+    frame_viz(node_name, robot.get_T_world_frame(frame), opacity, scale)
 
 
 steps: int = 0
