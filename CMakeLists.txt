@@ -1,5 +1,5 @@
-project(placo)
 cmake_minimum_required(VERSION 3.10)
+project(placo)
 
 find_package(Threads)
 find_package(pinocchio REQUIRED)
