@@ -7,9 +7,8 @@
 #include "pinocchio/algorithm/rnea.hpp"
 #include "pinocchio/algorithm/crba.hpp"
 #include "pinocchio/algorithm/centroidal.hpp"
-// Following includes will be required for Pinocchio 3:
-// #include "pinocchio/collision/collision.hpp"
-// #include "pinocchio/collision/distance.hpp"
+#include "pinocchio/collision/collision.hpp"
+#include "pinocchio/collision/distance.hpp"
 #include "placo/tools/utils.h"
 #include <json/json.h>
 #include <filesystem>
@@ -409,7 +408,7 @@ std::vector<RobotWrapper::Collision> RobotWrapper::self_collisions(bool stop_at_
   for (size_t k = 0; k < collision_model.collisionPairs.size(); ++k)
   {
     const pinocchio::CollisionPair& cp = collision_model.collisionPairs[k];
-    const hpp::fcl::CollisionResult& cr = geom_data.collisionResults[k];
+    const coal::CollisionResult& cr = geom_data.collisionResults[k];
 
     if (cr.isCollision())
     {
@@ -449,7 +448,7 @@ std::vector<RobotWrapper::Distance> RobotWrapper::distances()
   for (size_t k = 0; k < collision_model.collisionPairs.size(); ++k)
   {
     const pinocchio::CollisionPair& cp = collision_model.collisionPairs[k];
-    const hpp::fcl::DistanceResult& dr = geom_data.distanceResults[k];
+    const coal::DistanceResult& dr = geom_data.distanceResults[k];
 
     Distance distance;
     distance.objA = cp.first;

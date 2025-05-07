@@ -475,10 +475,19 @@ public:
    *
    * @param frame the frame for which we want the jacobian
    * @return jacobian (6xn matrix)
+   * @pyignore
    */
   Eigen::MatrixXd joint_jacobian(pinocchio::JointIndex joint,
                                  pinocchio::ReferenceFrame ref = pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED);
 
+                                 /**
+   * @brief Joint jacobian, default reference is LOCAL_WORLD_ALIGNED
+   *
+   * Be sure you called \ref update_kinematics before calling this method if your state has changed
+   *
+   * @param frame the frame for which we want the jacobian
+   * @return jacobian (6xn matrix)
+   */
   Eigen::MatrixXd joint_jacobian(const std::string& joint, const std::string& reference = "local_world_aligned");
 
   /**

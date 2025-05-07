@@ -3,7 +3,7 @@
 #include "expose-utils.hpp"
 #include "module.h"
 
-#include "doxystub/registry.h"
+#include "doxystub.h"
 #include "placo/model/robot_wrapper.h"
 #include "placo/dynamics/dynamics_solver.h"
 #include <Eigen/Dense>

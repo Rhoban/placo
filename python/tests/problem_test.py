@@ -385,7 +385,7 @@ class TestProblem(unittest.TestCase):
         problem.solve()
 
         polynom = pp.get_polynom()
-        self.assertEquals(len(polynom.coefficients), 4)
+        self.assertEqual(len(polynom.coefficients), 4)
         self.assertNumpyEqual(polynom.value(0, 0), 0)
         self.assertNumpyEqual(polynom.value(0, 1), 0)
         self.assertNumpyEqual(polynom.value(1, 0), 1)

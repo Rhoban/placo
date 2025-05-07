@@ -2,7 +2,7 @@
 
 #include "expose-utils.hpp"
 #include "module.h"
-#include "doxystub/registry.h"
+#include "doxystub.h"
 #include "placo/humanoid/footsteps_planner.h"
 #include "placo/humanoid/footsteps_planner_naive.h"
 #include "placo/humanoid/footsteps_planner_repetitive.h"
