@@ -48,7 +48,8 @@ void exposeFootsteps()
       .add_property("time_ratio", &FootstepsPlanner::Support::time_ratio, &FootstepsPlanner::Support::time_ratio)
       .add_property("start", &FootstepsPlanner::Support::start, &FootstepsPlanner::Support::start)
       .add_property("end", &FootstepsPlanner::Support::end, &FootstepsPlanner::Support::end)
-      .add_property("replanned", &FootstepsPlanner::Support::replanned, &FootstepsPlanner::Support::replanned);
+      .add_property("target_world_dcm", &FootstepsPlanner::Support::target_world_dcm, 
+                    &FootstepsPlanner::Support::target_world_dcm);
 
   class__<FootstepsPlanner, boost::noncopyable>("FootstepsPlanner", no_init)
       .def("make_supports", &FootstepsPlanner::make_supports)

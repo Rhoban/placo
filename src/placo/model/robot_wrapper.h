@@ -240,6 +240,11 @@ public:
   Eigen::Vector3d com_world();
 
   /**
+   * @brief Gets the CoM velocity in the world
+   */
+  Eigen::Vector3d dcom_world();
+
+  /**
    * @brief Gets the frame to world transformation matrix for a given frame
    *
    * Be sure you called \ref update_kinematics before calling this method if your state has changed

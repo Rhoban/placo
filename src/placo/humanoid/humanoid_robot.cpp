@@ -94,6 +94,19 @@ void HumanoidRobot::ensure_on_floor()
   update_kinematics();
 }
 
+void HumanoidRobot::ensure_on_floor_oriented(Eigen::Matrix3d R_world_trunk)
+{
+  update_kinematics();
+
+  // Getting the support orientation
+  Eigen::Affine3d T_trunk_support = get_T_a_b(trunk, support_frame());
+  Eigen::Matrix3d R_world_support = R_world_trunk * T_trunk_support.linear();
+  T_world_support.linear() = R_world_support;
+
+  set_T_world_frame(support_frame(), T_world_support);
+  update_kinematics();
+}
+
 void HumanoidRobot::update_from_imu(Eigen::Matrix3d R_world_trunk)
 {
   update_kinematics();
@@ -180,13 +193,19 @@ Eigen::VectorXd HumanoidRobot::get_torques(Eigen::VectorXd acc_a, Eigen::VectorX
   return M * acc + h - J_c * contact_forces;
 }
 
-Eigen::Vector2d HumanoidRobot::dcm(Eigen::Vector2d com_velocity, double omega)
+Eigen::Vector2d HumanoidRobot::dcm(double omega)
+{
+  // DCM = c + (1/omega) c_dot
+  return com_world().head(2) + (1 / omega) * dcom_world().head(2);
+}
+
+Eigen::Vector2d HumanoidRobot::dcm(double omega, Eigen::Vector2d com_velocity)
 {
   // DCM = c + (1/omega) c_dot
   return com_world().head(2) + (1 / omega) * com_velocity;
 }
 
-Eigen::Vector2d HumanoidRobot::zmp(Eigen::Vector2d com_acceleration, double omega)
+Eigen::Vector2d HumanoidRobot::zmp(double omega, Eigen::Vector2d com_acceleration)
 {
   // ZMP = c - (1/omega^2) c_ddot
   return com_world().head(2) - (1 / pow(omega, 2)) * com_acceleration;

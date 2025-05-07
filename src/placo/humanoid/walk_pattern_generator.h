@@ -83,12 +83,14 @@ public:
     FootstepsPlanner::Support get_support(double t);
 
     /**
-     * @brief Returns the nth next support corresponding to the given time in the trajectory
+     * @brief Returns the nth next support corresponding to the given time in the trajectory.
+     * If n is greater than the number of remaining supports, the last support is returned
      */
     FootstepsPlanner::Support get_next_support(double t, int n = 1);
 
     /**
-     * @brief Returns the nth previous support corresponding to the given time in the trajectory
+     * @brief Returns the nth previous support corresponding to the given time in the trajectory.
+     * If n is greater than the number of previous supports, the first support is returned
      */
     FootstepsPlanner::Support get_prev_support(double t, int n = 1);
 
@@ -183,8 +185,8 @@ public:
    * @param world_measured_dcm The measured DCM in world frame
    * @param world_end_dcm The desired DCM at the end of the current support phase
    */
-  std::vector<FootstepsPlanner::Support> update_supports(double t, std::vector<FootstepsPlanner::Support> supports, 
-    Eigen::Vector2d world_measured_dcm, Eigen::Vector2d world_end_dcm);
+  std::vector<FootstepsPlanner::Support> update_supports(double t, 
+    std::vector<FootstepsPlanner::Support> supports, Eigen::Vector2d world_measured_dcm);
 
   /**
    * @brief Computes the best ZMP in the support polygon to move de DCM from 
@@ -196,6 +198,9 @@ public:
    */
   Eigen::Vector2d get_optimal_zmp(Eigen::Vector2d world_dcm_start, Eigen::Vector2d world_dcm_end, 
     double duration, FootstepsPlanner::Support& support);
+
+  int support_default_timesteps(FootstepsPlanner::Support& support);
+  double support_default_duration(FootstepsPlanner::Support& support);
   
 protected:
   // Robot associated to the WPG
@@ -215,8 +220,5 @@ protected:
   void plan_dbl_support(Trajectory& trajectory, int part_index);
   void plan_sgl_support(Trajectory& trajectory, int part_index, Trajectory* old_trajectory);
   void plan_feet_trajectories(Trajectory& trajectory, Trajectory* old_trajectory = nullptr);
-
-  int support_default_timesteps(FootstepsPlanner::Support& support);
-  double support_default_duration(FootstepsPlanner::Support& support);
 };
 }  // namespace placo::humanoid

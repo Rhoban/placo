@@ -52,10 +52,10 @@ public:
     double elapsed_ratio = 0.; // Elapsed ratio of the support phase, ranging from 0 to 1
 
     double time_ratio = 1.; // Time ratio for the remaining part of the support phase
+    Eigen::Vector2d target_world_dcm = Eigen::Vector2d::Zero(); // Target DCM in the world frame at the end of the support phase
 
     bool start = false;
     bool end = false;
-    bool replanned = false;
 
     std::vector<Eigen::Vector2d> polygon;
     bool computed_polygon = false;
