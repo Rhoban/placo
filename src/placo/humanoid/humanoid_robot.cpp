@@ -39,6 +39,7 @@ void HumanoidRobot::initialize()
 void HumanoidRobot::init_config()
 {
   support_side = Left;
+  support_is_both = false;
 
   T_world_support.setIdentity();
 
