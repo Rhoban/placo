@@ -27,7 +27,7 @@ void exposeWalkPatternGenerator()
       .add_property("t_end", &WalkPatternGenerator::TrajectoryPart::t_end, &WalkPatternGenerator::TrajectoryPart::t_end)
       .add_property("support", &WalkPatternGenerator::TrajectoryPart::support);
 
-  class__<WalkPatternGenerator::Trajectory>("WPGTrajectory", init<double, double, double>())
+  class__<WalkPatternGenerator::Trajectory>("WPGTrajectory", init<double, double, double, double>())
       .add_property("t_start", &WalkPatternGenerator::Trajectory::t_start)
       .add_property("t_end", &WalkPatternGenerator::Trajectory::t_end)
       .add_property("com_target_z", &WalkPatternGenerator::Trajectory::com_target_z)
@@ -63,7 +63,9 @@ void exposeWalkPatternGenerator()
       .def("can_replan_supports", &WalkPatternGenerator::can_replan_supports)
       .def("replan_supports", &WalkPatternGenerator::replan_supports)
       .def("update_supports", &WalkPatternGenerator::update_supports)
-      .def("get_optimal_zmp", &WalkPatternGenerator::get_optimal_zmp);
+      .def("get_optimal_zmp", &WalkPatternGenerator::get_optimal_zmp)
+      .def("support_default_timesteps", &WalkPatternGenerator::support_default_timesteps)
+      .def("support_default_duration", &WalkPatternGenerator::support_default_duration);
 
   class__<SwingFoot>("SwingFoot", init<>())
       .def("make_trajectory", &SwingFoot::make_trajectory)

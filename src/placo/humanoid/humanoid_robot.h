@@ -39,6 +39,13 @@ public:
   void ensure_on_floor();
 
   /**
+   * @brief Place the robot on its support on the floor according 
+   * to the trunk orientation and the kinematic configuration
+   * @param R_world_trunk Orientation of the trunk
+   */
+  void ensure_on_floor_oriented(Eigen::Matrix3d R_world_trunk);
+
+  /**
    * @brief Rotate the robot around its support
    * @param R_world_trunk Orientation of the trunk from the IMU
    */
@@ -67,19 +74,26 @@ public:
 
   /**
    * @brief Compute the Divergent Component of Motion (DCM)
-   * @param com_velocity CoM velocity
    * @param omega Natural frequency of the LIP (= sqrt(g/h))
    * @return DCM
    */
-  Eigen::Vector2d dcm(Eigen::Vector2d com_velocity, double omega);
+  Eigen::Vector2d dcm(double omega);
+
+  /**
+   * @brief Compute the Divergent Component of Motion (DCM)
+   * @param omega Natural frequency of the LIP (= sqrt(g/h))
+   * @param com_velocity CoM velocity
+   * @return DCM
+   */
+  Eigen::Vector2d dcm(double omega, Eigen::Vector2d com_velocity);
 
   /**
    * @brief Compute the Zero-tilting Moment Point (ZMP)
-   * @param com_acceleration CoM acceleration
    * @param omega Natural frequency of the LIP (= sqrt(g/h))
+   * @param com_acceleration CoM acceleration
    * @return ZMP
    */
-  Eigen::Vector2d zmp(Eigen::Vector2d com_acceleration, double omega);
+  Eigen::Vector2d zmp(double omega, Eigen::Vector2d com_acceleration);
 
   // We suppose we have one support frame and associated transformation
   RobotWrapper::FrameIndex support_frame();
