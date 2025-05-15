@@ -4,7 +4,7 @@
 pip install doxystub
 
 # APT dependencies
-sudo apt install -qqy lsb-release curl libboost-python-dev libjsoncpp-dev
+sudo apt install -qqy lsb-release curl libboost-python-dev libjsoncpp-dev python3-numpy
 
 # Installing robotpkg
 bash scripts/robotpkg.sh
