@@ -25,9 +25,9 @@ then
   PYTHON_VERSION=`python --version|cut -d" " -f2|cut -d"." -f-2`
 
   echo "# Openrobot packages" >> ~/.bashrc
-  echo "export PATH=/opt/openrobots/bin:$PATH" >> ~/.bashrc
-  echo "export PKG_CONFIG_PATH=/opt/openrobots/lib/pkgconfig:$PKG_CONFIG_PATH" >> ~/.bashrc
-  echo "export LD_LIBRARY_PATH=/opt/openrobots/lib:$LD_LIBRARY_PATH" >> ~/.bashrc
-  echo "export PYTHONPATH=/opt/openrobots/lib/python$PYTHON_VERSION/site-packages:$PYTHONPATHhere" >> ~/.bashrc
-  echo "export CMAKE_PREFIX_PATH=/opt/openrobots:$CMAKE_PREFIX_PATH" >> ~/.bashrc
+  echo "export PATH=/opt/openrobots/bin:\$PATH" >> ~/.bashrc
+  echo "export PKG_CONFIG_PATH=/opt/openrobots/lib/pkgconfig:\$PKG_CONFIG_PATH" >> ~/.bashrc
+  echo "export LD_LIBRARY_PATH=/opt/openrobots/lib:\$LD_LIBRARY_PATH" >> ~/.bashrc
+  echo "export PYTHONPATH=/opt/openrobots/lib/python$PYTHON_VERSION/site-packages:\$PYTHONPATH" >> ~/.bashrc
+  echo "export CMAKE_PREFIX_PATH=/opt/openrobots:\$CMAKE_PREFIX_PATH" >> ~/.bashrc
 fi
