@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # APT dependencies
-sudo apt install lsb-release curl cmake libboost-python-dev ninja
+sudo apt install lsb-release curl libboost-python-dev
 
 # Installing robotpkg
 # see https://stack-of-tasks.github.io/pinocchio/download.html
@@ -24,7 +24,7 @@ fi
 sudo apt install robotpkg-py3*-pinocchio robotpkg-coal robotpkg-eiquadprog
 
 PATH_TEST=`echo $PATH|grep openrob|wc -l`
-if [ PATH_TEST -eq 0 ]
+if [ $PATH_TEST -eq 0 ]
 then
   echo "Adding environment variables to .bashrc: you might have to reload your shell"
 
