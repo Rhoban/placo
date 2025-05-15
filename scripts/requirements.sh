@@ -4,10 +4,10 @@
 pip install doxystub
 
 # APT dependencies
-sudo apt install -qqy lsb-release curl libboost-python-dev libjsoncpp-dev python3-numpy
+sudo apt install -qqy lsb-release curl libboost-python-dev libjsoncpp-dev doxygen
 
 # Installing robotpkg
 bash scripts/robotpkg.sh
 
 # Installing robotpkg dependencies
-sudo apt install -qqy robotpkg-py3*-pinocchio robotpkg-coal robotpkg-eiquadprog
+sudo apt install -qqy robotpkg-py3*-pinocchio robotpkg-coal robotpkg-eiquadprog robotpkg-*-eigenpy
