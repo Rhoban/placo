@@ -1,2 +1,5 @@
 optional:
   - rhoban/utils
+
+requirements:
+  - bash scripts/requirements.sh
