@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # APT dependencies
-sudo apt install lsb-release curl libboost-python-dev
+sudo apt install -qqy lsb-release curl libboost-python-dev
 
 # Installing robotpkg
 # see https://stack-of-tasks.github.io/pinocchio/download.html
@@ -21,7 +21,7 @@ else
 fi
 
 # Installing robotpkg dependencies
-sudo apt install robotpkg-py3*-pinocchio robotpkg-coal robotpkg-eiquadprog
+sudo apt install -qqy robotpkg-py3*-pinocchio robotpkg-coal robotpkg-eiquadprog
 
 PATH_TEST=`echo $PATH|grep openrob|wc -l`
 if [ $PATH_TEST -eq 0 ]
