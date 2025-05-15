@@ -17,9 +17,6 @@ else
   echo "* robotpkg is already present"
 fi
 
-# Installing robotpkg dependencies
-sudo apt install -qqy robotpkg-py3*-pinocchio robotpkg-coal robotpkg-eiquadprog
-
 PATH_TEST=`echo $PATH|grep openrob|wc -l`
 if [ $PATH_TEST -eq 0 ]
 then
