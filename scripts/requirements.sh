@@ -1,7 +1,10 @@
 #!/bin/bash
 
+# Installing doxystub
+pip install doxystub
+
 # APT dependencies
-sudo apt install -qqy lsb-release curl libboost-python-dev
+sudo apt install -qqy lsb-release curl libboost-python-dev libjsoncpp-dev
 
 # Installing robotpkg
 # see https://stack-of-tasks.github.io/pinocchio/download.html
