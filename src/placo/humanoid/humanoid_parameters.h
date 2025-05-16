@@ -70,11 +70,6 @@ public:
   int planned_timesteps = 100;
 
   /**
-   * @brief Number of timesteps between each replan for the CoM trajectory
-   */
-  int replan_timesteps = 10;
-
-  /**
    * @brief Margin for the ZMP to live in the support polygon [m]
    */
   double zmp_margin = 0.025;
