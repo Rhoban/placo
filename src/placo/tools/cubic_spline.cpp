@@ -173,11 +173,6 @@ void CubicSpline::compute_splines()
 
   for (size_t i = 1; i < _points.size(); i++)
   {
-    if (fabs(_points[i - 1].t - _points[i].t) < 0.00001)
-    {
-      continue;
-    }
-
     double t_start = _points[i - 1].t;
     struct Spline spline = { fit(_points[i - 1].t - t_start, _points[i - 1].x, _points[i - 1].dx,
                                  _points[i].t - t_start, _points[i].x, _points[i].dx),
