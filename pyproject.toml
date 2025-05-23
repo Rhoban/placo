@@ -5,7 +5,7 @@ requires = [
   "eiquadprog >= 1.2.6, < 2",
   "pin[build] >=  3",
   "rhoban-cmeel-jsoncpp",
-  "doxystub"
+  "doxystub >= 0.0.13"
 ]
 
 [project]
