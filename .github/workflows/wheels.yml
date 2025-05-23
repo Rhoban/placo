@@ -11,9 +11,13 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest]
+        os: [macos-latest, ubuntu-latest]
 
     steps:
+      - uses: ssciwr/doxygen-install@v1
+        with:
+          version: "1.13.2"
+
       - uses: actions/checkout@v4
 
       # Used to host cibuildwheel
