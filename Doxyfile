@@ -869,7 +869,6 @@ INPUT                  =  src/placo/dynamics \
 	src/placo/tools \
 	src/placo/model \
 	src/placo/kinematics \
-	src/placo/planning \
 	src/placo/problem \
 	src/placo 
 
