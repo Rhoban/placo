@@ -40,3 +40,6 @@ all = true
 
 [tool.cmeel]
 run-tests = false
+
+[tool.cibuildwheel]
+repair-wheel-command = ""
