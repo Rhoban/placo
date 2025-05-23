@@ -6,7 +6,7 @@ on:
       - published
 
 env:
-  CIBW_SKIP: "*musl* cp39*"
+  CIBW_SKIP: "*musl* *i686"
   CIBW_REPAIR_WHEEL_COMMAND: ""
 
 jobs:
