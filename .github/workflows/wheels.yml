@@ -4,6 +4,9 @@ on: [push, pull_request]
 
 env:
   CIBW_BUILD: "cp310-*64"
+  CIBW_BEFORE_ALL_LINUX: "yum install -y doxygen"
+  CIBW_BEFORE_ALL_MACOS: "brew install doxygen"
+  CIBW_REPAIR_WHEEL_COMMAND: ""
 
 jobs:
   build_wheels:
@@ -14,13 +17,6 @@ jobs:
         os: [macos-latest, ubuntu-latest]
 
     steps:
-      - name: Set PATH
-        run: echo "export PATH=\$PATH:/usr/local/bin" >> $GITHUB_ENV
-
-      - uses: ssciwr/doxygen-install@v1
-        with:
-          version: "1.13.2"
-
       - uses: actions/checkout@v4
 
       # Used to host cibuildwheel
