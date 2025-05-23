@@ -5,8 +5,6 @@ on: [push, pull_request]
 env:
   CIBW_BUILD: "cp310-*64"
   CIBW_SKIP: "*musl*"
-  CIBW_BEFORE_ALL_LINUX: "yum install -y doxygen"
-  CIBW_BEFORE_ALL_MACOS: "brew install doxygen"
   CIBW_REPAIR_WHEEL_COMMAND: ""
 
 jobs:

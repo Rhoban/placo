@@ -40,3 +40,15 @@ all = true
 
 [tool.cmeel]
 run-tests = false
+
+
+[tool.cibuildwheel.macos]
+before-all = "brew install doxygen"
+
+[tool.cibuildwheel.linux]
+before-all = "yum install -y doxygen"
+
+[[tool.cibuildwheel.overrides]]
+select = "*-musllinux*"
+before-all = "apk add doxygen"
+
