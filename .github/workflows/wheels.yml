@@ -14,6 +14,9 @@ jobs:
         os: [macos-latest, ubuntu-latest]
 
     steps:
+      - name: Set PATH
+        run: echo "export PATH=\$PATH:/usr/local/bin" >> $GITHUB_ENV
+
       - uses: ssciwr/doxygen-install@v1
         with:
           version: "1.13.2"
