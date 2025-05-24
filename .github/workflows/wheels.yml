@@ -6,6 +6,7 @@ on:
       - published
 
 env:
+  CIBW_BUILD: "cp311*arm*"
   CIBW_SKIP: "*musl* *i686"
   CIBW_REPAIR_WHEEL_COMMAND: ""
 
@@ -15,7 +16,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest, macos-13]
+        os: [macos-latest, ubuntu-latest]
 
     steps:
       - uses: actions/checkout@v4
