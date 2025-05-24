@@ -175,8 +175,11 @@ ADD_CUSTOM_TARGET(placo_utils_files ALL
                   ${CMAKE_BINARY_DIR}/${PYTHON_SITELIB}/placo_utils
                   )
 
+IF(UNIX AND NOT APPLE)
 set_target_properties(placo PROPERTIES INSTALL_RPATH "\$ORIGIN/../..")
 set_target_properties(libplaco PROPERTIES INSTALL_RPATH "\$ORIGIN")
+endif()
+
 install(TARGETS libplaco DESTINATION lib)
 install(TARGETS placo DESTINATION ${PYTHON_SITELIB})
 install(FILES ${CMAKE_BINARY_DIR}/${PYTHON_SITELIB}/placo.pyi DESTINATION ${PYTHON_SITELIB})
