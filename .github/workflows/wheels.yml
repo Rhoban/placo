@@ -11,6 +11,7 @@ on:
 env:
   CIBW_SKIP: "*i686 *musl* *armv7* *ppc64* *s390*"
   CIBW_REPAIR_WHEEL_COMMAND: ""
+  CIBW_TEST_REQUIRES: matplotlib
   CIBW_TEST_COMMAND: "python -m unittest discover python/tests/ \"*_test.py\""
 
 jobs:
