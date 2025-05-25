@@ -180,21 +180,21 @@ public:
   /**
    * @brief Updates the supports to ensure DCM viability by adjusting the 
    * duration and the target of the current swing trajectory.
-   * @param t The current time
-   * @param supports The planned supports
-   * @param world_measured_dcm The measured DCM in world frame
-   * @param world_end_dcm The desired DCM at the end of the current support phase
+   * @param t Current time
+   * @param supports Planned supports
+   * @param world_target_zmp Target ZMP for the flying foot in world frame
+   * @param world_measured_dcm Measured DCM in world frame
    */
-  std::vector<FootstepsPlanner::Support> update_supports(double t, 
-    std::vector<FootstepsPlanner::Support> supports, Eigen::Vector2d world_measured_dcm);
+  std::vector<FootstepsPlanner::Support> update_supports(double t, std::vector<FootstepsPlanner::Support> supports, 
+    Eigen::Vector2d world_target_zmp, Eigen::Vector2d world_measured_dcm);
 
   /**
    * @brief Computes the best ZMP in the support polygon to move de DCM from 
    * world_dcm_start to world_dcm_end in duration.
-   * @param world_dcm_start The initial DCM position in world frame
-   * @param world_dcm_end The desired final DCM position in world frame
-   * @param duration The duration
-   * @param support The support
+   * @param world_dcm_start Initial DCM position in world frame
+   * @param world_dcm_end Desired final DCM position in world frame
+   * @param duration Duration
+   * @param support Support
    */
   Eigen::Vector2d get_optimal_zmp(Eigen::Vector2d world_dcm_start, Eigen::Vector2d world_dcm_end, 
     double duration, FootstepsPlanner::Support& support);
@@ -202,6 +202,8 @@ public:
   int support_default_timesteps(FootstepsPlanner::Support& support);
   double support_default_duration(FootstepsPlanner::Support& support);
   
+  bool soft = false;
+
 protected:
   // Robot associated to the WPG
   HumanoidRobot& robot;

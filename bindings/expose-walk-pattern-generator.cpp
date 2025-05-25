@@ -23,9 +23,9 @@ using namespace placo::humanoid;
 void exposeWalkPatternGenerator()
 {
   class__<WalkPatternGenerator::TrajectoryPart>("WPGTrajectoryPart", init<FootstepsPlanner::Support, double>())
-      .add_property("t_start", &WalkPatternGenerator::TrajectoryPart::t_start)
+      .add_property("t_start", &WalkPatternGenerator::TrajectoryPart::t_start, &WalkPatternGenerator::TrajectoryPart::t_start)
       .add_property("t_end", &WalkPatternGenerator::TrajectoryPart::t_end, &WalkPatternGenerator::TrajectoryPart::t_end)
-      .add_property("support", &WalkPatternGenerator::TrajectoryPart::support);
+      .add_property("support", &WalkPatternGenerator::TrajectoryPart::support, &WalkPatternGenerator::TrajectoryPart::support);
 
   class__<WalkPatternGenerator::Trajectory>("WPGTrajectory", init<double, double, double, double>())
       .add_property("t_start", &WalkPatternGenerator::Trajectory::t_start)
@@ -34,6 +34,7 @@ void exposeWalkPatternGenerator()
       .add_property("trunk_pitch", &WalkPatternGenerator::Trajectory::trunk_pitch)
       .add_property("trunk_roll", &WalkPatternGenerator::Trajectory::trunk_roll)
       .add_property("kept_ts", &WalkPatternGenerator::Trajectory::kept_ts)
+      .add_property("parts", &WalkPatternGenerator::Trajectory::parts)
       .def("get_T_world_left", &WalkPatternGenerator::Trajectory::get_T_world_left)
       .def("get_T_world_right", &WalkPatternGenerator::Trajectory::get_T_world_right)
       .def("get_v_world_right", &WalkPatternGenerator::Trajectory::get_v_world_right)
@@ -65,7 +66,8 @@ void exposeWalkPatternGenerator()
       .def("update_supports", &WalkPatternGenerator::update_supports)
       .def("get_optimal_zmp", &WalkPatternGenerator::get_optimal_zmp)
       .def("support_default_timesteps", &WalkPatternGenerator::support_default_timesteps)
-      .def("support_default_duration", &WalkPatternGenerator::support_default_duration);
+      .def("support_default_duration", &WalkPatternGenerator::support_default_duration)
+      .add_property("soft", &WalkPatternGenerator::soft, &WalkPatternGenerator::soft);
 
   class__<SwingFoot>("SwingFoot", init<>())
       .def("make_trajectory", &SwingFoot::make_trajectory)
