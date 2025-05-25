@@ -6,7 +6,7 @@ on:
       - published
 
 env:
-  CIBW_SKIP: "*i686 *musl*"
+  CIBW_SKIP: "*i686 *musl* *armv7*"
   CIBW_REPAIR_WHEEL_COMMAND: ""
 
 jobs:
