@@ -25,6 +25,10 @@ void exposeFootsteps()
       .add_property("foot_length", &FootstepsPlanner::Footstep::foot_length, &FootstepsPlanner::Footstep::foot_length)
       .add_property("foot_width", &FootstepsPlanner::Footstep::foot_width, &FootstepsPlanner::Footstep::foot_width)
       .add_property("frame", &FootstepsPlanner::Footstep::frame, &FootstepsPlanner::Footstep::frame)
+      .def("set_frame_xy", +[](FootstepsPlanner::Footstep& footstep, double x, double y) {
+        footstep.frame.translation().x() = x;
+        footstep.frame.translation().y() = y;
+      })
       .def("support_polygon", &FootstepsPlanner::Footstep::support_polygon)
       .def("overlap", &FootstepsPlanner::Footstep::overlap)
       .def("polygon_contains", &FootstepsPlanner::Footstep::polygon_contains)
