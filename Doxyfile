@@ -803,7 +803,7 @@ QUIET                  = NO
 # Tip: Turn warnings on while writing the documentation.
 # The default value is: YES.
 
-WARNINGS               = YES
+WARNINGS               = NO
 
 # If the WARN_IF_UNDOCUMENTED tag is set to YES then doxygen will generate
 # warnings for undocumented members. If EXTRACT_ALL is set to YES then this flag
@@ -818,7 +818,7 @@ WARN_IF_UNDOCUMENTED   = NO
 # markup commands wrongly.
 # The default value is: YES.
 
-WARN_IF_DOC_ERROR      = YES
+WARN_IF_DOC_ERROR      = NO
 
 # This WARN_NO_PARAMDOC option can be enabled to get warnings for functions that
 # are documented, but have no documentation for their parameters or return
@@ -869,7 +869,6 @@ INPUT                  =  src/placo/dynamics \
 	src/placo/tools \
 	src/placo/model \
 	src/placo/kinematics \
-	src/placo/planning \
 	src/placo/problem \
 	src/placo 
 
@@ -2361,7 +2360,7 @@ HIDE_UNDOC_RELATIONS   = YES
 # set to NO
 # The default value is: YES.
 
-HAVE_DOT               = YES
+HAVE_DOT               = NO
 
 # The DOT_NUM_THREADS specifies the number of dot invocations doxygen is allowed
 # to run in parallel. When set to 0 doxygen will base this on the number of

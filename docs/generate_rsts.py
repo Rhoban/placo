@@ -1,4 +1,5 @@
 import os
+import fnmatch
 import sys
 import requests
 
@@ -10,12 +11,15 @@ if not os.path.islink("module/placo.py"):
   print(f"No placo.py file found, downloading version {infos['info']['version']}")
   for entry in infos['urls']:
       name = f"placo-{infos['info']['version']}"
-      if entry['url'].endswith('.tar.gz'):
+      if fnmatch.fnmatch(entry["url"], "*manylinux*.whl"):
           url = entry['url']
-          os.system(f"wget {url} -O sdist.tar.gz >/dev/null")
-          os.system(f"tar xvf sdist.tar.gz >/dev/null")
-          os.system(f"cp {name}/placo.pyi module/placo.py")
-          os.system(f"rm -rf sdist.tar.gz {name}")
+          print(name)
+
+          os.system(f"mkdir placo_wheel")
+          os.system(f"cd placo_wheel; wget {url} -O wheel.zip >/dev/null")
+          os.system(f"cd placo_wheel; unzip wheel.zip >/dev/null")
+          os.system(f"cp placo_wheel/cmeel.prefix/lib/*/site-packages/placo.pyi module/placo.py")
+          os.system(f"rm -rf wheel.zip placo_wheel")
 
 this_dir = os.path.dirname(__file__)
 sys.path.insert(0, this_dir + "/module/")

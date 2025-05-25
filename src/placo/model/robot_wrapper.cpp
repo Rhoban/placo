@@ -10,11 +10,12 @@
 #include "pinocchio/collision/collision.hpp"
 #include "pinocchio/collision/distance.hpp"
 #include "placo/tools/utils.h"
+#include <boost/filesystem.hpp>
 #include <json/json.h>
 #include <filesystem>
 #include <algorithm>
 
-namespace fs = std::filesystem;
+namespace fs = boost::filesystem;
 
 namespace placo::model
 {
@@ -27,7 +28,7 @@ RobotWrapper::RobotWrapper(std::string model_directory, int flags, std::string u
   {
     fs::path path = model_directory;
     urdf_filename = model_directory;
-    model_directory = path.parent_path();
+    model_directory = path.parent_path().string();
   }
   else
   {

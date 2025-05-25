@@ -154,6 +154,7 @@ add_library(placo MODULE
     bindings/module.cpp
 )
 set_target_properties(placo PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${PYTHON_SITELIB})
+target_compile_definitions(placo PUBLIC -DBOOST_DISABLE_PRAGMA_MESSAGE)
 
 target_link_libraries(placo ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} libplaco)
 target_include_directories(placo PRIVATE ${PYTHON_INCLUDE_DIRS})
@@ -174,8 +175,14 @@ ADD_CUSTOM_TARGET(placo_utils_files ALL
                   ${CMAKE_BINARY_DIR}/${PYTHON_SITELIB}/placo_utils
                   )
 
+if (APPLE)
+set_target_properties(placo PROPERTIES INSTALL_RPATH "@loader_path/../..")
+set_target_properties(libplaco PROPERTIES INSTALL_RPATH "@loader_path")
+else()
 set_target_properties(placo PROPERTIES INSTALL_RPATH "\$ORIGIN/../..")
 set_target_properties(libplaco PROPERTIES INSTALL_RPATH "\$ORIGIN")
+endif()
+
 install(TARGETS libplaco DESTINATION lib)
 install(TARGETS placo DESTINATION ${PYTHON_SITELIB})
 install(FILES ${CMAKE_BINARY_DIR}/${PYTHON_SITELIB}/placo.pyi DESTINATION ${PYTHON_SITELIB})
