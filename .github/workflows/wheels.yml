@@ -45,6 +45,7 @@ jobs:
           path: ./wheelhouse/*.whl
 
   build_sdist:
+    if: github.event_name == 'release' && github.event.action == 'published'
     name: Build source distribution
     runs-on: ubuntu-latest
     steps:
