@@ -8,41 +8,25 @@ the library.
 System dependencies
 ~~~~~~~~~~~~~~~~~~~
 
-.. code-block:: bash
-
-    sudo apt-get install python3-dev libpython3-dev libboost-python-dev \
-             doxygen libjsoncpp-dev
-
-Pinocchio dependencies
-~~~~~~~~~~~~~~~~~~~~~~
-
-First, follow this
-`procedure <https://stack-of-tasks.github.io/pinocchio/download.html>`_
-to add the apt repositories for Pinocchio.
-
-You can then install the following dependencies:
+You can install system dependencies using:
 
 .. code-block:: bash
 
-    # Install dependencies (Ubuntu 22.04)
-    sudo apt-get install \
-            robotpkg-py310-eigenpy=3.1.1 \
-            robotpkg-hpp-fcl=2.3.6 \
-            robotpkg-pinocchio=2.6.20 \
-            robotpkg-py310-eigenpy=3.1.1  \
-            robotpkg-py310-hpp-fcl=2.3.6 \
-            robotpkg-py310-pinocchio=2.6.20 \
-            robotpkg-eiquadprog
+    bash scripts/requirements.sh
 
-.. admonition:: Building on older versions
+From the repository.
+
+.. admonition:: Note
+
+  The above script will setup apt-repository for `robotpkg <https://stack-of-tasks.github.io/pinocchio/download.html>`_, and add extra configurations in your ``.bashrc`` file. You might have to reload your bash after.
+
+
+.. admonition:: Instaling on older systems
 
   Above scenario was tested on Ubuntu 22.04. If you want to build on an older version, you might need to adapt the following:
 
   * Adapt Python's version in above `apt` command (e.g. replace ``py310`` by ``py38`` for Python 3.8)
   * Install `Eigen <https://eigen.tuxfamily.org/index.php?title=Main_Page>`_ with at least version 3.4.0
-
-.. note::
-    Versions above are frozen to ensure compatiblity. Placo has not yet switched to Pinocchio 3.
 
 Cloning and building
 ~~~~~~~~~~~~~~~~~~~~
@@ -66,4 +50,4 @@ And build it using CMake:
 Using built Pythin bindings
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can now add the ``build/lib/python3/dist-packages`` directory to your ``PYTHONPATH`` to use PlaCo.
+You can now add the ``build/lib/python3-X/site-packages`` directory to your ``PYTHONPATH`` to use PlaCo.
