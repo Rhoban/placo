@@ -20,6 +20,7 @@ if not os.path.islink("module/placo.py"):
           os.system(f"cd placo_wheel; unzip wheel.zip >/dev/null")
           os.system(f"cp placo_wheel/cmeel.prefix/lib/*/site-packages/placo.pyi module/placo.py")
           os.system(f"rm -rf wheel.zip placo_wheel")
+          break
 
 this_dir = os.path.dirname(__file__)
 sys.path.insert(0, this_dir + "/module/")

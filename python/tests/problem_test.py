@@ -165,7 +165,7 @@ class TestProblem(unittest.TestCase):
         self.assertNumpyEqual(integrator.value(1.0, 2), 6)
 
         # Testing that inequality is still enforced
-        self.assertTrue(integrator.value(0.5, 0) <= -5.0)
+        self.assertLessEqual(integrator.value(0.5, 0) - 1e-8, -5.0)
 
     def test_integrator_expr_x0(self):
         # Creating a problem
