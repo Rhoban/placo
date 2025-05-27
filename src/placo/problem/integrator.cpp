@@ -171,11 +171,6 @@ Expression Integrator::expr_t(double t, int diff)
 {
   t -= t_start;
 
-  if (t < 0 || t > variable->size() * dt)
-  {
-    throw std::runtime_error("expr_t called with a t out of the scope of the integrator");
-  }
-
   int step = std::max<int>(std::min<int>(variable->size() - 1, t / dt), 0);
 
   if (diff == order)
@@ -190,7 +185,7 @@ Expression Integrator::expr_t(double t, int diff)
     Eigen::MatrixXd Ar = AB.first;
     Eigen::MatrixXd Br = AB.second;
 
-    Expression e = (Ar * expr(step)) + Br * variable->expr(step);
+    Expression e = (Ar * expr(step)) + Br * variable->expr(step, 1);
 
     if (diff > -1)
     {
