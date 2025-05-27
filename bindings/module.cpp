@@ -9,6 +9,9 @@
 
 BOOST_PYTHON_MODULE(placo)
 {
+  // Ensure pinocchio is imported before exposing the module
+  boost::python::import("pinocchio");
+
   using namespace boost::python;
 
   exposeEigen();
