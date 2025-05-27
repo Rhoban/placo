@@ -621,7 +621,7 @@ double WalkPatternGenerator::support_default_duration(FootstepsPlanner::Support&
 
 void WalkPatternGenerator::Trajectory::print_parts_timings()
 {
-  for (int i = 0; i < parts.size(); i++)
+  for (int i = 0; i < (int)parts.size(); i++)
   {
     std::cout << "Part " << i << " : start at " << parts[i].t_start << ", end at " << parts[i].t_end << std::endl;
   }
