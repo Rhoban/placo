@@ -55,7 +55,7 @@ void exposeTools()
                                                            set_axises_overloads())
       .def_readwrite("R_local_world", &AxisesMask::R_local_world)
       .def_readwrite("R_custom_world", &AxisesMask::R_custom_world)
-      .def("apply", &AxisesMask::apply);  
+      .def("apply", &AxisesMask::apply);
 
   class__<Prioritized, boost::noncopyable>("Prioritized", no_init)
       .add_property("name", &Prioritized::name)
@@ -140,7 +140,7 @@ void exposeTools()
           +[](HistoryCollection& collection, std::vector<std::string> entries, double start_t, double dt, int length) {
             Eigen::MatrixXd result(length, entries.size());
 
-            for (unsigned int i = 0; i < length; i++)
+            for (int i = 0; i < length; i++)
             {
               double t = start_t + i * dt;
               for (unsigned int j = 0; j < entries.size(); j++)
