@@ -353,7 +353,7 @@ void WalkPatternGenerator::plan_feet_trajectories(Trajectory& trajectory, Trajec
                                    old_trajectory->trunk_yaw.vel(trajectory.t_start));
   }
 
-  for (int i; i < trajectory.parts.size(); i++)
+  for (int i = 0; i < trajectory.parts.size(); i++)
   {
     // Single support
     if (trajectory.parts[i].support.footsteps.size() == 1)
