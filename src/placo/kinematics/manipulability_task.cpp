@@ -4,7 +4,7 @@
 namespace placo::kinematics
 {
 ManipulabilityTask::ManipulabilityTask(model::RobotWrapper::FrameIndex frame_index, Type type, double lambda)
-  : frame_index(frame_index), type(type), lambda(lambda)
+  : frame_index(frame_index), lambda(lambda), type(type)
 {
 }
 
