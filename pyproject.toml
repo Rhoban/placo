@@ -23,7 +23,7 @@ description = "PlaCo: Rhoban Planning and Control"
 license = "MIT"
 name = "placo"
 requires-python = ">= 3.9"
-version = "0.8.8"
+version = "0.8.9"
 
 [project.urls]
 changelog = "https://github.com/rhoban/placo/blob/main/CHANGELOG.md"
@@ -44,7 +44,7 @@ run-tests = false
 
 
 [tool.cibuildwheel.macos]
-before-all = "brew install doxygen"
+before-all = "brew install --formula doxygen"
 
 [tool.cibuildwheel.linux]
 before-all = "yum install -y doxygen"

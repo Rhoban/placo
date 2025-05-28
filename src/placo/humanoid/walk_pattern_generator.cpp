@@ -10,7 +10,7 @@ using namespace placo::problem;
 using namespace placo::tools;
 
 WalkPatternGenerator::TrajectoryPart::TrajectoryPart(FootstepsPlanner::Support support, double t_start)
-  : support(support), t_start(t_start)
+  : t_start(t_start), support(support)
 {
 }
 
@@ -20,13 +20,13 @@ WalkPatternGenerator::Trajectory::Trajectory() : left_foot_yaw(true), right_foot
 }
 
 WalkPatternGenerator::Trajectory::Trajectory(double com_target_z, double t_start, double trunk_pitch, double trunk_roll)
-  : left_foot_yaw(true)
-  , right_foot_yaw(true)
-  , trunk_yaw(true)
+  : t_start(t_start)
   , com_target_z(com_target_z)
-  , t_start(t_start)
   , trunk_pitch(trunk_pitch)
   , trunk_roll(trunk_roll)
+  , left_foot_yaw(true)
+  , right_foot_yaw(true)
+  , trunk_yaw(true)
 {
   T.setIdentity();
 }
@@ -252,7 +252,7 @@ FootstepsPlanner::Support WalkPatternGenerator::Trajectory::get_next_support(dou
 {
   int index;
   _findPart(parts, t, &index);
-  if (index + n >= parts.size())
+  if (index + n >= (int)parts.size())
   {
     return T * parts.back().support;
   }
@@ -377,7 +377,7 @@ void WalkPatternGenerator::plan_feet_trajectories(Trajectory& trajectory, Trajec
                                    old_trajectory->trunk_yaw.vel(trajectory.t_start));
   }
 
-  for (int i = 0; i < trajectory.parts.size(); i++)
+  for (int i = 0; i < (int)trajectory.parts.size(); i++)
   {
     // Single support
     if (trajectory.parts[i].support.footsteps.size() == 1)
@@ -478,7 +478,7 @@ void WalkPatternGenerator::plan_com(Trajectory& trajectory, std::vector<Footstep
   // Solving the problem
   problem.solve();
 
-  for (int i = 0; i < trajectory.parts.size(); i++)
+  for (int i = 0; i < (int)trajectory.parts.size(); i++)
   {
     auto& part = trajectory.parts[i];
     part.com_trajectory = lipms[i].get_trajectory();
@@ -645,7 +645,7 @@ double WalkPatternGenerator::support_default_duration(FootstepsPlanner::Support&
 
 void WalkPatternGenerator::Trajectory::print_parts_timings()
 {
-  for (int i = 0; i < parts.size(); i++)
+  for (int i = 0; i < (int)parts.size(); i++)
   {
     std::cout << "Part " << i << " : start at " << parts[i].t_start << ", end at " << parts[i].t_end << std::endl;
   }
