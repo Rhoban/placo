@@ -44,7 +44,7 @@ run-tests = false
 
 
 [tool.cibuildwheel.macos]
-before-all = "brew install doxygen"
+before-all = "brew install --formula doxygen"
 
 [tool.cibuildwheel.linux]
 before-all = "yum install -y doxygen"
