@@ -146,6 +146,26 @@ Eigen::Vector3d WalkPatternGenerator::Trajectory::get_v_world_foot(HumanoidRobot
   return (side == HumanoidRobot::Left) ? get_v_world_left(t) : get_v_world_right(t);
 }
 
+double WalkPatternGenerator::Trajectory::get_yaw_world_left(double t)
+{
+  return frame_yaw(T.rotation()) + left_foot_yaw.pos(t);
+}
+
+double WalkPatternGenerator::Trajectory::get_yaw_world_right(double t)
+{
+  return frame_yaw(T.rotation()) + right_foot_yaw.pos(t);
+}
+
+double WalkPatternGenerator::Trajectory::get_yaw_world_foot(HumanoidRobot::Side side, double t)
+{
+  return (side == HumanoidRobot::Left) ? get_yaw_world_left(t) : get_yaw_world_right(t);
+}
+
+double WalkPatternGenerator::Trajectory::get_yaw_world_trunk(double t)
+{
+  return frame_yaw(T.rotation()) + trunk_yaw.pos(t);
+}
+
 Eigen::Vector3d WalkPatternGenerator::Trajectory::get_p_world_CoM(double t)
 {
   TrajectoryPart& part = _findPart(parts, t);
@@ -316,8 +336,10 @@ void WalkPatternGenerator::plan_sgl_support(Trajectory& trajectory, int part_ind
         part.t_start, virt_duration, parameters.walk_foot_height, parameters.walk_foot_rise_ratio, start,
         T_world_end.translation(), part.support.elapsed_ratio, start_vel);
 
-    double replan_yaw = old_trajectory->foot_yaw(flying_side).pos(trajectory.t_start);
-    trajectory.foot_yaw(flying_side).add_point(trajectory.t_start, replan_yaw, 0);
+    // Initiate the flying foot yaw spline with the old trajectory foot yaw position and velocity
+    trajectory.foot_yaw(flying_side)
+        .add_point(trajectory.t_start, old_trajectory->get_yaw_world_foot(flying_side, trajectory.t_start),
+                   old_trajectory->foot_yaw(flying_side).vel(trajectory.t_start));
   }
   else
   {
@@ -345,11 +367,13 @@ void WalkPatternGenerator::plan_feet_trajectories(Trajectory& trajectory, Trajec
   trajectory.add_supports(trajectory.t_start, trajectory.parts[0].support);
   if (old_trajectory == nullptr)
   {
+    // Starting the walk in double support, we set the trunk yaw aligned with the first support
     trajectory.trunk_yaw.add_point(trajectory.t_start, frame_yaw(trajectory.parts[0].support.frame().rotation()), 0);
   }
   else
   {
-    trajectory.trunk_yaw.add_point(trajectory.t_start, old_trajectory->trunk_yaw.pos(trajectory.t_start),
+    // Initiate the trunk_yaw spline with the old trajectory trunk_yaw position and velocity
+    trajectory.trunk_yaw.add_point(trajectory.t_start, old_trajectory->get_yaw_world_trunk(trajectory.t_start),
                                    old_trajectory->trunk_yaw.vel(trajectory.t_start));
   }
 

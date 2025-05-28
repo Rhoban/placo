@@ -63,6 +63,11 @@ public:
     Eigen::Vector3d get_v_world_right(double t);
     Eigen::Vector3d get_v_world_foot(HumanoidRobot::Side side, double t);
 
+    double get_yaw_world_left(double t);
+    double get_yaw_world_right(double t);
+    double get_yaw_world_foot(HumanoidRobot::Side side, double t);
+    double get_yaw_world_trunk(double t);
+
     Eigen::Vector3d get_p_world_CoM(double t);
     Eigen::Vector3d get_v_world_CoM(double t);
     Eigen::Vector3d get_a_world_CoM(double t);
@@ -172,36 +177,38 @@ public:
   /**
    * @brief Replans the supports for a given trajectory given a footsteps planner.
    */
-  std::vector<FootstepsPlanner::Support> replan_supports(FootstepsPlanner& planner, Trajectory& trajectory, double t_replan, double t_last_replan);
+  std::vector<FootstepsPlanner::Support> replan_supports(FootstepsPlanner& planner, Trajectory& trajectory,
+                                                         double t_replan, double t_last_replan);
 
   double last_com_planning_duration = 0.;
   double last_feet_planning_duration = 0.;
 
   /**
-   * @brief Updates the supports to ensure DCM viability by adjusting the 
+   * @brief Updates the supports to ensure DCM viability by adjusting the
    * duration and the target of the current swing trajectory.
    * @param t Current time
    * @param supports Planned supports
    * @param world_target_zmp Target ZMP for the flying foot in world frame
    * @param world_measured_dcm Measured DCM in world frame
    */
-  std::vector<FootstepsPlanner::Support> update_supports(double t, std::vector<FootstepsPlanner::Support> supports, 
-    Eigen::Vector2d world_target_zmp, Eigen::Vector2d world_measured_dcm);
+  std::vector<FootstepsPlanner::Support> update_supports(double t, std::vector<FootstepsPlanner::Support> supports,
+                                                         Eigen::Vector2d world_target_zmp,
+                                                         Eigen::Vector2d world_measured_dcm);
 
   /**
-   * @brief Computes the best ZMP in the support polygon to move de DCM from 
+   * @brief Computes the best ZMP in the support polygon to move de DCM from
    * world_dcm_start to world_dcm_end in duration.
    * @param world_dcm_start Initial DCM position in world frame
    * @param world_dcm_end Desired final DCM position in world frame
    * @param duration Duration
    * @param support Support
    */
-  Eigen::Vector2d get_optimal_zmp(Eigen::Vector2d world_dcm_start, Eigen::Vector2d world_dcm_end, 
-    double duration, FootstepsPlanner::Support& support);
+  Eigen::Vector2d get_optimal_zmp(Eigen::Vector2d world_dcm_start, Eigen::Vector2d world_dcm_end, double duration,
+                                  FootstepsPlanner::Support& support);
 
   int support_default_timesteps(FootstepsPlanner::Support& support);
   double support_default_duration(FootstepsPlanner::Support& support);
-  
+
   bool soft = false;
 
 protected:
@@ -214,10 +221,12 @@ protected:
   double omega;
   double omega_2;
 
-  void constrain_lipm(problem::Problem& problem, LIPM& lipm, FootstepsPlanner::Support& support, double omega_2, HumanoidParameters& parameters);
+  void constrain_lipm(problem::Problem& problem, LIPM& lipm, FootstepsPlanner::Support& support, double omega_2,
+                      HumanoidParameters& parameters);
 
-  void plan_com(Trajectory& trajectory, std::vector<FootstepsPlanner::Support>& supports, Eigen::Vector2d initial_pos, 
-    Eigen::Vector2d initial_vel = Eigen::Vector2d::Zero(), Eigen::Vector2d initial_acc = Eigen::Vector2d::Zero());
+  void plan_com(Trajectory& trajectory, std::vector<FootstepsPlanner::Support>& supports, Eigen::Vector2d initial_pos,
+                Eigen::Vector2d initial_vel = Eigen::Vector2d::Zero(),
+                Eigen::Vector2d initial_acc = Eigen::Vector2d::Zero());
 
   void plan_dbl_support(Trajectory& trajectory, int part_index);
   void plan_sgl_support(Trajectory& trajectory, int part_index, Trajectory* old_trajectory);
