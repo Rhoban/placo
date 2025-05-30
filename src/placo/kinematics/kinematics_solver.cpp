@@ -226,6 +226,17 @@ ConeConstraint& KinematicsSolver::add_cone_constraint(std::string frame_a, std::
   return add_cone_constraint(robot.get_frame_index(frame_a), robot.get_frame_index(frame_b), angle_max);
 }
 
+YawConstraint& KinematicsSolver::add_yaw_constraint(model::RobotWrapper::FrameIndex frame_a,
+                                                    model::RobotWrapper::FrameIndex frame_b, double angle_max)
+{
+  return add_constraint(new YawConstraint(frame_a, frame_b, angle_max));
+}
+
+YawConstraint& KinematicsSolver::add_yaw_constraint(std::string frame_a, std::string frame_b, double angle_max)
+{
+  return add_yaw_constraint(robot.get_frame_index(frame_a), robot.get_frame_index(frame_b), angle_max);
+}
+
 void KinematicsSolver::mask_dof(std::string dof)
 {
   masked_dof.insert(robot.get_joint_v_offset(dof));

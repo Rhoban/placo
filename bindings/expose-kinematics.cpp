@@ -101,6 +101,10 @@ void exposeKinematics()
           .def<ConeConstraint& (KinematicsSolver::*)(std::string, std::string, double)>(
               "add_cone_constraint", &KinematicsSolver::add_cone_constraint, return_internal_reference<>())
 
+          // Yaw constraint
+          .def<YawConstraint& (KinematicsSolver::*)(std::string, std::string, double)>(
+              "add_yaw_constraint", &KinematicsSolver::add_yaw_constraint, return_internal_reference<>())
+
           // Masking/unmasking DoFs
           .def("mask_dof", &KinematicsSolver::mask_dof)
           .def("unmask_dof", &KinematicsSolver::unmask_dof)
@@ -246,4 +250,8 @@ void exposeKinematics()
       .def_readwrite("angle_max", &ConeConstraint::angle_max)
       .def_readwrite("N", &ConeConstraint::N)
       .def_readwrite("range", &ConeConstraint::range);
+
+  class__<YawConstraint, bases<Constraint>>(
+      "YawConstraint", init<model::RobotWrapper::FrameIndex, model::RobotWrapper::FrameIndex, double>())
+      .def_readwrite("angle_max", &YawConstraint::angle_max);
 }

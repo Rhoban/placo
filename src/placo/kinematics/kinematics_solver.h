@@ -30,6 +30,7 @@
 #include "placo/kinematics/com_polygon_constraint.h"
 #include "placo/kinematics/joint_space_half_spaces_constraint.h"
 #include "placo/kinematics/cone_constraint.h"
+#include "placo/kinematics/yaw_constraint.h"
 
 // Problem formulation
 #include "placo/problem/problem.h"
@@ -316,6 +317,28 @@ public:
    * @return constraint
    */
   ConeConstraint& add_cone_constraint(std::string frame_a, std::string frame_b, double alpha_max);
+
+  /**
+   * @brief Adds a yaw constraint
+   * @param frame_a frame A
+   * @param frame_b frame B
+   * @param alpha_max alpha max (in radians) between the frame z-axis and the cone frame zt-axis
+   * @param T_world_cone cone frame
+   * @return constraint
+   * @pyignore
+   */
+  YawConstraint& add_yaw_constraint(model::RobotWrapper::FrameIndex frame_a, model::RobotWrapper::FrameIndex frame_b,
+                                    double alpha_max);
+
+  /**
+   * @brief Adds a yaw constraint
+   * @param frame_a frame A
+   * @param frame_b frame B
+   * @param alpha_max alpha max (in radians) between the frame z-axis and the cone frame zt-axis
+   * @param T_world_cone cone frame
+   * @return constraint
+   */
+  YawConstraint& add_yaw_constraint(std::string frame_a, std::string frame_b, double alpha_max);
 
   /**
    * @brief Constructs the QP problem and solves it
