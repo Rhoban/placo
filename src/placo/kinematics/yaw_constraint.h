@@ -9,8 +9,7 @@ namespace placo::kinematics
 class KinematicsSolver;
 
 /**
- * @brief A cone constraint is a constraint where the z-axis of frame a and frame b should remaine within a cone of
- * angle angle_max.
+ * @brief A yaw constraint is a constraint where the x-axis of frame b should have a yaw withing +- angle_max in frame a
  */
 class YawConstraint : public Constraint
 {
@@ -34,7 +33,7 @@ public:
   model::RobotWrapper::FrameIndex frame_b;
 
   /**
-   * @brief Maximum angle allowable by the cone constraint (between z-axis of frame_a and frame_b)
+   * @brief Maximum angle allowable by the yaw constraint (yaw is taken for x-axis of b around z-axis in a)
    */
   double angle_max;
 
