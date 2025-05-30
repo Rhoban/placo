@@ -32,6 +32,7 @@ Kinematics
     avoid_self_collisions_constraint
     cone_constraint
     yaw_constraint
+    distance_constraint
     joint_space_half_spaces_constraint
 
 .. toctree::

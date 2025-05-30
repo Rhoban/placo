@@ -6,7 +6,7 @@ The :func:`YawConstraint <placo.YawConstraint>` can be used to constrain the yaw
 Creating the constraint
 -----------------------
 
-You can use the :func:`add_yaw_constraint() <placo.KinematicsSolver.add_cone_add_yaw_constraintconstraint>` method
+You can use the :func:`add_yaw_constraint() <placo.KinematicsSolver.add_cone_add_yaw_constraint>` method
 on the solver to create a yaw constraint:
 
 .. code-block:: python
