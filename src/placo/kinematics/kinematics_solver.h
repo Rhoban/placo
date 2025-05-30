@@ -31,6 +31,7 @@
 #include "placo/kinematics/joint_space_half_spaces_constraint.h"
 #include "placo/kinematics/cone_constraint.h"
 #include "placo/kinematics/yaw_constraint.h"
+#include "placo/kinematics/distance_constraint.h"
 
 // Problem formulation
 #include "placo/problem/problem.h"
@@ -301,7 +302,6 @@ public:
    * @param frame_a frame A
    * @param frame_b frame B
    * @param alpha_max alpha max (in radians) between the frame z-axis and the cone frame zt-axis
-   * @param T_world_cone cone frame
    * @return constraint
    * @pyignore
    */
@@ -313,7 +313,6 @@ public:
    * @param frame_a frame A
    * @param frame_b frame B
    * @param alpha_max alpha max (in radians) between the frame z-axis and the cone frame zt-axis
-   * @param T_world_cone cone frame
    * @return constraint
    */
   ConeConstraint& add_cone_constraint(std::string frame_a, std::string frame_b, double alpha_max);
@@ -322,8 +321,7 @@ public:
    * @brief Adds a yaw constraint
    * @param frame_a frame A
    * @param frame_b frame B
-   * @param alpha_max alpha max (in radians) between the frame z-axis and the cone frame zt-axis
-   * @param T_world_cone cone frame
+   * @param alpha_max angle max for yaw of x-axis in frame b in a
    * @return constraint
    * @pyignore
    */
@@ -334,11 +332,30 @@ public:
    * @brief Adds a yaw constraint
    * @param frame_a frame A
    * @param frame_b frame B
-   * @param alpha_max alpha max (in radians) between the frame z-axis and the cone frame zt-axis
-   * @param T_world_cone cone frame
+   * @param alpha_max angle max for yaw of x-axis in frame b in a
    * @return constraint
    */
   YawConstraint& add_yaw_constraint(std::string frame_a, std::string frame_b, double alpha_max);
+
+  /**
+   * @brief Adds a distance constraint
+   * @param frame_a frame A
+   * @param frame_b frame B
+   * @param distance_max maximum distance between the two frames
+   * @return constraint
+   * @pyignore
+   */
+  DistanceConstraint& add_distance_constraint(model::RobotWrapper::FrameIndex frame_a,
+                                              model::RobotWrapper::FrameIndex frame_b, double distance_max);
+
+  /**
+   * @brief Adds a distance constraint
+   * @param frame_a frame A
+   * @param frame_b frame B
+   * @param distance_max maximum distance between the two frames
+   * @return constraint
+   */
+  DistanceConstraint& add_distance_constraint(std::string frame_a, std::string frame_b, double distance_max);
 
   /**
    * @brief Constructs the QP problem and solves it
