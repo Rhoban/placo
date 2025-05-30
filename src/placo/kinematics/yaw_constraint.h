@@ -15,7 +15,7 @@ class YawConstraint : public Constraint
 {
 public:
   /**
-   * @brief With a cone constraint, the z-axis of frame a and frame b should remaine within a cone of angle angle_max
+   * @brief Constrains the yaw of frame b in frame a, such that the x-axis of frame b should remain with +- angle_max
    * @param frame_a
    * @param frame_b
    * @param angle_max
