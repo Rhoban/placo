@@ -34,16 +34,16 @@ void YawConstraint::add_constraint(placo::problem::Problem& problem)
 
   // Expression for the angle
   problem::Expression e;
-  e.A.resize(1, solver->N);
-  e.b.resize(1);
-  e.A = J_angle;
+  e.A.resize(2, solver->N);
+  e.b.resize(2);
+  // First row is angle + J_angle*qd
+  e.A.block(0, 0, 1, solver->N) = J_angle;
   e.b(0, 0) = alpha;
+  // Second row is -(angle -J_angle*qd)
+  e.A.block(1, 0, 1, solver->N) = -J_angle;
+  e.b(1, 0) = -alpha;
 
   problem.add_constraint(e <= angle_max)
-      .configure(priority == Prioritized::Priority::Hard ? problem::ProblemConstraint::Hard :
-                                                           problem::ProblemConstraint::Soft,
-                 weight);
-  problem.add_constraint(e >= -angle_max)
       .configure(priority == Prioritized::Priority::Hard ? problem::ProblemConstraint::Hard :
                                                            problem::ProblemConstraint::Soft,
                  weight);
