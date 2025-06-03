@@ -455,7 +455,7 @@ void WalkPatternGenerator::constrain_lipm(problem::Problem& problem, LIPM& lipm,
   }
 }
 
-void WalkPatternGenerator::plan_com(Trajectory& trajectory, std::vector<FootstepsPlanner::Support>& supports,
+bool WalkPatternGenerator::plan_com(Trajectory& trajectory, std::vector<FootstepsPlanner::Support>& supports,
                                     Eigen::Vector2d initial_pos, Eigen::Vector2d initial_vel,
                                     Eigen::Vector2d initial_acc)
 {
@@ -495,14 +495,24 @@ void WalkPatternGenerator::plan_com(Trajectory& trajectory, std::vector<Footstep
   trajectory.t_end = t;
 
   // Solving the problem
-  problem.solve();
+  try
+  {
+    problem.solve();
+  }
+  catch (const std::exception& e)
+  {
+    return false;
+  }
 
+  // Attributing the LIPM trajectories to the trajectory parts
   for (int i = 0; i < (int)trajectory.parts.size(); i++)
   {
     auto& part = trajectory.parts[i];
     part.com_trajectory = lipms[i].get_trajectory();
     part.support.target_world_dcm = part.com_trajectory.dcm(part.t_end, omega);
   }
+
+  return true;
 }
 
 WalkPatternGenerator::Trajectory WalkPatternGenerator::plan(std::vector<FootstepsPlanner::Support>& supports,
@@ -542,7 +552,12 @@ WalkPatternGenerator::Trajectory WalkPatternGenerator::replan(std::vector<Footst
   Eigen::Vector2d initial_pos = old_trajectory.get_p_world_CoM(t_replan).head(2);
   Eigen::Vector2d initial_vel = old_trajectory.get_v_world_CoM(t_replan).head(2);
   Eigen::Vector2d initial_acc = old_trajectory.get_a_world_CoM(t_replan).head(2);
-  plan_com(trajectory, supports, initial_pos, initial_vel, initial_acc);
+  bool planned_com = plan_com(trajectory, supports, initial_pos, initial_vel, initial_acc);
+
+  if (!planned_com)
+  {
+    return old_trajectory;
+  }
 
   plan_feet_trajectories(trajectory, &old_trajectory);
 
