@@ -43,10 +43,12 @@ void exposeRobotType(class_<RobotType, W1>& type)
       .def("set_velocity_limits", &RobotType::set_velocity_limits)
       .def("set_torque_limit", &RobotType::set_torque_limit)
       .def("set_joint_limits", &RobotType::set_joint_limits)
-      .def("get_joint_limits", +[](RobotType& robot, const std::string& joint) {
-        auto limits = robot.get_joint_limits(joint);
-        return Eigen::Vector2d(limits.first, limits.second);
-      })
+      .def(
+          "get_joint_limits",
+          +[](RobotType& robot, const std::string& joint) {
+            auto limits = robot.get_joint_limits(joint);
+            return Eigen::Vector2d(limits.first, limits.second);
+          })
       .def("update_kinematics", &RobotType::update_kinematics)
       .def("compute_hessians", &RobotType::compute_hessians)
       .def(
@@ -57,7 +59,6 @@ void exposeRobotType(class_<RobotType, W1>& type)
       .def("get_T_world_fbase", &RobotType::get_T_world_fbase)
       .def("set_T_world_fbase", &RobotType::set_T_world_fbase)
       .def("com_world", &RobotType::com_world)
-      .def("dcom_world", &RobotType::dcom_world)
       .def("centroidal_map", &RobotType::centroidal_map)
       .def("joint_names", &RobotType::joint_names, joint_names_overloads())
       .def("frame_names", &RobotType::frame_names)
@@ -180,14 +181,12 @@ void exposeRobotWrapper()
       .def<void (HumanoidRobot::*)(const std::string&)>("update_support_side", &HumanoidRobot::update_support_side)
       .def("ensure_on_floor", &HumanoidRobot::ensure_on_floor)
       .def("ensure_on_floor_oriented", &HumanoidRobot::ensure_on_floor_oriented)
+      .def("update_from_imu", &HumanoidRobot::update_from_imu)
       .def("get_T_world_left", &HumanoidRobot::get_T_world_left)
       .def("get_T_world_right", &HumanoidRobot::get_T_world_right)
       .def("get_T_world_trunk", &HumanoidRobot::get_T_world_trunk)
       .def("get_com_velocity", &HumanoidRobot::get_com_velocity)
-      .def("dcm", +[](HumanoidRobot& robot, double omega) { return robot.dcm(omega); })
-      .def("dcm_from_com_vel", +[](HumanoidRobot& robot, double omega, Eigen::Vector2d com_velocity) {
-        return robot.dcm(omega, com_velocity);
-      })
+      .def("dcm", &HumanoidRobot::dcm)
       .def("zmp", &HumanoidRobot::zmp)
       .def("other_side", &HumanoidRobot::other_side)
       .def(
@@ -213,10 +212,12 @@ void exposeRobotWrapper()
           "get_support_side", +[](const HumanoidRobot& robot) { return robot.support_side; })
       .add_property("support_is_both", &HumanoidRobot::support_is_both, &HumanoidRobot::support_is_both)
       .add_property("support_side", &HumanoidRobot::support_side)
-      .def("get_T_world_support", +[](const HumanoidRobot& robot) { return robot.T_world_support; })
-      .def("set_T_world_support", +[](HumanoidRobot& robot, const Eigen::Affine3d& T_world_support) {
-        robot.T_world_support = T_world_support;
-      });
+      .def(
+          "get_T_world_support", +[](const HumanoidRobot& robot) { return robot.T_world_support; })
+      .def(
+          "set_T_world_support", +[](HumanoidRobot& robot, const Eigen::Affine3d& T_world_support) {
+            robot.T_world_support = T_world_support;
+          });
 
   exposeStdVector<RobotWrapper::Collision>("vector_Collision");
   exposeStdVector<RobotWrapper::Distance>("vector_Distance");

@@ -240,11 +240,6 @@ public:
   Eigen::Vector3d com_world();
 
   /**
-   * @brief Gets the CoM velocity in the world
-   */
-  Eigen::Vector3d dcom_world();
-
-  /**
    * @brief Gets the frame to world transformation matrix for a given frame
    *
    * Be sure you called \ref update_kinematics before calling this method if your state has changed
@@ -480,7 +475,7 @@ public:
   Eigen::MatrixXd joint_jacobian(pinocchio::JointIndex joint,
                                  pinocchio::ReferenceFrame ref = pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED);
 
-                                 /**
+  /**
    * @brief Joint jacobian, default reference is LOCAL_WORLD_ALIGNED
    *
    * Be sure you called \ref update_kinematics before calling this method if your state has changed

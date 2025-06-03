@@ -39,7 +39,7 @@ public:
   void ensure_on_floor();
 
   /**
-   * @brief Place the robot on its support on the floor according 
+   * @brief Place the robot on its support on the floor according
    * to the trunk orientation and the kinematic configuration
    * @param R_world_trunk Orientation of the trunk
    */
@@ -70,14 +70,8 @@ public:
    * @param use_non_linear_effects If true, non linear effects are taken into account (state.qd necessary)
    * @return Torques of the motors
    */
-  Eigen::VectorXd get_torques(Eigen::VectorXd acc_a, Eigen::VectorXd contact_forces, bool use_non_linear_effects = false);
-
-  /**
-   * @brief Compute the Divergent Component of Motion (DCM)
-   * @param omega Natural frequency of the LIP (= sqrt(g/h))
-   * @return DCM
-   */
-  Eigen::Vector2d dcm(double omega);
+  Eigen::VectorXd get_torques(Eigen::VectorXd acc_a, Eigen::VectorXd contact_forces,
+                              bool use_non_linear_effects = false);
 
   /**
    * @brief Compute the Divergent Component of Motion (DCM)
@@ -145,4 +139,4 @@ public:
   double dist_z_pan_camera;  // Distance along z between the pan DoF and the camera in the head
   double dist_y_trunk_foot;  // Distance along y between the trunk and the left_foot frame in model
 };
-}  // namespace placo::humanoid 
+}  // namespace placo::humanoid

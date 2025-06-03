@@ -252,11 +252,6 @@ Eigen::Vector3d RobotWrapper::com_world()
   return data->com[0];
 }
 
-Eigen::Vector3d RobotWrapper::dcom_world()
-{
-  return com_jacobian() * state.qd;
-}
-
 void RobotWrapper::update_kinematics()
 {
   pinocchio::framesForwardKinematics(model, *data, state.q);

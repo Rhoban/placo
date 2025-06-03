@@ -194,12 +194,6 @@ Eigen::VectorXd HumanoidRobot::get_torques(Eigen::VectorXd acc_a, Eigen::VectorX
   return M * acc + h - J_c * contact_forces;
 }
 
-Eigen::Vector2d HumanoidRobot::dcm(double omega)
-{
-  // DCM = c + (1/omega) c_dot
-  return com_world().head(2) + (1 / omega) * dcom_world().head(2);
-}
-
 Eigen::Vector2d HumanoidRobot::dcm(double omega, Eigen::Vector2d com_velocity)
 {
   // DCM = c + (1/omega) c_dot

@@ -78,6 +78,10 @@ public:
 
     Eigen::Matrix3d get_R_world_trunk(double t);
 
+    Eigen::Vector3d get_p_support_CoM(double t);
+    Eigen::Vector3d get_v_support_CoM(double t);
+    Eigen::Vector2d get_p_support_DCM(double t, double omega);
+
     HumanoidRobot::Side support_side(double t);
     bool support_is_both(double t);
     bool is_flying(HumanoidRobot::Side side, double t);
@@ -188,11 +192,9 @@ public:
    * duration and the target of the current swing trajectory.
    * @param t Current time
    * @param supports Planned supports
-   * @param world_target_zmp Target ZMP for the flying foot in world frame
    * @param world_measured_dcm Measured DCM in world frame
    */
   std::vector<FootstepsPlanner::Support> update_supports(double t, std::vector<FootstepsPlanner::Support> supports,
-                                                         Eigen::Vector2d world_target_zmp,
                                                          Eigen::Vector2d world_measured_dcm);
 
   /**
@@ -210,6 +212,8 @@ public:
   double support_default_duration(FootstepsPlanner::Support& support);
 
   bool soft = false;
+  double zmp_in_support_weight = 1e3;
+  double stop_end_support_weight = 1e3;
 
 protected:
   // Robot associated to the WPG

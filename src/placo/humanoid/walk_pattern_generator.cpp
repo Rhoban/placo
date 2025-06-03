@@ -212,6 +212,25 @@ Eigen::Matrix3d WalkPatternGenerator::Trajectory::get_R_world_trunk(double t)
   return T.linear() * R_world_trunk;
 }
 
+Eigen::Vector3d WalkPatternGenerator::Trajectory::get_p_support_CoM(double t)
+{
+  TrajectoryPart& part = _findPart(parts, t);
+  Eigen::Affine3d T_support_world = placo::tools::flatten_on_floor(get_T_world_foot(part.support.side(), t)).inverse();
+  return T_support_world * get_p_world_CoM(t);
+}
+
+Eigen::Vector3d WalkPatternGenerator::Trajectory::get_v_support_CoM(double t)
+{
+  TrajectoryPart& part = _findPart(parts, t);
+  Eigen::Affine3d T_support_world = placo::tools::flatten_on_floor(get_T_world_foot(part.support.side(), t)).inverse();
+  return T_support_world.linear() * get_v_world_CoM(t);
+}
+
+Eigen::Vector2d WalkPatternGenerator::Trajectory::get_p_support_DCM(double t, double omega)
+{
+  return get_p_support_CoM(t).head(2) + (1 / omega) * get_v_support_CoM(t).head(2);
+}
+
 HumanoidRobot::Side WalkPatternGenerator::Trajectory::support_side(double t)
 {
   return _findPart(parts, t).support.side();
@@ -402,7 +421,7 @@ void WalkPatternGenerator::constrain_lipm(problem::Problem& problem, LIPM& lipm,
         lipm.zmp(timestep, omega_2), support.support_polygon(), parameters.zmp_margin));
     if (soft)
     {
-      zmp_constraint.configure(ProblemConstraint::Soft, 1e5);
+      zmp_constraint.configure(ProblemConstraint::Soft, zmp_in_support_weight);
     }
 
     // Optional offset for single supports
@@ -428,9 +447,9 @@ void WalkPatternGenerator::constrain_lipm(problem::Problem& problem, LIPM& lipm,
 
       if (soft)
       {
-        pos_constraint.configure(ProblemConstraint::Soft, 1e3);
-        vel_constraint.configure(ProblemConstraint::Soft, 1e3);
-        acc_constraint.configure(ProblemConstraint::Soft, 1e3);
+        pos_constraint.configure(ProblemConstraint::Soft, stop_end_support_weight);
+        vel_constraint.configure(ProblemConstraint::Soft, stop_end_support_weight);
+        acc_constraint.configure(ProblemConstraint::Soft, stop_end_support_weight);
       }
     }
   }
@@ -539,9 +558,9 @@ bool WalkPatternGenerator::can_replan_supports(Trajectory& trajectory, double t_
     return false;
   }
 
+  // We can't replan if the current support is a double support
   if (trajectory.get_support(t_replan).is_both())
   {
-    // We can't replan if the current support is a double support
     return false;
   }
 
@@ -613,7 +632,6 @@ std::vector<FootstepsPlanner::Support> WalkPatternGenerator::replan_supports(Foo
       current_support.elapsed_ratio +
       elapsed_duration / (support_default_duration(current_support) * current_support.time_ratio);
   supports[0].time_ratio = current_support.time_ratio;
-  supports[0].target_world_dcm = current_support.target_world_dcm;
   return supports;
 }
 
@@ -651,9 +669,8 @@ void WalkPatternGenerator::Trajectory::print_parts_timings()
   }
 }
 
-std::vector<FootstepsPlanner::Support>
-WalkPatternGenerator::update_supports(double t, std::vector<FootstepsPlanner::Support> supports,
-                                      Eigen::Vector2d world_target_zmp, Eigen::Vector2d world_measured_dcm)
+std::vector<FootstepsPlanner::Support> WalkPatternGenerator::update_supports(
+    double t, std::vector<FootstepsPlanner::Support> supports, Eigen::Vector2d world_measured_dcm)
 {
   FootstepsPlanner::Support current_support = supports[0];
   if (current_support.is_both())
@@ -671,12 +688,15 @@ WalkPatternGenerator::update_supports(double t, std::vector<FootstepsPlanner::Su
   Eigen::Matrix2d R_world_support = current_support.frame().rotation().topLeftCorner(2, 2);
   Eigen::Vector2d p_world_support = current_support.frame().translation().head(2);
 
-  // Decision variables
-  placo::problem::Variable* support_next_zmp =
-      &problem.add_variable(2);  // ZMP of the next support expressed in the current support frame
-  placo::problem::Variable* tau = &problem.add_variable(1);  // exp(omega * T) where T is the end of the current support
-  placo::problem::Variable* support_dcm_offset =
-      &problem.add_variable(2);  // Offset of the DCM from the ZMP in the current support frame
+  // ----------------- Decision variables: ------------------
+  // ZMP of the next support expressed in the current support frame
+  placo::problem::Variable* support_next_zmp = &problem.add_variable(2);
+
+  // exp(omega * T) where T is the end of the current support
+  placo::problem::Variable* tau = &problem.add_variable(1);
+
+  // Offset of the DCM from the ZMP in the current support frame
+  placo::problem::Variable* support_dcm_offset = &problem.add_variable(2);
 
   // ----------------- Objective functions: -----------------
   // Time reference
@@ -685,14 +705,11 @@ WalkPatternGenerator::update_supports(double t, std::vector<FootstepsPlanner::Su
 
   // ZMP Reference (expressed in the world frame)
   Expression world_next_zmp_expr = p_world_support + R_world_support * support_next_zmp->expr();
+  Eigen::Vector2d world_target_zmp = supports[1].frame().translation().head(2);
   problem.add_constraint(world_next_zmp_expr == world_target_zmp).configure(ProblemConstraint::Soft, w2);
 
   // DCM offset reference (expressed in the world frame)
-  // XXX : l'offset doit être calculé par rapport à la cible mise à jour non ?
   Eigen::Vector2d world_target_dcm_offset = current_support.target_world_dcm - world_target_zmp;
-  // Eigen::Vector2d world_target_dcm_offset = world_end_dcm - next_support.frame().translation().head(2);
-  // std::cout << "world_target_dcm_offset: " << world_target_dcm_offset.transpose() << std::endl;
-
   Expression world_dcm_offset_expr = R_world_support * support_dcm_offset->expr();
   problem.add_constraint(world_dcm_offset_expr == world_target_dcm_offset).configure(ProblemConstraint::Soft, w3);
 
@@ -747,6 +764,7 @@ WalkPatternGenerator::update_supports(double t, std::vector<FootstepsPlanner::Su
   problem.solve();
 
   // Updating next support position
+  // XXX: Problème de transform T qui s'applique ?
   Eigen::Vector2d world_next_zmp_val = p_world_support + R_world_support * support_next_zmp->value;
   supports[1].footsteps[0].frame.translation().x() = world_next_zmp_val(0);
   supports[1].footsteps[0].frame.translation().y() = world_next_zmp_val(1);
