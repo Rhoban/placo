@@ -176,6 +176,7 @@ public:
    * @brief Adds joints task
    * @param joints value for the joints
    * @return joints task
+   * @pyignore
    */
   JointsTask& add_joints_task(std::map<std::string, double>& joints);
 
