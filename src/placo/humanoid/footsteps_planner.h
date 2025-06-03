@@ -48,11 +48,17 @@ public:
 
     std::vector<Footstep> footsteps;
 
-    double t_start = -1.; // Time at which the support starts. Is set to -1 if not initialized
-    double elapsed_ratio = 0.; // Elapsed ratio of the support phase, ranging from 0 to 1
+    // Time at which the support starts. Is set to -1 if not initialized
+    double t_start = -1.;
 
-    double time_ratio = 1.; // Time ratio for the remaining part of the support phase
-    Eigen::Vector2d target_world_dcm = Eigen::Vector2d::Zero(); // Target DCM in the world frame at the end of the support phase
+    // Elapsed ratio of the support phase, ranging from 0 to 1
+    double elapsed_ratio = 0.;
+
+    // Time ratio for the remaining part of the support phase
+    double time_ratio = 1.;
+
+    // Target DCM in the world frame at the end of the support phase
+    Eigen::Vector2d target_world_dcm = Eigen::Vector2d::Zero();
 
     bool start = false;
     bool end = false;
@@ -119,7 +125,8 @@ public:
    * @return vector of supports to use. It starts with initial double supports,
    * and add double support phases between footsteps.
    */
-  static std::vector<Support> make_supports(std::vector<Footstep> footsteps, double t_start, bool start = true, bool middle = false, bool end = true);
+  static std::vector<Support> make_supports(std::vector<Footstep> footsteps, double t_start, bool start = true,
+                                            bool middle = false, bool end = true);
 
   /**
    * @brief Return the type of footsteps planner

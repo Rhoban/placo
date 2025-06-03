@@ -78,6 +78,10 @@ public:
 
     Eigen::Matrix3d get_R_world_trunk(double t);
 
+    Eigen::Vector3d get_p_support_CoM(double t);
+    Eigen::Vector3d get_v_support_CoM(double t);
+    Eigen::Vector2d get_p_support_DCM(double t, double omega);
+
     HumanoidRobot::Side support_side(double t);
     bool support_is_both(double t);
     bool is_flying(HumanoidRobot::Side side, double t);
@@ -180,19 +184,14 @@ public:
   std::vector<FootstepsPlanner::Support> replan_supports(FootstepsPlanner& planner, Trajectory& trajectory,
                                                          double t_replan, double t_last_replan);
 
-  double last_com_planning_duration = 0.;
-  double last_feet_planning_duration = 0.;
-
   /**
    * @brief Updates the supports to ensure DCM viability by adjusting the
    * duration and the target of the current swing trajectory.
    * @param t Current time
    * @param supports Planned supports
-   * @param world_target_zmp Target ZMP for the flying foot in world frame
    * @param world_measured_dcm Measured DCM in world frame
    */
   std::vector<FootstepsPlanner::Support> update_supports(double t, std::vector<FootstepsPlanner::Support> supports,
-                                                         Eigen::Vector2d world_target_zmp,
                                                          Eigen::Vector2d world_measured_dcm);
 
   /**
@@ -210,6 +209,8 @@ public:
   double support_default_duration(FootstepsPlanner::Support& support);
 
   bool soft = false;
+  double zmp_in_support_weight = 1e3;
+  double stop_end_support_weight = 1e3;
 
 protected:
   // Robot associated to the WPG
@@ -218,13 +219,33 @@ protected:
   // The parameters to use for planning. The values are forwarded to the relevant solvers when needed.
   HumanoidParameters& parameters;
 
+  // Natural frequency of the LIPM (omega = sqrt(g/h))
   double omega;
+
+  // Squared natural frequency of the LIPM (omega^2 = g/h)
   double omega_2;
 
+  /**
+   * @brief Constrains the LIPM to ensure that the ZMP stays in the support polygon and that the CoM stops at
+   * the end of an end support.
+   * @param problem Problem to add the constraints to
+   * @param lipm LIPM to constrain
+   * @param support Support to constrain
+   * @param omega_2 Squared natural frequency of the LIPM (omega^2 = g/h)
+   * @param parameters Humanoid parameters to use for the constraints
+   */
   void constrain_lipm(problem::Problem& problem, LIPM& lipm, FootstepsPlanner::Support& support, double omega_2,
                       HumanoidParameters& parameters);
 
-  void plan_com(Trajectory& trajectory, std::vector<FootstepsPlanner::Support>& supports, Eigen::Vector2d initial_pos,
+  /**
+   * @brief Plans the CoM trajectory for a given support. Returns false if the QP solver failed to solve the problem.
+   * @param trajectory Trajectory to fill
+   * @param support Support to plan
+   * @param initial_pos Initial position of the CoM in the world frame
+   * @param initial_vel Initial velocity of the CoM in the world frame
+   * @param initial_acc Initial acceleration of the CoM in the world frame
+   */
+  bool plan_com(Trajectory& trajectory, std::vector<FootstepsPlanner::Support>& supports, Eigen::Vector2d initial_pos,
                 Eigen::Vector2d initial_vel = Eigen::Vector2d::Zero(),
                 Eigen::Vector2d initial_acc = Eigen::Vector2d::Zero());
 
