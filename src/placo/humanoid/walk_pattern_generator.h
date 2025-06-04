@@ -53,7 +53,8 @@ public:
     double trunk_pitch;
     double trunk_roll;
 
-    int kept_ts = 0;
+    // Replan succeeded?
+    bool replan_success = true;
 
     Eigen::Affine3d get_T_world_left(double t);
     Eigen::Affine3d get_T_world_right(double t);
@@ -252,5 +253,13 @@ protected:
   void plan_dbl_support(Trajectory& trajectory, int part_index);
   void plan_sgl_support(Trajectory& trajectory, int part_index, Trajectory* old_trajectory);
   void plan_feet_trajectories(Trajectory& trajectory, Trajectory* old_trajectory = nullptr);
+
+  /**
+   * @brief Trims the old trajectory to the new time horizon without modifying the CoM and feet trajectories.
+   * @param old_trajectory The old trajectory to trim
+   * @param t_replan The time at which the replan happens
+   * @return The trimmed trajectory
+   */
+  Trajectory trim_old_trajectory(Trajectory& old_trajectory, double t_replan);
 };
 }  // namespace placo::humanoid

@@ -554,9 +554,10 @@ WalkPatternGenerator::Trajectory WalkPatternGenerator::replan(std::vector<Footst
   Eigen::Vector2d initial_acc = old_trajectory.get_a_world_CoM(t_replan).head(2);
   bool planned_com = plan_com(trajectory, supports, initial_pos, initial_vel, initial_acc);
 
+  // If we can't plan the CoM, we return the trimmed old trajectory
   if (!planned_com)
   {
-    return old_trajectory;
+    return trim_old_trajectory(old_trajectory, t_replan);
   }
 
   plan_feet_trajectories(trajectory, &old_trajectory);
@@ -578,17 +579,6 @@ bool WalkPatternGenerator::can_replan_supports(Trajectory& trajectory, double t_
   {
     return false;
   }
-
-  // XXX: Need to move to a branch
-  // We can't replan if more than 1/2 of the support phase has passed
-  // if (trajectory.get_support(t_replan).elapsed_ratio > 0.8)
-  // {
-  //   return false;
-  // }
-  // if (t_replan - trajectory.get_support(t_replan).t_start < 0.005)
-  // {
-  //   return false;
-  // }
 
   return true;
 }
@@ -816,5 +806,41 @@ Eigen::Vector2d WalkPatternGenerator::get_optimal_zmp(Eigen::Vector2d world_dcm_
 
   problem.solve();
   return world_zmp->value;
+}
+
+WalkPatternGenerator::Trajectory WalkPatternGenerator::trim_old_trajectory(Trajectory& old_trajectory, double t_replan)
+{
+  Trajectory trajectory = old_trajectory;
+  trajectory.t_start = t_replan;
+  trajectory.replan_success = false;
+
+  // Remove the parts before the replan time
+  std::vector<WalkPatternGenerator::TrajectoryPart> new_parts;
+  for (auto part : old_trajectory.parts)
+  {
+    if (t_replan >= part.t_start)
+    {
+      if (t_replan < part.t_end)
+      {
+        TrajectoryPart new_part = part;
+        new_part.t_start = t_replan;
+
+        // Updating the elapsed ratio of the support
+        double elapsed_duration = t_replan - std::max(old_trajectory.t_start, new_part.support.t_start);
+        new_part.support.elapsed_ratio =
+            new_part.support.elapsed_ratio +
+            elapsed_duration / (support_default_duration(new_part.support) * new_part.support.time_ratio);
+
+        new_parts.push_back(new_part);
+      }
+    }
+    else
+    {
+      new_parts.push_back(part);
+    }
+  }
+  trajectory.parts = new_parts;
+
+  return trajectory;
 }
 }  // namespace placo::humanoid
