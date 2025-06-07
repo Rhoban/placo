@@ -59,7 +59,16 @@ void exposeFootsteps()
 
   class__<FootstepsPlanner, boost::noncopyable>("FootstepsPlanner", no_init)
       .def("make_supports", &FootstepsPlanner::make_supports)
-      .def("opposite_footstep", &FootstepsPlanner::opposite_footstep);
+      .def("opposite_footstep", &FootstepsPlanner::opposite_footstep)
+      .def(
+          "supports_head", +[](const std::vector<FootstepsPlanner::Support> supports, int index) {
+            std::vector<FootstepsPlanner::Support> head;
+            for (int i = 0; i < index; ++i)
+            {
+              head.push_back(supports[i]);
+            }
+            return head;
+          });
 
   class__<FootstepsPlannerNaive, bases<FootstepsPlanner>>("FootstepsPlannerNaive", init<HumanoidParameters&>())
       .def("plan", &FootstepsPlannerNaive::plan)
