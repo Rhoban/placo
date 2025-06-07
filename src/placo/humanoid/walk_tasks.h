@@ -40,7 +40,8 @@ public:
   double com_y = 0.;
 
   // DCM error PID
-  void update_tasks_and_pid(WalkPatternGenerator::Trajectory& trajectory, double t, Eigen::Vector2d dcm, double omega, double elapsed);
+  void update_tasks_and_pid(WalkPatternGenerator::Trajectory& trajectory, double t, Eigen::Vector2d dcm, double omega,
+                            double elapsed);
 
   double K_p = 0.;
   double K_i = 0.;

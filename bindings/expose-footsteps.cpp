@@ -25,10 +25,12 @@ void exposeFootsteps()
       .add_property("foot_length", &FootstepsPlanner::Footstep::foot_length, &FootstepsPlanner::Footstep::foot_length)
       .add_property("foot_width", &FootstepsPlanner::Footstep::foot_width, &FootstepsPlanner::Footstep::foot_width)
       .add_property("frame", &FootstepsPlanner::Footstep::frame, &FootstepsPlanner::Footstep::frame)
-      .def("set_frame_xy", +[](FootstepsPlanner::Footstep& footstep, double x, double y) {
-        footstep.frame.translation().x() = x;
-        footstep.frame.translation().y() = y;
-      })
+      .def(
+          "set_frame_xy",
+          +[](FootstepsPlanner::Footstep& footstep, double x, double y) {
+            footstep.frame.translation().x() = x;
+            footstep.frame.translation().y() = y;
+          })
       .def("support_polygon", &FootstepsPlanner::Footstep::support_polygon)
       .def("overlap", &FootstepsPlanner::Footstep::overlap)
       .def("polygon_contains", &FootstepsPlanner::Footstep::polygon_contains)
@@ -52,7 +54,7 @@ void exposeFootsteps()
       .add_property("time_ratio", &FootstepsPlanner::Support::time_ratio, &FootstepsPlanner::Support::time_ratio)
       .add_property("start", &FootstepsPlanner::Support::start, &FootstepsPlanner::Support::start)
       .add_property("end", &FootstepsPlanner::Support::end, &FootstepsPlanner::Support::end)
-      .add_property("target_world_dcm", &FootstepsPlanner::Support::target_world_dcm, 
+      .add_property("target_world_dcm", &FootstepsPlanner::Support::target_world_dcm,
                     &FootstepsPlanner::Support::target_world_dcm);
 
   class__<FootstepsPlanner, boost::noncopyable>("FootstepsPlanner", no_init)

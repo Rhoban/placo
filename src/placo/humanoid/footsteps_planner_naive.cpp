@@ -18,6 +18,9 @@ namespace placo::humanoid
 {
 FootstepsPlannerNaive::FootstepsPlannerNaive(HumanoidParameters& parameters) : FootstepsPlanner(parameters)
 {
+  accessibility_length = parameters.walk_max_dx_forward;
+  accessibility_width = parameters.walk_max_dy;
+  accessibility_yaw = parameters.walk_max_dtheta;
 }
 
 std::string FootstepsPlannerNaive::name()
@@ -125,10 +128,14 @@ void FootstepsPlannerNaive::plan_impl(std::vector<FootstepsPlanner::Footstep>& f
       error_yaw = accessibility_yaw;
     }
 
+    // Ellipsoid clipping
+    Eigen::Vector3d step(error.x(), error.y(), error_yaw);
+    step = parameters.ellipsoid_clip(step);
+
     // Computing new frame
     Eigen::Affine3d new_step;
-    new_step.translation() = T_support_floatingIdle.translation() + error;
-    new_step.linear() = Eigen::AngleAxisd(error_yaw, Eigen::Vector3d::UnitZ()).toRotationMatrix();
+    new_step.translation() = T_support_floatingIdle.translation() + Eigen::Vector3d(step.x(), step.y(), 0.);
+    new_step.linear() = Eigen::AngleAxisd(step[2], Eigen::Vector3d::UnitZ()).toRotationMatrix();
 
     // Going to next step
     Footstep footstep = create_footstep(HumanoidRobot::other_side(current_support_side), T_world_support * new_step);

@@ -58,7 +58,8 @@ void WalkTasks::reach_initial_pose(Eigen::Affine3d T_world_left, double feet_spa
                                    double trunk_pitch)
 {
   Eigen::Affine3d T_world_right = T_world_left;
-  T_world_right.translation() = T_world_left.translation() + T_world_left.rotation() * Eigen::Vector3d(0, -feet_spacing, 0);
+  T_world_right.translation() =
+      T_world_left.translation() + T_world_left.rotation() * Eigen::Vector3d(0, -feet_spacing, 0);
 
   Eigen::Vector3d com_world = interpolate_frames(T_world_left, T_world_right, .5).translation();
   com_world.z() = com_height;
@@ -68,7 +69,7 @@ void WalkTasks::reach_initial_pose(Eigen::Affine3d T_world_left, double feet_spa
   trunk_orientation_task->R_world_frame = R_world_trunk;
 
   update_tasks(T_world_left, T_world_right, com_world, R_world_trunk);
-  
+
   for (int i = 0; i < 100; i++)
   {
     if (i <= 10)
@@ -129,7 +130,8 @@ void WalkTasks::remove_tasks()
   }
 }
 
-void WalkTasks::update_tasks_and_pid(WalkPatternGenerator::Trajectory& trajectory, double t, Eigen::Vector2d dcm, double omega, double elapsed)
+void WalkTasks::update_tasks_and_pid(WalkPatternGenerator::Trajectory& trajectory, double t, Eigen::Vector2d dcm,
+                                     double omega, double elapsed)
 {
   Eigen::Vector2d error = dcm - trajectory.get_p_world_DCM(t + com_delay, omega);
   integral = (1.0 - lambda) * integral + error * elapsed;
@@ -139,7 +141,7 @@ void WalkTasks::update_tasks_and_pid(WalkPatternGenerator::Trajectory& trajector
   Eigen::Vector2d com_offset = K_p * error + K_i * integral + K_d * derivative;
 
   update_tasks(trajectory.get_T_world_left(t), trajectory.get_T_world_right(t),
-               trajectory.get_p_world_CoM(t + com_delay) + Eigen::Vector3d(com_offset[0], com_offset[1], 0.), 
+               trajectory.get_p_world_CoM(t + com_delay) + Eigen::Vector3d(com_offset[0], com_offset[1], 0.),
                trajectory.get_R_world_trunk(t));
 }
 
