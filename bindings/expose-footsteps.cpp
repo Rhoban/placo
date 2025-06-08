@@ -61,11 +61,34 @@ void exposeFootsteps()
       .def("make_supports", &FootstepsPlanner::make_supports)
       .def("opposite_footstep", &FootstepsPlanner::opposite_footstep)
       .def(
-          "supports_head", +[](const std::vector<FootstepsPlanner::Support> supports, int index) {
+          "truncate_supports", +[](const std::vector<FootstepsPlanner::Support>& supports, int index, bool add_end) {
+            if (index > (int)supports.size())
+            {
+              throw std::out_of_range("Index out of range for supports");
+            }
+
             std::vector<FootstepsPlanner::Support> head;
             for (int i = 0; i < index; ++i)
             {
               head.push_back(supports[i]);
+            }
+
+            if (add_end && !head.back().end)
+            {
+              FootstepsPlanner::Support end_support({ head.back().footsteps[0] });
+              end_support.end = true;
+              if (end_support.footsteps.size() == 1)
+              {
+                if (HumanoidRobot::other_side(supports[index].footsteps[0].side) == end_support.footsteps[0].side)
+                {
+                  end_support.footsteps.push_back(supports[index].footsteps[0]);
+                }
+                else
+                {
+                  end_support.footsteps.push_back(supports[index].footsteps[1]);
+                }
+              }
+              head.push_back(end_support);
             }
             return head;
           });
