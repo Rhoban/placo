@@ -44,6 +44,7 @@ add_library(libplaco SHARED
     src/placo/humanoid/walk_pattern_generator.cpp
     src/placo/humanoid/walk_tasks.cpp
     src/placo/humanoid/lipm.cpp
+    src/placo/humanoid/dummy_walk.cpp
 
     # Tools
     src/placo/tools/axises_mask.cpp

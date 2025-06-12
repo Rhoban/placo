@@ -11,6 +11,7 @@
 #include "placo/humanoid/swing_foot_cubic.h"
 #include "placo/humanoid/walk_tasks.h"
 #include "placo/humanoid/lipm.h"
+#include "placo/humanoid/dummy_walk.h"
 #include <Eigen/Dense>
 #include <boost/python.hpp>
 #include <eigenpy/eigen-to-python.hpp>
@@ -180,4 +181,25 @@ void exposeWalkPatternGenerator()
       .add_property("y_var", &LIPM::y_var, &LIPM::y_var)
       .add_property("x", &LIPM::x, &LIPM::x)
       .add_property("y", &LIPM::y, &LIPM::y);
+
+  class__<DummyWalk>("DummyWalk", init<model::RobotWrapper&>())
+      .def("reset", &DummyWalk::reset, (arg("support_left") = false))
+      .def("update", &DummyWalk::update)
+      .def("next_step", &DummyWalk::next_step)
+      .def("update_T_world_support", &DummyWalk::update_T_world_support)
+      .add_property("robot", make_function(
+                                 +[](DummyWalk& walk) -> model::RobotWrapper& { return walk.robot; },
+                                 return_value_policy<reference_existing_object>()))
+      .add_property("solver", &DummyWalk::solver)
+      .def_readwrite("feet_spacing", &DummyWalk::feet_spacing)
+      .def_readwrite("trunk_height", &DummyWalk::trunk_height)
+      .def_readwrite("trunk_pitch", &DummyWalk::trunk_pitch)
+      .def_readwrite("support_left", &DummyWalk::support_left)
+      .def_readwrite("lift_height", &DummyWalk::lift_height)
+      .add_property("T_world_left", make_getter(&DummyWalk::T_world_left, return_value_policy<return_by_value>()),
+                    make_setter(&DummyWalk::T_world_left))
+      .add_property("T_world_right", make_getter(&DummyWalk::T_world_right, return_value_policy<return_by_value>()),
+                    make_setter(&DummyWalk::T_world_right))
+      .add_property("T_world_next", make_getter(&DummyWalk::T_world_next, return_value_policy<return_by_value>()),
+                    make_setter(&DummyWalk::T_world_next));
 }
