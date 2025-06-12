@@ -103,7 +103,7 @@ public:
   };
 
   /**
-   * @brief Initializes the solver
+   * @brief Initializes the planner
    * @param parameters Parameters of the walk
    */
   FootstepsPlanner(HumanoidParameters& parameters);

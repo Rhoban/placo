@@ -15,7 +15,9 @@ Eigen::Vector3d SwingFootCubic::Trajectory::vel(double t)
 }
 
 SwingFootCubic::Trajectory SwingFootCubic::make_trajectory(double t_start, double virt_duration, double height,
-  double rise_ratio, Eigen::Vector3d start, Eigen::Vector3d target, double elapsed_ratio, Eigen::Vector3d start_vel)
+                                                           double rise_ratio, Eigen::Vector3d start,
+                                                           Eigen::Vector3d target, double elapsed_ratio,
+                                                           Eigen::Vector3d start_vel)
 {
   SwingFootCubic::Trajectory trajectory;
 

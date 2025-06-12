@@ -346,7 +346,6 @@ void WalkPatternGenerator::plan_sgl_support(Trajectory& trajectory, int part_ind
   Eigen::Affine3d T_world_end = trajectory.parts[part_index + 1].support.footstep_frame(flying_side);
 
   double virt_duration = support_default_duration(part.support) * part.support.time_ratio;
-
   if (part_index == 0 && old_trajectory != nullptr)
   {
     Eigen::Vector3d start = old_trajectory->get_T_world_foot(flying_side, trajectory.t_start).translation();
@@ -756,7 +755,7 @@ std::vector<FootstepsPlanner::Support> WalkPatternGenerator::update_supports(
   }
 
   // LIPM Dynamics (expressed in the world frame)
-  double duration = std::max(0., T - elapsed_time);
+  double duration = std::max(1e-5, T - elapsed_time);
   Eigen::Vector2d world_virtual_zmp =
       get_optimal_zmp(world_measured_dcm, current_support.target_world_dcm, duration, current_support);
   // Eigen::Vector2d world_virtual_zmp = flatten_on_floor(current_support.frame()).translation().head(2);
@@ -769,13 +768,12 @@ std::vector<FootstepsPlanner::Support> WalkPatternGenerator::update_supports(
   problem.solve();
 
   // Updating next support position
-  // XXX: Problème de transform T qui s'applique ?
   Eigen::Vector2d world_next_zmp_val = p_world_support + R_world_support * support_next_zmp->value;
   supports[1].footsteps[0].frame.translation().x() = world_next_zmp_val(0);
   supports[1].footsteps[0].frame.translation().y() = world_next_zmp_val(1);
 
   // Updating current support remaining duration
-  double support_remaining_time = log(tau->value(0)) / omega - elapsed_time;
+  double support_remaining_time = std::max(1e-3, log(tau->value(0)) / omega - elapsed_time);
   supports[0].time_ratio =
       support_remaining_time / (support_default_duration(current_support) * (1 - current_support.elapsed_ratio));
 
