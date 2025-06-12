@@ -213,7 +213,8 @@ void exposeKinematics()
       .add_property("joint", &WheelTask::joint)
       .add_property("radius", &WheelTask::radius)
       .add_property("omniwheel", &WheelTask::omniwheel)
-      .def_readwrite("T_world_surface", &WheelTask::T_world_surface);
+      .add_property("T_world_surface", make_getter(&WheelTask::T_world_surface, return_value_policy<return_by_value>()),
+                    make_setter(&WheelTask::T_world_surface));
 
   class__<DistanceTask, bases<Task>>("DistanceTask", init<RobotWrapper::FrameIndex, RobotWrapper::FrameIndex, double>())
       .add_property("frame_a", &DistanceTask::frame_a)
