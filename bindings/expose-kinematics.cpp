@@ -24,8 +24,10 @@ void exposeKinematics()
           .add_property("dt", &KinematicsSolver::dt, &KinematicsSolver::dt)
           .add_property("N", &KinematicsSolver::N)
           .add_property("scale", &KinematicsSolver::scale)
-          .add_property(
-              "robot", +[](const KinematicsSolver& solver) { return solver.robot; })
+          .add_property("robot",
+                        make_function(
+                            +[](const KinematicsSolver& solver) -> model::RobotWrapper& { return solver.robot; },
+                            return_value_policy<reference_existing_object>()))
 
           // Position and CoM task
           .def<PositionTask& (KinematicsSolver::*)(std::string, Eigen::Vector3d)>(
