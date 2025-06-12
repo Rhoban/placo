@@ -72,10 +72,10 @@ void DummyWalk::update(double t)
     T_world_left_.translation().z() = lift_spline.pos(t);
   }
 
-  Eigen::Affine3d T_world_mid = placo::tools::interpolate_frames(T_world_left_, T_world_right_, 0.5);
-  Eigen::Affine3d T_world_trunk = T_world_mid * translation(0, 0, trunk_height) *
-                                  Eigen::AngleAxisd(trunk_pitch, Eigen::Vector3d::UnitX()) *
-                                  translation(trunk_x_offset, 0, 0);
+  Eigen::Affine3d T_world_mid = placo::tools::interpolate_frames(tools::flatten_on_floor(T_world_left_),
+                                                                 tools::flatten_on_floor(T_world_right_), 0.5);
+  Eigen::Affine3d T_world_trunk = T_world_mid * translation(trunk_x_offset, 0, trunk_height) *
+                                  Eigen::AngleAxisd(trunk_pitch, Eigen::Vector3d::UnitY());
 
   left_foot_task.set_T_world_frame(T_world_left_);
   right_foot_task.set_T_world_frame(T_world_right_);
