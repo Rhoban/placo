@@ -45,6 +45,11 @@ jobs:
         with:
           name: cibw-wheels-${{ matrix.os }}-${{ matrix.pyver }}
           path: ./wheelhouse/*.whl
+      
+      - uses: actions/upload-artifact@v4
+        with:
+          name: doxygen-${{ matrix.os }}-${{ matrix.pyver }}
+          path: ./xml/*
 
   build_sdist:
     if: github.event_name == 'release' && github.event.action == 'published'
