@@ -87,7 +87,8 @@ void DummyWalk::update(double t)
 void DummyWalk::update_T_world_support(Eigen::Affine3d T_world_support)
 {
   Eigen::Affine3d T_world_currentSupport = support_left ? T_world_left : T_world_right;
-  Eigen::Affine3d T = tools::flatten_on_floor(T_world_support * T_world_currentSupport.inverse());
+  Eigen::Affine3d T =
+      tools::flatten_on_floor(T_world_support) * tools::flatten_on_floor(T_world_currentSupport.inverse());
 
   T_world_left = tools::flatten_on_floor(T * T_world_left);
   T_world_right = tools::flatten_on_floor(T * T_world_right);
