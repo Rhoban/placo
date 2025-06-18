@@ -196,6 +196,9 @@ void exposeWalkPatternGenerator()
       .def_readwrite("trunk_pitch", &DummyWalk::trunk_pitch)
       .def_readwrite("support_left", &DummyWalk::support_left)
       .def_readwrite("lift_height", &DummyWalk::lift_height)
+      .def_readonly("dx", &DummyWalk::dx)
+      .def_readonly("dy", &DummyWalk::dy)
+      .def_readonly("dtheta", &DummyWalk::dtheta)
       .add_property("T_world_left", make_getter(&DummyWalk::T_world_left, return_value_policy<return_by_value>()),
                     make_setter(&DummyWalk::T_world_left))
       .add_property("T_world_right", make_getter(&DummyWalk::T_world_right, return_value_policy<return_by_value>()),

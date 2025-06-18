@@ -104,8 +104,12 @@ void DummyWalk::update_T_world_support(Eigen::Affine3d T_world_support)
   robot.update_kinematics();
 }
 
-void DummyWalk::compute_next_support(double dx, double dy, double dtheta)
+void DummyWalk::compute_next_support(double dx_, double dy_, double dtheta_)
 {
+  dx = dx_;
+  dy = dy_;
+  dtheta = dtheta_;
+
   double spacing = support_left ? -feet_spacing : feet_spacing;
   T_world_next = support_left ? T_world_left : T_world_right;
   T_world_next = T_world_next * translation(dx, spacing + dy, 0) * Eigen::AngleAxisd(dtheta, Eigen::Vector3d::UnitZ());

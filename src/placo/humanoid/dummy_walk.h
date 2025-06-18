@@ -102,6 +102,21 @@ public:
   kinematics::FrameTask right_foot_task;
   kinematics::FrameTask trunk_task;
 
+  /**
+   * @brief Last requested step dx
+   */
+  double dx = 0.0;
+
+  /**
+   * @brief Last requested step d-
+   */
+  double dy = 0.0;
+
+  /**
+   * @brief Last requested step dtheta
+   */
+  double dtheta = 0.0;
+
 protected:
   void compute_next_support(double dx, double dy, double dtheta);
   Eigen::Affine3d translation(double x, double y, double z) const;
