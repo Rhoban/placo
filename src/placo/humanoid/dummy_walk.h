@@ -55,12 +55,12 @@ public:
   /**
    * @brief Trunk height [m]
    */
-  double trunk_height = 0.4;
+  double trunk_height = 0.35;
 
   /**
    * @brief Trunk pitch angle [rad]
    */
-  double trunk_pitch = 0.0;
+  double trunk_pitch = 0.1;
 
   /**
    * @brief Trunk x-offset [m]
