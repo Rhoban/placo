@@ -2,7 +2,8 @@
 
 namespace placo::humanoid
 {
-DummyWalk::DummyWalk(model::RobotWrapper& robot) : robot(robot), solver(robot)
+DummyWalk::DummyWalk(model::RobotWrapper& robot, humanoid::HumanoidParameters& parameters)
+  : robot(robot), parameters(parameters), solver(robot), footsteps_planner(parameters)
 {
   // Initializing solver
   solver.enable_velocity_limits(true);
@@ -25,8 +26,8 @@ void DummyWalk::reset(bool support_left_)
   // Initializing lift trajectory
   lift_spline.clear();
   lift_spline.add_point(0, 0, 0);
-  lift_spline.add_point(0.3, lift_height, 0);
-  lift_spline.add_point(0.7, lift_height, 0);
+  lift_spline.add_point(0.5 - parameters.walk_foot_rise_ratio / 2, parameters.walk_foot_height, 0);
+  lift_spline.add_point(0.5 + parameters.walk_foot_rise_ratio / 2, parameters.walk_foot_height, 0);
   lift_spline.add_point(1, 0, 0);
 
   robot.reset();
@@ -34,8 +35,8 @@ void DummyWalk::reset(bool support_left_)
 
   support_left = support_left_;
 
-  T_world_left = translation(0, feet_spacing / 2, 0);
-  T_world_right = translation(0, -feet_spacing / 2, 0);
+  T_world_left = translation(0, parameters.feet_spacing / 2, 0);
+  T_world_right = translation(0, -parameters.feet_spacing / 2, 0);
 
   compute_next_support(0.0, 0.0, 0.0);
   update(0.0);
@@ -74,8 +75,8 @@ void DummyWalk::update(double t)
 
   Eigen::Affine3d T_world_mid = placo::tools::interpolate_frames(tools::flatten_on_floor(T_world_left_),
                                                                  tools::flatten_on_floor(T_world_right_), 0.5);
-  Eigen::Affine3d T_world_trunk = T_world_mid * translation(trunk_x_offset, 0, trunk_height) *
-                                  Eigen::AngleAxisd(trunk_pitch, Eigen::Vector3d::UnitY());
+  Eigen::Affine3d T_world_trunk = T_world_mid * translation(trunk_x_offset, 0, parameters.walk_com_height) *
+                                  Eigen::AngleAxisd(parameters.walk_trunk_pitch, Eigen::Vector3d::UnitY());
 
   left_foot_task.set_T_world_frame(T_world_left_);
   right_foot_task.set_T_world_frame(T_world_right_);
@@ -110,9 +111,11 @@ void DummyWalk::compute_next_support(double dx_, double dy_, double dtheta_)
   dy = dy_;
   dtheta = dtheta_;
 
-  double spacing = support_left ? -feet_spacing : feet_spacing;
-  T_world_next = support_left ? T_world_left : T_world_right;
-  T_world_next = T_world_next * translation(dx, spacing + dy, 0) * Eigen::AngleAxisd(dtheta, Eigen::Vector3d::UnitZ());
+  footsteps_planner.configure(dx, dy, dtheta, 2);
+  std::vector<FootstepsPlanner::Footstep> footsteps = footsteps_planner.plan(
+      support_left ? HumanoidRobot::Side::Right : HumanoidRobot::Side::Left, T_world_left, T_world_right);
+
+  T_world_next = footsteps[2].frame;
 }
 
 Eigen::Affine3d DummyWalk::translation(double x, double y, double z) const

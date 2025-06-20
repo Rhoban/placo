@@ -60,6 +60,7 @@ void exposeFootsteps()
   class__<FootstepsPlanner, boost::noncopyable>("FootstepsPlanner", no_init)
       .def("make_supports", &FootstepsPlanner::make_supports)
       .def("opposite_footstep", &FootstepsPlanner::opposite_footstep)
+      .def("clipped_opposite_footstep", &FootstepsPlanner::clipped_opposite_footstep)
       .def(
           "truncate_supports", +[](const std::vector<FootstepsPlanner::Support>& supports, int index, bool add_end) {
             if (index > (int)supports.size())

@@ -182,7 +182,7 @@ void exposeWalkPatternGenerator()
       .add_property("x", &LIPM::x, &LIPM::x)
       .add_property("y", &LIPM::y, &LIPM::y);
 
-  class__<DummyWalk>("DummyWalk", init<model::RobotWrapper&>())
+  class__<DummyWalk>("DummyWalk", init<model::RobotWrapper&, humanoid::HumanoidParameters&>())
       .def("reset", &DummyWalk::reset, (arg("support_left") = false))
       .def("update", &DummyWalk::update)
       .def("next_step", &DummyWalk::next_step)
@@ -190,12 +190,12 @@ void exposeWalkPatternGenerator()
       .add_property("robot", make_function(
                                  +[](DummyWalk& walk) -> model::RobotWrapper& { return walk.robot; },
                                  return_value_policy<reference_existing_object>()))
+      .add_property("parameters", make_function(
+                                      +[](DummyWalk& walk) -> humanoid::HumanoidParameters& { return walk.parameters; },
+                                      return_value_policy<reference_existing_object>()))
       .add_property("solver", &DummyWalk::solver)
-      .def_readwrite("feet_spacing", &DummyWalk::feet_spacing)
-      .def_readwrite("trunk_height", &DummyWalk::trunk_height)
-      .def_readwrite("trunk_pitch", &DummyWalk::trunk_pitch)
       .def_readwrite("support_left", &DummyWalk::support_left)
-      .def_readwrite("lift_height", &DummyWalk::lift_height)
+      .def_readwrite("lift_spline", &DummyWalk::lift_spline)
       .def_readonly("dx", &DummyWalk::dx)
       .def_readonly("dy", &DummyWalk::dy)
       .def_readonly("dtheta", &DummyWalk::dtheta)

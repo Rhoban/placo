@@ -3,13 +3,15 @@
 #include <Eigen/Dense>
 #include "placo/kinematics/kinematics_solver.h"
 #include "placo/tools/cubic_spline.h"
+#include "placo/humanoid/humanoid_parameters.h"
+#include "placo/humanoid/footsteps_planner_repetitive.h"
 
 namespace placo::humanoid
 {
 class DummyWalk
 {
 public:
-  DummyWalk(model::RobotWrapper& robot);
+  DummyWalk(model::RobotWrapper& robot, humanoid::HumanoidParameters& parameters);
 
   /**
    * @brief Reset the robot with a given support
@@ -43,34 +45,19 @@ public:
   model::RobotWrapper& robot;
 
   /**
+   * @brief Humanoid parameters
+   */
+  humanoid::HumanoidParameters& parameters;
+
+  /**
    * @brief Kinematics solver
    */
   kinematics::KinematicsSolver solver;
 
   /**
-   * @brief Feet spacing [m]
-   */
-  double feet_spacing = 0.12;
-
-  /**
-   * @brief Trunk height [m]
-   */
-  double trunk_height = 0.35;
-
-  /**
-   * @brief Trunk pitch angle [rad]
-   */
-  double trunk_pitch = 0.1;
-
-  /**
    * @brief Trunk x-offset [m]
    */
   double trunk_x_offset = 0.05;
-
-  /**
-   * @brief Lift height [m]
-   */
-  double lift_height = 0.04;
 
   /**
    * @brief Whether the current support is left or right
@@ -120,6 +107,11 @@ public:
 protected:
   void compute_next_support(double dx, double dy, double dtheta);
   Eigen::Affine3d translation(double x, double y, double z) const;
+
+  /**
+   * @brief Internal footsteps planner
+   */
+  humanoid::FootstepsPlannerRepetitive footsteps_planner;
 
   /**
    * @brief Solve the internal kinematics problem

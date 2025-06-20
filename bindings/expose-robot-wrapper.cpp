@@ -24,7 +24,7 @@ BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(joint_names_overloads, joint_names, 0, 1)
 template <class RobotType, class W1>
 void exposeRobotType(class_<RobotType, W1>& type)
 {
-  type.add_property("state", &RobotType::state)
+  type.def_readwrite("state", &RobotType::state)
       .add_property("model", &RobotType::model)
       .add_property("collision_model", &RobotType::collision_model)
       .add_property("visual_model", &RobotType::visual_model)
