@@ -22,7 +22,7 @@ dependencies = [
 description = "PlaCo: Rhoban Planning and Control"
 license = "MIT"
 name = "placo"
-requires-python = ">= 3.9"
+requires-python = ">= 3.8"
 version = "0.9.10"
 
 [project.urls]
