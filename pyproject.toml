@@ -3,7 +3,8 @@ build-backend = "cmeel"
 requires = [
   "cmeel[build]",
   "eiquadprog >= 1.2.6, < 2",
-  "pin[build] ==  3.7.0",
+  'pin[build] ==  3.4.0; python_version < "3.9"',
+  'pin[build] ==  3.7.0; python_version >= "3.9"',
   "rhoban-cmeel-jsoncpp",
   "doxystub >= 0.1.7",
   "cmake<4"
@@ -14,7 +15,8 @@ authors = [{ email = "team@rhoban.com", name = "Rhoban team" }]
 classifiers = []
 dependencies = [
   "eiquadprog >= 1.2.6, < 2",
-  "pin == 3.7.0",
+  'pin ==  3.4.0; python_version < "3.9"',
+  'pin ==  3.7.0; python_version >= "3.9"',
   "rhoban-cmeel-jsoncpp",
   "meshcat",
   "ischedule"
