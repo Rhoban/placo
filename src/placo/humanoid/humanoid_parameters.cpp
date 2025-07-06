@@ -1,5 +1,7 @@
 #include <cmath>
 #include "placo/humanoid/humanoid_parameters.h"
+#include "placo/humanoid/footsteps_planner_repetitive.h"
+#include "placo/tools/utils.h"
 
 namespace placo::humanoid
 {
@@ -51,6 +53,31 @@ Eigen::Vector3d HumanoidParameters::ellipsoid_clip(Eigen::Vector3d step)
   step.z() *= factor.z();
 
   return step;
+}
+
+Eigen::Vector3d HumanoidParameters::ellipsoid_overlap_clip(HumanoidRobot::Side support_side, Eigen::Vector3d step)
+{
+  FootstepsPlannerRepetitive planner(*this);
+  planner.configure(step.x(), step.y(), step.z(), 3);
+
+  // Creatting footsteps
+  Eigen::Affine3d T_world_left = Eigen::Affine3d::Identity();
+  T_world_left.translate(Eigen::Vector3d(0, feet_spacing / 2., 0));
+  Eigen::Affine3d T_world_right = Eigen::Affine3d::Identity();
+  T_world_right.translate(Eigen::Vector3d(0, -feet_spacing / 2, 0));
+
+  auto footsteps =
+      planner.plan(support_side == HumanoidRobot::Side::Left ? HumanoidRobot::Side::Right : HumanoidRobot::Side::Left,
+                   T_world_left, T_world_right);
+
+  Eigen::Affine3d T_world_support = footsteps[1].frame;
+  Eigen::Affine3d T_world_target = footsteps[2].frame;
+  Eigen::Affine3d T_support_target = T_world_support.inverse() * T_world_target;
+
+  double offset = (support_side == HumanoidRobot::Side::Left) ? -feet_spacing : feet_spacing;
+
+  return Eigen::Vector3d(T_support_target.translation().x(), T_support_target.translation().y() - offset,
+                         tools::frame_yaw(T_support_target.rotation()));
 }
 
 Eigen::Affine3d HumanoidParameters::opposite_frame(HumanoidRobot::Side side, Eigen::Affine3d T_world_foot, double d_x,

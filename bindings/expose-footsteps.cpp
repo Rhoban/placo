@@ -24,7 +24,9 @@ void exposeFootsteps()
       .add_property("side", &FootstepsPlanner::Footstep::side, &FootstepsPlanner::Footstep::side)
       .add_property("foot_length", &FootstepsPlanner::Footstep::foot_length, &FootstepsPlanner::Footstep::foot_length)
       .add_property("foot_width", &FootstepsPlanner::Footstep::foot_width, &FootstepsPlanner::Footstep::foot_width)
-      .add_property("frame", &FootstepsPlanner::Footstep::frame, &FootstepsPlanner::Footstep::frame)
+      .add_property(
+          "frame", +[](FootstepsPlanner::Footstep& footstep) { return footstep.frame; },
+          &FootstepsPlanner::Footstep::frame)
       .def(
           "set_frame_xy",
           +[](FootstepsPlanner::Footstep& footstep, double x, double y) {

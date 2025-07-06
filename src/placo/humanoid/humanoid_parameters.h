@@ -167,6 +167,11 @@ public:
   Eigen::Vector3d ellipsoid_clip(Eigen::Vector3d step);
 
   /**
+   * @brief Clips a step using ellipsoid and overlap avoidance
+   */
+  Eigen::Vector3d ellipsoid_overlap_clip(HumanoidRobot::Side support_side, Eigen::Vector3d step);
+
+  /**
    * @brief Frames for opposite and neutral positions
    */
   Eigen::Affine3d opposite_frame(HumanoidRobot::Side side, Eigen::Affine3d T_world_foot, double d_x = 0.,

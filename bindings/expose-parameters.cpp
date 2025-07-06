@@ -49,12 +49,14 @@ void exposeParameters()
       .add_property("walk_dtheta_spacing", &HumanoidParameters::walk_dtheta_spacing,
                     &HumanoidParameters::walk_dtheta_spacing)
       .add_property("op_space_polygon", &HumanoidParameters::op_space_polygon, &HumanoidParameters::op_space_polygon)
-      .add_property("dcm_offset_polygon", &HumanoidParameters::dcm_offset_polygon, &HumanoidParameters::dcm_offset_polygon)
+      .add_property("dcm_offset_polygon", &HumanoidParameters::dcm_offset_polygon,
+                    &HumanoidParameters::dcm_offset_polygon)
       .def("dt", &HumanoidParameters::dt)
       .def("double_support_timesteps", &HumanoidParameters::double_support_timesteps)
       .def("startend_double_support_timesteps", &HumanoidParameters::startend_double_support_timesteps)
       .def("double_support_duration", &HumanoidParameters::double_support_duration)
       .def("startend_double_support_duration", &HumanoidParameters::startend_double_support_duration)
       .def("has_double_support", &HumanoidParameters::has_double_support)
-      .def("ellipsoid_clip", &HumanoidParameters::ellipsoid_clip);
+      .def("ellipsoid_clip", &HumanoidParameters::ellipsoid_clip)
+      .def("ellipsoid_overlap_clip", &HumanoidParameters::ellipsoid_overlap_clip);
 }
