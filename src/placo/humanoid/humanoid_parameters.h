@@ -161,6 +161,13 @@ public:
   // DCM offset bounds (polygon)
   std::vector<Eigen::Vector2d> dcm_offset_polygon;
 
+  enum FootstepClipping
+  {
+    Ellipsoid = 0,
+    Box = 1,
+    Conic = 2
+  };
+
   /**
    * @brief Applies the ellipsoid (L2) clipping to a given step size (dx, dy, dtheta)
    */
@@ -171,6 +178,11 @@ public:
    */
   Eigen::Vector3d box_clip(Eigen::Vector3d step);
 
+    /**
+   * @brief Applies the conic clipping to a given step size (dx, dy, dtheta)
+   */
+  Eigen::Vector3d conic_clip(Eigen::Vector3d step);
+
   /**
    * @brief Clips a step using ellipsoid and overlap avoidance
    */
@@ -180,6 +192,11 @@ public:
    * @brief Clips a step using ellipsoid and overlap avoidance
    */
   Eigen::Vector3d box_overlap_clip(HumanoidRobot::Side support_side, Eigen::Vector3d step);
+
+  /**
+   * @brief Clips a step using ellipsoid and overlap avoidance
+   */
+  Eigen::Vector3d conic_overlap_clip(HumanoidRobot::Side support_side, Eigen::Vector3d step);
 
   /**
    * @brief Frames for opposite and neutral positions
@@ -194,6 +211,6 @@ protected:
 /**
    * @brief Clips a step using ellipsoid and overlap avoidance
    */
-  Eigen::Vector3d overlap_clip(HumanoidRobot::Side support_side, Eigen::Vector3d step, bool ellipsoid = false);
+  Eigen::Vector3d overlap_clip(HumanoidRobot::Side support_side, Eigen::Vector3d step, FootstepClipping clipping);
 };
 }  // namespace placo::humanoid

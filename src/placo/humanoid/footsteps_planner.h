@@ -149,7 +149,7 @@ public:
   // Humanoid parameters for planning and control
   HumanoidParameters& parameters;
 
-  bool use_ellipsoid_clipping = false;
+  HumanoidParameters::FootstepClipping footstep_clipping = HumanoidParameters::FootstepClipping::Conic;
 
 protected:
   virtual void plan_impl(std::vector<Footstep>&, HumanoidRobot::Side flying_side, Eigen::Affine3d T_world_left,

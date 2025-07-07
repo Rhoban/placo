@@ -75,21 +75,47 @@ Eigen::Vector3d HumanoidParameters::box_clip(Eigen::Vector3d step)
   return step;
 }
 
+Eigen::Vector3d HumanoidParameters::conic_clip(Eigen::Vector3d step)
+{
+  Eigen::Vector3d factor((step.x() >= 0) ? walk_max_dx_forward : walk_max_dx_backward, walk_max_dy, walk_max_dtheta);
+  step.x() /= factor.x();
+  step.y() /= factor.y();
+  step.z() /= factor.z();
+
+  double norm = sqrt(step.x() * step.x() + step.y() * step.y()) + fabs(step.z());
+  if (norm > 1)
+  {
+    step /= norm;
+  }
+
+  step.x() *= factor.x();
+  step.y() *= factor.y();
+  step.z() *= factor.z();
+
+  return step;
+}
+
 Eigen::Vector3d HumanoidParameters::ellipsoid_overlap_clip(HumanoidRobot::Side support_side, Eigen::Vector3d step)
 {
-  return overlap_clip(support_side, step, true);
+  return overlap_clip(support_side, step, FootstepClipping::Ellipsoid);
 }
 
 Eigen::Vector3d HumanoidParameters::box_overlap_clip(HumanoidRobot::Side support_side, Eigen::Vector3d step)
 {
-  return overlap_clip(support_side, step, false);
+  return overlap_clip(support_side, step, FootstepClipping::Box);
 }
 
-Eigen::Vector3d HumanoidParameters::overlap_clip(HumanoidRobot::Side support_side, Eigen::Vector3d step, bool ellipsoid)
+Eigen::Vector3d HumanoidParameters::conic_overlap_clip(HumanoidRobot::Side support_side, Eigen::Vector3d step)
+{
+  return overlap_clip(support_side, step, FootstepClipping::Conic);
+}
+
+Eigen::Vector3d HumanoidParameters::overlap_clip(HumanoidRobot::Side support_side, Eigen::Vector3d step,
+                                                 HumanoidParameters::FootstepClipping clipping)
 {
   FootstepsPlannerRepetitive planner(*this);
   planner.configure(step.x(), step.y(), step.z(), 3);
-  planner.use_ellipsoid_clipping = ellipsoid;
+  planner.footstep_clipping = clipping;
 
   // Creatting footsteps
   Eigen::Affine3d T_world_left = Eigen::Affine3d::Identity();

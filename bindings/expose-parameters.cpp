@@ -59,6 +59,8 @@ void exposeParameters()
       .def("has_double_support", &HumanoidParameters::has_double_support)
       .def("ellipsoid_clip", &HumanoidParameters::ellipsoid_clip)
       .def("box_clip", &HumanoidParameters::box_clip)
+      .def("conic_clip", &HumanoidParameters::conic_clip)
       .def("ellipsoid_overlap_clip", &HumanoidParameters::ellipsoid_overlap_clip)
-      .def("box_overlap_clip", &HumanoidParameters::box_overlap_clip);
+      .def("box_overlap_clip", &HumanoidParameters::box_overlap_clip)
+      .def("conic_overlap_clip", &HumanoidParameters::conic_overlap_clip);
 }
