@@ -17,7 +17,7 @@ else
   echo "* robotpkg is already present"
 fi
 
-PATH_TEST=`echo $PATH|grep openrob|wc -l`
+PATH_TEST=`cat ~/.bashrc|grep openrob|wc -l`
 if [ $PATH_TEST -eq 0 ]
 then
   echo "Adding environment variables to .bashrc: you might have to reload your shell"
