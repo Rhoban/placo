@@ -51,7 +51,9 @@ def robot_viz(
 cylinders: dict = {}
 
 
-def frame_viz(name: str, T: np.ndarray, opacity: float = 1.0, scale: float = 1.0) -> None:
+def frame_viz(
+    name: str, T: np.ndarray, opacity: float = 1.0, scale: float = 1.0
+) -> None:
     """
     Visualizes a given frame
     """
@@ -76,7 +78,10 @@ def frame_viz(name: str, T: np.ndarray, opacity: float = 1.0, scale: float = 1.0
         obj = cylinders[node_name]
 
         obj.set_transform(
-            T @ tf.scale_matrix(scale) @ tf.rotation_matrix(*rotate) @ tf.translation_matrix([0, 0.05, 0])
+            T
+            @ tf.scale_matrix(scale)
+            @ tf.rotation_matrix(*rotate)
+            @ tf.translation_matrix([0, 0.05, 0])
         )
 
 
@@ -126,7 +131,9 @@ def points_viz(
     points_sizes[name] = len(points)
 
 
-def robot_frame_viz(robot: placo.RobotWrapper, frame: str, opacity: float = 1.0, scale: float = 1.0) -> None:
+def robot_frame_viz(
+    robot: placo.RobotWrapper, frame: str, opacity: float = 1.0, scale: float = 1.0
+) -> None:
     """
     Draw a frame from the robot
     """
@@ -173,6 +180,65 @@ def line_viz(name: str, points: np.ndarray, color: float = 0xFF0000) -> None:
     vis = get_viewer()
     vis["lines"][name].set_object(
         g.LineSegments(g.PointsGeometry(points.T), g.LineBasicMaterial(color=color))
+    )
+
+
+def cross_viz(
+    name: str, position: np.ndarray, size: float = 0.15, color: float = 0xFF0000
+) -> None:
+    """
+    Prints a cross
+    """
+    vis = get_viewer()
+
+    points = np.array(
+        [position - np.array([size, size]), position + np.array([size, size])]
+    )
+    vis["crosses"][f"{name}_1"].set_object(
+        g.LineSegments(g.PointsGeometry(points.T), g.LineBasicMaterial(color=color))
+    )
+    points = np.array(
+        [position - np.array([size, -size]), position + np.array([size, -size])]
+    )
+    vis["crosses"][f"{name}_2"].set_object(
+        g.LineSegments(g.PointsGeometry(points.T), g.LineBasicMaterial(color=color))
+    )
+
+
+def path_viz(name: str, points: np.ndarray, color: float = 0xFF0000) -> None:
+    """
+    Prints a path
+    """
+    key = f"path_{name}"
+
+    vis = get_viewer()
+    vis[key].delete()
+
+    for k in range(len(points) - 1):
+        vis[key][str(k)].set_object(
+            g.LineSegments(
+                g.PointsGeometry(points[k : k + 2].T), g.LineBasicMaterial(color=color)
+            )
+        )
+
+
+def cylinder_viz(
+    name: str,
+    position: np.ndarray,
+    length: float,
+    radius: float,
+    color: float = 0xFF0000,
+    opacity=1.0,
+) -> None:
+    vis = get_viewer()
+
+    cylinder = g.Cylinder(length, radius)
+    vis["cylinders"][name].set_object(
+        cylinder, g.MeshBasicMaterial(color=color, opacity=opacity)
+    )
+    vis["cylinders"][name].set_transform(
+        tf.translation_matrix((*position, length / 2))
+        @ tf.rotation_matrix(np.pi / 2, (1, 0, 0))
     )
 
 
