@@ -524,7 +524,10 @@ WalkPatternGenerator::Trajectory WalkPatternGenerator::plan(std::vector<Footstep
 
   Trajectory trajectory(parameters.walk_com_height, t_start, parameters.walk_trunk_pitch, 0.);
 
-  plan_com(trajectory, supports, initial_com_world.head(2));
+  if (!plan_com(trajectory, supports, initial_com_world.head(2)))
+  {
+    throw std::runtime_error("Failed to plan CoM trajectory");
+  }
   plan_feet_trajectories(trajectory);
 
   return trajectory;
