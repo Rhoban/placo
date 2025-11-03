@@ -35,6 +35,8 @@ flags are the following:
 +-------------------------------------+----------------------------------------------------+
 | ``placo.Flags.ignore_collisions``   | Ignore all collisions (remove all the pairs).      |
 +-------------------------------------+----------------------------------------------------+
+| ``placo.Flags.mjcf``                | Use MuJoCo MJCF instead of URDF (see below)        |
++-------------------------------------+----------------------------------------------------+
 
 For more information about the handling of self-collisions, see :doc:`collisions`. An example
 would be:
@@ -58,3 +60,13 @@ give the contents of the URDF file directly:
     robot = placo.RobotWrapper("model/", 0, urdf_contents)
 
 
+Using MuJoCo (MJCF) file
+-------------------------
+
+You can load a robot from a MuJoCo (MJCF) file by using the ``placo.Flags.mjcf`` flag:
+
+.. code-block:: python
+
+    import placo
+    # Loading a robot from MuJoCo (MJCF) file
+    robot = placo.RobotWrapper("model/robot.xml", placo.Flags.mjcf)

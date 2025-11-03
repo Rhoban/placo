@@ -32,43 +32,84 @@ RobotWrapper::RobotWrapper(std::string model_directory, int flags, std::string u
   }
   else
   {
-    urdf_filename = model_directory + "/robot.urdf";
+    if (flags & Flags::MJCF)
+    {
+      urdf_filename = model_directory + "/robot.xml";
+    }
+    else
+    {
+      urdf_filename = model_directory + "/robot.urdf";
+    }
   }
 
   if (urdf_content != "")
   {
-    pinocchio::urdf::buildModelFromXML(urdf_content, root_joint, model);
-    std::istringstream stream(urdf_content);
-    pinocchio::urdf::buildGeom(model, stream, pinocchio::COLLISION, collision_model, model_directory);
+    if (flags & Flags::MJCF)
+    {
+      throw std::runtime_error("Loading MJCF with direct contents is not supported");
+    }
+    else
+    {
+      pinocchio::urdf::buildModelFromXML(urdf_content, root_joint, model);
+      std::istringstream stream(urdf_content);
+      pinocchio::urdf::buildGeom(model, stream, pinocchio::COLLISION, collision_model, model_directory);
+    }
   }
   else
   {
-    pinocchio::urdf::buildModel(urdf_filename, root_joint, model);
-    pinocchio::urdf::buildGeom(model, urdf_filename, pinocchio::COLLISION, collision_model, model_directory);
+    if (flags & Flags::MJCF)
+    {
+      std::cout << "Loading model: " << urdf_filename << std::endl;
+      pinocchio::mjcf::buildModel(urdf_filename, root_joint, model);
+      pinocchio::mjcf::buildGeom(model, urdf_filename, pinocchio::COLLISION, collision_model);
+    }
+    else
+    {
+      pinocchio::urdf::buildModel(urdf_filename, root_joint, model);
+      pinocchio::urdf::buildGeom(model, urdf_filename, pinocchio::COLLISION, collision_model, model_directory);
+    }
   }
 
   if (flags & COLLISION_AS_VISUAL)
   {
     if (urdf_content != "")
     {
+      // Should not happen for MJCF
+
       std::istringstream stream(urdf_content);
       pinocchio::urdf::buildGeom(model, stream, pinocchio::COLLISION, visual_model, model_directory);
     }
     else
     {
-      pinocchio::urdf::buildGeom(model, urdf_filename, pinocchio::COLLISION, visual_model, model_directory);
+      if (flags & Flags::MJCF)
+      {
+        pinocchio::mjcf::buildGeom(model, urdf_filename, pinocchio::COLLISION, visual_model);
+      }
+      else
+      {
+        pinocchio::urdf::buildGeom(model, urdf_filename, pinocchio::COLLISION, visual_model, model_directory);
+      }
     }
   }
   else
   {
     if (urdf_content != "")
     {
+      // Should not happen for MJCF
+
       std::istringstream stream(urdf_content);
       pinocchio::urdf::buildGeom(model, stream, pinocchio::VISUAL, visual_model, model_directory);
     }
     else
     {
-      pinocchio::urdf::buildGeom(model, urdf_filename, pinocchio::VISUAL, visual_model, model_directory);
+      if (flags & Flags::MJCF)
+      {
+        pinocchio::mjcf::buildGeom(model, urdf_filename, pinocchio::VISUAL, visual_model);
+      }
+      else
+      {
+        pinocchio::urdf::buildGeom(model, urdf_filename, pinocchio::VISUAL, visual_model, model_directory);
+      }
     }
   }
 

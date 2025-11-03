@@ -1,9 +1,11 @@
 #pragma once
 
+#include <Eigen/Dense>
 #include "pinocchio/algorithm/frames.hpp"
 #include "pinocchio/algorithm/joint-configuration.hpp"
 #include "pinocchio/algorithm/kinematics.hpp"
 #include "pinocchio/parsers/urdf.hpp"
+#include "pinocchio/parsers/mjcf.hpp"
 #include <pinocchio/container/boost-container-limits.hpp>
 
 namespace placo::model
@@ -29,7 +31,12 @@ public:
     /**
      * @brief All self-collisions will be ignored (the pairs will be removed)
      */
-    IGNORE_COLLISIONS = 2
+    IGNORE_COLLISIONS = 2,
+
+    /**
+     * @brief Use MuJoCo MJCF parser instead of URDF
+     */
+    MJCF = 4
   };
 
   /**
