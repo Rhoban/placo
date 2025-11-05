@@ -1,17 +1,17 @@
 #include <pinocchio/fwd.hpp>
 
+#include "doxystub.h"
 #include "expose-utils.hpp"
 #include "module.h"
-#include "doxystub.h"
-#include "placo/humanoid/walk_pattern_generator.h"
-#include "placo/kinematics/kinematics_solver.h"
-#include "placo/humanoid/footsteps_planner.h"
-#include "placo/humanoid/swing_foot.h"
-#include "placo/humanoid/swing_foot_quintic.h"
-#include "placo/humanoid/swing_foot_cubic.h"
-#include "placo/humanoid/walk_tasks.h"
-#include "placo/humanoid/lipm.h"
-#include "placo/humanoid/dummy_walk.h"
+#include "placo/humanoid/dummy_walk.hpp"
+#include "placo/humanoid/footsteps_planner.hpp"
+#include "placo/humanoid/lipm.hpp"
+#include "placo/humanoid/swing_foot.hpp"
+#include "placo/humanoid/swing_foot_cubic.hpp"
+#include "placo/humanoid/swing_foot_quintic.hpp"
+#include "placo/humanoid/walk_pattern_generator.hpp"
+#include "placo/humanoid/walk_tasks.hpp"
+#include "placo/kinematics/kinematics_solver.hpp"
 #include <Eigen/Dense>
 #include <boost/python.hpp>
 #include <eigenpy/eigen-to-python.hpp>
@@ -21,62 +21,94 @@ using namespace boost::python;
 using namespace placo::kinematics;
 using namespace placo::humanoid;
 
-void exposeWalkPatternGenerator()
-{
-  class__<WalkPatternGenerator::TrajectoryPart>("WPGTrajectoryPart", init<FootstepsPlanner::Support, double>())
+void exposeWalkPatternGenerator() {
+  class__<WalkPatternGenerator::TrajectoryPart>(
+      "WPGTrajectoryPart", init<FootstepsPlanner::Support, double>())
       .add_property("t_start", &WalkPatternGenerator::TrajectoryPart::t_start,
                     &WalkPatternGenerator::TrajectoryPart::t_start)
-      .add_property("t_end", &WalkPatternGenerator::TrajectoryPart::t_end, &WalkPatternGenerator::TrajectoryPart::t_end)
+      .add_property("t_end", &WalkPatternGenerator::TrajectoryPart::t_end,
+                    &WalkPatternGenerator::TrajectoryPart::t_end)
       .add_property("support", &WalkPatternGenerator::TrajectoryPart::support,
                     &WalkPatternGenerator::TrajectoryPart::support);
 
-  class__<WalkPatternGenerator::Trajectory>("WPGTrajectory", init<double, double, double, double>())
+  class__<WalkPatternGenerator::Trajectory>(
+      "WPGTrajectory", init<double, double, double, double>())
       .add_property("t_start", &WalkPatternGenerator::Trajectory::t_start)
       .add_property("t_end", &WalkPatternGenerator::Trajectory::t_end)
-      .add_property("com_target_z", &WalkPatternGenerator::Trajectory::com_target_z)
-      .add_property("trunk_pitch", &WalkPatternGenerator::Trajectory::trunk_pitch)
+      .add_property("com_target_z",
+                    &WalkPatternGenerator::Trajectory::com_target_z)
+      .add_property("trunk_pitch",
+                    &WalkPatternGenerator::Trajectory::trunk_pitch)
       .add_property("trunk_roll", &WalkPatternGenerator::Trajectory::trunk_roll)
       .add_property("parts", &WalkPatternGenerator::Trajectory::parts)
-      .add_property("replan_success", &WalkPatternGenerator::Trajectory::replan_success)
-      .def("get_T_world_left", &WalkPatternGenerator::Trajectory::get_T_world_left)
-      .def("get_T_world_right", &WalkPatternGenerator::Trajectory::get_T_world_right)
-      .def("get_v_world_right", &WalkPatternGenerator::Trajectory::get_v_world_right)
-      .def("get_v_world_foot", &WalkPatternGenerator::Trajectory::get_v_world_foot)
-      .def("get_p_world_CoM", &WalkPatternGenerator::Trajectory::get_p_world_CoM)
-      .def("get_v_world_CoM", &WalkPatternGenerator::Trajectory::get_v_world_CoM)
-      .def("get_a_world_CoM", &WalkPatternGenerator::Trajectory::get_a_world_CoM)
-      .def("get_j_world_CoM", &WalkPatternGenerator::Trajectory::get_j_world_CoM)
-      .def("get_p_world_ZMP", &WalkPatternGenerator::Trajectory::get_p_world_ZMP)
-      .def("get_p_world_DCM", &WalkPatternGenerator::Trajectory::get_p_world_DCM)
-      .def("get_R_world_trunk", &WalkPatternGenerator::Trajectory::get_R_world_trunk)
-      .def("get_p_support_CoM", &WalkPatternGenerator::Trajectory::get_p_support_CoM)
-      .def("get_v_support_CoM", &WalkPatternGenerator::Trajectory::get_v_support_CoM)
-      .def("get_p_support_DCM", &WalkPatternGenerator::Trajectory::get_p_support_DCM)
+      .add_property("replan_success",
+                    &WalkPatternGenerator::Trajectory::replan_success)
+      .def("get_T_world_left",
+           &WalkPatternGenerator::Trajectory::get_T_world_left)
+      .def("get_T_world_right",
+           &WalkPatternGenerator::Trajectory::get_T_world_right)
+      .def("get_v_world_right",
+           &WalkPatternGenerator::Trajectory::get_v_world_right)
+      .def("get_v_world_foot",
+           &WalkPatternGenerator::Trajectory::get_v_world_foot)
+      .def("get_p_world_CoM",
+           &WalkPatternGenerator::Trajectory::get_p_world_CoM)
+      .def("get_v_world_CoM",
+           &WalkPatternGenerator::Trajectory::get_v_world_CoM)
+      .def("get_a_world_CoM",
+           &WalkPatternGenerator::Trajectory::get_a_world_CoM)
+      .def("get_j_world_CoM",
+           &WalkPatternGenerator::Trajectory::get_j_world_CoM)
+      .def("get_p_world_ZMP",
+           &WalkPatternGenerator::Trajectory::get_p_world_ZMP)
+      .def("get_p_world_DCM",
+           &WalkPatternGenerator::Trajectory::get_p_world_DCM)
+      .def("get_R_world_trunk",
+           &WalkPatternGenerator::Trajectory::get_R_world_trunk)
+      .def("get_p_support_CoM",
+           &WalkPatternGenerator::Trajectory::get_p_support_CoM)
+      .def("get_v_support_CoM",
+           &WalkPatternGenerator::Trajectory::get_v_support_CoM)
+      .def("get_p_support_DCM",
+           &WalkPatternGenerator::Trajectory::get_p_support_DCM)
       .def("support_side", &WalkPatternGenerator::Trajectory::support_side)
-      .def("support_is_both", &WalkPatternGenerator::Trajectory::support_is_both)
+      .def("support_is_both",
+           &WalkPatternGenerator::Trajectory::support_is_both)
       .def("get_supports", &WalkPatternGenerator::Trajectory::get_supports)
       .def("get_support", &WalkPatternGenerator::Trajectory::get_support)
-      .def("get_next_support", &WalkPatternGenerator::Trajectory::get_next_support)
-      .def("get_prev_support", &WalkPatternGenerator::Trajectory::get_prev_support)
+      .def("get_next_support",
+           &WalkPatternGenerator::Trajectory::get_next_support)
+      .def("get_prev_support",
+           &WalkPatternGenerator::Trajectory::get_prev_support)
       .def("get_part_t_end", &WalkPatternGenerator::Trajectory::get_part_t_end)
-      .def("get_part_t_start", &WalkPatternGenerator::Trajectory::get_part_t_start)
-      .def("get_part_end_dcm", &WalkPatternGenerator::Trajectory::get_part_end_dcm)
-      .def("apply_transform", &WalkPatternGenerator::Trajectory::apply_transform)
-      .def("print_parts_timings", &WalkPatternGenerator::Trajectory::print_parts_timings);
+      .def("get_part_t_start",
+           &WalkPatternGenerator::Trajectory::get_part_t_start)
+      .def("get_part_end_dcm",
+           &WalkPatternGenerator::Trajectory::get_part_end_dcm)
+      .def("apply_transform",
+           &WalkPatternGenerator::Trajectory::apply_transform)
+      .def("print_parts_timings",
+           &WalkPatternGenerator::Trajectory::print_parts_timings);
 
-  class__<WalkPatternGenerator>("WalkPatternGenerator", init<HumanoidRobot&, HumanoidParameters&>())
+  class__<WalkPatternGenerator>("WalkPatternGenerator",
+                                init<HumanoidRobot &, HumanoidParameters &>())
       .def("plan", &WalkPatternGenerator::plan)
       .def("replan", &WalkPatternGenerator::replan)
       .def("can_replan_supports", &WalkPatternGenerator::can_replan_supports)
       .def("replan_supports", &WalkPatternGenerator::replan_supports)
       .def("update_supports", &WalkPatternGenerator::update_supports)
       .def("get_optimal_zmp", &WalkPatternGenerator::get_optimal_zmp)
-      .def("support_default_timesteps", &WalkPatternGenerator::support_default_timesteps)
-      .def("support_default_duration", &WalkPatternGenerator::support_default_duration)
-      .add_property("soft", &WalkPatternGenerator::soft, &WalkPatternGenerator::soft)
-      .add_property("zmp_in_support_weight", &WalkPatternGenerator::zmp_in_support_weight,
+      .def("support_default_timesteps",
+           &WalkPatternGenerator::support_default_timesteps)
+      .def("support_default_duration",
+           &WalkPatternGenerator::support_default_duration)
+      .add_property("soft", &WalkPatternGenerator::soft,
+                    &WalkPatternGenerator::soft)
+      .add_property("zmp_in_support_weight",
+                    &WalkPatternGenerator::zmp_in_support_weight,
                     &WalkPatternGenerator::zmp_in_support_weight)
-      .add_property("stop_end_support_weight", &WalkPatternGenerator::stop_end_support_weight,
+      .add_property("stop_end_support_weight",
+                    &WalkPatternGenerator::stop_end_support_weight,
                     &WalkPatternGenerator::stop_end_support_weight);
 
   class__<SwingFoot>("SwingFoot", init<>())
@@ -87,13 +119,15 @@ void exposeWalkPatternGenerator()
       .def("pos", &SwingFootCubic::Trajectory::pos)
       .def("vel", &SwingFootCubic::Trajectory::vel);
 
-  class__<SwingFootCubic>("SwingFootCubic", init<>()).def("make_trajectory", &SwingFootCubic::make_trajectory);
+  class__<SwingFootCubic>("SwingFootCubic", init<>())
+      .def("make_trajectory", &SwingFootCubic::make_trajectory);
 
   class__<SwingFoot::Trajectory>("SwingFootTrajectory", init<>())
       .def("pos", &SwingFoot::Trajectory::pos)
       .def("vel", &SwingFoot::Trajectory::vel);
 
-  class__<SwingFootQuintic>("SwingFootQuintic", init<>()).def("make_trajectory", &SwingFootQuintic::make_trajectory);
+  class__<SwingFootQuintic>("SwingFootQuintic", init<>())
+      .def("make_trajectory", &SwingFootQuintic::make_trajectory);
 
   class__<SwingFootQuintic::Trajectory>("SwingFootQuinticTrajectory", init<>())
       .def("pos", &SwingFootQuintic::Trajectory::pos)
@@ -101,31 +135,37 @@ void exposeWalkPatternGenerator()
 
   class__<WalkTasks>("WalkTasks", init<>())
       .def(
-          "initialize_tasks", +[](WalkTasks& tasks, KinematicsSolver& solver,
-                                  HumanoidRobot& robot) { tasks.initialize_tasks(&solver, &robot); })
+          "initialize_tasks",
+          +[](WalkTasks &tasks, KinematicsSolver &solver,
+              HumanoidRobot &robot) {
+            tasks.initialize_tasks(&solver, &robot);
+          })
       .def(
-          "update_tasks_from_trajectory", +[](WalkTasks& tasks, WalkPatternGenerator::Trajectory& trajectory,
-                                              double t) { return tasks.update_tasks(trajectory, t); })
+          "update_tasks_from_trajectory",
+          +[](WalkTasks &tasks, WalkPatternGenerator::Trajectory &trajectory,
+              double t) { return tasks.update_tasks(trajectory, t); })
       .def(
           "update_tasks",
-          +[](WalkTasks& tasks, Eigen::Affine3d T_world_left, Eigen::Affine3d T_world_right, Eigen::Vector3d com_world,
+          +[](WalkTasks &tasks, Eigen::Affine3d T_world_left,
+              Eigen::Affine3d T_world_right, Eigen::Vector3d com_world,
               Eigen::Matrix3d R_world_trunk) {
-            return tasks.update_tasks(T_world_left, T_world_right, com_world, R_world_trunk);
+            return tasks.update_tasks(T_world_left, T_world_right, com_world,
+                                      R_world_trunk);
           })
       .def(
           "reach_initial_pose",
-          +[](WalkTasks& tasks, Eigen::Affine3d T_world_left, double feet_spacing, double com_height,
-              double trunk_pitch) {
-            return tasks.reach_initial_pose(T_world_left, feet_spacing, com_height, trunk_pitch);
+          +[](WalkTasks &tasks, Eigen::Affine3d T_world_left,
+              double feet_spacing, double com_height, double trunk_pitch) {
+            return tasks.reach_initial_pose(T_world_left, feet_spacing,
+                                            com_height, trunk_pitch);
           })
       .def("remove_tasks", &WalkTasks::remove_tasks)
       .def(
           "get_tasks_error",
-          +[](WalkTasks& tasks) {
+          +[](WalkTasks &tasks) {
             auto errors = tasks.get_tasks_error();
             boost::python::dict dict;
-            for (auto key : errors)
-            {
+            for (auto key : errors) {
               dict[key.first + "_x"] = key.second[0];
               dict[key.first + "_y"] = key.second[1];
               dict[key.first + "_z"] = key.second[2];
@@ -133,23 +173,31 @@ void exposeWalkPatternGenerator()
             return dict;
           })
       .add_property(
-          "solver", +[](WalkTasks& tasks) { return *tasks.solver; })
+          "solver", +[](WalkTasks &tasks) { return *tasks.solver; })
       .add_property("scaled", &WalkTasks::scaled, &WalkTasks::scaled)
       .add_property("left_foot_task", &WalkTasks::left_foot_task)
       .add_property("right_foot_task", &WalkTasks::right_foot_task)
-      .add_property("trunk_mode", &WalkTasks::trunk_mode, &WalkTasks::trunk_mode)
+      .add_property("trunk_mode", &WalkTasks::trunk_mode,
+                    &WalkTasks::trunk_mode)
       .add_property("com_x", &WalkTasks::com_x, &WalkTasks::com_x)
       .add_property("com_y", &WalkTasks::com_y, &WalkTasks::com_y)
       .add_property("trunk_orientation_task",
                     make_function(
-                        +[](WalkTasks& tasks) -> OrientationTask& { return *tasks.trunk_orientation_task; },
+                        +[](WalkTasks &tasks) -> OrientationTask & {
+                          return *tasks.trunk_orientation_task;
+                        },
                         return_value_policy<reference_existing_object>()))
-      .add_property("com_task", make_function(
-                                    +[](WalkTasks& tasks) -> CoMTask& { return *tasks.com_task; },
-                                    return_value_policy<reference_existing_object>()))
-      .add_property("trunk_task", make_function(
-                                      +[](WalkTasks& tasks) -> PositionTask& { return *tasks.trunk_task; },
-                                      return_value_policy<reference_existing_object>()));
+      .add_property(
+          "com_task",
+          make_function(
+              +[](WalkTasks &tasks) -> CoMTask & { return *tasks.com_task; },
+              return_value_policy<reference_existing_object>()))
+      .add_property("trunk_task",
+                    make_function(
+                        +[](WalkTasks &tasks) -> PositionTask & {
+                          return *tasks.trunk_task;
+                        },
+                        return_value_policy<reference_existing_object>()));
 
   class__<LIPM::Trajectory>("LIPMTrajectory", init<>())
       .def("pos", &LIPM::Trajectory::pos)
@@ -161,7 +209,8 @@ void exposeWalkPatternGenerator()
       .def("dcm", &LIPM::Trajectory::dcm);
 
   class__<LIPM>("LIPM",
-                init<problem::Problem&, double, int, double, Eigen::Vector2d, Eigen::Vector2d, Eigen::Vector2d>())
+                init<problem::Problem &, double, int, double, Eigen::Vector2d,
+                     Eigen::Vector2d, Eigen::Vector2d>())
       .def("compute_omega", &LIPM::compute_omega)
       .def("get_trajectory", &LIPM::get_trajectory)
       .def("pos", &LIPM::pos)
@@ -182,27 +231,41 @@ void exposeWalkPatternGenerator()
       .add_property("x", &LIPM::x, &LIPM::x)
       .add_property("y", &LIPM::y, &LIPM::y);
 
-  class__<DummyWalk>("DummyWalk", init<model::RobotWrapper&, humanoid::HumanoidParameters&>())
+  class__<DummyWalk>(
+      "DummyWalk",
+      init<model::RobotWrapper &, humanoid::HumanoidParameters &>())
       .def("reset", &DummyWalk::reset, (arg("support_left") = false))
       .def("update", &DummyWalk::update)
       .def("next_step", &DummyWalk::next_step)
       .def("update_T_world_support", &DummyWalk::update_T_world_support)
-      .add_property("robot", make_function(
-                                 +[](DummyWalk& walk) -> model::RobotWrapper& { return walk.robot; },
-                                 return_value_policy<reference_existing_object>()))
-      .add_property("parameters", make_function(
-                                      +[](DummyWalk& walk) -> humanoid::HumanoidParameters& { return walk.parameters; },
-                                      return_value_policy<reference_existing_object>()))
+      .add_property("robot",
+                    make_function(
+                        +[](DummyWalk &walk) -> model::RobotWrapper & {
+                          return walk.robot;
+                        },
+                        return_value_policy<reference_existing_object>()))
+      .add_property("parameters",
+                    make_function(
+                        +[](DummyWalk &walk) -> humanoid::HumanoidParameters & {
+                          return walk.parameters;
+                        },
+                        return_value_policy<reference_existing_object>()))
       .add_property("solver", &DummyWalk::solver)
       .def_readwrite("support_left", &DummyWalk::support_left)
       .def_readwrite("lift_spline", &DummyWalk::lift_spline)
       .def_readonly("dx", &DummyWalk::dx)
       .def_readonly("dy", &DummyWalk::dy)
       .def_readonly("dtheta", &DummyWalk::dtheta)
-      .add_property("T_world_left", make_getter(&DummyWalk::T_world_left, return_value_policy<return_by_value>()),
+      .add_property("T_world_left",
+                    make_getter(&DummyWalk::T_world_left,
+                                return_value_policy<return_by_value>()),
                     make_setter(&DummyWalk::T_world_left))
-      .add_property("T_world_right", make_getter(&DummyWalk::T_world_right, return_value_policy<return_by_value>()),
+      .add_property("T_world_right",
+                    make_getter(&DummyWalk::T_world_right,
+                                return_value_policy<return_by_value>()),
                     make_setter(&DummyWalk::T_world_right))
-      .add_property("T_world_next", make_getter(&DummyWalk::T_world_next, return_value_policy<return_by_value>()),
+      .add_property("T_world_next",
+                    make_getter(&DummyWalk::T_world_next,
+                                return_value_policy<return_by_value>()),
                     make_setter(&DummyWalk::T_world_next));
 }

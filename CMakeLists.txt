@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(placo)
+project(placo VERSION 0.9.1 LANGUAGES CXX)
 
 find_package(Threads)
 find_package(pinocchio REQUIRED)
@@ -15,12 +15,12 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 if (NOT DEFINED CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
 endif()
-option(BUILD_PYTHON_BINDINGS "Build Python bindings" OFF)
+option(BUILD_PYTHON_BINDINGS "Build Python bindings" ON)
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 
 # Maybe this should not be done globally but only for placo's targets
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -DCOAL_DISABLE_HPP_FCL_WARNINGS")
 
 if (NOT PYTHON_SITELIB)
 set(PYTHON_SITELIB "lib")
@@ -123,7 +123,7 @@ add_library(LibPlaco::libplaco ALIAS libplaco)
 target_include_directories(libplaco PUBLIC 
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
-  ${CMAKE_CURRENT_BINARY_DIR})
+)
 
 target_link_libraries(libplaco PUBLIC
     Eigen3::Eigen
@@ -132,7 +132,7 @@ target_link_libraries(libplaco PUBLIC
     eiquadprog::eiquadprog
     jsoncpp_lib
 )
-target_compile_definitions(libplaco PUBLIC)
+target_compile_definitions(libplaco PUBLIC -DCOAL_DISABLE_HPP_FCL_WARNINGS)
 
 if(TARGET rhoban_utils)
   message("Placo: Rhoban utils is present, enabling it")
@@ -180,13 +180,18 @@ if (BUILD_PYTHON_BINDINGS)
                     ${CMAKE_CURRENT_SOURCE_DIR}/python/placo_utils
                     ${CMAKE_BINARY_DIR}/${PYTHON_SITELIB}/placo_utils
                     )
+
+  
+if (APPLE)
+set_target_properties(placo PROPERTIES INSTALL_RPATH "@loader_path/../..")
+else()
+set_target_properties(placo PROPERTIES INSTALL_RPATH "\$ORIGIN/../..")
+endif()
 endif()
 
 if (APPLE)
-set_target_properties(placo PROPERTIES INSTALL_RPATH "@loader_path/../..")
 set_target_properties(libplaco PROPERTIES INSTALL_RPATH "@loader_path")
 else()
-set_target_properties(placo PROPERTIES INSTALL_RPATH "\$ORIGIN/../..")
 set_target_properties(libplaco PROPERTIES INSTALL_RPATH "\$ORIGIN")
 endif()
 
@@ -207,9 +212,9 @@ install(EXPORT libplaco-targets
 
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
-    ${CMAKE_CURRENT_BINARY_DIR}/LibPlacoConfigVersion.cmake
-    VERSION ${PROJECT_VERSION}
-    COMPATIBILITY AnyNewerVersion
+  ${CMAKE_CURRENT_BINARY_DIR}/LibPlacoConfigVersion.cmake
+  VERSION ${PROJECT_VERSION}
+  COMPATIBILITY AnyNewerVersion
 )
 configure_package_config_file(${CMAKE_CURRENT_LIST_DIR}/cmake/LibPlacoConfig.cmake.in
     ${CMAKE_CURRENT_BINARY_DIR}/LibPlacoConfig.cmake
@@ -224,7 +229,7 @@ install(FILES
 
 
 install(TARGETS libplaco DESTINATION ${CMAKE_INSTALL_LIBDIR})
-install(DIRECTORY include)
+install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 if (BUILD_PYTHON_BINDINGS)
   install(TARGETS placo DESTINATION ${PYTHON_SITELIB})
   install(FILES ${CMAKE_BINARY_DIR}/${PYTHON_SITELIB}/placo.pyi DESTINATION ${PYTHON_SITELIB})
