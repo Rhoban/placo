@@ -1,16 +1,11 @@
-#include "placo/dynamics/task.h"
+#include "placo/dynamics/task.hpp"
 
-namespace placo::dynamics
-{
-double Task::get_kd()
-{
-  if (kd < 0.0)
-  {
+namespace placo::dynamics {
+double Task::get_kd() {
+  if (kd < 0.0) {
     return 2. * sqrt(kp);
-  }
-  else
-  {
+  } else {
     return kd;
   }
 }
-}  // namespace placo::dynamics
+} // namespace placo::dynamics

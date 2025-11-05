@@ -1,10 +1,10 @@
-#include "placo/humanoid/dummy_walk.h"
+#include "placo/humanoid/dummy_walk.hpp"
 
-namespace placo::humanoid
-{
-DummyWalk::DummyWalk(model::RobotWrapper& robot, humanoid::HumanoidParameters& parameters)
-  : robot(robot), parameters(parameters), solver(robot), footsteps_planner(parameters)
-{
+namespace placo::humanoid {
+DummyWalk::DummyWalk(model::RobotWrapper &robot,
+                     humanoid::HumanoidParameters &parameters)
+    : robot(robot), parameters(parameters), solver(robot),
+      footsteps_planner(parameters) {
   // Initializing solver
   solver.enable_velocity_limits(true);
   solver.dt = 0.1;
@@ -21,13 +21,14 @@ DummyWalk::DummyWalk(model::RobotWrapper& robot, humanoid::HumanoidParameters& p
   reset();
 }
 
-void DummyWalk::reset(bool support_left_)
-{
+void DummyWalk::reset(bool support_left_) {
   // Initializing lift trajectory
   lift_spline.clear();
   lift_spline.add_point(0, 0, 0);
-  lift_spline.add_point(0.5 - parameters.walk_foot_rise_ratio / 2, parameters.walk_foot_height, 0);
-  lift_spline.add_point(0.5 + parameters.walk_foot_rise_ratio / 2, parameters.walk_foot_height, 0);
+  lift_spline.add_point(0.5 - parameters.walk_foot_rise_ratio / 2,
+                        parameters.walk_foot_height, 0);
+  lift_spline.add_point(0.5 + parameters.walk_foot_rise_ratio / 2,
+                        parameters.walk_foot_height, 0);
   lift_spline.add_point(1, 0, 0);
 
   robot.reset();
@@ -42,14 +43,10 @@ void DummyWalk::reset(bool support_left_)
   update(0.0);
 }
 
-void DummyWalk::next_step(double dx, double dy, double dtheta)
-{
-  if (support_left)
-  {
+void DummyWalk::next_step(double dx, double dy, double dtheta) {
+  if (support_left) {
     T_world_right = T_world_next;
-  }
-  else
-  {
+  } else {
     T_world_left = T_world_next;
   }
 
@@ -57,26 +54,24 @@ void DummyWalk::next_step(double dx, double dy, double dtheta)
   compute_next_support(dx, dy, dtheta);
 }
 
-void DummyWalk::update(double t)
-{
+void DummyWalk::update(double t) {
   Eigen::Affine3d T_world_left_ = T_world_left;
   Eigen::Affine3d T_world_right_ = T_world_right;
 
-  if (support_left)
-  {
+  if (support_left) {
     T_world_right_ = tools::interpolate_frames(T_world_right, T_world_next, t);
     T_world_right_.translation().z() = lift_spline.pos(t);
-  }
-  else
-  {
+  } else {
     T_world_left_ = tools::interpolate_frames(T_world_left, T_world_next, t);
     T_world_left_.translation().z() = lift_spline.pos(t);
   }
 
-  Eigen::Affine3d T_world_mid = placo::tools::interpolate_frames(tools::flatten_on_floor(T_world_left_),
-                                                                 tools::flatten_on_floor(T_world_right_), 0.5);
-  Eigen::Affine3d T_world_trunk = T_world_mid * translation(trunk_x_offset, 0, parameters.walk_com_height) *
-                                  Eigen::AngleAxisd(parameters.walk_trunk_pitch, Eigen::Vector3d::UnitY());
+  Eigen::Affine3d T_world_mid = placo::tools::interpolate_frames(
+      tools::flatten_on_floor(T_world_left_),
+      tools::flatten_on_floor(T_world_right_), 0.5);
+  Eigen::Affine3d T_world_trunk =
+      T_world_mid * translation(trunk_x_offset, 0, parameters.walk_com_height) *
+      Eigen::AngleAxisd(parameters.walk_trunk_pitch, Eigen::Vector3d::UnitY());
 
   left_foot_task.set_T_world_frame(T_world_left_);
   right_foot_task.set_T_world_frame(T_world_right_);
@@ -85,53 +80,48 @@ void DummyWalk::update(double t)
   solve();
 }
 
-void DummyWalk::update_T_world_support(Eigen::Affine3d T_world_support)
-{
-  Eigen::Affine3d T_world_currentSupport = support_left ? T_world_left : T_world_right;
-  Eigen::Affine3d T = tools::flatten_on_floor(T_world_support) * T_world_currentSupport.inverse();
+void DummyWalk::update_T_world_support(Eigen::Affine3d T_world_support) {
+  Eigen::Affine3d T_world_currentSupport =
+      support_left ? T_world_left : T_world_right;
+  Eigen::Affine3d T = tools::flatten_on_floor(T_world_support) *
+                      T_world_currentSupport.inverse();
 
   T_world_left = tools::flatten_on_floor(T * T_world_left);
   T_world_right = tools::flatten_on_floor(T * T_world_right);
   T_world_next = tools::flatten_on_floor(T * T_world_next);
 
-  if (support_left)
-  {
+  if (support_left) {
     robot.set_T_world_frame("left_foot", T_world_left);
-  }
-  else
-  {
+  } else {
     robot.set_T_world_frame("right_foot", T_world_right);
   }
   robot.update_kinematics();
 }
 
-void DummyWalk::compute_next_support(double dx_, double dy_, double dtheta_)
-{
+void DummyWalk::compute_next_support(double dx_, double dy_, double dtheta_) {
   dx = dx_;
   dy = dy_;
   dtheta = dtheta_;
 
   footsteps_planner.configure(dx, dy, dtheta, 2);
   std::vector<FootstepsPlanner::Footstep> footsteps = footsteps_planner.plan(
-      support_left ? HumanoidRobot::Side::Right : HumanoidRobot::Side::Left, T_world_left, T_world_right);
+      support_left ? HumanoidRobot::Side::Right : HumanoidRobot::Side::Left,
+      T_world_left, T_world_right);
 
   T_world_next = footsteps[2].frame;
 }
 
-Eigen::Affine3d DummyWalk::translation(double x, double y, double z) const
-{
+Eigen::Affine3d DummyWalk::translation(double x, double y, double z) const {
   Eigen::Affine3d T = Eigen::Affine3d::Identity();
   T.translation() = Eigen::Vector3d(x, y, z);
   return T;
 }
 
-void DummyWalk::solve()
-{
-  for (int k = 0; k < 4; k++)
-  {
+void DummyWalk::solve() {
+  for (int k = 0; k < 4; k++) {
     robot.add_q_noise(1e-3);
     robot.update_kinematics();
     solver.solve(true);
   }
 }
-}  // namespace placo::humanoid
+} // namespace placo::humanoid

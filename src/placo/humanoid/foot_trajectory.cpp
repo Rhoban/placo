@@ -1,8 +1,5 @@
-#include "placo/humanoid/foot_trajectory.h"
+#include "placo/humanoid/foot_trajectory.hpp"
 
-namespace placo::humanoid
-{
-FootTrajectory::~FootTrajectory()
-{
-}
-}  // namespace placo::trajectory
+namespace placo::humanoid {
+FootTrajectory::~FootTrajectory() {}
+} // namespace placo::humanoid

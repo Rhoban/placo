@@ -1,50 +1,43 @@
+#include "placo/humanoid/humanoid_parameters.hpp"
+#include "placo/humanoid/footsteps_planner_repetitive.hpp"
+#include "placo/tools/utils.hpp"
 #include <cmath>
-#include "placo/humanoid/humanoid_parameters.h"
-#include "placo/humanoid/footsteps_planner_repetitive.h"
-#include "placo/tools/utils.h"
 
-namespace placo::humanoid
-{
-double HumanoidParameters::dt()
-{
+namespace placo::humanoid {
+double HumanoidParameters::dt() {
   return single_support_duration / single_support_timesteps;
 }
 
-int HumanoidParameters::double_support_timesteps()
-{
+int HumanoidParameters::double_support_timesteps() {
   return std::round(double_support_ratio * single_support_timesteps);
 }
 
-int HumanoidParameters::startend_double_support_timesteps()
-{
+int HumanoidParameters::startend_double_support_timesteps() {
   return std::round(startend_double_support_ratio * single_support_timesteps);
 }
 
-double HumanoidParameters::double_support_duration()
-{
+double HumanoidParameters::double_support_duration() {
   return double_support_timesteps() * dt();
 }
 
-double HumanoidParameters::startend_double_support_duration()
-{
+double HumanoidParameters::startend_double_support_duration() {
   return startend_double_support_timesteps() * dt();
 }
 
-bool HumanoidParameters::has_double_support()
-{
+bool HumanoidParameters::has_double_support() {
   return double_support_timesteps() > 0;
 }
 
-Eigen::Vector3d HumanoidParameters::ellipsoid_clip(Eigen::Vector3d step)
-{
-  Eigen::Vector3d factor((step.x() >= 0) ? walk_max_dx_forward : walk_max_dx_backward, walk_max_dy, walk_max_dtheta);
+Eigen::Vector3d HumanoidParameters::ellipsoid_clip(Eigen::Vector3d step) {
+  Eigen::Vector3d factor((step.x() >= 0) ? walk_max_dx_forward
+                                         : walk_max_dx_backward,
+                         walk_max_dy, walk_max_dtheta);
   step.x() /= factor.x();
   step.y() /= factor.y();
   step.z() /= factor.z();
 
   double norm = step.norm();
-  if (norm > 1)
-  {
+  if (norm > 1) {
     step /= norm;
   }
 
@@ -55,16 +48,16 @@ Eigen::Vector3d HumanoidParameters::ellipsoid_clip(Eigen::Vector3d step)
   return step;
 }
 
-Eigen::Vector3d HumanoidParameters::box_clip(Eigen::Vector3d step)
-{
-  Eigen::Vector3d factor((step.x() >= 0) ? walk_max_dx_forward : walk_max_dx_backward, walk_max_dy, walk_max_dtheta);
+Eigen::Vector3d HumanoidParameters::box_clip(Eigen::Vector3d step) {
+  Eigen::Vector3d factor((step.x() >= 0) ? walk_max_dx_forward
+                                         : walk_max_dx_backward,
+                         walk_max_dy, walk_max_dtheta);
   step.x() /= factor.x();
   step.y() /= factor.y();
   step.z() /= factor.z();
 
   double norm = fabs(step.x()) + fabs(step.y()) + fabs(step.z());
-  if (norm > 1)
-  {
+  if (norm > 1) {
     step /= norm;
   }
 
@@ -75,16 +68,17 @@ Eigen::Vector3d HumanoidParameters::box_clip(Eigen::Vector3d step)
   return step;
 }
 
-Eigen::Vector3d HumanoidParameters::conic_clip(Eigen::Vector3d step)
-{
-  Eigen::Vector3d factor((step.x() >= 0) ? walk_max_dx_forward : walk_max_dx_backward, walk_max_dy, walk_max_dtheta);
+Eigen::Vector3d HumanoidParameters::conic_clip(Eigen::Vector3d step) {
+  Eigen::Vector3d factor((step.x() >= 0) ? walk_max_dx_forward
+                                         : walk_max_dx_backward,
+                         walk_max_dy, walk_max_dtheta);
   step.x() /= factor.x();
   step.y() /= factor.y();
   step.z() /= factor.z();
 
-  double norm = sqrt(step.x() * step.x() + step.y() * step.y()) + fabs(step.z());
-  if (norm > 1)
-  {
+  double norm =
+      sqrt(step.x() * step.x() + step.y() * step.y()) + fabs(step.z());
+  if (norm > 1) {
     step /= norm;
   }
 
@@ -95,24 +89,27 @@ Eigen::Vector3d HumanoidParameters::conic_clip(Eigen::Vector3d step)
   return step;
 }
 
-Eigen::Vector3d HumanoidParameters::ellipsoid_overlap_clip(HumanoidRobot::Side support_side, Eigen::Vector3d step)
-{
+Eigen::Vector3d
+HumanoidParameters::ellipsoid_overlap_clip(HumanoidRobot::Side support_side,
+                                           Eigen::Vector3d step) {
   return overlap_clip(support_side, step, FootstepClipping::Ellipsoid);
 }
 
-Eigen::Vector3d HumanoidParameters::box_overlap_clip(HumanoidRobot::Side support_side, Eigen::Vector3d step)
-{
+Eigen::Vector3d
+HumanoidParameters::box_overlap_clip(HumanoidRobot::Side support_side,
+                                     Eigen::Vector3d step) {
   return overlap_clip(support_side, step, FootstepClipping::Box);
 }
 
-Eigen::Vector3d HumanoidParameters::conic_overlap_clip(HumanoidRobot::Side support_side, Eigen::Vector3d step)
-{
+Eigen::Vector3d
+HumanoidParameters::conic_overlap_clip(HumanoidRobot::Side support_side,
+                                       Eigen::Vector3d step) {
   return overlap_clip(support_side, step, FootstepClipping::Conic);
 }
 
-Eigen::Vector3d HumanoidParameters::overlap_clip(HumanoidRobot::Side support_side, Eigen::Vector3d step,
-                                                 HumanoidParameters::FootstepClipping clipping)
-{
+Eigen::Vector3d HumanoidParameters::overlap_clip(
+    HumanoidRobot::Side support_side, Eigen::Vector3d step,
+    HumanoidParameters::FootstepClipping clipping) {
   FootstepsPlannerRepetitive planner(*this);
   planner.configure(step.x(), step.y(), step.z(), 3);
   planner.footstep_clipping = clipping;
@@ -123,30 +120,31 @@ Eigen::Vector3d HumanoidParameters::overlap_clip(HumanoidRobot::Side support_sid
   Eigen::Affine3d T_world_right = Eigen::Affine3d::Identity();
   T_world_right.translate(Eigen::Vector3d(0, -feet_spacing / 2, 0));
 
-  auto footsteps =
-      planner.plan(support_side == HumanoidRobot::Side::Left ? HumanoidRobot::Side::Right : HumanoidRobot::Side::Left,
-                   T_world_left, T_world_right);
+  auto footsteps = planner.plan(support_side == HumanoidRobot::Side::Left
+                                    ? HumanoidRobot::Side::Right
+                                    : HumanoidRobot::Side::Left,
+                                T_world_left, T_world_right);
 
   Eigen::Affine3d T_world_support = footsteps[1].frame;
   Eigen::Affine3d T_world_target = footsteps[2].frame;
   Eigen::Affine3d T_support_target = T_world_support.inverse() * T_world_target;
 
-  double offset = (support_side == HumanoidRobot::Side::Left) ? -feet_spacing : feet_spacing;
+  double offset = (support_side == HumanoidRobot::Side::Left) ? -feet_spacing
+                                                              : feet_spacing;
 
-  return Eigen::Vector3d(T_support_target.translation().x(), T_support_target.translation().y() - offset,
+  return Eigen::Vector3d(T_support_target.translation().x(),
+                         T_support_target.translation().y() - offset,
                          tools::frame_yaw(T_support_target.rotation()));
 }
 
-Eigen::Affine3d HumanoidParameters::opposite_frame(HumanoidRobot::Side side, Eigen::Affine3d T_world_foot, double d_x,
-                                                   double d_y, double d_theta)
-{
+Eigen::Affine3d HumanoidParameters::opposite_frame(HumanoidRobot::Side side,
+                                                   Eigen::Affine3d T_world_foot,
+                                                   double d_x, double d_y,
+                                                   double d_theta) {
   Eigen::Affine3d frame = T_world_foot;
-  if (side == HumanoidRobot::Side::Left)
-  {
+  if (side == HumanoidRobot::Side::Left) {
     frame.translate(-feet_spacing * Eigen::Vector3d::UnitY());
-  }
-  else
-  {
+  } else {
     frame.translate(feet_spacing * Eigen::Vector3d::UnitY());
   }
 
@@ -155,16 +153,14 @@ Eigen::Affine3d HumanoidParameters::opposite_frame(HumanoidRobot::Side side, Eig
   return frame;
 }
 
-Eigen::Affine3d HumanoidParameters::neutral_frame(HumanoidRobot::Side side, Eigen::Affine3d T_world_foot, double d_x,
-                                                  double d_y, double d_theta)
-{
+Eigen::Affine3d HumanoidParameters::neutral_frame(HumanoidRobot::Side side,
+                                                  Eigen::Affine3d T_world_foot,
+                                                  double d_x, double d_y,
+                                                  double d_theta) {
   Eigen::Affine3d frame = T_world_foot;
-  if (side == HumanoidRobot::Side::Left)
-  {
+  if (side == HumanoidRobot::Side::Left) {
     frame.translate(-(feet_spacing / 2.) * Eigen::Vector3d::UnitY());
-  }
-  else
-  {
+  } else {
     frame.translate((feet_spacing / 2.) * Eigen::Vector3d::UnitY());
   }
 
@@ -172,4 +168,4 @@ Eigen::Affine3d HumanoidParameters::neutral_frame(HumanoidRobot::Side side, Eige
   frame.rotate(Eigen::AngleAxisd(d_theta, Eigen::Vector3d::UnitZ()));
   return frame;
 }
-}  // namespace placo::humanoid
+} // namespace placo::humanoid

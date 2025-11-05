@@ -12,6 +12,13 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+if (NOT DEFINED CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
+endif()
+option(BUILD_PYTHON_BINDINGS "Build Python bindings" OFF)
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
+set(CMAKE_CXX_FLAGS_DEBUG "-g")
+
 # Maybe this should not be done globally but only for placo's targets
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 
@@ -110,14 +117,11 @@ add_library(libplaco SHARED
     src/placo/dynamics/dynamics_solver.cpp
     src/placo/dynamics/constraint.cpp
     src/placo/dynamics/avoid_self_collisions_constraint.cpp
-
-    ${PROTO_SRCS}
-    ${PROTO_HDRS}  
 )
 
 target_include_directories(libplaco PUBLIC 
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src> 
-  ${PROTOBUF_INCLUDE_DIRS}
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
   ${CMAKE_CURRENT_BINARY_DIR})
 
 target_link_libraries(libplaco PUBLIC
@@ -126,8 +130,6 @@ target_link_libraries(libplaco PUBLIC
     pinocchio::pinocchio
     eiquadprog::eiquadprog
     jsoncpp_lib
-    ${PROTOBUF_LIBRARIES}
-  ${PROTOBUF_LIBRARIES}
 )
 target_compile_definitions(libplaco PUBLIC)
 
@@ -139,43 +141,45 @@ endif ()
 
 set(CMAKE_SHARED_MODULE_PREFIX "")
 
-find_package(Python3 REQUIRED)
-find_package(Boost COMPONENTS python REQUIRED)
-find_package(Python REQUIRED COMPONENTS Interpreter)
+if (BUILD_PYTHON_BINDINGS)
+  find_package(Python3 REQUIRED)
+  find_package(Boost COMPONENTS python REQUIRED)
+  find_package(Python REQUIRED COMPONENTS Interpreter)
 
-add_library(placo MODULE 
-    bindings/expose-eigen.cpp
-    bindings/expose-tools.cpp
-    bindings/expose-problem.cpp
-    bindings/expose-footsteps.cpp
-    bindings/expose-robot-wrapper.cpp
-    bindings/expose-parameters.cpp
-    bindings/expose-kinematics.cpp
-    bindings/expose-walk-pattern-generator.cpp
-    bindings/expose-dynamics.cpp
-    bindings/module.cpp
-)
-set_target_properties(placo PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${PYTHON_SITELIB})
-target_compile_definitions(placo PUBLIC -DBOOST_DISABLE_PRAGMA_MESSAGE)
+  add_library(placo MODULE 
+      bindings/expose-eigen.cpp
+      bindings/expose-tools.cpp
+      bindings/expose-problem.cpp
+      bindings/expose-footsteps.cpp
+      bindings/expose-robot-wrapper.cpp
+      bindings/expose-parameters.cpp
+      bindings/expose-kinematics.cpp
+      bindings/expose-walk-pattern-generator.cpp
+      bindings/expose-dynamics.cpp
+      bindings/module.cpp
+  )
+  set_target_properties(placo PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${PYTHON_SITELIB})
+  target_compile_definitions(placo PUBLIC -DBOOST_DISABLE_PRAGMA_MESSAGE)
 
-target_link_libraries(placo ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} libplaco eigenpy::eigenpy)
-target_include_directories(placo PRIVATE ${PYTHON_INCLUDE_DIRS})
+  target_link_libraries(placo ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} libplaco)
+  target_include_directories(placo PRIVATE ${PYTHON_INCLUDE_DIRS})
 
-add_custom_command(
-    TARGET placo POST_BUILD
-    COMMAND doxystub
-        --module placo
-        --doxygen_directory "${CMAKE_CURRENT_SOURCE_DIR}"
-        --output "${CMAKE_BINARY_DIR}/${PYTHON_SITELIB}/placo.pyi"
-    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/${PYTHON_SITELIB}"
-    COMMENT "Generating stubs..."
-)
+  add_custom_command(
+      TARGET placo POST_BUILD
+      COMMAND doxystub
+          --module placo
+          --doxygen_directory "${CMAKE_CURRENT_SOURCE_DIR}"
+          --output "${CMAKE_BINARY_DIR}/${PYTHON_SITELIB}/placo.pyi"
+      WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/${PYTHON_SITELIB}"
+      COMMENT "Generating stubs..."
+  )
 
-ADD_CUSTOM_TARGET(placo_utils_files ALL
-                  COMMAND ${CMAKE_COMMAND} -E copy_directory
-                  ${CMAKE_CURRENT_SOURCE_DIR}/python/placo_utils
-                  ${CMAKE_BINARY_DIR}/${PYTHON_SITELIB}/placo_utils
-                  )
+  ADD_CUSTOM_TARGET(placo_utils_files ALL
+                    COMMAND ${CMAKE_COMMAND} -E copy_directory
+                    ${CMAKE_CURRENT_SOURCE_DIR}/python/placo_utils
+                    ${CMAKE_BINARY_DIR}/${PYTHON_SITELIB}/placo_utils
+                    )
+endif()
 
 if (APPLE)
 set_target_properties(placo PROPERTIES INSTALL_RPATH "@loader_path/../..")
@@ -186,6 +190,9 @@ set_target_properties(libplaco PROPERTIES INSTALL_RPATH "\$ORIGIN")
 endif()
 
 install(TARGETS libplaco DESTINATION lib)
-install(TARGETS placo DESTINATION ${PYTHON_SITELIB})
-install(FILES ${CMAKE_BINARY_DIR}/${PYTHON_SITELIB}/placo.pyi DESTINATION ${PYTHON_SITELIB})
-install(DIRECTORY ${CMAKE_BINARY_DIR}/${PYTHON_SITELIB}/placo_utils DESTINATION ${PYTHON_SITELIB})
+install(DIRECTORY include)
+if (BUILD_PYTHON_BINDINGS)
+  install(TARGETS placo DESTINATION ${PYTHON_SITELIB})
+  install(FILES ${CMAKE_BINARY_DIR}/${PYTHON_SITELIB}/placo.pyi DESTINATION ${PYTHON_SITELIB})
+  install(DIRECTORY ${CMAKE_BINARY_DIR}/${PYTHON_SITELIB}/placo_utils DESTINATION ${PYTHON_SITELIB})
+endif()

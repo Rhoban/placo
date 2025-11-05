@@ -1,22 +1,21 @@
-#include "placo/humanoid/kick.h"
-#include "placo/tools/utils.h"
+#include "placo/humanoid/kick.hpp"
+#include "placo/tools/utils.hpp"
 
-namespace placo::humanoid
-{
-Eigen::Vector3d Kick::KickTrajectory::pos(double t)
-{
+namespace placo::humanoid {
+Eigen::Vector3d Kick::KickTrajectory::pos(double t) {
   return foot_trajectory.pos(t);
 }
 
-Eigen::Vector3d Kick::KickTrajectory::vel(double t)
-{
+Eigen::Vector3d Kick::KickTrajectory::vel(double t) {
   return foot_trajectory.vel(t);
 }
 
-Kick::KickTrajectory Kick::make_trajectory(HumanoidRobot::Side kicking_side, double t_start, double t_end,
-                                           Eigen::Vector3d start, Eigen::Vector3d target,
-                                           Eigen::Affine3d T_world_opposite, HumanoidParameters& parameters)
-{
+Kick::KickTrajectory Kick::make_trajectory(HumanoidRobot::Side kicking_side,
+                                           double t_start, double t_end,
+                                           Eigen::Vector3d start,
+                                           Eigen::Vector3d target,
+                                           Eigen::Affine3d T_world_opposite,
+                                           HumanoidParameters &parameters) {
   KickTrajectory trajectory;
   trajectory.t_start = t_start;
   trajectory.t_end = t_end;
@@ -30,15 +29,20 @@ Kick::KickTrajectory Kick::make_trajectory(HumanoidRobot::Side kicking_side, dou
   // Eigen::Vector3d flying_start_position = flying_neutral_position;
   // Eigen::Vector3d flying_end_position = flying_neutral_position;
 
-  // flying_start_position += T_world_opposite.linear() * Eigen::Vector3d(-parameters.kick_amplitude, 0., 0.);
-  // flying_end_position += T_world_opposite.linear() * Eigen::Vector3d(parameters.kick_amplitude, 0., 0.);
+  // flying_start_position += T_world_opposite.linear() *
+  // Eigen::Vector3d(-parameters.kick_amplitude, 0., 0.); flying_end_position +=
+  // T_world_opposite.linear() * Eigen::Vector3d(parameters.kick_amplitude, 0.,
+  // 0.);
 
-  // trajectory.foot_trajectory.add_point(t_start, start, Eigen::Vector3d::Zero());
-  // trajectory.foot_trajectory.add_point(t_up, flying_start_position, Eigen::Vector3d::Zero());
-  // trajectory.foot_trajectory.add_point(t_shot, flying_end_position, Eigen::Vector3d::Zero());
-  // trajectory.foot_trajectory.add_point(t_neutral, flying_neutral_position, Eigen::Vector3d::Zero());
-  // trajectory.foot_trajectory.add_point(t_end, target, Eigen::Vector3d::Zero());
+  // trajectory.foot_trajectory.add_point(t_start, start,
+  // Eigen::Vector3d::Zero()); trajectory.foot_trajectory.add_point(t_up,
+  // flying_start_position, Eigen::Vector3d::Zero());
+  // trajectory.foot_trajectory.add_point(t_shot, flying_end_position,
+  // Eigen::Vector3d::Zero()); trajectory.foot_trajectory.add_point(t_neutral,
+  // flying_neutral_position, Eigen::Vector3d::Zero());
+  // trajectory.foot_trajectory.add_point(t_end, target,
+  // Eigen::Vector3d::Zero());
 
   return trajectory;
 }
-}  // namespace placo::humanoid
+} // namespace placo::humanoid

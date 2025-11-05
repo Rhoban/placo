@@ -1,10 +1,8 @@
-#include "placo/humanoid/swing_foot_quintic.h"
+#include "placo/humanoid/swing_foot_quintic.hpp"
 #include "eiquadprog/eiquadprog.hpp"
 
-namespace placo::humanoid
-{
-Eigen::VectorXd quintic_pos_times(double t)
-{
+namespace placo::humanoid {
+Eigen::VectorXd quintic_pos_times(double t) {
   Eigen::VectorXd times(18);
 
   times << pow(t, 5), pow(t, 4), pow(t, 3), pow(t, 2), pow(t, 1), 1;
@@ -12,8 +10,7 @@ Eigen::VectorXd quintic_pos_times(double t)
   return times;
 }
 
-Eigen::VectorXd quintic_d_times(double t)
-{
+Eigen::VectorXd quintic_d_times(double t) {
   Eigen::VectorXd times(18);
 
   times << 5 * pow(t, 4), 4 * pow(t, 3), 3 * pow(t, 2), 2 * pow(t, 1), 1, 0;
@@ -21,8 +18,7 @@ Eigen::VectorXd quintic_d_times(double t)
   return times;
 }
 
-Eigen::VectorXd quintic_dd_times(double t)
-{
+Eigen::VectorXd quintic_dd_times(double t) {
   Eigen::VectorXd times(18);
 
   times << 20 * pow(t, 3), 12 * pow(t, 2), 6 * pow(t, 1), 2, 0, 0;
@@ -30,9 +26,10 @@ Eigen::VectorXd quintic_dd_times(double t)
   return times;
 }
 
-SwingFootQuintic::Trajectory SwingFootQuintic::make_trajectory(double t_start, double t_end, double height,
-                                                               Eigen::Vector3d start, Eigen::Vector3d target)
-{
+SwingFootQuintic::Trajectory
+SwingFootQuintic::make_trajectory(double t_start, double t_end, double height,
+                                  Eigen::Vector3d start,
+                                  Eigen::Vector3d target) {
   Trajectory trajectory;
 
   double t_a = t_start + (t_end - t_start) / 4.;
@@ -88,8 +85,7 @@ SwingFootQuintic::Trajectory SwingFootQuintic::make_trajectory(double t_start, d
   return trajectory;
 }
 
-Eigen::Vector3d SwingFootQuintic::Trajectory::pos(double t)
-{
+Eigen::Vector3d SwingFootQuintic::Trajectory::pos(double t) {
   double t_2 = t * t;
   double t_3 = t_2 * t;
   double t_4 = t_3 * t;
@@ -98,12 +94,11 @@ Eigen::Vector3d SwingFootQuintic::Trajectory::pos(double t)
   return a * t_5 + b * t_4 + c * t_3 + d * t_2 + e * t + f;
 }
 
-Eigen::Vector3d SwingFootQuintic::Trajectory::vel(double t)
-{
+Eigen::Vector3d SwingFootQuintic::Trajectory::vel(double t) {
   double t_2 = t * t;
   double t_3 = t_2 * t;
   double t_4 = t_3 * t;
 
   return 5 * a * t_4 + 4 * b * t_3 + 3 * c * t_2 + 2 * d * t + e;
 }
-}  // namespace placo::humanoid
+} // namespace placo::humanoid

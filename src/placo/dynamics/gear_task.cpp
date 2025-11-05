@@ -1,28 +1,22 @@
-#include "placo/dynamics/gear_task.h"
-#include "placo/dynamics/dynamics_solver.h"
+#include "placo/dynamics/gear_task.hpp"
+#include "placo/dynamics/dynamics_solver.hpp"
 
-namespace placo::dynamics
-{
-GearTask::GearTask()
-{
-}
+namespace placo::dynamics {
+GearTask::GearTask() {}
 
-void GearTask::set_gear(std::string target, std::string source, double ratio)
-{
+void GearTask::set_gear(std::string target, std::string source, double ratio) {
   gears.clear();
   add_gear(target, source, ratio);
 }
 
-void GearTask::add_gear(std::string target, std::string source, double ratio)
-{
+void GearTask::add_gear(std::string target, std::string source, double ratio) {
   int target_id = solver->robot.get_joint_v_offset(target);
   int source_id = solver->robot.get_joint_v_offset(source);
 
   gears[target_id][source_id] = ratio;
 }
 
-void GearTask::update()
-{
+void GearTask::update() {
   A = Eigen::MatrixXd(gears.size(), solver->N);
   b = Eigen::MatrixXd(gears.size(), 1);
   error = Eigen::MatrixXd(gears.size(), 1);
@@ -31,8 +25,7 @@ void GearTask::update()
   b.setZero();
 
   int k = 0;
-  for (auto& entry : gears)
-  {
+  for (auto &entry : gears) {
     int target = entry.first;
     double desired_q = 0;
     double desired_qd = 0;
@@ -41,8 +34,7 @@ void GearTask::update()
     double qd_target = solver->robot.state.qd[target];
     A(k, target) = -1;
 
-    for (auto& gear : entry.second)
-    {
+    for (auto &gear : entry.second) {
       int source = gear.first;
       double ratio = gear.second;
 
@@ -51,7 +43,8 @@ void GearTask::update()
       A(k, source) = ratio;
     }
 
-    double desired_ddq = kp * (q_target - desired_q) + get_kd() * (qd_target - desired_qd);
+    double desired_ddq =
+        kp * (q_target - desired_q) + get_kd() * (qd_target - desired_qd);
 
     b(k, 0) = desired_ddq;
 
@@ -62,13 +55,7 @@ void GearTask::update()
   }
 }
 
-std::string GearTask::type_name()
-{
-  return "gear";
-}
+std::string GearTask::type_name() { return "gear"; }
 
-std::string GearTask::error_unit()
-{
-  return "dof";
-}
-}  // namespace placo::dynamics
+std::string GearTask::error_unit() { return "dof"; }
+} // namespace placo::dynamics

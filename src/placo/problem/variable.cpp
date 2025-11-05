@@ -1,15 +1,11 @@
-#include "placo/problem/variable.h"
+#include "placo/problem/variable.hpp"
 
-namespace placo::problem
-{
-Expression Variable::expr(int start, int rows)
-{
-  if (start == -1)
-  {
+namespace placo::problem {
+Expression Variable::expr(int start, int rows) {
+  if (start == -1) {
     start = 0;
   }
-  if (rows == -1)
-  {
+  if (rows == -1) {
     rows = size() - start;
   }
 
@@ -19,16 +15,12 @@ Expression Variable::expr(int start, int rows)
   e.b = Eigen::VectorXd(rows);
   e.b.setZero();
 
-  for (int k = 0; k < rows; k++)
-  {
+  for (int k = 0; k < rows; k++) {
     e.A(k, k_start + start + k) = 1;
   }
 
   return e;
 }
 
-int Variable::size()
-{
-  return k_end - k_start;
-}
-};  // namespace placo::problem
+int Variable::size() { return k_end - k_start; }
+}; // namespace placo::problem

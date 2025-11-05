@@ -1,12 +1,10 @@
+#include "placo/kinematics/kinetic_energy_regularization_task.hpp"
+#include "placo/kinematics/kinematics_solver.hpp"
 #include <Eigen/Dense>
 #include <unsupported/Eigen/MatrixFunctions>
-#include "placo/kinematics/kinetic_energy_regularization_task.h"
-#include "placo/kinematics/kinematics_solver.h"
 
-namespace placo::kinematics
-{
-void KineticEnergyRegularizationTask::update()
-{
+namespace placo::kinematics {
+void KineticEnergyRegularizationTask::update() {
   // Computing the mass matrix
   Eigen::MatrixXd M = solver->robot.mass_matrix();
 
@@ -14,9 +12,9 @@ void KineticEnergyRegularizationTask::update()
   Eigen::MatrixXd M_1_2 = M.sqrt();
 
   // We need dt so that this task has an energy unit
-  if (solver->dt == 0.)
-  {
-    throw std::runtime_error("RegularizationTask::update: you should set solver.dt");
+  if (solver->dt == 0.) {
+    throw std::runtime_error(
+        "RegularizationTask::update: you should set solver.dt");
   }
 
   // We want to minimize (1/2) * qd^T * M * qd
@@ -26,13 +24,9 @@ void KineticEnergyRegularizationTask::update()
   b.setZero();
 }
 
-std::string KineticEnergyRegularizationTask::type_name()
-{
+std::string KineticEnergyRegularizationTask::type_name() {
   return "kinetic_energy_regularization";
 }
 
-std::string KineticEnergyRegularizationTask::error_unit()
-{
-  return "joule";
-}
-}  // namespace placo::kinematics
+std::string KineticEnergyRegularizationTask::error_unit() { return "joule"; }
+} // namespace placo::kinematics

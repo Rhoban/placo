@@ -1,5 +1,5 @@
-#include "placo/humanoid/footsteps_planner_naive.h"
-#include "placo/tools/utils.h"
+#include "placo/humanoid/footsteps_planner_naive.hpp"
+#include "placo/tools/utils.hpp"
 #include <boost/geometry.hpp>
 #include <boost/geometry/geometries/adapted/boost_tuple.hpp>
 #include <boost/geometry/geometries/polygon.hpp>
@@ -14,25 +14,22 @@ typedef boost::geometry::model::polygon<b_point> b_polygon;
  * TODO: Feet dimensions should come from the model
  */
 
-namespace placo::humanoid
-{
-FootstepsPlannerNaive::FootstepsPlannerNaive(HumanoidParameters& parameters) : FootstepsPlanner(parameters)
-{
+namespace placo::humanoid {
+FootstepsPlannerNaive::FootstepsPlannerNaive(HumanoidParameters &parameters)
+    : FootstepsPlanner(parameters) {
   accessibility_length = parameters.walk_max_dx_forward;
   accessibility_width = parameters.walk_max_dy;
   accessibility_yaw = parameters.walk_max_dtheta;
 }
 
-std::string FootstepsPlannerNaive::name()
-{
-  return "naive";
-}
+std::string FootstepsPlannerNaive::name() { return "naive"; }
 
-void FootstepsPlannerNaive::plan_impl(std::vector<FootstepsPlanner::Footstep>& footsteps,
-                                      HumanoidRobot::Side flying_side, Eigen::Affine3d T_world_left,
-                                      Eigen::Affine3d T_world_right)
-{
-  Eigen::Affine3d T_world_target = tools::interpolate_frames(T_world_targetLeft, T_world_targetRight, 0.5);
+void FootstepsPlannerNaive::plan_impl(
+    std::vector<FootstepsPlanner::Footstep> &footsteps,
+    HumanoidRobot::Side flying_side, Eigen::Affine3d T_world_left,
+    Eigen::Affine3d T_world_right) {
+  Eigen::Affine3d T_world_target =
+      tools::interpolate_frames(T_world_targetLeft, T_world_targetRight, 0.5);
 
   auto T_world_currentLeft = T_world_left;
   auto T_world_currentRight = T_world_right;
@@ -42,15 +39,16 @@ void FootstepsPlannerNaive::plan_impl(std::vector<FootstepsPlanner::Footstep>& f
   bool right_arrived = false;
   int steps = 0;
 
-  while ((!left_arrived || !right_arrived) && steps < max_steps)
-  {
+  while ((!left_arrived || !right_arrived) && steps < max_steps) {
     steps += 1;
 
     bool arrived = true;
 
     // The current support in the world
     Eigen::Affine3d T_world_support =
-        (current_support_side == HumanoidRobot::Side::Left) ? T_world_currentLeft : T_world_currentRight;
+        (current_support_side == HumanoidRobot::Side::Left)
+            ? T_world_currentLeft
+            : T_world_currentRight;
 
     // Floating foot to current frame
     Eigen::Affine3d T_support_floatingIdle = Eigen::Affine3d::Identity();
@@ -59,43 +57,39 @@ void FootstepsPlannerNaive::plan_impl(std::vector<FootstepsPlanner::Footstep>& f
     // Expressing the target (for current flying foot) in the support foot
     Eigen::Affine3d T_support_target =
         T_world_support.inverse() *
-        ((current_support_side == HumanoidRobot::Side::Left) ? T_world_targetRight : T_world_targetLeft);
+        ((current_support_side == HumanoidRobot::Side::Left)
+             ? T_world_targetRight
+             : T_world_targetLeft);
 
     T_support_target.translation().z() = 0.;
 
-    if (current_support_side == HumanoidRobot::Side::Left)
-    {
+    if (current_support_side == HumanoidRobot::Side::Left) {
       T_support_floatingIdle.translation().y() = -parameters.feet_spacing;
       T_support_center.translation().y() = -parameters.feet_spacing / 2.;
-    }
-    else
-    {
+    } else {
       T_support_floatingIdle.translation().y() = parameters.feet_spacing;
       T_support_center.translation().y() = parameters.feet_spacing / 2.;
     }
 
     // Updating the position
-    Eigen::Vector3d error = T_support_target.translation() - T_support_floatingIdle.translation();
+    Eigen::Vector3d error =
+        T_support_target.translation() - T_support_floatingIdle.translation();
 
     double rescale = 1.;
 
-    if (error.x() < -accessibility_length)
-    {
+    if (error.x() < -accessibility_length) {
       rescale = std::min(rescale, -accessibility_length / error.x());
       arrived = false;
     }
-    if (error.x() > accessibility_length)
-    {
+    if (error.x() > accessibility_length) {
       rescale = std::min(rescale, accessibility_length / error.x());
       arrived = false;
     }
-    if (error.y() < -accessibility_width)
-    {
+    if (error.y() < -accessibility_width) {
       rescale = std::min(rescale, -accessibility_width / error.y());
       arrived = false;
     }
-    if (error.y() > accessibility_width)
-    {
+    if (error.y() > accessibility_width) {
       rescale = std::min(rescale, accessibility_width / error.y());
       arrived = false;
     }
@@ -106,24 +100,20 @@ void FootstepsPlannerNaive::plan_impl(std::vector<FootstepsPlanner::Footstep>& f
     // Updating the yaw
     double error_yaw;
 
-    if (dist > place_threshold)
-    {
+    if (dist > place_threshold) {
       Eigen::Vector3d target_to_center =
-          (T_world_support.inverse() * T_world_target).translation() - T_support_center.translation();
+          (T_world_support.inverse() * T_world_target).translation() -
+          T_support_center.translation();
       error_yaw = atan2(target_to_center.y(), target_to_center.x());
-    }
-    else
-    {
+    } else {
       error_yaw = tools::frame_yaw(T_support_target.rotation());
     }
 
-    if (error_yaw < -accessibility_yaw)
-    {
+    if (error_yaw < -accessibility_yaw) {
       arrived = false;
       error_yaw = -accessibility_yaw;
     }
-    if (error_yaw > accessibility_yaw)
-    {
+    if (error_yaw > accessibility_yaw) {
       arrived = false;
       error_yaw = accessibility_yaw;
     }
@@ -134,21 +124,22 @@ void FootstepsPlannerNaive::plan_impl(std::vector<FootstepsPlanner::Footstep>& f
 
     // Computing new frame
     Eigen::Affine3d new_step;
-    new_step.translation() = T_support_floatingIdle.translation() + Eigen::Vector3d(step.x(), step.y(), 0.);
-    new_step.linear() = Eigen::AngleAxisd(step[2], Eigen::Vector3d::UnitZ()).toRotationMatrix();
+    new_step.translation() = T_support_floatingIdle.translation() +
+                             Eigen::Vector3d(step.x(), step.y(), 0.);
+    new_step.linear() =
+        Eigen::AngleAxisd(step[2], Eigen::Vector3d::UnitZ()).toRotationMatrix();
 
     // Going to next step
-    Footstep footstep = create_footstep(HumanoidRobot::other_side(current_support_side), T_world_support * new_step);
+    Footstep footstep =
+        create_footstep(HumanoidRobot::other_side(current_support_side),
+                        T_world_support * new_step);
     footsteps.push_back(footstep);
 
-    if (current_support_side == HumanoidRobot::Side::Left)
-    {
+    if (current_support_side == HumanoidRobot::Side::Left) {
       right_arrived = arrived;
       T_world_currentRight = footstep.frame;
       current_support_side = HumanoidRobot::Side::Right;
-    }
-    else
-    {
+    } else {
       left_arrived = arrived;
       T_world_currentLeft = footstep.frame;
       current_support_side = HumanoidRobot::Side::Left;
@@ -156,10 +147,10 @@ void FootstepsPlannerNaive::plan_impl(std::vector<FootstepsPlanner::Footstep>& f
   }
 }
 
-void FootstepsPlannerNaive::configure(Eigen::Affine3d T_world_left_target, Eigen::Affine3d T_world_right_target)
-{
+void FootstepsPlannerNaive::configure(Eigen::Affine3d T_world_left_target,
+                                      Eigen::Affine3d T_world_right_target) {
   // Targetted position for the robot
   T_world_targetLeft = T_world_left_target;
   T_world_targetRight = T_world_right_target;
 }
-}  // namespace placo::humanoid
+} // namespace placo::humanoid

@@ -1,15 +1,12 @@
-#include "placo/dynamics/com_task.h"
-#include "placo/dynamics/dynamics_solver.h"
+#include "placo/dynamics/com_task.hpp"
+#include "placo/dynamics/dynamics_solver.hpp"
 
-namespace placo::dynamics
-{
-CoMTask::CoMTask(Eigen::Vector3d target_world)
-{
+namespace placo::dynamics {
+CoMTask::CoMTask(Eigen::Vector3d target_world) {
   this->target_world = target_world;
 }
 
-void CoMTask::update()
-{
+void CoMTask::update() {
   // Computing J and dJ
   Eigen::MatrixXd J = solver->robot.com_jacobian();
   Eigen::MatrixXd dJ = solver->robot.com_jacobian_time_variation();
@@ -22,7 +19,8 @@ void CoMTask::update()
   Eigen::Vector3d velocity_world = J * solver->robot.state.qd;
   Eigen::Vector3d velocity_error = dtarget_world - velocity_world;
 
-  Eigen::Vector3d desired_acceleration = kp * position_error + get_kd() * velocity_error + ddtarget_world;
+  Eigen::Vector3d desired_acceleration =
+      kp * position_error + get_kd() * velocity_error + ddtarget_world;
 
   // Acceleration is: J * qdd + dJ * qd
   A = mask.apply(J);
@@ -31,13 +29,7 @@ void CoMTask::update()
   derror = mask.apply(velocity_error);
 }
 
-std::string CoMTask::type_name()
-{
-  return "com";
-}
+std::string CoMTask::type_name() { return "com"; }
 
-std::string CoMTask::error_unit()
-{
-  return "m";
-}
-}  // namespace placo::dynamics
+std::string CoMTask::error_unit() { return "m"; }
+} // namespace placo::dynamics

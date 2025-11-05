@@ -1,24 +1,20 @@
-#include "placo/humanoid/swing_foot_cubic.h"
+#include "placo/humanoid/swing_foot_cubic.hpp"
 #include "eiquadprog/eiquadprog.hpp"
 
-namespace placo::humanoid
-{
+namespace placo::humanoid {
 
-Eigen::Vector3d SwingFootCubic::Trajectory::pos(double t)
-{
+Eigen::Vector3d SwingFootCubic::Trajectory::pos(double t) {
   return Eigen::Vector3d(x.pos(t), y.pos(t), z.pos(t));
 }
 
-Eigen::Vector3d SwingFootCubic::Trajectory::vel(double t)
-{
+Eigen::Vector3d SwingFootCubic::Trajectory::vel(double t) {
   return Eigen::Vector3d(x.vel(t), y.vel(t), z.vel(t));
 }
 
-SwingFootCubic::Trajectory SwingFootCubic::make_trajectory(double t_start, double virt_duration, double height,
-                                                           double rise_ratio, Eigen::Vector3d start,
-                                                           Eigen::Vector3d target, double elapsed_ratio,
-                                                           Eigen::Vector3d start_vel)
-{
+SwingFootCubic::Trajectory SwingFootCubic::make_trajectory(
+    double t_start, double virt_duration, double height, double rise_ratio,
+    Eigen::Vector3d start, Eigen::Vector3d target, double elapsed_ratio,
+    Eigen::Vector3d start_vel) {
   SwingFootCubic::Trajectory trajectory;
 
   trajectory.x.add_point(t_start, start.x(), start_vel.x());
@@ -30,20 +26,15 @@ SwingFootCubic::Trajectory SwingFootCubic::make_trajectory(double t_start, doubl
   double t_end = t_start + (1 - elapsed_ratio) * virt_duration;
 
   std::vector<double> t;
-  if (rise_ratio > 0)
-  {
+  if (rise_ratio > 0) {
     t.push_back(virt_t_start + half_duration - half_duration * rise_ratio);
     t.push_back(virt_t_start + half_duration + half_duration * rise_ratio);
-  }
-  else
-  {
+  } else {
     t.push_back(virt_t_start + half_duration);
   }
 
-  for (double t_i : t)
-  {
-    if (t_i > t_start)
-    {
+  for (double t_i : t) {
+    if (t_i > t_start) {
       trajectory.z.add_point(t_i, height, 0.);
     }
   }
@@ -55,4 +46,4 @@ SwingFootCubic::Trajectory SwingFootCubic::make_trajectory(double t_start, doubl
   return trajectory;
 }
 
-}  // namespace placo::humanoid
+} // namespace placo::humanoid

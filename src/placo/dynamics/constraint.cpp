@@ -1,6 +1,4 @@
-#include "placo/dynamics/constraint.h"
-#include "placo/dynamics/dynamics_solver.h"
+#include "placo/dynamics/constraint.hpp"
+#include "placo/dynamics/dynamics_solver.hpp"
 
-namespace placo::kinematics
-{
-};
+namespace placo::kinematics {};
