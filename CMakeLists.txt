@@ -118,6 +118,7 @@ add_library(libplaco SHARED
     src/placo/dynamics/constraint.cpp
     src/placo/dynamics/avoid_self_collisions_constraint.cpp
 )
+add_library(LibPlaco::libplaco ALIAS libplaco)
 
 target_include_directories(libplaco PUBLIC 
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -189,10 +190,50 @@ set_target_properties(placo PROPERTIES INSTALL_RPATH "\$ORIGIN/../..")
 set_target_properties(libplaco PROPERTIES INSTALL_RPATH "\$ORIGIN")
 endif()
 
-install(TARGETS libplaco DESTINATION lib)
+include(GNUInstallDirs)
+
+set(INSTALL_CONFIGDIR ${CMAKE_INSTALL_LIBDIR}/cmake/LibPlaco)
+
+install(TARGETS libplaco EXPORT libplaco-targets DESTINATION ${CMAKE_INSTALL_LIBDIR} ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+
+install(EXPORT libplaco-targets
+  FILE
+    LibPlacoTargets.cmake
+  NAMESPACE
+    LibPlaco::
+  DESTINATION
+    ${INSTALL_CONFIGDIR}
+)
+
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+    ${CMAKE_CURRENT_BINARY_DIR}/LibPlacoConfigVersion.cmake
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY AnyNewerVersion
+)
+configure_package_config_file(${CMAKE_CURRENT_LIST_DIR}/cmake/LibPlacoConfig.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/LibPlacoConfig.cmake
+    INSTALL_DESTINATION ${INSTALL_CONFIGDIR}
+)
+
+install(FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/LibPlacoConfig.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/LibPlacoConfigVersion.cmake
+    DESTINATION ${INSTALL_CONFIGDIR}
+)
+
+
+install(TARGETS libplaco DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(DIRECTORY include)
 if (BUILD_PYTHON_BINDINGS)
   install(TARGETS placo DESTINATION ${PYTHON_SITELIB})
   install(FILES ${CMAKE_BINARY_DIR}/${PYTHON_SITELIB}/placo.pyi DESTINATION ${PYTHON_SITELIB})
   install(DIRECTORY ${CMAKE_BINARY_DIR}/${PYTHON_SITELIB}/placo_utils DESTINATION ${PYTHON_SITELIB})
 endif()
+
+export(EXPORT libplaco-targets
+    FILE ${CMAKE_CURRENT_BINARY_DIR}/LibPlacoTargets.cmake
+    NAMESPACE LibPlaco::)
+
+#Register package in the User Package Registry
+export(PACKAGE LibPlaco)
