@@ -5,8 +5,9 @@
 
 namespace placo::dynamics
 {
-struct FrameTask
+class FrameTask
 {
+public:
   /**
    * @brief see \ref placo::dynamics::DynamicsSolver::add_frame_task
    */
