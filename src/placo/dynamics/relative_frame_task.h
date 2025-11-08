@@ -6,8 +6,9 @@
 
 namespace placo::dynamics
 {
-struct RelativeFrameTask
+class RelativeFrameTask
 {
+public:
   /**
    * @brief see \ref placo::dynamics::DynamicsSolver::add_relative_frame_task
    */
