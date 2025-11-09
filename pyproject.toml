@@ -14,7 +14,7 @@ authors = [{ email = "team@rhoban.com", name = "Rhoban team" }]
 classifiers = []
 dependencies = [
   "eiquadprog >= 1.2.6, < 2",
-  "pin==3.4.0",
+  "pin==3.8.0",
   "rhoban-cmeel-jsoncpp",
   "meshcat",
   "ischedule"
