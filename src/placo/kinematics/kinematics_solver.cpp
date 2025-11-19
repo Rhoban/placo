@@ -252,12 +252,18 @@ DistanceConstraint& KinematicsSolver::add_distance_constraint(std::string frame_
 
 void KinematicsSolver::mask_dof(std::string dof)
 {
-  masked_dof.insert(robot.get_joint_v_offset(dof));
+  for (int i = 0; i < robot.get_joint_v_size(dof); i++)
+  {
+    masked_dof.insert(robot.get_joint_v_offset(dof) + i);
+  }
 }
 
 void KinematicsSolver::unmask_dof(std::string dof)
 {
-  masked_dof.erase(robot.get_joint_v_offset(dof));
+  for (int i = 0; i < robot.get_joint_v_size(dof); i++)
+  {
+    masked_dof.erase(robot.get_joint_v_offset(dof) + i);
+  }
 }
 
 void KinematicsSolver::mask_fbase(bool masked)
