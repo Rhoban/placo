@@ -202,12 +202,26 @@ int RobotWrapper::get_joint_offset(const std::string& name)
     throw std::runtime_error(oss.str());
   }
 
-  return 7 + model.getJointId(name) - 2;
+  auto index = model.getJointId(name);
+  return model.joints[index].idx_q();
+}
+
+int RobotWrapper::get_joint_size(const std::string& name)
+{
+  auto index = model.getJointId(name);
+  return model.joints[index].nq();
 }
 
 int RobotWrapper::get_joint_v_offset(const std::string& name)
 {
-  return 6 + model.getJointId(name) - 2;
+  auto index = model.getJointId(name);
+  return model.joints[index].idx_v();
+}
+
+int RobotWrapper::get_joint_v_size(const std::string& name)
+{
+  auto index = model.getJointId(name);
+  return model.joints[index].nv();
 }
 
 double RobotWrapper::get_joint_velocity(const std::string& name)

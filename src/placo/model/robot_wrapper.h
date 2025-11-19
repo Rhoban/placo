@@ -168,11 +168,25 @@ public:
   int get_joint_offset(const std::string& name);
 
   /**
+   * @brief Gets the size of a given joint (number of DoF)
+   * @param name joint name
+   * @return size of the joint
+   */
+  int get_joint_size(const std::string& name);
+
+  /**
    * @brief Gets the offset for a given joint in the \ref state (in \ref State.qd and \ref State.qdd)
    * @param name joint name
    * @return offset in state.qd and state.qdd
    */
   int get_joint_v_offset(const std::string& name);
+
+  /**
+   * @brief Gets the size of a given joint (number of DoF)
+   * @param name joint name
+   * @return size of the joint
+   */
+  int get_joint_v_size(const std::string& name);
 
   /**
    * @brief Sets the limits for a given joint.
