@@ -37,3 +37,19 @@ Or [built from sources](https://placo.readthedocs.io/en/latest/basics/installati
 
 * [Documentation](https://placo.readthedocs.io/en/latest/)
 * [Examples](https://github.com/rhoban/placo-examples) repository
+
+## Citation
+
+If you use PlaCo in your research, please cite the following paper:
+
+```
+@misc{duclusaud2025placo,
+      title={PlaCo: a QP-based robot planning and control framework}, 
+      author={Marc Duclusaud and Grégoire Passault and Vincent Padois and Olivier Ly},
+      year={2025},
+      eprint={2511.06141},
+      archivePrefix={arXiv},
+      primaryClass={cs.RO},
+      url={https://arxiv.org/abs/2511.06141}, 
+}
+```
