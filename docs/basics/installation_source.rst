@@ -47,7 +47,7 @@ And build it using CMake:
     cmake .. -DCMAKE_BUILD_TYPE=Release
     make -j 8
 
-Using built Pythin bindings
+Using built Python bindings
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You can now add the ``build/lib/python3-X/site-packages`` directory to your ``PYTHONPATH`` to use PlaCo.
