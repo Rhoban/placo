@@ -145,7 +145,7 @@ set(CMAKE_SHARED_MODULE_PREFIX "")
 if (BUILD_PYTHON_BINDINGS)
   find_package(Python3 REQUIRED)
   find_package(Boost COMPONENTS python REQUIRED)
-  find_package(Python REQUIRED COMPONENTS Interpreter)
+  find_package(Python REQUIRED COMPONENTS Interpreter NumPy)
 
   add_library(placo MODULE 
       bindings/expose-eigen.cpp
@@ -163,7 +163,7 @@ if (BUILD_PYTHON_BINDINGS)
   target_compile_definitions(placo PUBLIC -DBOOST_DISABLE_PRAGMA_MESSAGE)
 
   target_link_libraries(placo ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} libplaco)
-  target_include_directories(placo PRIVATE ${PYTHON_INCLUDE_DIRS})
+  target_include_directories(placo PRIVATE ${PYTHON_INCLUDE_DIRS} ${Python3_NumPy_INCLUDE_DIRS})
 
   add_custom_command(
       TARGET placo POST_BUILD
