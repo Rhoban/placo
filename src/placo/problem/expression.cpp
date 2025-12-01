@@ -195,8 +195,8 @@ Expression operator-(const Eigen::VectorXd v, const Expression& e)
 
 Expression Expression::operator+(const double f) const
 {
-  Eigen::VectorXd fv(1);
-  fv(0, 0) = f;
+  Eigen::VectorXd fv(rows());
+  fv.setConstant(f);
 
   return (*this) + fv;
 }
