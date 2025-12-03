@@ -12,7 +12,7 @@ env:
   CIBW_SKIP: "*i686 *musl* *armv7* *ppc64* *s390*"
   CIBW_REPAIR_WHEEL_COMMAND: ""
   CIBW_TEST_REQUIRES: matplotlib
-  CIBW_TEST_COMMAND: "python -m unittest discover python/tests/ \"*_test.py\""
+  CIBW_TEST_COMMAND: "python -m unittest discover {project}/python/tests/ \"*_test.py\""
 
 jobs:
   build_wheels:
@@ -21,7 +21,7 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest, ubuntu-24.04-arm, macos-15-intel]
-        pyver: [cp38, cp39, cp310, cp311, cp312, cp313]
+        pyver: [cp39, cp310, cp311, cp312, cp313, cp314]
         exclude:
           - os: macos-latest
             pyver: cp38
@@ -35,7 +35,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install cibuildwheel
-        run: python -m pip install cibuildwheel==3.0.0b1
+        run: python -m pip install cibuildwheel==3.2.1
 
       - name: Build wheels
         run: python -m cibuildwheel --output-dir wheelhouse

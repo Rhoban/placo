@@ -6,10 +6,14 @@ from placo_utils.visualization import *
 arg_parser = argparse.ArgumentParser()
 arg_parser.add_argument("path", help="Path to the URDF")
 arg_parser.add_argument("--frames", help="Frame to display", nargs="+")
+arg_parser.add_argument("--mjcf", action="store_true", default=False)
 arg_parser.add_argument("--animate", help="Animate the robot", action="store_true")
 args = arg_parser.parse_args()
 
-robot = placo.RobotWrapper(args.path, placo.Flags.ignore_collisions)
+flags = placo.Flags.ignore_collisions
+if args.mjcf:
+    flags += placo.Flags.mjcf
+robot = placo.RobotWrapper(args.path, flags)
 robot.update_kinematics()
 
 print("Joint names:")
