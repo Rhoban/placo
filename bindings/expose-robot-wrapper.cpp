@@ -180,6 +180,7 @@ void exposeRobotWrapper()
   exposeRobotType<HumanoidRobot>(humanoidWrapper);
   humanoidWrapper
       .def<void (HumanoidRobot::*)(const std::string&)>("update_support_side", &HumanoidRobot::update_support_side)
+      .def<void (HumanoidRobot::*)(const std::string&)>("update_support_frame", &HumanoidRobot::update_support_frame)
       .def("ensure_on_floor", &HumanoidRobot::ensure_on_floor)
       .def("ensure_on_floor_oriented", &HumanoidRobot::ensure_on_floor_oriented)
       .def("update_from_imu", &HumanoidRobot::update_from_imu)
@@ -209,10 +210,7 @@ void exposeRobotWrapper()
 #ifdef HAVE_RHOBAN_UTILS
       .def("read_from_histories", &HumanoidRobot::read_from_histories, read_from_histories_overloads())
 #endif
-      .def(
-          "get_support_side", +[](const HumanoidRobot& robot) { return robot.support_side; })
       .add_property("support_is_both", &HumanoidRobot::support_is_both, &HumanoidRobot::support_is_both)
-      .add_property("support_side", &HumanoidRobot::support_side)
       .def(
           "get_T_world_support", +[](const HumanoidRobot& robot) { return robot.T_world_support; })
       .def(
