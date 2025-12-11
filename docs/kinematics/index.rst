@@ -19,6 +19,7 @@ Kinematics
 
     position_orientation_frame_task
     joints_task
+    distance_task
     com_task
     wheel_task
     axis_align_task
