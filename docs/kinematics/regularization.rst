@@ -38,6 +38,20 @@ You can add your own regularization by adding a :func:`RegularizationTask <placo
 The greater is the provided regularization value, the more expansive it will be for the solver to move
 any joint.
 
+The task weight can be updated with:
+
+.. code-block:: python
+
+    # Updating regularization weight
+    regularization_task.set_weight(1e-6)
+
+Also, specific values can be set for given joints:
+
+.. code-block:: python
+
+    # Setting a high regularization for r1 only
+    regularization_task.set_joint_weight("r1", 1e2)
+
 .. admonition:: 6-axis regularization (custom strong L2)
 
     If you pass ``--strong_l2`` to the following example, a strong :math:`10^{2}` L2 regularization will be used.
