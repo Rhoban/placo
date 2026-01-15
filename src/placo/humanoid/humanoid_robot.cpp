@@ -38,6 +38,7 @@ void HumanoidRobot::initialize()
 
 void HumanoidRobot::init_config()
 {
+  support_side = Left;
   support_frame = get_frame_index("left_foot");
   support_is_both = false;
 
@@ -78,7 +79,7 @@ Eigen::Affine3d HumanoidRobot::get_T_world_trunk()
 void HumanoidRobot::update_support_side(HumanoidRobot::Side new_side)
 {
   RobotWrapper::FrameIndex new_frame = (new_side == Left) ? left_foot : right_foot;
-  update_support_frame(new_frame);
+  update_support_side(new_side, new_frame);
 }
 
 void HumanoidRobot::update_support_side(const std::string& side)
@@ -86,19 +87,20 @@ void HumanoidRobot::update_support_side(const std::string& side)
   update_support_side(string_to_side(side));
 }
 
-void HumanoidRobot::update_support_frame(RobotWrapper::FrameIndex frame)
+void HumanoidRobot::update_support_side(Side side, RobotWrapper::FrameIndex frame)
 {
   if (frame != support_frame)
   {
     support_frame = frame;
+    support_side = side;
     T_world_support = tools::flatten_on_floor(get_T_world_frame(support_frame));
   }
 }
 
-void HumanoidRobot::update_support_frame(const std::string& frame)
+void HumanoidRobot::update_support_side(const std::string& side, const std::string& frame)
 {
   RobotWrapper::FrameIndex frame_index = get_frame_index(frame);
-  update_support_frame(frame_index);
+  update_support_side(string_to_side(side), frame_index);
 }
 
 void HumanoidRobot::ensure_on_floor()
@@ -141,8 +143,7 @@ Eigen::Vector3d HumanoidRobot::get_com_velocity(Side support, Eigen::Vector3d om
   Eigen::Matrix3Xd J_a_C = J_C.rightCols(20);
 
   // Support foot
-  Eigen::MatrixXd J_contact =
-      support == Left ? frame_jacobian("left_foot", "local") : frame_jacobian("right_foot", "local");
+  Eigen::MatrixXd J_contact = frame_jacobian(support_frame, pinocchio::ReferenceFrame::LOCAL);
 
   // IMU body Jacobian
   Eigen::MatrixXd J_IMU = frame_jacobian("trunk", "local");

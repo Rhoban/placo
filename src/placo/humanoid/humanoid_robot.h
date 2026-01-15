@@ -36,8 +36,8 @@ public:
   /**
    * @brief Updates which frame should be the current support
    */
-  void update_support_frame(RobotWrapper::FrameIndex frame);
-  void update_support_frame(const std::string& frame);
+  void update_support_side(Side side, RobotWrapper::FrameIndex frame);
+  void update_support_side(const std::string& side, const std::string& frame);
 
   /**
    * @brief Place the robot on its support on the floor
@@ -125,6 +125,11 @@ public:
    * @brief The current support frame
    */
   RobotWrapper::FrameIndex support_frame;
+
+  /**
+   * @brief The current support side
+   */
+  Side support_side;
 
   /**
    * @brief Transformation from support to world
