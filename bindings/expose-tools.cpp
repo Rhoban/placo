@@ -1,18 +1,18 @@
 #include <pinocchio/fwd.hpp>
 
+#include "doxystub.h"
+#include "expose-utils.hpp"
+#include "module.h"
+#include "placo/tools/axises_mask.hpp"
+#include "placo/tools/cubic_spline.hpp"
+#include "placo/tools/cubic_spline_3d.hpp"
+#include "placo/tools/directions.hpp"
+#include "placo/tools/polynom.hpp"
+#include "placo/tools/prioritized.hpp"
+#include "placo/tools/segment.hpp"
+#include "placo/tools/utils.hpp"
 #include <Eigen/Dense>
 #include <boost/python.hpp>
-#include "module.h"
-#include "doxystub.h"
-#include "placo/tools/utils.h"
-#include "placo/tools/cubic_spline.h"
-#include "placo/tools/cubic_spline_3d.h"
-#include "placo/tools/axises_mask.h"
-#include "placo/tools/prioritized.h"
-#include "placo/tools/directions.h"
-#include "placo/tools/polynom.h"
-#include "placo/tools/segment.h"
-#include "expose-utils.hpp"
 #ifdef HAVE_RHOBAN_UTILS
 #include "rhoban_utils/history/history.h"
 #endif
@@ -22,7 +22,8 @@ using namespace boost::python;
 using namespace placo::tools;
 
 #ifdef HAVE_RHOBAN_UTILS
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(loadReplays_overloads, loadReplays, 1, 2);
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(loadReplays_overloads, loadReplays, 1,
+                                       2);
 #endif
 
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(set_axises_overloads, set_axises, 1, 2);
@@ -30,8 +31,7 @@ BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(configure_overloads, configure, 2, 3);
 BOOST_PYTHON_FUNCTION_OVERLOADS(directions_3d_overloads, directions_3d, 1, 2);
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(value_overloads, value, 1, 2);
 
-void exposeTools()
-{
+void exposeTools() {
   def("interpolate_frames", &interpolate_frames);
   def("wrap_angle", &wrap_angle);
   def("rotation_from_axis", &rotation_from_axis);
@@ -48,11 +48,12 @@ void exposeTools()
 
   // exposeStdMap<std::string, double>("map_string_double");
 
-  class_<std::map<std::string, double>>("map_string_double").def(map_indexing_suite<std::map<std::string, double>>());
+  class_<std::map<std::string, double>>("map_string_double")
+      .def(map_indexing_suite<std::map<std::string, double>>());
 
   class__<AxisesMask>("AxisesMask", init<>())
-      .def<void (AxisesMask::*)(std::string, std::string)>("set_axises", &AxisesMask::set_axises,
-                                                           set_axises_overloads())
+      .def<void (AxisesMask::*)(std::string, std::string)>(
+          "set_axises", &AxisesMask::set_axises, set_axises_overloads())
       .def_readwrite("R_local_world", &AxisesMask::R_local_world)
       .def_readwrite("R_custom_world", &AxisesMask::R_custom_world)
       .def("apply", &AxisesMask::apply);
@@ -60,9 +61,11 @@ void exposeTools()
   class__<Prioritized, boost::noncopyable>("Prioritized", no_init)
       .add_property("name", &Prioritized::name)
       .add_property(
-          "priority", +[](Prioritized& priority) { return priority.priority_name(); }, "Priority [str]")
-      .def<void (Prioritized::*)(std::string, std::string, double)>("configure", &Prioritized::configure,
-                                                                    configure_overloads());
+          "priority",
+          +[](Prioritized &priority) { return priority.priority_name(); },
+          "Priority [str]")
+      .def<void (Prioritized::*)(std::string, std::string, double)>(
+          "configure", &Prioritized::configure, configure_overloads());
 
   class__<CubicSpline>("CubicSpline", init<optional<bool>>())
       .def("pos", &CubicSpline::pos)
@@ -104,7 +107,8 @@ void exposeTools()
 
   // History collection
   class__<HistoryCollection>("HistoryCollection")
-      .def("loadReplays", &HistoryCollection::loadReplays, loadReplays_overloads())
+      .def("loadReplays", &HistoryCollection::loadReplays,
+           loadReplays_overloads())
       .def("exportToCSV", &HistoryCollection::exportToCSV)
       .def("smallestTimestamp", &HistoryCollection::smallestTimestamp)
       .def("biggestTimestamp", &HistoryCollection::biggestTimestamp)
@@ -112,39 +116,52 @@ void exposeTools()
       .def("stopNamedLog", &HistoryCollection::stopNamedLog)
       .def("getTimestamps", &HistoryCollection::getTimestamps)
       .def(
-          "number", +[](HistoryCollection& collection, std::string name,
-                        double t) { return collection.number(name)->interpolate(t); })
+          "number",
+          +[](HistoryCollection &collection, std::string name, double t) {
+            return collection.number(name)->interpolate(t);
+          })
       .def(
-          "angle", +[](HistoryCollection& collection, std::string name,
-                       double t) { return collection.angle(name)->interpolate(t); })
+          "angle",
+          +[](HistoryCollection &collection, std::string name, double t) {
+            return collection.angle(name)->interpolate(t);
+          })
       .def(
-          "pose", +[](HistoryCollection& collection, std::string name,
-                      double t) { return collection.pose(name)->interpolate(t); })
+          "pose",
+          +[](HistoryCollection &collection, std::string name, double t) {
+            return collection.pose(name)->interpolate(t);
+          })
       .def(
-          "bool", +[](HistoryCollection& collection, std::string name,
-                      double t) { return collection.boolean(name)->interpolate(t); })
+          "bool",
+          +[](HistoryCollection &collection, std::string name, double t) {
+            return collection.boolean(name)->interpolate(t);
+          })
       .def(
-          "push_number", +[](HistoryCollection& collection, std::string name, double t,
-                             double value) { collection.number(name)->pushValue(t, value); })
+          "push_number",
+          +[](HistoryCollection &collection, std::string name, double t,
+              double value) { collection.number(name)->pushValue(t, value); })
       .def(
-          "push_angle", +[](HistoryCollection& collection, std::string name, double t,
-                            double value) { collection.angle(name)->pushValue(t, value); })
+          "push_angle",
+          +[](HistoryCollection &collection, std::string name, double t,
+              double value) { collection.angle(name)->pushValue(t, value); })
       .def(
-          "push_pose", +[](HistoryCollection& collection, std::string name, double t,
-                           Eigen::Affine3d value) { collection.pose(name)->pushValue(t, value); })
+          "push_pose",
+          +[](HistoryCollection &collection, std::string name, double t,
+              Eigen::Affine3d value) {
+            collection.pose(name)->pushValue(t, value);
+          })
       .def(
-          "push_bool", +[](HistoryCollection& collection, std::string name, double t,
-                           bool value) { collection.boolean(name)->pushValue(t, value); })
+          "push_bool",
+          +[](HistoryCollection &collection, std::string name, double t,
+              bool value) { collection.boolean(name)->pushValue(t, value); })
       .def(
           "get_sequence",
-          +[](HistoryCollection& collection, std::vector<std::string> entries, double start_t, double dt, int length) {
+          +[](HistoryCollection &collection, std::vector<std::string> entries,
+              double start_t, double dt, int length) {
             Eigen::MatrixXd result(length, entries.size());
 
-            for (int i = 0; i < length; i++)
-            {
+            for (int i = 0; i < length; i++) {
               double t = start_t + i * dt;
-              for (unsigned int j = 0; j < entries.size(); j++)
-              {
+              for (unsigned int j = 0; j < entries.size(); j++) {
                 result(i, j) = collection.number(entries[j])->interpolate(t);
               }
             }

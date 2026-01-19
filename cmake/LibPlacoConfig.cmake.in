@@ -1,0 +1,15 @@
+get_filename_component(LIBPLACO_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+include(CMakeFindDependencyMacro)
+
+find_package(Threads)
+find_package(pinocchio REQUIRED)
+find_package(eiquadprog REQUIRED)
+find_package(eigenpy REQUIRED)
+find_package(jsoncpp REQUIRED)
+find_package (Eigen3 3 REQUIRED NO_MODULE)
+
+if(NOT TARGET LibPlaco::libplaco)
+    include("${LIBPLACO_CMAKE_DIR}/LibPlacoTargets.cmake")
+endif()
+
+set(LIBPLACO_lIBRARIES LibPlaco::libplaco)

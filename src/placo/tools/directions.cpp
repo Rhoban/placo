@@ -1,4 +1,4 @@
-#include "directions.hpp"
+#include "placo/tools/directions.hpp"
 
 namespace placo::tools {
 Eigen::MatrixXd directions_2d(int n) {
