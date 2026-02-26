@@ -2,7 +2,7 @@ Position, orientation and frame tasks
 =====================================
 
 :func:`PositionTask <placo.DynamicsPositionTask>` and :func:`OrientationTask <placo.DynamicsOrientationTask>`
-can be respectively use to control the position and orientation of a particular frame on the robot.
+can be respectively used to control the position and orientation of a particular frame on the robot.
 The :func:`FrameTask <placo.DynamicsFrameTask>` is a combination of both, wrapping the two tasks in a single one.
 
 
@@ -69,7 +69,7 @@ those methods on the position and orientation tasks directly.
 Relative position and orientation tasks
 ---------------------------------------
 
-The above mentionned tasks also exists in a *relative* version, where two frames have to be specified.
+The above mentionned tasks also exist in a *relative* version, where two frames have to be specified.
 
 .. code-block:: python
 
@@ -108,7 +108,7 @@ In some case, you only want to assign a task for one or two axises. To that end,
     effector_position.mask.set_axises("z")
 
 By default, this masking will occur in the "task" frame (the world frame for absolute tasks, and the first frame for
-relative tasks). Youc can set the second argument of :func:`set_axises() <placo.AxisesMask.set_axises>` to
+relative tasks). You can set the second argument of :func:`set_axises() <placo.AxisesMask.set_axises>` to
 ``"local"`` to enforce the masking to happen in the local frame.
 
 Alternatively, you can also specify ``"custom"`` as the second argument, and provide a custom rotation matrix to
@@ -122,7 +122,7 @@ Here is a complete example using a UR5 robot tracking a target frame.
 Its target velocity is also set for better tracking.
 
 .. admonition:: UR5 with fixed contact
-    
+
     .. video:: https://github.com/Rhoban/placo-examples/raw/master/dynamics/videos/ur5_fixed_contact.mp4
         :autoplay:
         :muted:

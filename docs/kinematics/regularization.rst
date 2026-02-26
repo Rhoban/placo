@@ -1,7 +1,7 @@
 Regularization
 ==============
 
-.. _regularization:    
+.. _regularization:
 
 Default L2 regularization
 -------------------------
@@ -17,7 +17,7 @@ This is because a very low weighted cost is always present in front of the norm 
 
     In this example, the robot is following a target 3D position. The problem is under-constrained, so the default
     regularization will apply.
-    
+
     .. video:: https://github.com/Rhoban/placo-examples/raw/master/kinematics/videos/6axis_regularization_default.mp4
         :autoplay:
         :muted:
@@ -56,7 +56,7 @@ Also, specific values can be set for given joints:
 
     If you pass ``--strong_l2`` to the following example, a strong :math:`10^{2}` L2 regularization will be used.
     This will create a strong cost against the motion and cause the robot to lag behind its target.
-    
+
     .. video:: https://github.com/Rhoban/placo-examples/raw/master/kinematics/videos/6axis_regularization_strong_l2.mp4
         :autoplay:
         :muted:
@@ -81,14 +81,14 @@ a :func:`JointsTask <placo.JointsTask>`:
     joints_task.configure("posture", "soft", 1e-6)
 
 
-Here, the joints task is setting a target to zero for all joints with a small soft weight of *1e-5*.
+Here, the joints task is setting a target to zero for all joints with a small soft weight of *1e-6*.
 When no tasks are specified, the joints will go back to those positions.
 
 .. admonition:: 6-axis regularization (posture)
 
     If you pass ``--posture`` to the following example, a joint task with :math:`10^{-6}` weight will be used.
     Note that the pose of the robot is slightly different from the default regularization
-    
+
     .. video:: https://github.com/Rhoban/placo-examples/raw/master/kinematics/videos/6axis_regularization_posture.mp4
         :autoplay:
         :muted:
@@ -111,7 +111,7 @@ This will minimize :math:`\frac{1}{2} \dot{q}^T M \dot{q}`, where :math:`M` is t
 
 .. note::
 
-    When using this regularization, and to ensure that the tas has the unit of a kinetic energy,
+    When using this regularization, and to ensure that the task has the unit of a kinetic energy,
     you have to specify the :math:`\Delta t` between two successive calls to the solver.
     This can be done by setting ``solver.dt``:
 
@@ -119,13 +119,13 @@ This will minimize :math:`\frac{1}{2} \dot{q}^T M \dot{q}`, where :math:`M` is t
 
         # Setting solver.dt is required to use kinetic energy regularization
         solver.dt = 0.01
-  
+
 .. admonition:: 6-axis regularization (kinetic energy)
 
   If you pass ``--kinetic`` to the following example, a kinetic energy regularization task with :math:`10^{-6}`
   weight will be used. Since the energy is weighted by the mass matrix, the end of the arm will
   be more used than the base.
-  
+
   .. video:: https://github.com/Rhoban/placo-examples/raw/master/kinematics/videos/6axis_regularization_kinetic.mp4
       :autoplay:
       :muted:
@@ -137,8 +137,8 @@ This will minimize :math:`\frac{1}{2} \dot{q}^T M \dot{q}`, where :math:`M` is t
 Manipulability regularization
 -----------------------------
 
-Manipulability is a well-known metrics establishing the ability of the robot to produce motion in all the
-direction (for position and/or orientation) in the task-space.
+Manipulability is a well-known metric establishing the ability of the robot to produce motion in all the
+directions (for position and/or orientation) in the task-space.
 Formally, it is the volume of the ellipsoid obtained by mapping unit-length motion in joint-space to task-space
 (through the relevant Jacobian).
 
@@ -155,7 +155,7 @@ Here:
 * ``"both"`` means that the manipulability for both position and orientation will be used. The values ``"position"``
   or ``"orientation"`` can be used to only compute the manipulability for respectively position and orientation
 * The last parameter, ``1.0`` is a value that will be added on the Hessian of the objective function. Since
-  maximizing the manipulability is a first-order task, it only provide a gradient direction and needs to be regularized.
+  maximizing the manipulability is a first-order task, it only provides a gradient direction and needs to be regularized.
 
 .. admonition:: Math details
 

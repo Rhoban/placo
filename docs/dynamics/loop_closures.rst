@@ -16,7 +16,7 @@ Here is the checklist to handle loop closures within a dynamics solver:
 1. Add tasks to ensure loop closures, just like you would `do for kinematics <../kinematics/loop_closures>`_.
    Those tasks are typically :doc:`relative position tasks <position_orientation_frame_task>`
 2. Create a :doc:`task contact <task_contact>` associated with the loop closure task.
-   This will adds internal forces to the system to enforce the loop closure.
+   This will add internal forces to the system to enforce the loop closure.
 3. Make sure all passive degrees of freedom have zero-torque constraint, thanks to the
    `torque task <torque_task>`_.
 
@@ -61,7 +61,7 @@ The following line:
 Creates a :doc:`task contact <task_contact>` associated with the loop closure task. Thanks to this, forces can be added by the solver to
 enforce the task.
 
-Finally, the following line:
+Finally, the following lines:
 
 .. code-block:: python
 
@@ -94,7 +94,7 @@ With a similar pattern, many loop closures are used un Megabot:
 In this other example, gear tasks are used with task contact to simulate a differential gear system:
 
 .. admonition:: Differential
-    
+
     .. video:: https://github.com/Rhoban/placo-examples/raw/master/dynamics/videos/differential.mp4
         :autoplay:
         :muted:

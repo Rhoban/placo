@@ -3,7 +3,7 @@ Puppet contact
 
 *To be used with:* no task required
 
-The puppet contact is an "universal contact", allowing the solver to add arbitrary forces anywhere
+The puppet contact is a "universal contact", allowing the solver to add arbitrary forces anywhere
 on the robot. By essence, it makes all the tasks feasible force-wise.
 
 This contact is helpful for debugging purpose, and can be used in the initialization phase to
@@ -17,7 +17,7 @@ set the robot in a specific state.
 For example, you can consider such a loop at the begining to initialize the robot:
 
 .. code-block:: python
-        
+
     # Initializing the robot using a puppet contact
     puppet_contact = solver.add_puppet_contact()
     for k in range(1000):
