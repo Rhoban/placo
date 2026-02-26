@@ -24,7 +24,7 @@ This type of contact can be used for points that are attached to the world.
         :loop:
 
     In this example, a quadruped robot is attached with four points (which are not unilateral).
-    All motors expect one are unactuated (torque is set to zero).
+    All motors except one are unactuated (torque is set to zero).
     This results in a "hanging" robot.
 
     :example:`dynamics/quadruped_hanging.py`

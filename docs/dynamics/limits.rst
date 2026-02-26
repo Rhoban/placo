@@ -5,7 +5,7 @@ Torque limits
 -------------
 
 Torque limits are **disabled by default**. They enforce the robot torque limits
-presents in the URDF or :ref:`overriden by the user <joint_limits>`.
+present in the URDF or :ref:`overriden by the user <joint_limits>`.
 
 You can enable/disable those limits with:
 
@@ -34,7 +34,7 @@ Velocity limits
 ---------------
 
 You can enable the velocity limits (**disabled by default**). They enfore the robot velocity limits
-presents in the URDF or :ref:`overriden by the user <joint_limits>`.
+present in the URDF or :ref:`overriden by the user <joint_limits>`.
 
 .. code-block:: python
 
@@ -114,7 +114,7 @@ Joint limits
 ------------
 
 You can enable joint limits, that are **disabled by default**. They enfore the robot joint limits
-presents in the URDF or :ref:`overriden by the user <joint_limits>`.
+present in the URDF or :ref:`overriden by the user <joint_limits>`.
 
 .. code-block:: python
 
@@ -137,7 +137,7 @@ and can be set by the user with:
 
     Denoting the safe acceleration :math:`\ddot q_{safe}`, the solver will enforce the following.
 
-    If the joint is not currently excedding its limit :math:`q_{max}` (or :math:`q_{min}`), the acceleration is
+    If the joint is not currently exceeding its limit :math:`q_{max}` (or :math:`q_{min}`), the acceleration is
     constrained by:
 
     .. math::
@@ -147,7 +147,7 @@ and can be set by the user with:
     This ensures that the velocity towards the joint limit can't exceed a value such that the safe acceleration
     won't be able to take the joint to a stop before hitting it.
 
-    If the joint is currently excedding its limit :math:`q_{max}` (or :math:`q_{min}`), the solver will enforce
+    If the joint is currently exceeding its limit :math:`q_{max}` (or :math:`q_{min}`), the solver will enforce
     at least the safe acceleration outwards the constraint. For example, if :math:`q > q_{max}`, the following
     inequality will be added:
 

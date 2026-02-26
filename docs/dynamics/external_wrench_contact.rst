@@ -10,9 +10,9 @@ An external wrench contact can be used to apply an external force and/or moments
     # Adding an external wrench, which will be expressed in the world
     # and applied on  the right foot
     external_wrench = solver.add_external_wrench_contact("right_foot", "world")
-    
+
     # Setting the wrench (force, moments)
-    exexternal_wrench.w_ext = np.array([10, 0, 0, 0, 0, 0])
+    external_wrench.w_ext = np.array([10, 0, 0, 0, 0, 0])
 
 .. admonition:: Humanoid with external force applied
 

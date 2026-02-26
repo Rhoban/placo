@@ -37,8 +37,8 @@ This is the default in the solver, allowing to reduce the number of parameters t
 The good news in the dynamics solver, is that the equation of motion is enforced!
 
 It allows to express the torque :math:`\tau` as a function of the acceleration and robot state (see below for
-details if you are interrested).
-In practice, this allows to use torque in constraint and tasks.
+details if you are interested).
+In practice, this allows to use torque in constraints and tasks.
 The very first natural constraints are torque limits, accounting better for the robot abilities.
 
 
@@ -53,7 +53,7 @@ while in the dynamics solver, the contacts **must** be properly specified in ord
 
 To that end, the dynamics solver allow you to specify active contacts, that are used in the computation.
 
-.. warning:: 
+.. warning::
 
     Keep in mind that the dynamics solver is **not** a trajectory planner.
     It is trying to solve for the joints acceleration (and, by extension, the torque) in order to be as close as
@@ -61,7 +61,7 @@ To that end, the dynamics solver allow you to specify active contacts, that are 
     However, it is near-sighted, and will not plan for the future.
 
     For example, it is not able to start decelerating before reaching a target, or to anticipate a contact.
-    
+
 
 .. admonition:: Math details
 
