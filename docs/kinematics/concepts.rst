@@ -26,7 +26,7 @@ Tasks have a ``priority``, and optionally a ``weight`` to define the way they ar
 |                  | The relative importance of ``soft`` tasks is defined by their          |
 |                  | ``weight``.                                                            |
 +------------------+------------------------------------------------------------------------+
-| ``scaled``       | That that must be satisfied by the solver, with a scaling factor that  |
+| ``scaled``       | Task that must be satisfied by the solver, with a scaling factor that  |
 |                  | should be as close as possible to ``1``. This scaling factor is itself |
 |                  | optimized by the solver, and available in ``solver.scale``.            |
 |                  | All the ``scaled`` tasks will "scale together", so that the *direction |
