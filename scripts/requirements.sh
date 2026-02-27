@@ -4,6 +4,7 @@
 pip install doxystub
 
 # APT dependencies
+sudo apt-get update
 sudo apt install -qqy lsb-release curl libboost-python-dev libjsoncpp-dev doxygen python-is-python3
 
 UNAME_M=`uname -m`
