@@ -14,9 +14,8 @@ To do so, the solver will add **extra forces** as decision variables.
 
 However, physical constraints sometime don't handle all the aspects of a task.
 Even if a foot can't penetrate the ground, it can still lift up, no force will prevent it
-(this is an unilateral contact).
+(this is a unilateral contact).
 Also, because of the friction coefficient, the ground can't prevent the foot from sliding, this
-depends on the relation between the normal force and thet tangential force.
+depends on the relation between the normal force and the tangential force.
 For those reasons, some specific contacts are implemented in PlaCo.
-
 

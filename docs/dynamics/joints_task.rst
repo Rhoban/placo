@@ -5,10 +5,10 @@ A :func:`JointsTask <placo.DynamicsJointsTask>` is a task that can be used to de
 
 .. warning::
 
-    While it is possible to explicitely set a joint value by using :func:`set_joint() <placo.RobotWrapper.set_joint>`
+    While it is possible to explicitly set a joint value by using :func:`set_joint() <placo.RobotWrapper.set_joint>`
     on the robot wrapper (see :doc:`joints configurations </basics/configurations>`),
     it is **not** equivalent to using a joint task.
-    
+
     Using the joints task will allow to account for everything
     that the solver is enforcing (torque limits, joint limits, joint velocity limits, other tasks such as loops
     closing constraints etc...), while :func:`set_joint() <placo.RobotWrapper.set_joint>` will immediately update
@@ -40,7 +40,7 @@ You can configure the task by passing a ``dict`` to :func:`set_joints() <placo.D
 
 .. note::
 
-    Unit values will depend on the joint types, it will be *radians* for revolute joints and *meters* for prismatic
+    Unit values will depend on the joint types, it will be *radians* for revolute joints and *meters* for prismatic joints.
 
 To specify the target velocity and acceleration, you can call :func:`set_joints() <placo.DynamicsJointsTask.set_joint>`
 on individual joints:
@@ -57,7 +57,7 @@ Here is a complete example using a UR5 robot tracking a target frame.
 Its target velocity is also set for better tracking.
 
 .. admonition:: UR5 controlled with joints
-    
+
     .. video:: https://github.com/Rhoban/placo-examples/raw/master/dynamics/videos/ur5_joints.mp4
         :autoplay:
         :muted:

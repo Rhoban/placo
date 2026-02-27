@@ -1,4 +1,4 @@
-Getting started 
+Getting started
 ===============
 
 Introduction
@@ -71,12 +71,12 @@ update the target pose:
 Running the solver !
 --------------------
 
-To run the solver, we first need to ensure that the robot underlying quantities of interrest are up to
+To run the solver, we first need to ensure that the robot underlying quantities of interest are up to
 date, by calling :func:`update_kinematics() <placo.RobotWrapper.update_kinematics>` on the robot, and
 then run the solver by calling :func:`solve() <placo.KinematicsSolver.solve>`:
 
 .. code-block:: python
-    
+
     # Updating kinematics computations (frames, jacobians, etc.)
     robot.update_kinematics()
     # Solving the IK
@@ -90,7 +90,7 @@ solution in the robot state by integrating it (you can think of it as :math:`q` 
     PlaCo is often used in a loop fashion, in that case, we recommend the following pattern:
 
     .. code-block:: python
-        
+
         # Be sure
         robot.update_kinematics()
 
@@ -113,7 +113,7 @@ Putting it all together
 Putting all the above parts together and adding some visualization will result in the following example:
 
 .. admonition:: 6-axis basic
-    
+
     .. video:: https://github.com/Rhoban/placo-examples/raw/master/kinematics/videos/6axis_basic.mp4
         :autoplay:
         :muted:
