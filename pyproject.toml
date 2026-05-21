@@ -6,6 +6,8 @@ requires = [
   "pin[build]==3.8.0",
   "rhoban-cmeel-jsoncpp",
   "doxystub >= 0.1.7",
+  "cmeel-urdfdom==6.0.0",
+  "cmeel-tinyxml2==11.0.0",
   "cmake<4"
 ]
 
@@ -16,6 +18,8 @@ dependencies = [
   "eiquadprog >= 1.2.6, < 2",
   "pin==3.8.0",
   "rhoban-cmeel-jsoncpp",
+  "cmeel-urdfdom==6.0.0",
+  "cmeel-tinyxml2==11.0.0",
   "meshcat",
   "ischedule"
 ]
