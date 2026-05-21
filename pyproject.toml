@@ -22,8 +22,8 @@ dependencies = [
 description = "PlaCo: Rhoban Planning and Control"
 license = "MIT"
 name = "placo"
-requires-python = ">= 3.9"
-version = "0.9.21"
+requires-python = ">= 3.10"
+version = "0.9.22"
 
 [project.urls]
 changelog = "https://github.com/rhoban/placo/blob/main/CHANGELOG.md"
