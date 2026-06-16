@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 project(placo)
 
 find_package(Threads)
+set(COAL_DISABLE_HPP_FCL_WARNINGS TRUE)
 find_package(pinocchio REQUIRED)
 find_package(eiquadprog REQUIRED)
 find_package(eigenpy REQUIRED)
