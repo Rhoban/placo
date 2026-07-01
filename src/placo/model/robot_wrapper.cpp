@@ -284,11 +284,16 @@ Eigen::Affine3d RobotWrapper::get_T_world_fbase()
   auto rotation = Eigen::Quaterniond(state.q[6], state.q[3], state.q[4], state.q[5]);
   transformation.linear() = rotation.toRotationMatrix();
 
-  return transformation;
+  // The free-flyer configuration encodes SE3(q), while the actual base placement is
+  // oMi[1] = jointPlacements[1] * SE3(q). Account for a non-identity root joint placement.
+  return tools::pin_se3_to_eigen(model.jointPlacements[1]) * transformation;
 }
 
 void RobotWrapper::set_T_world_fbase(Eigen::Affine3d transformation)
 {
+  // Undo the root joint placement so that oMi[1] == transformation (see get_T_world_fbase)
+  transformation = tools::pin_se3_to_eigen(model.jointPlacements[1]).inverse() * transformation;
+
   state.q[0] = transformation.translation().x();
   state.q[1] = transformation.translation().y();
   state.q[2] = transformation.translation().z();
