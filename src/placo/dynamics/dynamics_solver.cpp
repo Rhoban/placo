@@ -572,7 +572,10 @@ void DynamicsSolver::remove_task(Task& task)
 {
   tasks.erase(std::remove(tasks.begin(), tasks.end(), &task), tasks.end());
 
-  delete &task;
+  if (task.solver_memory)
+  {
+    delete &task;
+  }
 }
 
 void DynamicsSolver::remove_task(FrameTask& task)
