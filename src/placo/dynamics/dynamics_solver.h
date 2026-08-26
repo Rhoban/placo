@@ -317,6 +317,11 @@ public:
   void clear();
 
   /**
+   * @brief Number of tasks
+   */
+  int tasks_count();
+
+  /**
    * @brief Dumps the status to a given stream
    */
   void dump_status_stream(std::ostream& stream);

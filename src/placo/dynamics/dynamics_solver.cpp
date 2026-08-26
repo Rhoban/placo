@@ -558,6 +558,11 @@ DynamicsSolver::Result DynamicsSolver::solve(bool integrate)
   return result;
 }
 
+int DynamicsSolver::tasks_count()
+{
+  return tasks.size();
+}
+
 void DynamicsSolver::mask_fbase(bool masked)
 {
   masked_fbase = masked;
