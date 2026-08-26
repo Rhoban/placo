@@ -1,5 +1,6 @@
 #include "placo/dynamics/dynamics_solver.h"
 #include "placo/problem/problem.h"
+#include <algorithm>
 
 namespace placo::dynamics
 {
@@ -564,7 +565,7 @@ void DynamicsSolver::mask_fbase(bool masked)
 
 void DynamicsSolver::remove_task(Task& task)
 {
-  tasks.erase(&task);
+  tasks.erase(std::remove(tasks.begin(), tasks.end(), &task), tasks.end());
 
   delete &task;
 }
@@ -588,7 +589,7 @@ void DynamicsSolver::remove_contact(Contact& contact)
 
 void DynamicsSolver::remove_constraint(Constraint& constraint)
 {
-  constraints.erase(&constraint);
+  constraints.erase(std::remove(constraints.begin(), constraints.end(), &constraint), constraints.end());
 
   if (constraint.solver_memory)
   {
@@ -629,13 +630,23 @@ void DynamicsSolver::set_torque_limit(std::string joint, double limit)
 void DynamicsSolver::add_task(Task& task)
 {
   task.solver = this;
-  tasks.insert(&task);
+
+  // Adding a task that is already present would duplicate its contribution to the problem
+  if (std::find(tasks.begin(), tasks.end(), &task) == tasks.end())
+  {
+    tasks.push_back(&task);
+  }
 }
 
 void DynamicsSolver::add_constraint(Constraint& constraint)
 {
   constraint.solver = this;
-  constraints.insert(&constraint);
+
+  // Adding a constraint that is already present would duplicate its contribution to the problem
+  if (std::find(constraints.begin(), constraints.end(), &constraint) == constraints.end())
+  {
+    constraints.push_back(&constraint);
+  }
 }
 
 void DynamicsSolver::add_contact(Contact& contact)

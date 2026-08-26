@@ -2,6 +2,7 @@
 
 #include <Eigen/Dense>
 #include <set>
+#include <vector>
 
 #include "placo/model/robot_wrapper.h"
 
@@ -387,9 +388,9 @@ public:
   void clear();
 
   /**
-   * @brief Retrieve a copy of the set of tasks
+   * @brief Retrieve a copy of the tasks, in the order they were added
    */
-  std::set<Task*> get_tasks();
+  std::vector<Task*> get_tasks();
 
   /**
    * @brief Removes a task from the solver
@@ -485,7 +486,7 @@ public:
     std::ostringstream oss;
     oss << "Task_" << task_id;
     task->name = oss.str();
-    tasks.insert(task);
+    tasks.push_back(task);
 
     return *task;
   }
@@ -499,7 +500,7 @@ public:
     std::ostringstream oss;
     oss << "Constraint_" << constraint_id;
     constraint->name = oss.str();
-    constraints.insert(constraint);
+    constraints.push_back(constraint);
 
     return *constraint;
   }
@@ -510,8 +511,10 @@ protected:
 
   std::set<int> masked_dof;
   bool masked_fbase;
-  std::set<Task*> tasks;
-  std::set<Constraint*> constraints;
+  // Tasks and constraints are stored in vectors, so that they are iterated (and hence the QP is built) in
+  // the order they were added, and not in an order depending on memory addresses
+  std::vector<Task*> tasks;
+  std::vector<Constraint*> constraints;
 
   Eigen::VectorXi activeSet;
   size_t activeSetSize;

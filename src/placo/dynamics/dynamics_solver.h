@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Eigen/Dense>
-#include <set>
+#include <vector>
 #include <map>
 
 // Tasks
@@ -465,7 +465,7 @@ public:
     std::ostringstream oss;
     oss << "Task_" << task_id;
     task->name = oss.str();
-    tasks.insert(task);
+    tasks.push_back(task);
 
     return *task;
   }
@@ -484,7 +484,7 @@ public:
     std::ostringstream oss;
     oss << "Constraint_" << constraint_id;
     constraint->name = oss.str();
-    constraints.insert(constraint);
+    constraints.push_back(constraint);
 
     return *constraint;
   }
@@ -508,11 +508,14 @@ protected:
   // Disables floating base
   bool masked_fbase;
 
+  // Tasks and constraints are stored in vectors, so that they are iterated (and hence the QP is built) in
+  // the order they were added, and not in an order depending on memory addresses
+
   // Tasks
-  std::set<Task*> tasks;
+  std::vector<Task*> tasks;
 
   // Constraints
-  std::set<Constraint*> constraints;
+  std::vector<Constraint*> constraints;
 
   // Task id (this is only useful when task names are not specified, each task will have an unique ID)
   int task_id = 0;

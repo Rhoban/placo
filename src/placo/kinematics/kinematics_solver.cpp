@@ -4,6 +4,7 @@
 #include "placo/model/robot_wrapper.h"
 #include "placo/problem/problem.h"
 #include "placo/tools/utils.h"
+#include <algorithm>
 
 namespace placo::kinematics
 {
@@ -443,14 +444,14 @@ void KinematicsSolver::clear()
   constraints.clear();
 }
 
-std::set<Task*> KinematicsSolver::get_tasks()
+std::vector<Task*> KinematicsSolver::get_tasks()
 {
   return tasks;
 }
 
 void KinematicsSolver::remove_task(Task& task)
 {
-  tasks.erase(&task);
+  tasks.erase(std::remove(tasks.begin(), tasks.end(), &task), tasks.end());
 
   if (task.solver_memory)
   {
@@ -460,8 +461,8 @@ void KinematicsSolver::remove_task(Task& task)
 
 void KinematicsSolver::remove_task(FrameTask& task)
 {
-  tasks.erase(task.position);
-  tasks.erase(task.orientation);
+  tasks.erase(std::remove(tasks.begin(), tasks.end(), (Task*)task.position), tasks.end());
+  tasks.erase(std::remove(tasks.begin(), tasks.end(), (Task*)task.orientation), tasks.end());
 
   if (task.position->solver_memory)
   {
@@ -475,7 +476,7 @@ void KinematicsSolver::remove_task(FrameTask& task)
 
 void KinematicsSolver::remove_constraint(Constraint& constraint)
 {
-  constraints.erase(&constraint);
+  constraints.erase(std::remove(constraints.begin(), constraints.end(), &constraint), constraints.end());
 
   if (constraint.solver_memory)
   {
@@ -517,13 +518,23 @@ void KinematicsSolver::dump_status_stream(std::ostream& stream)
 void KinematicsSolver::add_task(Task& task)
 {
   task.solver = this;
-  tasks.insert(&task);
+
+  // Adding a task that is already present would duplicate its contribution to the problem
+  if (std::find(tasks.begin(), tasks.end(), &task) == tasks.end())
+  {
+    tasks.push_back(&task);
+  }
 }
 
 void KinematicsSolver::add_constraint(Constraint& constraint)
 {
   constraint.solver = this;
-  constraints.insert(&constraint);
+
+  // Adding a constraint that is already present would duplicate its contribution to the problem
+  if (std::find(constraints.begin(), constraints.end(), &constraint) == constraints.end())
+  {
+    constraints.push_back(&constraint);
+  }
 }
 
 void KinematicsSolver::dump_status()
