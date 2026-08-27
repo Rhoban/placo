@@ -1,7 +1,7 @@
 #include "placo/kinematics/wheel_task.h"
 #include "placo/kinematics/kinematics_solver.h"
 
-if defined(EIGEN_VERSION_AT_LEAST) && EIGEN_VERSION_AT_LEAST(5, 0, 0)
+#if defined(EIGEN_VERSION_AT_LEAST) && EIGEN_VERSION_AT_LEAST(5, 0, 0)
 #define PLACO_KINEMATICS_WHEEL_TASK_ALL Eigen::placeholders::all
 #else
 #define PLACO_KINEMATICS_WHEEL_TASK_ALL Eigen::all
