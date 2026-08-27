@@ -1,6 +1,12 @@
 #include "placo/kinematics/wheel_task.h"
 #include "placo/kinematics/kinematics_solver.h"
 
+#if defined(EIGEN_VERSION_AT_LEAST) && EIGEN_VERSION_AT_LEAST(5, 0, 0)
+#define PLACO_KINEMATICS_WHEEL_TASK_ALL Eigen::placeholders::all
+#else
+#define PLACO_KINEMATICS_WHEEL_TASK_ALL Eigen::all
+#endif
+
 namespace placo::kinematics
 {
 WheelTask::WheelTask(std::string joint, double radius, bool omniwheel)
@@ -39,8 +45,8 @@ void WheelTask::update()
   // With an omniwheel, we remove the lateral sliding constraint (along contact y axis)
   if (omniwheel)
   {
-    Eigen::MatrixXd new_A = A({ 0, 2 }, Eigen::all);
-    Eigen::MatrixXd new_b = b({ 0, 2 }, Eigen::all);
+    Eigen::MatrixXd new_A = A({ 0, 2 }, PLACO_KINEMATICS_WHEEL_TASK_ALL);
+    Eigen::MatrixXd new_b = b({ 0, 2 }, PLACO_KINEMATICS_WHEEL_TASK_ALL);
     A = new_A;
     b = new_b;
   }
