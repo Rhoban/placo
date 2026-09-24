@@ -33,6 +33,40 @@ class TestProblem(unittest.TestCase):
         # Checking multiplication
         self.assertNumpyEqual(e.left_multiply(np.eye(16) * 2).A, 2 * np.eye(16))
 
+    def test_expression_constants(self):
+        """
+        Operations between multi-rows expressions and constants (scalars, vectors), sum and mean
+        """
+        problem = placo.Problem()
+        x = problem.add_variable(4)
+        e = x.expr(0, 3)  # 3 rows, 4 columns
+        v = np.array([1.0, 2.0, 3.0])
+
+        # Scalars apply to all rows
+        self.assertNumpyEqual((e + 1.0).b, np.ones(3))
+        self.assertNumpyEqual((e - 1.0).b, -np.ones(3))
+        self.assertNumpyEqual((e - 1.0).A, e.A)
+        self.assertNumpyEqual((1.0 + e).b, np.ones(3))
+        self.assertNumpyEqual((1.0 - e).b, np.ones(3))
+        self.assertNumpyEqual((1.0 - e).A, -e.A)
+
+        # Vector - expression (numpy would handle v - e itself, so the C++ operator is called directly)
+        self.assertNumpyEqual(e.__rsub__(v).A, -e.A)
+        self.assertNumpyEqual(e.__rsub__(v).b, v)
+        self.assertNumpyEqual(e.__radd__(v).A, e.A)
+        self.assertNumpyEqual(e.__radd__(v).b, v)
+
+        # Sum and mean are over the rows
+        self.assertNumpyEqual((e + v).sum().A, np.array([1.0, 1.0, 1.0, 0.0]))
+        self.assertNumpyEqual((e + v).sum().b, 6.0)
+        self.assertNumpyEqual((e + v).mean().A, np.array([1.0, 1.0, 1.0, 0.0]) / 3)
+        self.assertNumpyEqual((e + v).mean().b, 2.0)
+
+        # Solving with such expressions
+        problem.add_constraint(x.expr() - 1.0 == 0)
+        problem.solve()
+        self.assertNumpyEqual(x.value, np.ones(4))
+
     def test_expressions(self):
         """
         Testing basic expression shapes

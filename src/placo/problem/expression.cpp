@@ -190,7 +190,7 @@ Expression Expression::operator-(const Eigen::VectorXd v) const
 
 Expression operator-(const Eigen::VectorXd v, const Expression& e)
 {
-  return e - v;
+  return (-e) + v;
 }
 
 Expression Expression::operator+(const double f) const
@@ -208,8 +208,8 @@ Expression operator+(double f, const Expression& e)
 
 Expression Expression::operator-(const double f) const
 {
-  Eigen::VectorXd fv(1);
-  fv(0, 0) = f;
+  Eigen::VectorXd fv(rows());
+  fv.setConstant(f);
 
   return (*this) - fv;
 }
@@ -253,8 +253,8 @@ Expression Expression::sum()
 Expression Expression::mean()
 {
   Expression e = sum();
-  e.A /= (double)cols();
-  e.b /= (double)cols();
+  e.A /= (double)rows();
+  e.b /= (double)rows();
 
   return e;
 }
