@@ -298,21 +298,26 @@ void Problem::solve()
       }
       else
       {
-        // min(Ax + b - s)
-        // A slack variable is assigend with all "soft" inequality and a minimization is added to the problem
-        Eigen::MatrixXd As(expression_A.rows(), free_variables + slack_variables);
-        As.setZero();
-        As.block(0, 0, expression_A.rows(), expression_A.cols()) = expression_A;
+        // min ||Ax + b - s||^2, with a slack variable s assigned to each row of the soft inequality.
+        // With As = [A, -I] (I on this constraint's own slack columns), As^T As only has three non-zero blocks, which
+        // are updated directly instead of building the full-width As (that would cost O(rows (n + slacks)^2)).
+        int rows = expression_A.rows(), cols = expression_A.cols();
+        int s = free_variables + k_slack;
+        double w = constraint->weight;
 
-        for (int k = 0; k < expression_A.rows(); k++)
+        P.block(0, 0, cols, cols).noalias() += w * expression_A.transpose() * expression_A;
+        P.block(0, s, cols, rows).noalias() -= w * expression_A.transpose();
+        P.block(s, 0, rows, cols).noalias() -= w * expression_A;
+        P.block(s, s, rows, rows).diagonal().array() += w;
+
+        q.segment(0, cols).noalias() += w * expression_A.transpose() * expression_b;
+        q.segment(s, rows).noalias() -= w * expression_b;
+
+        for (int k = 0; k < rows; k++)
         {
           soft_inequalities_mapping[k_slack] = constraint;
-          As(k, free_variables + k_slack) = -1;
           k_slack += 1;
         }
-
-        P.noalias() += constraint->weight * (As.transpose() * As);
-        q.noalias() += constraint->weight * (As.transpose() * expression_b);
       }
     }
   }
@@ -322,8 +327,12 @@ void Problem::solve()
 
   Eigen::VectorXd qp_x(free_variables + slack_variables);
   qp_x.setZero();
+  // Equality constraints (only present if they are not rewritten) are padded with zeros for the slack variables
+  Eigen::MatrixXd CE = Eigen::MatrixXd::Zero(free_variables + slack_variables, A.rows());
+  CE.topRows(A.cols()) = A.transpose();
+
   double result =
-      eiquadprog::solvers::solve_quadprog(P, q, A.transpose(), b, G.transpose(), h, qp_x, active_set, active_set_size);
+      eiquadprog::solvers::solve_quadprog(P, q, CE, b, G.transpose(), h, qp_x, active_set, active_set_size);
 
   if (determined_variables)
   {
