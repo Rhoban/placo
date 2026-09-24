@@ -463,5 +463,72 @@ class TestProblem(unittest.TestCase):
                 self.assertNumpyEqual(A @ x_rewrite, A @ x0, msg="Hard equalities should hold")
                 self.assertTrue(np.all(G @ x_rewrite <= h + 1e-8), msg="Hard inequalities should hold")
 
+    def test_soft_inequalities_analytical(self):
+        """
+        min ||x||^2 + ||x0 - 1 - s0||^2 + 3 ||x1 - 2 - s1||^2 with s >= 0: x0 = 0.5, x1 = 1.5 (soft
+        inequalities x0 >= 1 and x1 >= 2). Also checked with a hard equality on a third variable, with and without
+        rewriting the equalities.
+        """
+        for with_equality in [False, True]:
+            for rewrite_equalities in [True, False]:
+                problem = placo.Problem()
+                problem.rewrite_equalities = rewrite_equalities
+                x = problem.add_variable(3)
+                problem.add_constraint(x.expr(0, 2) == 0.0).configure("soft", 1.0)
+                problem.add_constraint(x.expr(0, 1) >= 1.0).configure("soft", 1.0)
+                problem.add_constraint(x.expr(1, 1) >= 2.0).configure("soft", 3.0)
+                if with_equality:
+                    problem.add_constraint(x.expr(2, 1) == 5.0)
+                else:
+                    problem.add_constraint(x.expr(2, 1) == 5.0).configure("soft", 1.0)
+                problem.solve()
+
+                self.assertNumpyEqual(x.value, np.array([0.5, 1.5, 5.0]), epsilon=1e-5)
+
+    def build_soft_inequalities_problem(self, rewrite_equalities, explicit_slacks, seed):
+        """
+        Random problem with hard/soft equalities and hard/soft inequalities. If explicit_slacks is True, soft
+        inequalities are replaced with explicit slack variables (hard s >= 0 and soft G x + s = h)
+        """
+        rng = np.random.default_rng(seed)
+        n, n_eq, n_ineq, n_soft = 20, 5, 10, 15
+        problem = placo.Problem()
+        problem.rewrite_equalities = rewrite_equalities
+        x = problem.add_variable(n)
+        x0 = rng.normal(size=n)
+
+        A = rng.normal(size=(n_eq, n))
+        problem.add_constraint(x.expr().left_multiply(A) == A @ x0)
+        problem.add_constraint(x.expr() == 3 * rng.normal(size=n)).configure("soft", 1.0)
+        G = rng.normal(size=(n_ineq, n))
+        problem.add_constraint(x.expr().left_multiply(G) <= G @ x0 + 0.1)
+
+        Gs = rng.normal(size=(n_soft, n))
+        hs = Gs @ x0
+        weight = 10.0
+        if explicit_slacks:
+            s = problem.add_variable(n_soft)
+            problem.add_constraint(s.expr() >= 0.0)
+            problem.add_constraint(x.expr().left_multiply(Gs) + s.expr() == hs).configure("soft", weight)
+        else:
+            problem.add_constraint(x.expr().left_multiply(Gs) <= hs).configure("soft", weight)
+
+        problem.solve()
+        return x.value
+
+    def test_soft_inequalities_random(self):
+        """
+        Soft inequalities should give the same solution with or without rewriting the equalities, and the same
+        solution as explicit slack variables
+        """
+        for seed in range(5):
+            x_rewrite = self.build_soft_inequalities_problem(True, False, seed)
+            x_no_rewrite = self.build_soft_inequalities_problem(False, False, seed)
+            x_explicit = self.build_soft_inequalities_problem(True, True, seed)
+
+            self.assertNumpyEqual(x_rewrite, x_no_rewrite, msg=f"rewrite_equalities changes the solution (seed {seed})")
+            self.assertNumpyEqual(x_rewrite, x_explicit, msg=f"Explicit slacks give a different solution (seed {seed})")
+
+
 if __name__ == "__main__":
     unittest.main()
