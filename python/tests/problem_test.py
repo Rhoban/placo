@@ -391,6 +391,43 @@ class TestProblem(unittest.TestCase):
         self.assertNumpyEqual(polynom.value(1, 0), 1)
         self.assertNumpyEqual(polynom.value(1, 1), 0)
 
+    def build_random_problem(self, rewrite_equalities, n, n_eq, n_ineq, seed):
+        """
+        Random feasible problem mixing hard equalities, soft equalities and hard inequalities
+        """
+        rng = np.random.default_rng(seed)
+        problem = placo.Problem()
+        problem.rewrite_equalities = rewrite_equalities
+        x = problem.add_variable(n)
+        x0 = rng.normal(size=n)
+
+        A = rng.normal(size=(n_eq, n))
+        problem.add_constraint(x.expr().left_multiply(A) == A @ x0)
+
+        # Soft objective pulling away from the feasible point, so that some inequalities are active
+        problem.add_constraint(x.expr() == 3 * rng.normal(size=n)).configure("soft", 1.0)
+
+        G = rng.normal(size=(n_ineq, n))
+        h = G @ x0 + 0.1
+        problem.add_constraint(x.expr().left_multiply(G) <= h)
+
+        problem.solve()
+        return x.value, A, x0, G, h
+
+    def test_equality_elimination(self):
+        """
+        Eliminating hard equalities (rewrite_equalities, QR decomposition) should give the same solution as
+        keeping them in the QP, both with few equalities (many free variables) and many equalities (few free
+        variables)
+        """
+        for n, n_eq, n_ineq in [(40, 4, 20), (30, 24, 10)]:
+            for seed in range(3):
+                x_rewrite, A, x0, G, h = self.build_random_problem(True, n, n_eq, n_ineq, seed)
+                x_kkt, _, _, _, _ = self.build_random_problem(False, n, n_eq, n_ineq, seed)
+
+                self.assertNumpyEqual(x_rewrite, x_kkt, msg=f"Solutions differ (n={n}, n_eq={n_eq}, seed={seed})")
+                self.assertNumpyEqual(A @ x_rewrite, A @ x0, msg="Hard equalities should hold")
+                self.assertTrue(np.all(G @ x_rewrite <= h + 1e-8), msg="Hard inequalities should hold")
 
 if __name__ == "__main__":
     unittest.main()
