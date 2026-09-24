@@ -227,16 +227,18 @@ void Problem::solve()
       {
         Sparsity sparsity = Sparsity::detect_columns_sparsity(expression_A);
 
-        int constraints = expression_A.rows();
-
-        for (auto interval : sparsity.intervals)
+        // All the (interval, interval) blocks of A^T A are added, including the cross terms between different
+        // intervals
+        for (auto interval_i : sparsity.intervals)
         {
-          int size = 1 + interval.end - interval.start;
-
-          Eigen::MatrixXd block = expression_A.block(0, interval.start, constraints, size);
-
-          P.block(interval.start, interval.start, size, size).noalias() +=
-              constraint->weight * block.transpose() * block;
+          int size_i = 1 + interval_i.end - interval_i.start;
+          for (auto interval_j : sparsity.intervals)
+          {
+            int size_j = 1 + interval_j.end - interval_j.start;
+            P.block(interval_i.start, interval_j.start, size_i, size_j).noalias() +=
+                constraint->weight * expression_A.middleCols(interval_i.start, size_i).transpose() *
+                expression_A.middleCols(interval_j.start, size_j);
+          }
         }
 
         q.block(0, 0, expression_A.cols(), 1).noalias() +=

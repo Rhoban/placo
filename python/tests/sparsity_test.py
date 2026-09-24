@@ -101,6 +101,54 @@ class TestSparsity(unittest.TestCase):
 
         self.assertNumpyEqual(solution1, solution2)
 
+    def test_use_sparsity_non_contiguous(self):
+        """
+        Soft constraints involving non-contiguous columns: the cross terms between the non-zero intervals
+        should be kept in the Hessian
+        """
+        solutions = []
+        for use_sparsity in [True, False]:
+            problem = placo.Problem()
+            problem.use_sparsity = use_sparsity
+            x = problem.add_variable(3)
+            problem.add_constraint(x.expr(0, 1) + x.expr(2, 1) == 1.0).configure("soft", 1.0)
+            problem.add_constraint(x.expr() == 0.0).configure("soft", 1e-3)
+            problem.solve()
+            solutions.append(x.value.copy())
+
+            # x0 + x2 should be (almost) 1, split evenly
+            self.assertNumpyEqual(x.value, np.array([0.5, 0.0, 0.5]), epsilon=1e-2)
+
+        self.assertNumpyEqual(solutions[0], solutions[1])
+
+    def test_use_sparsity_random(self):
+        """
+        Random soft constraints with random sparsity patterns (no hard equalities, so that the problem is not
+        rewritten), with and without sparsity
+        """
+        rng = np.random.default_rng(0)
+        n = 20
+        for trial in range(10):
+            solutions = []
+            for use_sparsity in [True, False]:
+                rng_trial = np.random.default_rng(trial)
+                problem = placo.Problem()
+                problem.use_sparsity = use_sparsity
+                x = problem.add_variable(n)
+                for k in range(15):
+                    A = rng_trial.normal(size=(3, n))
+                    A[:, rng_trial.random(n) < 0.6] = 0.0
+                    problem.add_constraint(x.expr().left_multiply(A) == rng_trial.normal(size=3)).configure(
+                        "soft", rng_trial.uniform(0.1, 10.0)
+                    )
+                problem.add_constraint(x.expr() == 0.0).configure("soft", 1e-3)
+                G = rng_trial.normal(size=(5, n))
+                problem.add_constraint(x.expr().left_multiply(G) <= np.ones(5))
+                problem.solve()
+                solutions.append(x.value.copy())
+
+            self.assertNumpyEqual(solutions[0], solutions[1], msg=f"Solutions differ (trial {trial})")
+
     def test_detect_sparsity(self):
         M = np.array(
             [
