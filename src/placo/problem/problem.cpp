@@ -95,13 +95,12 @@ void Problem::get_constraint_expressions(ProblemConstraint* constraint, Eigen::M
 {
   if (determined_variables)
   {
-    Eigen::MatrixXd full_A(constraint->expression.A.rows(), n_variables);
-    full_A.setZero();
-    full_A.block(0, 0, constraint->expression.A.rows(), constraint->expression.A.cols()) = constraint->expression.A;
-    QR.matrixQ().applyThisOnTheRight(full_A);
+    // Expressing the constraint in the reduced variables: x = x_particular + Z z
+    const Eigen::MatrixXd& expression_A = constraint->expression.A;
+    int cols = expression_A.cols();
 
-    A = full_A.rightCols(free_variables);
-    b = constraint->expression.b + full_A.leftCols(determined_variables) * y;
+    A = expression_A * Z.topRows(cols);
+    b = constraint->expression.b + expression_A * x_particular.topRows(cols);
   }
   else
   {
@@ -177,6 +176,16 @@ void Problem::solve()
     y = R.triangularView<Eigen::Lower>().solve(-b2);
 
     free_variables = n_variables - determined_variables;
+
+    // Forming the null-space basis Z = Q [0; I] and the particular solution Q [y; 0] once, instead of applying Q
+    // to each constraint expression (see get_constraint_expressions)
+    Eigen::MatrixXd E = Eigen::MatrixXd::Zero(n_variables, free_variables);
+    E.bottomRows(free_variables).setIdentity();
+    Z = QR.householderQ() * E;
+
+    Eigen::VectorXd u = Eigen::VectorXd::Zero(n_variables);
+    u.topRows(determined_variables) = y;
+    x_particular = QR.householderQ() * u;
 
     // Removing equality constraints
     n_equalities = 0.;

@@ -619,12 +619,11 @@ Eigen::MatrixXd RobotWrapper::relative_position_jacobian(pinocchio::FrameIndex f
 
   Eigen::MatrixXd R_world_a = T_world_a.linear();
 
-  Eigen::MatrixXd J_a_pos = frame_jacobian(frame_a, pinocchio::LOCAL_WORLD_ALIGNED).block(0, 0, 3, model.nv);
-  Eigen::MatrixXd J_a_rot = frame_jacobian(frame_a, pinocchio::LOCAL_WORLD_ALIGNED).block(3, 0, 3, model.nv);
-  Eigen::MatrixXd J_b_pos = frame_jacobian(frame_b, pinocchio::LOCAL_WORLD_ALIGNED).block(0, 0, 3, model.nv);
+  Eigen::MatrixXd J_a = frame_jacobian(frame_a, pinocchio::LOCAL_WORLD_ALIGNED);
+  Eigen::MatrixXd J_b = frame_jacobian(frame_b, pinocchio::LOCAL_WORLD_ALIGNED);
 
-  return (R_world_a.transpose() * (J_b_pos - J_a_pos) +
-          pinocchio::skew(T_a_b.translation()) * R_world_a.transpose() * J_a_rot);
+  return (R_world_a.transpose() * (J_b.topRows(3) - J_a.topRows(3)) +
+          pinocchio::skew(T_a_b.translation()) * R_world_a.transpose() * J_a.bottomRows(3));
 }
 
 Eigen::MatrixXd RobotWrapper::relative_position_jacobian(const std::string& frame_a, const std::string& frame_b)
