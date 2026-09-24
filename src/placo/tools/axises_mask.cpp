@@ -1,6 +1,13 @@
 #include "placo/tools/axises_mask.h"
 #include <stdexcept>
 
+
+if defined(EIGEN_VERSION_AT_LEAST) && EIGEN_VERSION_AT_LEAST(5, 0, 0)
+#define PLACO_TOOLS_AXISES_MASK_ALL Eigen::placeholders::all
+#else
+#define PLACO_TOOLS_AXISES_MASK_ALL Eigen::all
+#endif
+
 namespace placo::tools
 {
 AxisesMask::AxisesMask()
@@ -76,6 +83,6 @@ Eigen::MatrixXd AxisesMask::apply(Eigen::MatrixXd M)
     M_masked = M;
   }
 
-  return M_masked(indices, Eigen::all);
+  return M_masked(indices, PLACO_TOOLS_AXISES_MASK_ALL);
 }
 }  // namespace placo::tools

@@ -25,7 +25,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_L
 endif()
 
 
-find_package (Eigen3 3 REQUIRED NO_MODULE)
+find_package (Eigen3 REQUIRED NO_MODULE)
 
 add_library(libplaco SHARED
     # Wrappers
