@@ -134,6 +134,16 @@ protected:
   Eigen::MatrixXd y;
 
   /**
+   * @brief Null-space basis of the equality constraints (last free_variables columns of Q)
+   */
+  Eigen::MatrixXd Z;
+
+  /**
+   * @brief Particular solution of the equality constraints (Q applied to [y; 0])
+   */
+  Eigen::VectorXd x_particular;
+
+  /**
    * @brief Problem variables
    */
   std::vector<Variable*> variables;
