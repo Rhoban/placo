@@ -389,6 +389,35 @@ class TestProblem(unittest.TestCase):
         self.assertTrue(cst2.is_active)
         self.assertFalse(cst3.is_active)
 
+    def test_active_constraints_with_bounds(self):
+        """
+        Active hard inequalities are reported when bounds and soft inequalities (slack variables) are also present
+        """
+        problem = placo.Problem()
+        x = problem.add_variable(2)
+        problem.add_bounds(x, 0, np.array([-10.0, -10.0]), np.array([10.0, 10.0]))
+        problem.add_constraint(x.expr(1, 1) <= 5.0).configure("soft", 1.0)
+        active = problem.add_constraint(x.expr(0, 1) <= 1.0)
+        inactive = problem.add_constraint(x.expr(0, 1) >= -1.0)
+        problem.add_constraint(x.expr() == np.array([3.0, 0.0])).configure("soft", 1.0)
+        problem.solve()
+
+        self.assertNumpyEqual(x.value, [1.0, 0.0])
+        self.assertTrue(active.is_active)
+        self.assertFalse(inactive.is_active)
+
+    def test_badly_scaled_constraints(self):
+        """
+        Constraints with very small or large coefficients are enforced (the solver tolerances are absolute)
+        """
+        for scale in [1e-13, 1.0, 1e10]:
+            problem = placo.Problem()
+            x = problem.add_variable(2)
+            problem.add_constraint(x.expr() == np.array([1.0, 1.0])).configure("soft", 1.0)
+            problem.add_constraint(scale * x.expr(0, 1) <= scale * 0.5)
+            problem.solve()
+            self.assertNumpyEqual(x.value, [0.5, 1.0], msg=f"scale {scale}")
+
     def test_exactly_constrained(self):
         """
         Testing what happens if a problem is *exactly* constrained
@@ -529,6 +558,62 @@ class TestProblem(unittest.TestCase):
             self.assertNumpyEqual(x_rewrite, x_no_rewrite, msg=f"rewrite_equalities changes the solution (seed {seed})")
             self.assertNumpyEqual(x_rewrite, x_explicit, msg=f"Explicit slacks give a different solution (seed {seed})")
 
+    def test_bounds(self):
+        """
+        Bounds give the same solution as the equivalent hard inequalities, with or without the elimination of
+        equalities. Bounds on the same values are merged.
+        """
+        inf = np.inf
+        for rewrite in [True, False]:
+            for seed in range(3):
+                solutions = []
+                for use_bounds in [False, True]:
+                    rng = np.random.default_rng(seed)
+                    problem = placo.Problem()
+                    problem.rewrite_equalities = rewrite
+                    x = problem.add_variable(4)
+                    y = problem.add_variable(4)
+                    for v in [x, y]:
+                        problem.add_constraint(v.expr(0, 2).left_multiply(rng.normal(size=(1, 2))) == rng.normal())
+                    # Pulling the solution out of the bounds
+                    problem.add_constraint(x.expr() == 3.0 * rng.normal(size=4)).configure("soft", 1.0)
+                    problem.add_constraint(y.expr() == 3.0 * rng.normal(size=4)).configure("soft", 1.0)
+
+                    lower, upper = np.array([-1.0, -inf, -0.5, -2.0]), np.array([1.0, 0.5, inf, 2.0])
+                    tighter_upper = np.array([0.8, 1.0, 1.0, 1.0])
+                    if use_bounds:
+                        problem.add_bounds(x, 0, lower, upper)
+                        problem.add_bounds(x, 0, np.full(4, -inf), tighter_upper)
+                        problem.add_bounds(y, 1, np.array([-0.3, -0.2]), np.array([0.3, 0.2]))
+                    else:
+                        for k in range(4):
+                            if np.isfinite(lower[k]):
+                                problem.add_constraint(x.expr(k, 1) >= lower[k])
+                            problem.add_constraint(x.expr(k, 1) <= min(upper[k], tighter_upper[k]))
+                        problem.add_constraint(y.expr(1, 2) >= np.array([-0.3, -0.2]))
+                        problem.add_constraint(y.expr(1, 2) <= np.array([0.3, 0.2]))
+                    problem.solve()
+                    solutions.append(problem.x.copy())
+                msg = f"rewrite={rewrite} seed={seed}"
+                self.assertNumpyEqual(solutions[0], solutions[1], msg=msg)
+                self.assertTrue(np.all(solutions[1][:4] <= np.minimum(upper, tighter_upper) + 1e-8), msg=msg)
+                self.assertTrue(np.all(solutions[1][:4] >= lower - 1e-8), msg=msg)
+
+        # Invalid sizes, and bounds being cleared with the constraints
+        problem = placo.Problem()
+        x = problem.add_variable(3)
+        with self.assertRaises(RuntimeError):
+            problem.add_bounds(x, 2, np.zeros(2), np.ones(2))
+        with self.assertRaises(RuntimeError):
+            problem.add_bounds(x, 0, np.zeros(2), np.ones(3))
+        problem.add_bounds(x, 0, np.ones(3), np.ones(3))
+        problem.add_constraint(x.expr() == 0.0).configure("soft", 1.0)
+        problem.solve()
+        self.assertNumpyEqual(x.value, np.ones(3))
+        problem.clear_constraints()
+        problem.add_constraint(x.expr() == 0.0).configure("soft", 1.0)
+        problem.solve()
+        self.assertNumpyEqual(x.value, np.zeros(3))
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,5 +1,4 @@
 #include "placo/kinematics/kinematics_solver.h"
-#include "eiquadprog/eiquadprog.hpp"
 #include "pinocchio/algorithm/geometry.hpp"
 #include "placo/model/robot_wrapper.h"
 #include "placo/problem/problem.h"
@@ -295,19 +294,20 @@ void KinematicsSolver::compute_limits_inequalities()
     throw std::runtime_error("You enabled velocity limits but didn't set solver.dt");
   }
 
+  // Limits are bounds on the joints deltas qd (without the floating base)
   if (joint_limits)
   {
-    problem.add_constraint(robot.state.q.bottomRows(N - 6) + qd->expr(6) <=
-                           robot.model.upperPositionLimit.bottomRows(N - 6));
-
-    problem.add_constraint(robot.model.lowerPositionLimit.bottomRows(N - 6) <=
-                           robot.state.q.bottomRows(N - 6) + qd->expr(6));
+    // q_min <= q + qd <= q_max
+    Eigen::VectorXd q = robot.state.q.bottomRows(N - 6);
+    problem.add_bounds(*qd, 6, robot.model.lowerPositionLimit.bottomRows(N - 6) - q,
+                       robot.model.upperPositionLimit.bottomRows(N - 6) - q);
   }
 
   if (velocity_limits)
   {
-    problem.add_constraint(qd->expr(6) <= dt * robot.model.velocityLimit.bottomRows(N - 6));
-    problem.add_constraint(-dt * robot.model.velocityLimit.bottomRows(N - 6) <= qd->expr(6));
+    // -dt v_max <= qd <= dt v_max
+    Eigen::VectorXd max_delta = dt * robot.model.velocityLimit.bottomRows(N - 6);
+    problem.add_bounds(*qd, 6, -max_delta, max_delta);
   }
 }
 

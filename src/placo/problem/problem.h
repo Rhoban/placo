@@ -7,6 +7,7 @@
 #include "placo/problem/variable.h"
 #include "placo/problem/constraint.h"
 #include "placo/problem/qp_error.h"
+#include <qpmad/solver.h>
 
 namespace placo::problem
 {
@@ -40,6 +41,18 @@ public:
    * @return The constraint
    */
   ProblemConstraint& add_constraint(const ProblemConstraint& constraint);
+
+  /**
+   * @brief Adds bounds lower <= x <= upper on some values x of a variable (variable[start], ..., variable[start + n -
+   * 1]). This is equivalent to hard inequality constraints, but bounds are handled more efficiently, and bounds on
+   * the same values are merged (the tightest are kept). Infinite values can be used for one-sided bounds. Bounds are
+   * removed with the constraints (see \ref clear_constraints).
+   * @param variable variable
+   * @param start index of the first bounded value in the variable
+   * @param lower lower bounds
+   * @param upper upper bounds
+   */
+  void add_bounds(const Variable& variable, int start, const Eigen::VectorXd& lower, const Eigen::VectorXd& upper);
 
   /**
    * @brief Clear all the constraints
@@ -123,6 +136,27 @@ public:
   void dump_status();
 
 protected:
+  /**
+   * @brief Bounds on the problem variables (infinite when there is no bound), see \ref add_bounds
+   */
+  Eigen::VectorXd lower_bounds, upper_bounds;
+
+  /**
+   * @brief Number of finite bounds (lower and upper), counted as inequalities in \ref n_inequalities
+   */
+  int bounds_inequalities() const;
+
+  /**
+   * @brief Values of the bounded variables (indices in bounded) as a function of the QP variables z (the variables
+   * that are not eliminated by the equalities): x[bounded] = A z + b
+   */
+  void bounded_values(std::vector<int>& bounded, Eigen::MatrixXd& A, Eigen::MatrixXd& b);
+
+  /**
+   * @brief QP solver
+   */
+  qpmad::Solver qp_solver;
+
   /**
    * @brief Internal object to store the QR decomposition
    */

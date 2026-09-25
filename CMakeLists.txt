@@ -4,7 +4,6 @@ project(placo)
 find_package(Threads)
 set(COAL_DISABLE_HPP_FCL_WARNINGS TRUE)
 find_package(pinocchio REQUIRED)
-find_package(eiquadprog REQUIRED)
 find_package(eigenpy REQUIRED)
 find_package(jsoncpp REQUIRED)
 
@@ -121,11 +120,13 @@ target_include_directories(libplaco PUBLIC
   ${PROTOBUF_INCLUDE_DIRS}
   ${CMAKE_CURRENT_BINARY_DIR})
 
+# qpmad QP solver (header-only, vendored, see thirdparty/qpmad/README.md)
+target_include_directories(libplaco SYSTEM PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/qpmad/include>)
+
 target_link_libraries(libplaco PUBLIC
     Eigen3::Eigen
     Threads::Threads
     pinocchio::pinocchio
-    eiquadprog::eiquadprog
     jsoncpp_lib
     ${PROTOBUF_LIBRARIES}
   ${PROTOBUF_LIBRARIES}

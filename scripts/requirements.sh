@@ -15,5 +15,5 @@ else
     bash scripts/robotpkg.sh
 
     # Installing robotpkg dependencies
-    sudo apt install -qqy robotpkg-py3*-pinocchio robotpkg-coal robotpkg-eiquadprog robotpkg-*-eigenpy
+    sudo apt install -qqy robotpkg-py3*-pinocchio robotpkg-coal robotpkg-*-eigenpy
 fi
