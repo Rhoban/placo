@@ -18,16 +18,18 @@ void ConeConstraint::add_constraint(placo::problem::Problem& problem)
   Eigen::Vector3d axis_cone = T_a_b.rotation() * Eigen::Vector3d::UnitZ();
 
   // Jacobian of the rotational velocity expressed in a
-  Eigen::MatrixXd J_cone =
-      T_a_b.linear() *
-          solver->robot.frame_jacobian(frame_b, pinocchio::ReferenceFrame::LOCAL).block(3, 0, 3, solver->N) -
-      solver->robot.frame_jacobian(frame_a, pinocchio::ReferenceFrame::LOCAL).block(3, 0, 3, solver->N);
-  ;
+  model::RobotWrapper::merge_supports(solver->robot.frame_support(frame_a), solver->robot.frame_support(frame_b),
+                                      columns);
+  solver->robot.compact_frame_jacobian(frame_a, pinocchio::LOCAL, columns, J_a);
+  solver->robot.compact_frame_jacobian(frame_b, pinocchio::LOCAL, columns, J_b);
+  Eigen::Matrix<double, 3, Eigen::Dynamic> J_cone = T_a_b.linear() * J_b.bottomRows(3) - J_a.bottomRows(3);
 
-  // Preparing the expression
-  problem::Expression e;
-  e.A.resize(N, solver->N);
-  e.b.resize(N);
+  // Preparing the constraint: alpha + J_slice dq <= angle_max for each slice
+  problem::ProblemConstraint& constraint = problem.add_constraint();
+  constraint.type = problem::ProblemConstraint::Inequality;
+  constraint.columns = columns;
+  constraint.expression.A.resize(N, columns.size());
+  constraint.expression.b.resize(N);
 
   // Current axis orientation
   double slice_alpha_offset = atan2(axis_cone.y(), axis_cone.x());
@@ -44,16 +46,11 @@ void ConeConstraint::add_constraint(placo::problem::Problem& problem)
 
     // Jacobian of the angle in the slice frame
     Eigen::Vector3d rotation_axis = R_cone_slice.col(1);
-    Eigen::MatrixXd J_slice = rotation_axis.transpose() * J_cone;
-
-    e.A.row(k) = J_slice;
-    e.b(k) = alpha;
+    constraint.expression.A.row(k).noalias() = -rotation_axis.transpose() * J_cone;
+    constraint.expression.b(k) = angle_max - alpha;
   }
 
-  problem.add_constraint(e <= angle_max)
-      .configure(priority == Prioritized::Priority::Hard ? problem::ProblemConstraint::Hard :
-                                                           problem::ProblemConstraint::Soft,
-                 weight);
+  constraint.configure(priority == Prioritized::Priority::Hard ? problem::ProblemConstraint::Hard : problem::ProblemConstraint::Soft, weight);
 }
 
 }  // namespace placo::kinematics

@@ -23,7 +23,8 @@ struct OrientationTask : public Task
    */
   Eigen::Matrix3d R_world_frame;
 
-  virtual void update();
+  virtual void support();
+  virtual void fill();
   virtual std::string type_name();
   virtual std::string error_unit();
 

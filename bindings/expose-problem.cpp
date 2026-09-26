@@ -107,7 +107,8 @@ void exposeProblem()
 
   class__<Problem>("Problem")
       .def("add_variable", &Problem::add_variable, return_internal_reference<>())
-      .def("add_constraint", &Problem::add_constraint, return_internal_reference<>())
+      .def<ProblemConstraint& (Problem::*)(const ProblemConstraint&)>("add_constraint", &Problem::add_constraint,
+                                                                      return_internal_reference<>())
       .def("add_limit", &Problem::add_limit, return_internal_reference<>())
       .def("add_bounds", &Problem::add_bounds)
       .def("solve", &Problem::solve)
@@ -124,6 +125,8 @@ void exposeProblem()
       .add_property("fixed_variables", &Problem::fixed_variables, &Problem::fixed_variables)
       .add_property("use_sparsity", &Problem::use_sparsity, &Problem::use_sparsity)
       .add_property("rewrite_equalities", &Problem::rewrite_equalities, &Problem::rewrite_equalities)
+      .add_property("sparse_elimination", &Problem::sparse_elimination, &Problem::sparse_elimination)
+      .add_property("sparse_elimination_used", &Problem::sparse_elimination_used)
       .add_property("regularization", &Problem::regularization, &Problem::regularization)
       .add_property(
           "slacks", +[](const Problem& problem) { return problem.slacks; });

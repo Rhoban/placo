@@ -8,15 +8,22 @@ PositionTask::PositionTask(model::RobotWrapper::FrameIndex frame_index, Eigen::V
 {
 }
 
-void PositionTask::update()
+void PositionTask::support()
 {
-  auto T_world_frame = solver->robot.get_T_world_frame(frame_index);
-  mask.R_local_world = T_world_frame.linear().transpose();
-  Eigen::Vector3d error = target_world - T_world_frame.translation();
-  Eigen::MatrixXd J = solver->robot.frame_jacobian(frame_index, pinocchio::LOCAL_WORLD_ALIGNED);
+  columns = solver->robot.frame_support(frame_index);
+}
 
-  A = mask.apply(J.block(0, 0, 3, solver->N));
-  b = mask.apply(error);
+void PositionTask::fill()
+{
+  pinocchio::SE3 T_world_frame = solver->robot.data->oMf[frame_index];
+  mask.R_local_world = T_world_frame.rotation().transpose();
+  Eigen::Vector3d error = target_world - T_world_frame.translation();
+  solver->robot.compact_frame_jacobian(frame_index, pinocchio::LOCAL_WORLD_ALIGNED, columns, J_a);
+
+  A.resize(mask.rows(), columns.size());
+  b.resize(mask.rows(), 1);
+  mask.apply(J_a.topRows(3), A);
+  mask.apply(error, b);
 }
 
 std::string PositionTask::type_name()

@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "placo/kinematics/task.h"
 #include "placo/kinematics/kinematics_solver.h"
 
@@ -22,16 +23,27 @@ double JointsTask::get_joint(std::string joint)
   return joints[joint];
 }
 
-void JointsTask::update()
+void JointsTask::support()
 {
-  A = Eigen::MatrixXd(joints.size(), solver->N);
-  b = Eigen::MatrixXd(joints.size(), 1);
-  A.setZero();
+  columns.clear();
+  for (auto& entry : joints)
+  {
+    columns.push_back(solver->robot.get_joint_v_offset(entry.first));
+  }
+  std::sort(columns.begin(), columns.end());
+  columns.erase(std::unique(columns.begin(), columns.end()), columns.end());
+}
+
+void JointsTask::fill()
+{
+  A.setZero(joints.size(), columns.size());
+  b.resize(joints.size(), 1);
 
   int k = 0;
   for (auto& entry : joints)
   {
-    A(k, solver->robot.get_joint_v_offset(entry.first)) = 1;
+    int offset = solver->robot.get_joint_v_offset(entry.first);
+    A(k, std::lower_bound(columns.begin(), columns.end(), offset) - columns.begin()) = 1;
     b(k, 0) = entry.second - solver->robot.get_joint(entry.first);
 
     k += 1;

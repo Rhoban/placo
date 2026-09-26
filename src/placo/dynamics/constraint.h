@@ -25,5 +25,12 @@ public:
    * @param tau expression for tau
    */
   virtual void add_constraint(problem::Problem& problem, problem::Expression& tau) = 0;
+
+protected:
+  /**
+   * @brief Buffers for compact Jacobians and their columns (their memory is reused)
+   */
+  Eigen::MatrixXd J_a, J_b, dJ_a, dJ_b;
+  std::vector<int> columns, columns_buffer;
 };
 }  // namespace placo::dynamics

@@ -9,31 +9,42 @@ PositionTask::PositionTask(model::RobotWrapper::FrameIndex frame_index, Eigen::V
   this->target_world = target_world;
 }
 
-void PositionTask::update()
+void PositionTask::support()
+{
+  columns = solver->robot.frame_support(frame_index);
+}
+
+void PositionTask::fill()
 {
   pinocchio::ReferenceFrame frame_type = pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED;
 
   // Computing J and dJ
-  Eigen::MatrixXd J = solver->robot.frame_jacobian(frame_index, frame_type).block(0, 0, 3, solver->N);
-  Eigen::MatrixXd dJ = solver->robot.frame_jacobian_time_variation(frame_index, frame_type).block(0, 0, 3, solver->N);
+  solver->robot.compact_frame_jacobian(frame_index, frame_type, columns, J_a);
+  solver->robot.compact_frame_jacobian_time_variation(frame_index, frame_type, columns, dJ_a);
+  gather_qd();
 
   // Computing error
-  Eigen::Affine3d T_world_frame = solver->robot.get_T_world_frame(frame_index);
+  const pinocchio::SE3& T_world_frame = solver->robot.data->oMf[frame_index];
   mask.R_local_world = T_world_frame.rotation().transpose();
   Eigen::Vector3d position_world = T_world_frame.translation();
   Eigen::Vector3d position_error = target_world - position_world;
 
   // Computing A and b
-  Eigen::Vector3d velocity_world = J * solver->robot.state.qd;
+  Eigen::Vector3d velocity_world = J_a.topRows(3) * qd_columns;
   Eigen::Vector3d velocity_error = dtarget_world - velocity_world;
 
   Eigen::Vector3d desired_acceleration = kp * position_error + get_kd() * velocity_error + ddtarget_world;
 
   // Acceleration is: J * qdd + dJ * qd
-  A = mask.apply(J);
-  b = mask.apply(desired_acceleration - dJ * solver->robot.state.qd);
-  error = mask.apply(position_error);
-  derror = mask.apply(velocity_error);
+  int rows = mask.rows();
+  A.resize(rows, columns.size());
+  b.resize(rows, 1);
+  error.resize(rows, 1);
+  derror.resize(rows, 1);
+  mask.apply(J_a.topRows(3), A);
+  mask.apply(desired_acceleration - dJ_a.topRows(3) * qd_columns, b);
+  mask.apply(position_error, error);
+  mask.apply(velocity_error, derror);
 }
 
 std::string PositionTask::type_name()

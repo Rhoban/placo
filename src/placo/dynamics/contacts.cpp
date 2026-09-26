@@ -47,7 +47,7 @@ PointContact::PointContact(PositionTask& position_task, bool unilateral)
 
 void PointContact::update()
 {
-  J = position_task->A;
+  J = position_task->dense_A();
 
   if (J.rows() != 3)
   {
@@ -171,7 +171,7 @@ void LineContact::update()
                            "(you should have a yz mask on the orientation)");
   }
 
-  J.block(3, 0, 2, solver->N) = orientation_task->A;
+  J.block(3, 0, 2, solver->N) = orientation_task->dense_A();
 }
 
 void LineContact::add_constraints(Problem& problem)
@@ -259,7 +259,7 @@ TaskContact::TaskContact(Task& task)
 
 void TaskContact::update()
 {
-  J = task->A;
+  J = task->dense_A();
 }
 
 }  // namespace placo::dynamics

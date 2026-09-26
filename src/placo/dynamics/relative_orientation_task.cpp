@@ -12,18 +12,21 @@ RelativeOrientationTask::RelativeOrientationTask(model::RobotWrapper::FrameIndex
   this->R_a_b = R_a_b;
 }
 
-void RelativeOrientationTask::update()
+void RelativeOrientationTask::support()
+{
+  model::RobotWrapper::merge_supports(solver->robot.frame_support(frame_a_index),
+                                      solver->robot.frame_support(frame_b_index), columns);
+}
+
+void RelativeOrientationTask::fill()
 {
   // Computing J and dJ
-  Eigen::MatrixXd Ja =
-      solver->robot.frame_jacobian(frame_a_index, pinocchio::ReferenceFrame::WORLD).block(3, 0, 3, solver->N);
-  Eigen::MatrixXd dJa = solver->robot.frame_jacobian_time_variation(frame_a_index, pinocchio::ReferenceFrame::WORLD)
-                            .block(3, 0, 3, solver->N);
-
-  Eigen::MatrixXd Jb =
-      solver->robot.frame_jacobian(frame_b_index, pinocchio::ReferenceFrame::WORLD).block(3, 0, 3, solver->N);
-  Eigen::MatrixXd dJb = solver->robot.frame_jacobian_time_variation(frame_b_index, pinocchio::ReferenceFrame::WORLD)
-                            .block(3, 0, 3, solver->N);
+  pinocchio::ReferenceFrame frame_type = pinocchio::ReferenceFrame::WORLD;
+  solver->robot.compact_frame_jacobian(frame_a_index, frame_type, columns, J_a);
+  solver->robot.compact_frame_jacobian_time_variation(frame_a_index, frame_type, columns, dJ_a);
+  solver->robot.compact_frame_jacobian(frame_b_index, frame_type, columns, J_b);
+  solver->robot.compact_frame_jacobian_time_variation(frame_b_index, frame_type, columns, dJ_b);
+  gather_qd();
 
   // Computing error
   Eigen::Affine3d T_world_a = solver->robot.get_T_world_frame(frame_a_index);
@@ -34,8 +37,8 @@ void RelativeOrientationTask::update()
   Eigen::Vector3d orientation_error_world = R_world_a * pinocchio::log3(M);
 
   // Computing A and b
-  Eigen::Vector3d world_omega_a = Ja * solver->robot.state.qd;
-  Eigen::Vector3d world_omega_b = Jb * solver->robot.state.qd;
+  Eigen::Vector3d world_omega_a = J_a.bottomRows(3) * qd_columns;
+  Eigen::Vector3d world_omega_b = J_b.bottomRows(3) * qd_columns;
   Eigen::Vector3d world_omega_a_b_real = world_omega_b - world_omega_a;
   Eigen::Vector3d velocity_error_world = R_world_a * omega_a_b - world_omega_a_b_real;
 
@@ -45,10 +48,16 @@ void RelativeOrientationTask::update()
   pinocchio::Jlog3(M, Jlog);
 
   // Acceleration is: J * qdd + dJ * qd
-  A = mask.apply(Jlog * (Jb - Ja));
-  b = mask.apply(desired_acceleration - Jlog * (dJb * solver->robot.state.qd - dJa * solver->robot.state.qd));
-  error = mask.apply(orientation_error_world);
-  derror = mask.apply(velocity_error_world);
+  Eigen::Vector3d dJ_qd = dJ_b.bottomRows(3) * qd_columns - dJ_a.bottomRows(3) * qd_columns;
+  int rows = mask.rows();
+  A.resize(rows, columns.size());
+  b.resize(rows, 1);
+  error.resize(rows, 1);
+  derror.resize(rows, 1);
+  mask.apply(Jlog * (J_b.bottomRows(3) - J_a.bottomRows(3)), A);
+  mask.apply(desired_acceleration - Jlog * dJ_qd, b);
+  mask.apply(orientation_error_world, error);
+  mask.apply(velocity_error_world, derror);
 }
 
 std::string RelativeOrientationTask::type_name()

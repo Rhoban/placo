@@ -33,7 +33,8 @@ struct WheelTask : public Task
    */
   Eigen::Affine3d T_world_surface;
 
-  virtual void update();
+  virtual void support();
+  virtual void fill();
   virtual std::string type_name();
   virtual std::string error_unit();
 };

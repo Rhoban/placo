@@ -309,7 +309,7 @@ public:
    * @brief Computes the joint limits inequalities
    * @param tau the torque expression
    */
-  void compute_limits_inequalities(problem::Expression& tau);
+  void compute_limits_inequalities(problem::Variable& qdd, problem::Expression& tau);
 
   /**
    * @brief Clears the internal tasks

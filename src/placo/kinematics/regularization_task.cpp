@@ -15,12 +15,22 @@ void RegularizationTask::set_joint_weight(std::string joint, double weight)
   dirty = true;
 }
 
-void RegularizationTask::update()
+void RegularizationTask::support()
+{
+  // The floating base is not regularized
+  columns.resize(solver->N - 6);
+  for (int k = 0; k < solver->N - 6; k++)
+  {
+    columns[k] = 6 + k;
+  }
+}
+
+void RegularizationTask::fill()
 {
   // Regularization task if of the form
   // W \Delta q = 0
   // Weight is square rooted to be consistent with other tasks (W will be squared in the QP)
-  if (dirty)
+  if (dirty || W.rows() != solver->N)
   {
     W = Eigen::MatrixXd(solver->N, solver->N);
     W.setIdentity();
@@ -39,11 +49,8 @@ void RegularizationTask::update()
     dirty = false;
   }
 
-  A = Eigen::MatrixXd(solver->N - 6, solver->N);
-  A.block(0, 0, solver->N - 6, solver->N) = W.block(6, 0, solver->N - 6, solver->N);
-
-  b = Eigen::MatrixXd(solver->N - 6, 1);
-  b.setZero();
+  A = W.bottomRightCorner(solver->N - 6, solver->N - 6);
+  b.setZero(solver->N - 6, 1);
 }
 
 std::string RegularizationTask::type_name()

@@ -9,7 +9,12 @@ AxisAlignTask::AxisAlignTask(model::RobotWrapper::FrameIndex frame_index, Eigen:
 {
 }
 
-void AxisAlignTask::update()
+void AxisAlignTask::support()
+{
+  columns = solver->robot.frame_support(frame_index);
+}
+
+void AxisAlignTask::fill()
 {
   auto T_world_frame = solver->robot.get_T_world_frame(frame_index);
   auto targetAxis_world_normalized = targetAxis_world.normalized();
@@ -27,11 +32,11 @@ void AxisAlignTask::update()
   double error_angle = tools::safe_acos(R_world_axisframe.col(0).dot(targetAxis_world_normalized));
 
   // We express the Jacobian in the axisframe
-  Eigen::MatrixXd J_axisframe = solver->robot.frame_jacobian(frame_index, pinocchio::WORLD).block(3, 0, 3, solver->N);
-  J_axisframe = (R_world_axisframe.inverse() * J_axisframe);
+  solver->robot.compact_frame_jacobian(frame_index, pinocchio::WORLD, columns, J_a);
+  Eigen::Matrix3d R_axisframe_world = R_world_axisframe.inverse();
 
   // We only keep y and z in the constraint, since we don't care about rotations about x axis in the axis frame
-  A = J_axisframe.block(1, 0, 2, solver->N);
+  A.noalias() = R_axisframe_world.bottomRows(2) * J_a.bottomRows(3);
   b = Eigen::Vector2d(0., error_angle);
 }
 

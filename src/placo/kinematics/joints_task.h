@@ -31,7 +31,8 @@ struct JointsTask : public Task
    */
   double get_joint(std::string joint);
 
-  virtual void update();
+  virtual void support();
+  virtual void fill();
   virtual std::string type_name();
   virtual std::string error_unit();
 };

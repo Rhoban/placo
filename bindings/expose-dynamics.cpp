@@ -160,7 +160,7 @@ void exposeDynamics()
                                                                         &DynamicsSolver::add_frame_task);
 
   class__<Task, bases<tools::Prioritized>, boost::noncopyable>("DynamicsTask", no_init)
-      .def_readwrite("A", &Task::A)
+      .add_property("A", &Task::dense_A)
       .def_readwrite("b", &Task::b)
       .add_property("kp", &Task::kp, &Task::kp)
       .add_property("kd", &Task::kd, &Task::kd)

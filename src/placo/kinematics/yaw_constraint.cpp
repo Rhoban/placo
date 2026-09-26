@@ -15,11 +15,11 @@ void YawConstraint::add_constraint(placo::problem::Problem& problem)
   Eigen::Affine3d T_a_b = solver->robot.get_T_a_b(frame_a, frame_b);
 
   // Jacobian of the rotational velocity expressed in a
-  Eigen::MatrixXd J_relative =
-      T_a_b.linear() *
-          solver->robot.frame_jacobian(frame_b, pinocchio::ReferenceFrame::LOCAL).block(3, 0, 3, solver->N) -
-      solver->robot.frame_jacobian(frame_a, pinocchio::ReferenceFrame::LOCAL).block(3, 0, 3, solver->N);
-  ;
+  model::RobotWrapper::merge_supports(solver->robot.frame_support(frame_a), solver->robot.frame_support(frame_b),
+                                      columns);
+  solver->robot.compact_frame_jacobian(frame_a, pinocchio::LOCAL, columns, J_a);
+  solver->robot.compact_frame_jacobian(frame_b, pinocchio::LOCAL, columns, J_b);
+  Eigen::Matrix<double, 3, Eigen::Dynamic> J_relative = T_a_b.linear() * J_b.bottomRows(3) - J_a.bottomRows(3);
 
   // B's x axis in A
   Eigen::Vector3d x_axis = T_a_b.linear().block(0, 0, 3, 1);
@@ -30,23 +30,16 @@ void YawConstraint::add_constraint(placo::problem::Problem& problem)
   Eigen::Vector3d perp_axis = Eigen::Vector3d::UnitZ().cross(x_axis).normalized();
   Eigen::Vector3d yaw_axis = x_axis.cross(perp_axis).normalized();
 
-  Eigen::MatrixXd J_angle = yaw_axis.transpose() * J_relative;
-
-  // Expression for the angle
-  problem::Expression e;
-  e.A.resize(2, solver->N);
-  e.b.resize(2);
-  // First row is angle + J_angle*qd
-  e.A.block(0, 0, 1, solver->N) = J_angle;
-  e.b(0, 0) = alpha;
-  // Second row is -(angle -J_angle*qd)
-  e.A.block(1, 0, 1, solver->N) = -J_angle;
-  e.b(1, 0) = -alpha;
-
-  problem.add_constraint(e <= angle_max)
-      .configure(priority == Prioritized::Priority::Hard ? problem::ProblemConstraint::Hard :
-                                                           problem::ProblemConstraint::Soft,
-                 weight);
+  // -angle_max <= alpha + J_angle dq <= angle_max
+  problem::ProblemConstraint& constraint = problem.add_constraint();
+  constraint.type = problem::ProblemConstraint::Inequality;
+  constraint.columns = columns;
+  constraint.expression.A.resize(2, columns.size());
+  constraint.expression.A.row(0).noalias() = -yaw_axis.transpose() * J_relative;
+  constraint.expression.A.row(1) = -constraint.expression.A.row(0);
+  constraint.expression.b.resize(2);
+  constraint.expression.b << angle_max - alpha, angle_max + alpha;
+  constraint.configure(priority == Prioritized::Priority::Hard ? problem::ProblemConstraint::Hard : problem::ProblemConstraint::Soft, weight);
 }
 
 }  // namespace placo::kinematics

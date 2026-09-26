@@ -29,7 +29,7 @@ public:
    */
   Eigen::Vector3d ddtarget_world = Eigen::Vector3d::Zero();
 
-  void update() override;
+  void fill() override;
   std::string type_name() override;
   std::string error_unit() override;
 

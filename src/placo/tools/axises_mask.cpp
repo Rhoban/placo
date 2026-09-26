@@ -78,4 +78,28 @@ Eigen::MatrixXd AxisesMask::apply(Eigen::MatrixXd M)
 
   return M_masked(indices, Eigen::all);
 }
+
+void AxisesMask::apply(const Eigen::Ref<const Eigen::MatrixXd>& M, Eigen::Ref<Eigen::MatrixXd> out) const
+{
+  for (int k = 0; k < (int)indices.size(); k++)
+  {
+    if (frame == ReferenceFrame::CustomFrame)
+    {
+      out.row(k).noalias() = R_custom_world.row(indices[k]) * M;
+    }
+    else if (frame == ReferenceFrame::LocalFrame)
+    {
+      out.row(k).noalias() = R_local_world.row(indices[k]) * M;
+    }
+    else
+    {
+      out.row(k) = M.row(indices[k]);
+    }
+  }
+}
+
+int AxisesMask::rows() const
+{
+  return indices.size();
+}
 }  // namespace placo::tools

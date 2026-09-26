@@ -7,7 +7,7 @@ namespace placo::kinematics
 class KinematicsSolver;
 struct KineticEnergyRegularizationTask : public Task
 {
-  virtual void update();
+  virtual void fill();
   virtual std::string type_name();
   virtual std::string error_unit();
 };

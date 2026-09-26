@@ -24,7 +24,17 @@ Eigen::MatrixXd ManipulabilityTask::mask_matrix(Eigen::MatrixXd M)
   }
 }
 
-void ManipulabilityTask::update()
+void ManipulabilityTask::support()
+{
+  // The floating base is not regularized by this task
+  columns.resize(solver->N - 6);
+  for (int k = 0; k < solver->N - 6; k++)
+  {
+    columns[k] = 6 + k;
+  }
+}
+
+void ManipulabilityTask::fill()
 {
   // Computing the Jacobian matrix
   Eigen::MatrixXd J_unmasked = solver->robot.frame_jacobian(frame_index, pinocchio::LOCAL);
@@ -46,12 +56,7 @@ void ManipulabilityTask::update()
   }
 
   // Regularization magnitude is handled through the task weight (see add_regularization_task)
-  // Floating base is not regularized by this task
-  Eigen::MatrixXd I = Eigen::MatrixXd(solver->N, solver->N);
-  I.setIdentity();
-
-  A = Eigen::MatrixXd(solver->N - 6, solver->N);
-  A.block(0, 0, solver->N - 6, solver->N) = I.block(6, 0, solver->N - 6, solver->N) * lambda;
+  A = Eigen::MatrixXd::Identity(solver->N - 6, solver->N - 6) * lambda;
 
   b = (1 / (2. * lambda)) * manipulability_gradient;
 

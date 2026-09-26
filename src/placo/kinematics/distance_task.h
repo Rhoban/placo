@@ -27,7 +27,8 @@ struct DistanceTask : public Task
    */
   double distance;
 
-  virtual void update();
+  virtual void support();
+  virtual void fill();
   virtual std::string type_name();
   virtual std::string error_unit();
 };

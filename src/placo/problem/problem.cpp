@@ -17,12 +17,18 @@ Problem::~Problem()
     delete constraint;
   }
 
+  for (auto constraint : constraints_pool)
+  {
+    delete constraint;
+  }
+
   for (auto variable : variables)
   {
     delete variable;
   }
 
   constraints.clear();
+  constraints_pool.clear();
   variables.clear();
 }
 
@@ -61,13 +67,35 @@ ProblemConstraint& Problem::add_limit(Expression expression, Eigen::VectorXd tar
   return add_constraint(e <= targets);
 }
 
-ProblemConstraint& Problem::add_constraint(const ProblemConstraint& constraint_)
+ProblemConstraint& Problem::add_constraint()
 {
-  ProblemConstraint* constraint = new ProblemConstraint;
-  *constraint = constraint_;
+  ProblemConstraint* constraint;
+  if (constraints_pool.empty())
+  {
+    constraint = new ProblemConstraint;
+  }
+  else
+  {
+    // Reusing a cleared constraint (and the memory of its matrices)
+    constraint = constraints_pool.back();
+    constraints_pool.pop_back();
+    constraint->type = ProblemConstraint::Equality;
+    constraint->priority = ProblemConstraint::Hard;
+    constraint->weight = 1.0;
+    constraint->is_active = false;
+    constraint->columns.clear();
+  }
   constraints.push_back(constraint);
 
   return *constraint;
+}
+
+ProblemConstraint& Problem::add_constraint(const ProblemConstraint& constraint_)
+{
+  ProblemConstraint& constraint = add_constraint();
+  constraint = constraint_;
+
+  return constraint;
 }
 
 void Problem::add_bounds(const Variable& variable, int start, const Eigen::VectorXd& lower,
@@ -97,17 +125,20 @@ void Problem::add_bounds(const Variable& variable, int start, const Eigen::Vecto
 void Problem::detect_fixed_variables()
 {
   fixed_variables = 0;
-  fixed_values = Eigen::VectorXd::Zero(n_variables);
+  fixed_values.setZero(n_variables);
   unfixed_indices.resize(n_variables);
+  unfixed_index.resize(n_variables);
   for (int k = 0; k < n_variables; k++)
   {
     if (k < lower_bounds.rows() && std::isfinite(lower_bounds[k]) && lower_bounds[k] == upper_bounds[k])
     {
       fixed_values[k] = lower_bounds[k];
+      unfixed_index[k] = -1;
       fixed_variables += 1;
     }
     else
     {
+      unfixed_index[k] = k - fixed_variables;
       unfixed_indices[k - fixed_variables] = k;
     }
   }
@@ -119,51 +150,15 @@ int Problem::bounds_inequalities() const
   return lower_bounds.array().isFinite().count() + upper_bounds.array().isFinite().count() - 2 * fixed_variables;
 }
 
-void Problem::bounded_values(std::vector<int>& bounded, Eigen::MatrixXd& A, Eigen::MatrixXd& b)
-{
-  bounded.clear();
-  for (int k = 0; k < unfixed_indices.rows(); k++)
-  {
-    int index = unfixed_indices[k];
-    if (index < lower_bounds.rows() && (std::isfinite(lower_bounds[index]) || std::isfinite(upper_bounds[index])))
-    {
-      bounded.push_back(k);
-    }
-  }
-
-  if (determined_variables)
-  {
-    // With the QR elimination, x = Q [y; z]
-    Eigen::MatrixXd full_A = Eigen::MatrixXd::Zero(bounded.size(), unfixed_indices.rows());
-    for (int k = 0; k < (int)bounded.size(); k++)
-    {
-      full_A(k, bounded[k]) = 1;
-    }
-    QR.matrixQ().applyThisOnTheRight(full_A);
-    A = full_A.rightCols(free_variables);
-    b = full_A.leftCols(determined_variables) * y;
-  }
-  else
-  {
-    A = Eigen::MatrixXd::Zero(bounded.size(), free_variables);
-    b = Eigen::MatrixXd::Zero(bounded.size(), 1);
-    for (int k = 0; k < (int)bounded.size(); k++)
-    {
-      A(k, bounded[k]) = 1;
-    }
-  }
-}
-
 void Problem::clear_constraints()
 {
-  for (auto constraint : constraints)
-  {
-    delete constraint;
-  }
-
+  // Constraints are kept to be reused, in reverse order so that they are reused in the same order
+  constraints_pool.insert(constraints_pool.end(), constraints.rbegin(), constraints.rend());
   constraints.clear();
-  lower_bounds.resize(0);
-  upper_bounds.resize(0);
+
+  // Bounds are reset (keeping their memory)
+  lower_bounds.setConstant(-std::numeric_limits<double>::infinity());
+  upper_bounds.setConstant(std::numeric_limits<double>::infinity());
 }
 
 void Problem::clear_variables()
@@ -179,50 +174,281 @@ void Problem::clear_variables()
   upper_bounds.resize(0);
 }
 
-void Problem::get_constraint_expressions(ProblemConstraint* constraint, Eigen::MatrixXd& A, Eigen::MatrixXd& b)
+void Problem::reduce_fixed(const ProblemConstraint& constraint, Reduced& r)
 {
-  const Eigen::MatrixXd* expression_A = &constraint->expression.A;
-  b = constraint->expression.b;
+  const Eigen::MatrixXd& A = constraint.expression.A;
+  int rows = A.rows(), cols = A.cols();
+  r.b = constraint.expression.b;
 
-  // Substituting the fixed variables: A x + b = A_unfixed x_unfixed + (b + A_fixed x_fixed)
-  Eigen::MatrixXd unfixed_A;
-  if (fixed_variables)
+  if (constraint.columns.empty())
   {
-    int cols = constraint->expression.A.cols();
+    // Dense expression: unfixed variables keep their order, the reduced expression is dense as well
     int unfixed_cols = std::lower_bound(unfixed_indices.data(), unfixed_indices.data() + unfixed_indices.rows(), cols) -
                        unfixed_indices.data();
-    unfixed_A.resize(constraint->expression.A.rows(), unfixed_cols);
+    r.columns = nullptr;
+    if (unfixed_cols == cols)
+    {
+      new (&r.A) Eigen::Map<const Eigen::MatrixXd>(A.data(), rows, cols);
+      return;
+    }
+    r.A_fixed.resize(rows, unfixed_cols);
     for (int k = 0; k < unfixed_cols; k++)
     {
-      unfixed_A.col(k) = constraint->expression.A.col(unfixed_indices[k]);
+      r.A_fixed.col(k) = A.col(unfixed_indices[k]);
     }
     for (int k = 0; k < cols; k++)
     {
       if (fixed_values[k] != 0)
       {
-        b += constraint->expression.A.col(k) * fixed_values[k];
+        r.b.noalias() += A.col(k) * fixed_values[k];
       }
     }
-    expression_A = &unfixed_A;
+    new (&r.A) Eigen::Map<const Eigen::MatrixXd>(r.A_fixed.data(), rows, unfixed_cols);
+    return;
   }
 
-  if (determined_variables)
+  // Compact expression
+  const std::vector<int>& columns = constraint.columns;
+  if (fixed_variables == 0)
   {
-    Eigen::MatrixXd full_A(expression_A->rows(), unfixed_indices.rows());
-    full_A.setZero();
-    full_A.leftCols(expression_A->cols()) = *expression_A;
-    QR.matrixQ().applyThisOnTheRight(full_A);
-
-    A = full_A.rightCols(free_variables);
-    b += full_A.leftCols(determined_variables) * y;
+    new (&r.A) Eigen::Map<const Eigen::MatrixXd>(A.data(), rows, cols);
+    r.columns = &columns;
+    return;
   }
-  else if (fixed_variables)
+
+  int kept = 0;
+  for (int column : columns)
   {
-    A.swap(unfixed_A);
+    kept += (unfixed_index[column] >= 0);
+  }
+  r.columns_fixed.resize(kept);
+  if (kept == cols)
+  {
+    for (int k = 0; k < cols; k++)
+    {
+      r.columns_fixed[k] = unfixed_index[columns[k]];
+    }
+    new (&r.A) Eigen::Map<const Eigen::MatrixXd>(A.data(), rows, cols);
   }
   else
   {
-    A = constraint->expression.A;
+    r.A_fixed.resize(rows, kept);
+    int k_kept = 0;
+    for (int k = 0; k < cols; k++)
+    {
+      int index = unfixed_index[columns[k]];
+      if (index >= 0)
+      {
+        r.columns_fixed[k_kept] = index;
+        r.A_fixed.col(k_kept++) = A.col(k);
+      }
+      else if (fixed_values[columns[k]] != 0)
+      {
+        r.b.noalias() += A.col(k) * fixed_values[columns[k]];
+      }
+    }
+    new (&r.A) Eigen::Map<const Eigen::MatrixXd>(r.A_fixed.data(), rows, kept);
+  }
+  r.columns = &r.columns_fixed;
+}
+
+void Problem::reduce_eliminated(Reduced& r)
+{
+  if (determined_variables == 0)
+  {
+    return;
+  }
+
+  int rows = r.A.rows();
+
+  if (!sparse_elimination_used)
+  {
+    // Dense QR elimination: x = Q [y; z], z being the QP variables
+    int n = unfixed_indices.rows();
+    r.A_eliminated.setZero(rows, n);
+    if (r.columns == nullptr)
+    {
+      r.A_eliminated.leftCols(r.A.cols()) = r.A;
+    }
+    else
+    {
+      for (int k = 0; k < (int)r.columns->size(); k++)
+      {
+        r.A_eliminated.col((*r.columns)[k]) = r.A.col(k);
+      }
+    }
+    QR.matrixQ().applyThisOnTheRight(r.A_eliminated);
+    r.b.noalias() += r.A_eliminated.leftCols(determined_variables) * y;
+
+    // The QP variables are the last columns (contiguous in memory)
+    new (&r.A) Eigen::Map<const Eigen::MatrixXd>(r.A_eliminated.data() + rows * determined_variables, rows,
+                                                 free_variables);
+    r.columns = nullptr;
+    return;
+  }
+
+  // Sparse elimination: x_free = z and x_eliminated = Z z + x0, z being the QP variables. The reduced expression is
+  // compact, on the free variables it depends on (directly, or through the eliminated variables)
+  int cols = r.A.cols();
+  auto column_variable = [&](int k) { return r.columns == nullptr ? k : (*r.columns)[k]; };
+  const Eigen::MatrixXd& Z = elimination.Z;
+
+  stamp.resize(free_variables);
+  std::fill(stamp.begin(), stamp.end(), -1);
+  gathered.clear();
+  for (int k = 0; k < cols; k++)
+  {
+    int variable = column_variable(k);
+    if (free_column[variable] >= 0)
+    {
+      if (stamp[free_column[variable]] < 0)
+      {
+        stamp[free_column[variable]] = 0;
+        gathered.push_back(free_column[variable]);
+      }
+    }
+    else
+    {
+      for (int c : elimination.Z_columns[eliminated_row[variable]])
+      {
+        if (stamp[c] < 0)
+        {
+          stamp[c] = 0;
+          gathered.push_back(c);
+        }
+      }
+    }
+  }
+  std::sort(gathered.begin(), gathered.end());
+  for (int k = 0; k < (int)gathered.size(); k++)
+  {
+    stamp[gathered[k]] = k;
+  }
+
+  r.columns_eliminated = gathered;
+  r.A_eliminated.setZero(rows, gathered.size());
+  for (int k = 0; k < cols; k++)
+  {
+    int variable = column_variable(k);
+    if (free_column[variable] >= 0)
+    {
+      r.A_eliminated.col(stamp[free_column[variable]]) += r.A.col(k);
+    }
+    else
+    {
+      int row = eliminated_row[variable];
+      for (int c : elimination.Z_columns[row])
+      {
+        r.A_eliminated.col(stamp[c]) += Z(row, c) * r.A.col(k);
+      }
+      r.b.noalias() += elimination.x0[row] * r.A.col(k);
+    }
+  }
+
+  new (&r.A) Eigen::Map<const Eigen::MatrixXd>(r.A_eliminated.data(), rows, gathered.size());
+  r.columns = &r.columns_eliminated;
+}
+
+void Problem::compute_runs(const Reduced& r, std::vector<Run>& runs, bool detect_zeros)
+{
+  runs.clear();
+  int cols = r.A.cols();
+
+  if (r.columns != nullptr)
+  {
+    // Consecutive variables are grouped
+    for (int k = 0; k < cols; k++)
+    {
+      int variable = (*r.columns)[k];
+      if (!runs.empty() && runs.back().var + runs.back().size == variable)
+      {
+        runs.back().size += 1;
+      }
+      else
+      {
+        runs.push_back(Run{ variable, k, 1 });
+      }
+    }
+    return;
+  }
+
+  if (!detect_zeros)
+  {
+    if (cols > 0)
+    {
+      runs.push_back(Run{ 0, 0, cols });
+    }
+    return;
+  }
+
+  // Dense expression, skipping the columns that are zero
+  for (int k = 0; k < cols; k++)
+  {
+    if (!r.A.col(k).isZero(0))
+    {
+      if (!runs.empty() && runs.back().col + runs.back().size == k)
+      {
+        runs.back().size += 1;
+      }
+      else
+      {
+        runs.push_back(Run{ k, k, 1 });
+      }
+    }
+  }
+}
+
+void Problem::add_squared_norm(const Reduced& r, const std::vector<Run>& runs, double weight)
+{
+  // Only the lower triangle of P is built (it is the only part used by the QP solver)
+  if (runs.size() == 1)
+  {
+    const Run& run = runs[0];
+    auto A = r.A.middleCols(run.col, run.size);
+    P.block(run.var, run.var, run.size, run.size).selfadjointView<Eigen::Lower>().rankUpdate(A.transpose(), weight);
+    q.segment(run.var, run.size).noalias() += weight * A.transpose() * r.b;
+    return;
+  }
+
+  bool compact = (r.columns != nullptr);
+  if (compact)
+  {
+    // One product A^T A for all the columns, then scattered in P
+    int cols = r.A.cols();
+    gram.setZero(cols, cols);
+    gram.selfadjointView<Eigen::Lower>().rankUpdate(r.A.transpose(), weight);
+    for (int i = 0; i < (int)runs.size(); i++)
+    {
+      const Run& run_i = runs[i];
+      for (int j = 0; j <= i; j++)
+      {
+        const Run& run_j = runs[j];
+        P.block(run_i.var, run_j.var, run_i.size, run_j.size) += gram.block(run_i.col, run_j.col, run_i.size, run_j.size);
+      }
+    }
+  }
+  else
+  {
+    // Dense expression with zero columns: one product per pair of runs
+    for (int i = 0; i < (int)runs.size(); i++)
+    {
+      const Run& run_i = runs[i];
+      auto A_i = r.A.middleCols(run_i.col, run_i.size);
+      P.block(run_i.var, run_i.var, run_i.size, run_i.size)
+          .selfadjointView<Eigen::Lower>()
+          .rankUpdate(A_i.transpose(), weight);
+      for (int j = 0; j < i; j++)
+      {
+        const Run& run_j = runs[j];
+        P.block(run_i.var, run_j.var, run_i.size, run_j.size).noalias() +=
+            weight * A_i.transpose() * r.A.middleCols(run_j.col, run_j.size);
+      }
+    }
+  }
+
+  for (const Run& run : runs)
+  {
+    q.segment(run.var, run.size).noalias() += weight * r.A.middleCols(run.col, run.size).transpose() * r.b;
   }
 }
 
@@ -232,232 +458,271 @@ void Problem::solve()
   n_inequalities = 0;
   slack_variables = 0;
   determined_variables = 0;
+  sparse_elimination_used = false;
   detect_fixed_variables();
   int unfixed_variables = unfixed_indices.rows();
+  const double infinity = std::numeric_limits<double>::infinity();
 
-  for (auto constraint : constraints)
+  // Checking and counting the constraints, substituting the fixed variables
+  int hard_inequalities = 0;
+  reduced.resize(constraints.size());
+  for (int i = 0; i < (int)constraints.size(); i++)
   {
+    ProblemConstraint* constraint = constraints[i];
+    const Expression& e = constraint->expression;
+
+    if (e.A.rows() == 0 || e.b.rows() == 0)
+    {
+      throw QPError("Problem: A or b is empty");
+    }
+    if (e.A.rows() != e.b.rows())
+    {
+      throw QPError("Problem: A.rows() != b.rows()");
+    }
+    if (constraint->columns.empty())
+    {
+      if (e.A.cols() > n_variables)
+      {
+        throw QPError("Problem: Inconsistent problem size");
+      }
+    }
+    else if ((int)constraint->columns.size() != e.A.cols() || constraint->columns.back() >= n_variables ||
+             constraint->columns.front() < 0 ||
+             !std::is_sorted(constraint->columns.begin(), constraint->columns.end()))
+    {
+      throw QPError("Problem: Inconsistent compact constraint columns");
+    }
+
     if (constraint->type == ProblemConstraint::Inequality)
     {
       constraint->is_active = false;
+      n_inequalities += e.rows();
       if (constraint->priority == ProblemConstraint::Soft)
       {
-        slack_variables += constraint->expression.rows();
+        slack_variables += e.rows();
+      }
+      else
+      {
+        hard_inequalities += e.rows();
       }
     }
     else
     {
       if (constraint->priority == ProblemConstraint::Hard)
       {
-        n_equalities += constraint->expression.rows();
+        n_equalities += e.rows();
       }
       constraint->is_active = true;
     }
-  }
 
-  // Equality constraints (on the unfixed variables)
-  Eigen::MatrixXd A(n_equalities, unfixed_variables);
-  Eigen::VectorXd b(n_equalities);
-  A.setZero();
-  b.setZero();
-  int k_equality = 0;
-
-  for (auto constraint : constraints)
-  {
-    if (constraint->type == ProblemConstraint::Equality && constraint->priority == ProblemConstraint::Hard)
-    {
-      // Ax + b = 0
-      Eigen::MatrixXd expression_A, expression_b;
-      get_constraint_expressions(constraint, expression_A, expression_b);
-      A.block(k_equality, 0, expression_A.rows(), expression_A.cols()) = expression_A;
-      b.segment(k_equality, expression_b.rows()) = expression_b;
-      k_equality += expression_b.rows();
-    }
+    reduce_fixed(*constraint, reduced[i]);
   }
 
   free_variables = unfixed_variables;
 
-  if (rewrite_equalities && A.rows() > 0)
+  // Elimination of the hard equalities
+  bool eliminate = rewrite_equalities && n_equalities > 0;
+  if (eliminate && sparse_elimination)
+  {
+    std::vector<SparseElimination::Equality> equalities;
+    for (int i = 0; i < (int)constraints.size(); i++)
+    {
+      ProblemConstraint* constraint = constraints[i];
+      if (constraint->type == ProblemConstraint::Equality && constraint->priority == ProblemConstraint::Hard)
+      {
+        Reduced& r = reduced[i];
+        if (r.columns == nullptr)
+        {
+          // Dense equalities are passed with their columns
+          r.columns_fixed.resize(r.A.cols());
+          for (int k = 0; k < r.A.cols(); k++)
+          {
+            r.columns_fixed[k] = k;
+          }
+          r.columns = &r.columns_fixed;
+        }
+        equalities.push_back(SparseElimination::Equality{ &r.A, &r.b, r.columns });
+      }
+    }
+    sparse_elimination_used = elimination.eliminate(unfixed_variables, equalities);
+
+    if (sparse_elimination_used)
+    {
+      determined_variables = elimination.pivots.size();
+      free_variables = elimination.free.size();
+      free_column.assign(unfixed_variables, -1);
+      eliminated_row.assign(unfixed_variables, -1);
+      for (int k = 0; k < free_variables; k++)
+      {
+        free_column[elimination.free[k]] = k;
+      }
+      for (int k = 0; k < determined_variables; k++)
+      {
+        eliminated_row[elimination.pivots[k]] = k;
+      }
+    }
+  }
+
+  // Equalities matrix (Aeq x + beq = 0), for the QR elimination or passed to the QP solver
+  int equality_rows = 0;
+  if (!sparse_elimination_used && n_equalities > 0)
+  {
+    Aeq.setZero(n_equalities, unfixed_variables);
+    beq.resize(n_equalities);
+    for (int i = 0; i < (int)constraints.size(); i++)
+    {
+      ProblemConstraint* constraint = constraints[i];
+      if (constraint->type == ProblemConstraint::Equality && constraint->priority == ProblemConstraint::Hard)
+      {
+        const Reduced& r = reduced[i];
+        int rows = r.A.rows();
+        if (r.columns == nullptr)
+        {
+          Aeq.block(equality_rows, 0, rows, r.A.cols()) = r.A;
+        }
+        else
+        {
+          for (int k = 0; k < (int)r.columns->size(); k++)
+          {
+            Aeq.block(equality_rows, (*r.columns)[k], rows, 1) = r.A.col(k);
+          }
+        }
+        beq.segment(equality_rows, rows) = r.b;
+        equality_rows += rows;
+      }
+    }
+  }
+
+  if (eliminate && !sparse_elimination_used)
   {
     // Computing QR decomposition of A.T
-    QR = A.transpose().colPivHouseholderQr();
+    QR.compute(Aeq.transpose());
 
     determined_variables = QR.rank();
 
-    if (determined_variables != A.rows())
+    if (determined_variables != Aeq.rows())
     {
       throw QPError("QR decomposition failed to find a full rank matrix for equality constraints");
     }
 
     Eigen::MatrixXd R = QR.matrixR().transpose().block(0, 0, determined_variables, determined_variables);
-    Eigen::MatrixXd b2 = b.transpose();
+    Eigen::MatrixXd b2 = beq.transpose();
     QR.colsPermutation().applyThisOnTheRight(b2);
     b2.transposeInPlace();
 
     y = R.triangularView<Eigen::Lower>().solve(-b2);
 
     free_variables = unfixed_variables - determined_variables;
-
-    // Removing equality constraints
-    n_equalities = 0.;
-    A.resize(0, 0);
-    b.resize(0);
   }
 
-  Eigen::MatrixXd P(free_variables + slack_variables, free_variables + slack_variables);
-  Eigen::VectorXd q(free_variables + slack_variables);
-
-  P.setZero();
-  q.setZero();
-
-  // Adding regularization
-  P.block(0, 0, free_variables, free_variables).setIdentity();
-  P.block(0, 0, free_variables, free_variables) *= regularization;
-
-  // Scanning the constraints (counting inequalities and equalities, building objectif function)
-  int hard_inequalities = 0;
-  for (auto constraint : constraints)
+  // Equalities that are not eliminated are passed to the QP solver
+  if (eliminate)
   {
-    if (constraint->expression.cols() > n_variables)
-    {
-      throw QPError("Problem: Inconsistent problem size");
-    }
-    if (constraint->expression.A.rows() == 0 || constraint->expression.b.rows() == 0)
-    {
-      throw QPError("Problem: A or b is empty");
-    }
-    if (constraint->expression.A.rows() != constraint->expression.b.rows())
-    {
-      throw QPError("Problem: A.rows() != b.rows()");
-    }
-
-    if (constraint->type == ProblemConstraint::Inequality)
-    {
-      // If the constraint is hard, this will be the true inequality, else, this will be the inequality
-      // enforcing the slack variable to be >= 0
-      n_inequalities += constraint->expression.rows();
-      if (constraint->priority == ProblemConstraint::Hard)
-      {
-        hard_inequalities += constraint->expression.rows();
-      }
-    }
-    else if (constraint->priority == ProblemConstraint::Soft)
-    {
-      Eigen::MatrixXd expression_A;
-      Eigen::MatrixXd expression_b;
-      get_constraint_expressions(constraint, expression_A, expression_b);
-
-      // Adding the soft constraint to the objective function
-      if (use_sparsity)
-      {
-        Sparsity sparsity = Sparsity::detect_columns_sparsity(expression_A);
-
-        // All the (interval, interval) blocks of A^T A are added, including the cross terms between different
-        // intervals
-        for (auto interval_i : sparsity.intervals)
-        {
-          int size_i = 1 + interval_i.end - interval_i.start;
-          for (auto interval_j : sparsity.intervals)
-          {
-            int size_j = 1 + interval_j.end - interval_j.start;
-            P.block(interval_i.start, interval_j.start, size_i, size_j).noalias() +=
-                constraint->weight * expression_A.middleCols(interval_i.start, size_i).transpose() *
-                expression_A.middleCols(interval_j.start, size_j);
-          }
-        }
-
-        q.block(0, 0, expression_A.cols(), 1).noalias() +=
-            constraint->weight * (expression_A.transpose() * expression_b);
-      }
-      else
-      {
-        int n = expression_A.cols();
-        P.block(0, 0, n, n).noalias() += constraint->weight * (expression_A.transpose() * expression_A);
-        q.block(0, 0, n, 1).noalias() += constraint->weight * (expression_A.transpose() * expression_b);
-      }
-    }
+    equality_rows = 0;
+    n_equalities = 0;
   }
-
-  n_inequalities += bounds_inequalities();
 
   // The QP is solved with qpmad, in the variables z = [free variables, slack variables]:
   //   min 1/2 z^T P z + q^T z   subject to   lb <= z <= ub (simple bounds)   and   lower <= C z <= upper
-  const double infinity = std::numeric_limits<double>::infinity();
   int n_qp = free_variables + slack_variables;
 
-  // Bounds (see add_bounds), as a function of the QP variables. When no variable is eliminated, they are simple
-  // bounds on the QP variables, else they are two-sided constraints (only one side can be active)
-  std::vector<int> bounded;
-  Eigen::MatrixXd bounded_A, bounded_b;
-  bounded_values(bounded, bounded_A, bounded_b);
-  bool simple_bounds = (determined_variables == 0);
+  P.setZero(n_qp, n_qp);
+  q.setZero(n_qp);
+
+  // Adding regularization
+  P.diagonal().head(free_variables).setConstant(regularization);
+  if (sparse_elimination_used)
+  {
+    // The regularization applies to all the variables (the eliminated ones being Z z + x0), which is the same as with
+    // the QR elimination (up to a constant)
+    const Eigen::MatrixXd& Z = elimination.Z;
+    P.topLeftCorner(free_variables, free_variables)
+        .selfadjointView<Eigen::Lower>()
+        .rankUpdate(Z.transpose(), regularization);
+    q.head(free_variables).noalias() += regularization * Z.transpose() * elimination.x0;
+  }
+
+  // Bounds on the unfixed variables, as a function of the QP variables. Bounds on free variables are simple bounds
+  // (all of them without elimination), the others become two-sided general constraints (only one side can be active)
+  n_inequalities += bounds_inequalities();
+  int simple_bounds = 0, bound_rows = 0;
+  for (int k = 0; k < unfixed_variables; k++)
+  {
+    int index = unfixed_indices[k];
+    if (index < lower_bounds.rows() && (std::isfinite(lower_bounds[index]) || std::isfinite(upper_bounds[index])))
+    {
+      if (determined_variables == 0 || (sparse_elimination_used && free_column[k] >= 0))
+      {
+        simple_bounds += 1;
+      }
+      else
+      {
+        bound_rows += 1;
+      }
+    }
+  }
 
   // Simple bounds, including the positivity of slack variables
-  Eigen::VectorXd lb, ub;
-  if (slack_variables > 0 || (simple_bounds && !bounded.empty()))
+  bool has_simple_bounds = slack_variables > 0 || simple_bounds > 0;
+  if (has_simple_bounds)
   {
-    lb = Eigen::VectorXd::Constant(n_qp, -infinity);
-    ub = Eigen::VectorXd::Constant(n_qp, infinity);
+    lb.setConstant(n_qp, -infinity);
+    ub.setConstant(n_qp, infinity);
     lb.tail(slack_variables).setZero();
+  }
+  else
+  {
+    lb.resize(0);
+    ub.resize(0);
   }
 
   // General constraints: equalities (if they are not eliminated), hard inequalities and bounds that are not simple
-  int n_bound_rows = simple_bounds ? 0 : bounded.size();
-  Eigen::MatrixXd C = Eigen::MatrixXd::Zero(A.rows() + hard_inequalities + n_bound_rows, n_qp);
-  Eigen::VectorXd lower(C.rows());
-  Eigen::VectorXd upper(C.rows());
-
-  // Ax + b = 0
-  C.topLeftCorner(A.rows(), A.cols()) = A;
-  lower.head(A.rows()) = -b;
-  upper.head(A.rows()) = -b;
+  int n_rows = equality_rows + hard_inequalities + bound_rows;
+  C.setZero(n_rows, n_qp);
+  lower.resize(n_rows);
+  upper.resize(n_rows);
 
   // Used to keep track of the hard/soft inequalities constraints
   // The hard mapping maps index from general constraint row to constraint, and the soft
   // mapping maps index from slack variables to the constraint.
-  std::vector<ProblemConstraint*> hard_inequalities_mapping(C.rows(), nullptr);
-  std::vector<ProblemConstraint*> soft_inequalities_mapping(slack_variables, nullptr);
+  hard_inequalities_mapping.assign(n_rows, nullptr);
+  soft_inequalities_mapping.assign(slack_variables, nullptr);
 
-  int row = A.rows();
+  // Filling the objective and the general constraints
+  int row = 0;
   int k_slack = 0;
-
-  for (auto constraint : constraints)
+  for (int i = 0; i < (int)constraints.size(); i++)
   {
-    if (constraint->type == ProblemConstraint::Inequality)
+    ProblemConstraint* constraint = constraints[i];
+    Reduced& r = reduced[i];
+    bool hard_equality = constraint->type == ProblemConstraint::Equality && constraint->priority == ProblemConstraint::Hard;
+
+    if (hard_equality && eliminate)
     {
-      Eigen::MatrixXd expression_A;
-      Eigen::MatrixXd expression_b;
-      get_constraint_expressions(constraint, expression_A, expression_b);
+      // Eliminated
+      continue;
+    }
 
-      if (constraint->priority == ProblemConstraint::Hard)
-      {
-        // Ax + b >= 0
-        C.block(row, 0, expression_A.rows(), expression_A.cols()) = expression_A;
-        lower.segment(row, expression_b.rows()) = -expression_b;
-        upper.segment(row, expression_b.rows()).setConstant(infinity);
+    reduce_eliminated(r);
+    int rows = r.A.rows();
 
-        for (int k = row; k < row + expression_A.rows(); k++)
-        {
-          hard_inequalities_mapping[k] = constraint;
-        }
-        row += expression_A.rows();
-      }
-      else
+    if (constraint->priority == ProblemConstraint::Soft)
+    {
+      compute_runs(r, runs, use_sparsity);
+      add_squared_norm(r, runs, constraint->weight);
+
+      if (constraint->type == ProblemConstraint::Inequality)
       {
-        // min ||Ax + b - s||^2, with a slack variable s >= 0 assigned to each row of the soft inequality.
-        // With As = [A, -I] (I on this constraint's own slack columns), As^T As only has three non-zero blocks, which
-        // are updated directly instead of building the full-width As (that would cost O(rows (n + slacks)^2)).
-        int rows = expression_A.rows(), cols = expression_A.cols();
+        // min ||Ax + b - s||^2, with a slack variable s >= 0 assigned to each row of the soft inequality: the cross
+        // terms -A^T s are added (the ||s||^2 terms on the diagonal)
         int s = free_variables + k_slack;
         double w = constraint->weight;
-
-        P.block(0, 0, cols, cols).noalias() += w * expression_A.transpose() * expression_A;
-        P.block(0, s, cols, rows).noalias() -= w * expression_A.transpose();
-        P.block(s, 0, rows, cols).noalias() -= w * expression_A;
+        for (const Run& run : runs)
+        {
+          P.block(s, run.var, rows, run.size).noalias() -= w * r.A.middleCols(run.col, run.size);
+        }
         P.block(s, s, rows, rows).diagonal().array() += w;
-
-        q.segment(0, cols).noalias() += w * expression_A.transpose() * expression_b;
-        q.segment(s, rows).noalias() -= w * expression_b;
+        q.segment(s, rows).noalias() -= w * r.b;
 
         for (int k = 0; k < rows; k++)
         {
@@ -466,24 +731,88 @@ void Problem::solve()
         }
       }
     }
-  }
-
-  // lower <= x <= upper, with x = bounded_A z + bounded_b
-  for (int k = 0; k < (int)bounded.size(); k++)
-  {
-    double lower_k = lower_bounds[unfixed_indices[bounded[k]]] - bounded_b(k, 0);
-    double upper_k = upper_bounds[unfixed_indices[bounded[k]]] - bounded_b(k, 0);
-    if (simple_bounds)
-    {
-      lb[bounded[k]] = lower_k;
-      ub[bounded[k]] = upper_k;
-    }
     else
     {
-      C.block(row, 0, 1, free_variables) = bounded_A.row(k);
-      lower[row] = lower_k;
-      upper[row] = upper_k;
-      row += 1;
+      // Ax + b = 0 or Ax + b >= 0, as a general constraint
+      compute_runs(r, runs, false);
+      for (const Run& run : runs)
+      {
+        C.block(row, run.var, rows, run.size) = r.A.middleCols(run.col, run.size);
+      }
+      lower.segment(row, rows) = -r.b;
+      if (hard_equality)
+      {
+        upper.segment(row, rows) = -r.b;
+      }
+      else
+      {
+        upper.segment(row, rows).setConstant(infinity);
+        for (int k = row; k < row + rows; k++)
+        {
+          hard_inequalities_mapping[k] = constraint;
+        }
+      }
+      row += rows;
+    }
+  }
+
+  // lower <= x <= upper for the bounded unfixed variables
+  if (simple_bounds + bound_rows > 0)
+  {
+    bool qr_bounds = determined_variables > 0 && !sparse_elimination_used;
+    if (qr_bounds)
+    {
+      // With the QR elimination, x = Q [y; z]
+      bounds_full.setZero(bound_rows, unfixed_variables);
+      int k_row = 0;
+      for (int k = 0; k < unfixed_variables; k++)
+      {
+        int index = unfixed_indices[k];
+        if (index < lower_bounds.rows() && (std::isfinite(lower_bounds[index]) || std::isfinite(upper_bounds[index])))
+        {
+          bounds_full(k_row++, k) = 1;
+        }
+      }
+      QR.matrixQ().applyThisOnTheRight(bounds_full);
+    }
+
+    int k_row = 0;
+    for (int k = 0; k < unfixed_variables; k++)
+    {
+      int index = unfixed_indices[k];
+      if (index >= lower_bounds.rows() || !(std::isfinite(lower_bounds[index]) || std::isfinite(upper_bounds[index])))
+      {
+        continue;
+      }
+
+      if (determined_variables == 0 || (sparse_elimination_used && free_column[k] >= 0))
+      {
+        int qp_variable = determined_variables == 0 ? k : free_column[k];
+        lb[qp_variable] = lower_bounds[index];
+        ub[qp_variable] = upper_bounds[index];
+      }
+      else
+      {
+        double offset;
+        if (qr_bounds)
+        {
+          C.block(row, 0, 1, free_variables) = bounds_full.block(k_row, determined_variables, 1, free_variables);
+          offset = bounds_full.row(k_row).head(determined_variables).dot(y.col(0));
+          k_row += 1;
+        }
+        else
+        {
+          int z_row = eliminated_row[k];
+          for (int c : elimination.Z_columns[z_row])
+          {
+            C(row, c) = elimination.Z(z_row, c);
+          }
+          offset = elimination.x0[z_row];
+        }
+        lower[row] = lower_bounds[index] - offset;
+        upper[row] = upper_bounds[index] - offset;
+        row += 1;
+      }
     }
   }
 
@@ -501,7 +830,7 @@ void Problem::solve()
   }
 
   // Solving the QP (P is factorized in place)
-  Eigen::VectorXd qp_x(n_qp);
+  qp_x.resize(n_qp);
   bool feasible;
   if (n_qp == 0)
   {
@@ -521,10 +850,23 @@ void Problem::solve()
     }
   }
 
-  Eigen::VectorXd unfixed_x;
-  if (determined_variables)
+  // Values of the unfixed variables
+  if (sparse_elimination_used)
   {
-    unfixed_x = Eigen::VectorXd::Zero(unfixed_variables);
+    unfixed_x.resize(unfixed_variables);
+    for (int k = 0; k < free_variables; k++)
+    {
+      unfixed_x[elimination.free[k]] = qp_x[k];
+    }
+    Eigen::VectorXd eliminated = elimination.Z * qp_x.head(free_variables) + elimination.x0;
+    for (int k = 0; k < determined_variables; k++)
+    {
+      unfixed_x[elimination.pivots[k]] = eliminated[k];
+    }
+  }
+  else if (determined_variables)
+  {
+    unfixed_x.setZero(unfixed_variables);
     unfixed_x.topRows(determined_variables) = y;
     unfixed_x.bottomRows(free_variables) = qp_x.topRows(free_variables);
     QR.matrixQ().applyThisOnTheLeft(unfixed_x);
@@ -547,10 +889,10 @@ void Problem::solve()
   }
 
   // Checking that equality constraints were enforced, since this is not covered by above result
-  if (A.rows() > 0)
+  if (equality_rows > 0)
   {
-    Eigen::VectorXd equality_constraints = A * unfixed_x + b;
-    for (int k = 0; k < A.rows(); k++)
+    Eigen::VectorXd equality_constraints = Aeq * unfixed_x + beq;
+    for (int k = 0; k < equality_rows; k++)
     {
       if (fabs(equality_constraints[k]) > 1e-6)
       {
@@ -567,23 +909,23 @@ void Problem::solve()
 
   // Reporting on the active constraints (indices of the active inequalities are the simple bounds, then the
   // general constraints rows)
-  Eigen::VectorXd dual;
-  Eigen::Matrix<qpmad::MatrixIndex, Eigen::Dynamic, 1> active_indices;
-  Eigen::Matrix<bool, Eigen::Dynamic, 1> active_is_lower;
   if (n_qp > 0)
   {
+    Eigen::VectorXd dual;
+    Eigen::Matrix<qpmad::MatrixIndex, Eigen::Dynamic, 1> active_indices;
+    Eigen::Matrix<bool, Eigen::Dynamic, 1> active_is_lower;
     qp_solver.getInequalityDual(dual, active_indices, active_is_lower);
-  }
-  for (int k = 0; k < active_indices.rows(); k++)
-  {
-    int row = active_indices[k] - lb.rows();
-    if (row >= 0 && hard_inequalities_mapping[row] != nullptr)
+    for (int k = 0; k < active_indices.rows(); k++)
     {
-      hard_inequalities_mapping[row]->is_active = true;
+      int active_row = active_indices[k] - lb.rows();
+      if (active_row >= 0 && hard_inequalities_mapping[active_row] != nullptr)
+      {
+        hard_inequalities_mapping[active_row]->is_active = true;
+      }
     }
   }
 
-  slacks = qp_x.block(free_variables, 0, slack_variables, 1);
+  slacks = qp_x.segment(free_variables, slack_variables);
   for (int k = 0; k < slacks.rows(); k++)
   {
     if (slacks[k] <= 1e-6 && soft_inequalities_mapping[k] != nullptr)
@@ -595,8 +937,7 @@ void Problem::solve()
   for (auto variable : variables)
   {
     variable->version += 1;
-    variable->value = Eigen::VectorXd(variable->size());
-    variable->value = x.block(variable->k_start, 0, variable->size(), 1);
+    variable->value = x.segment(variable->k_start, variable->size());
   }
 }
 
@@ -612,10 +953,14 @@ void Problem::dump_status()
   {
     std::cout << "  - Determined variables: " << determined_variables << std::endl;
     std::cout << "  - Free variables: " << free_variables << std::endl;
+    if (sparse_elimination_used)
+    {
+      std::cout << "  - Using sparse elimination of equalities" << std::endl;
+    }
   }
   else
   {
-    std::cout << "  - Not using QR decomposition" << std::endl;
+    std::cout << "  - Not eliminating equalities" << std::endl;
   }
   if (use_sparsity)
   {
@@ -626,4 +971,4 @@ void Problem::dump_status()
     std::cout << "  - Not using sparsity" << std::endl;
   }
 }
-};  // namespace placo::problem
+}  // namespace placo::problem

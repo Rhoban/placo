@@ -37,7 +37,8 @@ public:
    */
   Eigen::Vector3d ddtarget = Eigen::Vector3d::Zero();
 
-  void update() override;
+  void support() override;
+  void fill() override;
   std::string type_name() override;
   std::string error_unit() override;
 

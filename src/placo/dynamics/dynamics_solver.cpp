@@ -215,7 +215,7 @@ void DynamicsSolver::enable_torque_limits(bool enable)
   torque_limits = enable;
 }
 
-void DynamicsSolver::compute_limits_inequalities(Expression& tau)
+void DynamicsSolver::compute_limits_inequalities(Variable& qdd, Expression& tau)
 {
   if ((joint_limits || velocity_limits || velocity_vs_torque_limits) && dt == 0.)
   {
@@ -234,95 +234,84 @@ void DynamicsSolver::compute_limits_inequalities(Expression& tau)
     problem.add_constraint(tau.slice(6) >= -effort_limit.bottomRows(N - 6));
   }
 
-  int constraints = 0;
-  if (joint_limits)
+  // Joint limits and velocity limits (without the dependency on torques) are bounds on the joints accelerations
+  const double infinity = std::numeric_limits<double>::infinity();
+  if (joint_limits || velocity_limits)
   {
-    constraints += 2 * (N - 6);
-  }
-  if (velocity_limits || velocity_vs_torque_limits)
-  {
-    constraints += 2 * (N - 6);
-  }
+    Eigen::VectorXd lower = Eigen::VectorXd::Constant(N - 6, -infinity);
+    Eigen::VectorXd upper = Eigen::VectorXd::Constant(N - 6, infinity);
 
-  if (constraints > 0)
-  {
-    Expression e;
-    e.A = Eigen::MatrixXd(constraints, problem.n_variables);
-    e.A.setZero();
-    e.b = Eigen::VectorXd(constraints);
-    int constraint = 0;
-
-    // Iterating for each actuated joints
     for (int k = 0; k < N - 6; k++)
     {
       double q = robot.state.q[k + 7];
       double qd = robot.state.qd[k + 6];
 
-      if (velocity_vs_torque_limits)
+      if (velocity_limits && !velocity_vs_torque_limits)
       {
-        double ratio = robot.model.velocityLimit[k + 6] / robot.model.effortLimit[k + 6];
-
-        // qd + dt*qdd <= qd_max - ratio * tau
-        // ratio * tau + dt*qdd + qd - qd_max <= 0
-        e.A.block(constraint, 0, 1, problem.n_variables) = ratio * tau.A.block(k + 6, 0, 1, problem.n_variables);
-        e.b[constraint] = ratio * tau.b[k + 6];
-        e.A(constraint, k + 6) += dt;
-        e.b[constraint] += qd - robot.model.velocityLimit[k + 6];
-        constraint++;
-
-        // qd + dt*qdd >= -qd_max - ratio * tau
-        // -ratio*tau - dt*qdd - qd - qd_max <= 0
-        e.A.block(constraint, 0, 1, problem.n_variables) = -ratio * tau.A.block(k + 6, 0, 1, problem.n_variables);
-        e.b[constraint] = -ratio * tau.b[k + 6];
-        e.A(constraint, k + 6) -= dt;
-        e.b[constraint] -= qd + robot.model.velocityLimit[k + 6];
-        constraint++;
-      }
-      else if (velocity_limits)
-      {
-        e.A(constraint, k + 6) = dt;
-        e.b(constraint) = -robot.model.velocityLimit[k + 6] + qd;
-        constraint++;
-
-        e.A(constraint, k + 6) = -dt;
-        e.b(constraint) = -robot.model.velocityLimit[k + 6] - qd;
-        constraint++;
+        // -qd_max <= qd + dt*qdd <= qd_max
+        upper[k] = std::min(upper[k], (robot.model.velocityLimit[k + 6] - qd) / dt);
+        lower[k] = std::max(lower[k], (-robot.model.velocityLimit[k + 6] - qd) / dt);
       }
 
       if (joint_limits)
       {
         if (q > robot.model.upperPositionLimit[k + 7])
         {
-          // We are in the contact, ensuring at least
-          // qdd <= -qdd_safe
-          e.A(constraint, k + 6) = 1;
-          e.b(constraint) = qdd_safe[k + 6];
+          // We are in the contact, ensuring at least qdd <= -qdd_safe
+          upper[k] = std::min(upper[k], -qdd_safe[k + 6]);
         }
         else
         {
           // qdd*dt + qd <= qd_max
           double qd_max = sqrt(2. * (robot.model.upperPositionLimit[k + 7] - q) * qdd_safe[k + 6]);
-          e.A(constraint, k + 6) = dt;
-          e.b(constraint) = qd - qd_max;
+          upper[k] = std::min(upper[k], (qd_max - qd) / dt);
         }
-        constraint++;
 
         if (q < robot.model.lowerPositionLimit[k + 7])
         {
-          // We are in the contact, ensuring at least
-          // qdd >= qdd_safe
-          e.A(constraint, k + 6) = -1;
-          e.b(constraint) = qdd_safe[k + 6];
+          // We are in the contact, ensuring at least qdd >= qdd_safe
+          lower[k] = std::max(lower[k], qdd_safe[k + 6]);
         }
         else
         {
           // qdd*dt + qd >= -qd_max
           double qd_max = sqrt(2. * fabs(robot.model.lowerPositionLimit[k + 7] - q) * qdd_safe[k + 6]);
-          e.A(constraint, k + 6) = -dt;
-          e.b(constraint) = -qd - qd_max;
+          lower[k] = std::max(lower[k], (-qd - qd_max) / dt);
         }
-        constraint++;
       }
+    }
+
+    problem.add_bounds(qdd, 6, lower, upper);
+  }
+
+  // Velocity limits depending on the torques
+  if (velocity_vs_torque_limits)
+  {
+    Expression e;
+    e.A = Eigen::MatrixXd::Zero(2 * (N - 6), problem.n_variables);
+    e.b = Eigen::VectorXd(2 * (N - 6));
+    int constraint = 0;
+
+    for (int k = 0; k < N - 6; k++)
+    {
+      double qd = robot.state.qd[k + 6];
+      double ratio = robot.model.velocityLimit[k + 6] / robot.model.effortLimit[k + 6];
+
+      // qd + dt*qdd <= qd_max - ratio * tau
+      // ratio * tau + dt*qdd + qd - qd_max <= 0
+      e.A.block(constraint, 0, 1, problem.n_variables) = ratio * tau.A.block(k + 6, 0, 1, problem.n_variables);
+      e.b[constraint] = ratio * tau.b[k + 6];
+      e.A(constraint, k + 6) += dt;
+      e.b[constraint] += qd - robot.model.velocityLimit[k + 6];
+      constraint++;
+
+      // qd + dt*qdd >= -qd_max - ratio * tau
+      // -ratio*tau - dt*qdd - qd - qd_max <= 0
+      e.A.block(constraint, 0, 1, problem.n_variables) = -ratio * tau.A.block(k + 6, 0, 1, problem.n_variables);
+      e.b[constraint] = -ratio * tau.b[k + 6];
+      e.A(constraint, k + 6) -= dt;
+      e.b[constraint] -= qd + robot.model.velocityLimit[k + 6];
+      constraint++;
     }
 
     problem.add_constraint(e <= 0);
@@ -398,9 +387,7 @@ DynamicsSolver::Result DynamicsSolver::solve(bool integrate)
   problem.clear_constraints();
   problem.clear_variables();
 
-  Expression qdd;
   Variable& qdd_variable = problem.add_variable(robot.model.nv);
-  qdd = qdd_variable.expr();
 
   if (masked_fbase)
   {
@@ -413,61 +400,55 @@ DynamicsSolver::Result DynamicsSolver::solve(bool integrate)
     task->update();
   }
 
-  // We build the expression for tau, given the equation of motion
-  // tau = M qdd + b - J^T F
-
-  // M qdd
-  Expression tau = robot.mass_matrix() * qdd + robot.state.qd * damping;
-
-  // b
-  if (gravity_only)
-  {
-    tau = tau + robot.generalized_gravity();
-  }
-  else
-  {
-    tau = tau + robot.non_linear_effects();
-  }
-
-  if (extra_force.size() > 0)
-  {
-    tau = tau + extra_force;
-  }
-
-  // J^T F
+  // Contacts forces are decision variables
   for (auto& contact : contacts)
   {
     if (contact->active)
     {
       contact->update();
 
-      // This contact will be an actual decision variable
       Variable& f_variable = problem.add_variable(contact->size());
       contact->f = f_variable.expr();
       contact->add_constraints(problem);
     }
   }
 
-  // The number of decision variables is now known, resizing the expression of tau
-  int cols_before = tau.A.cols();
-  tau.A.conservativeResize(N, problem.n_variables);
-  tau.A.block(0, cols_before, N, problem.n_variables - cols_before).setZero();
+  // We build the expression for tau, given the equation of motion: tau = M qdd + b - J^T F, that is tau = Ax + b
+  // with x = [qdd, f1, f2, ...]
+  Expression tau;
+  tau.A.resize(N, problem.n_variables);
+  tau.A.leftCols(N) = robot.mass_matrix();
+  tau.b = robot.state.qd * damping;
 
-  // Now, tau = Ax + b with x = [qdd, f1, f2, ...], we copy J^T to the extended A
-  // for forces that are decision variables
+  // b
+  if (gravity_only)
+  {
+    tau.b += robot.generalized_gravity();
+  }
+  else
+  {
+    tau.b += robot.non_linear_effects();
+  }
+
+  if (extra_force.size() > 0)
+  {
+    tau.b += extra_force;
+  }
+
+  // J^T F, for forces that are decision variables
   int k = N;
   for (auto& contact : contacts)
   {
     if (contact->active)
     {
-      tau.A.block(0, k, N, contact->J.rows()) = -contact->J.transpose();
+      tau.A.middleCols(k, contact->J.rows()) = -contact->J.transpose();
       tau.b -= contact->J.transpose() * contact->f.b;
       k += contact->J.rows();
     }
   }
 
-  // Computing limit inequalitie
-  compute_limits_inequalities(tau);
+  // Computing limit inequalities
+  compute_limits_inequalities(qdd_variable, tau);
 
   // Adding tasks
   for (auto& task : tasks)
@@ -487,19 +468,35 @@ DynamicsSolver::Result DynamicsSolver::solve(bool integrate)
       throw std::runtime_error("DynamicsSolver::solve: Scaled priority is not supported");
     }
 
-    Expression e;
+    // The task A x = b is added as the constraint A x - b = 0, filled in place
+    ProblemConstraint& constraint = problem.add_constraint();
     if (task->tau_task)
     {
-      e.A = task->A * tau.A;
-      e.b = task->A * tau.b - task->b;
+      // Task on the torques: A (tau.A x + tau.b) - b = 0, the columns of A being the rows of tau it selects
+      if (task->columns.empty())
+      {
+        constraint.expression.A.noalias() = task->A * tau.A;
+        constraint.expression.b.noalias() = task->A * tau.b;
+      }
+      else
+      {
+        constraint.expression.A.setZero(task->A.rows(), tau.A.cols());
+        constraint.expression.b.setZero(task->A.rows());
+        for (int k = 0; k < (int)task->columns.size(); k++)
+        {
+          constraint.expression.A.noalias() += task->A.col(k) * tau.A.row(task->columns[k]);
+          constraint.expression.b.noalias() += task->A.col(k) * tau.b[task->columns[k]];
+        }
+      }
+      constraint.expression.b -= task->b;
     }
     else
     {
-      e.A = task->A;
-      e.b = -task->b;
+      constraint.columns = task->columns;
+      constraint.expression.A = task->A;
+      constraint.expression.b = -task->b;
     }
-
-    problem.add_constraint(e == 0).configure(task_priority, task->weight);
+    constraint.configure(task_priority, task->weight);
   }
 
   // Add constraints
@@ -512,11 +509,16 @@ DynamicsSolver::Result DynamicsSolver::solve(bool integrate)
   // allow to compensate for any motion)
   if (!masked_fbase)
   {
-    problem.add_constraint(tau.slice(0, 6) == 0);
+    ProblemConstraint& constraint = problem.add_constraint();
+    constraint.expression.A = tau.A.topRows(6);
+    constraint.expression.b = tau.b.head(6);
   }
 
   // We want to minimize actuated torques
-  problem.add_constraint(tau.slice(6) == 0).configure(ProblemConstraint::Soft, torque_cost);
+  ProblemConstraint& torque_objective = problem.add_constraint();
+  torque_objective.expression.A = tau.A.bottomRows(N - 6);
+  torque_objective.expression.b = tau.b.tail(N - 6);
+  torque_objective.configure(ProblemConstraint::Soft, torque_cost);
 
   try
   {
@@ -526,7 +528,7 @@ DynamicsSolver::Result DynamicsSolver::solve(bool integrate)
 
     // Exporting result values
     result.tau = tau.value(problem.x);
-    result.qdd = qdd.value(problem.x);
+    result.qdd = qdd_variable.value;
     result.tau_contacts = Eigen::VectorXd::Zero(N);
 
     for (auto& contact : contacts)

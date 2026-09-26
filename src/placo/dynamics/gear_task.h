@@ -38,7 +38,8 @@ public:
    */
   void add_gear(std::string target, std::string source, double ratio);
 
-  void update() override;
+  void support() override;
+  void fill() override;
   std::string type_name() override;
   std::string error_unit() override;
 };

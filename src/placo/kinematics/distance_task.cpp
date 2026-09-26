@@ -10,7 +10,13 @@ DistanceTask::DistanceTask(model::RobotWrapper::FrameIndex frame_a, model::Robot
   b = Eigen::MatrixXd(1, 1);
 }
 
-void DistanceTask::update()
+void DistanceTask::support()
+{
+  model::RobotWrapper::merge_supports(solver->robot.frame_support(frame_a), solver->robot.frame_support(frame_b),
+                                      columns);
+}
+
+void DistanceTask::fill()
 {
   auto T_world_a = solver->robot.get_T_world_frame(frame_a);
   auto T_world_b = solver->robot.get_T_world_frame(frame_b);
@@ -20,9 +26,9 @@ void DistanceTask::update()
   double error = distance - ab_world.norm();
   Eigen::Vector3d direction = ab_world.normalized();
 
-  Eigen::MatrixXd J_a = solver->robot.frame_jacobian(frame_a, pinocchio::LOCAL_WORLD_ALIGNED);
-  Eigen::MatrixXd J_b = solver->robot.frame_jacobian(frame_b, pinocchio::LOCAL_WORLD_ALIGNED);
-  A = direction.transpose() * (J_b - J_a).block(0, 0, 3, solver->N);
+  solver->robot.compact_frame_jacobian(frame_a, pinocchio::LOCAL_WORLD_ALIGNED, columns, J_a);
+  solver->robot.compact_frame_jacobian(frame_b, pinocchio::LOCAL_WORLD_ALIGNED, columns, J_b);
+  A.noalias() = direction.transpose() * (J_b.topRows(3) - J_a.topRows(3));
   b(0, 0) = error;
 }
 

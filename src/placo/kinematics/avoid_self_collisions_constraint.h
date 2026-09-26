@@ -20,5 +20,8 @@ public:
   double self_collisions_trigger = 0.01;
 
   virtual void add_constraint(placo::problem::Problem& problem) override;
+
+protected:
+  std::vector<int> J_columns;
 };
 }  // namespace placo::kinematics

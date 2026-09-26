@@ -16,7 +16,8 @@ struct ManipulabilityTask : public Task
 
   ManipulabilityTask(model::RobotWrapper::FrameIndex frame_index, Type type, double lambda_ = 1.0);
 
-  virtual void update();
+  virtual void support();
+  virtual void fill();
   virtual std::string type_name();
   virtual std::string error_unit();
 

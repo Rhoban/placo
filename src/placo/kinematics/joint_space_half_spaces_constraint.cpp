@@ -19,25 +19,21 @@ void JointSpaceHalfSpacesConstraint::add_constraint(placo::problem::Problem& pro
     throw std::runtime_error("Matrix A should have ndof cols in joint-space half-spaces constraint");
   }
 
-  Eigen::MatrixXd A_no_fbase = A.block(0, 7, A.rows(), A.cols() - 7);
   int ndof = solver->N - 6;
+  auto A_no_fbase = A.rightCols(ndof);
 
   // We want Aq <= b
-  // So A(q0 + dq) <= b
-  placo::problem::Expression expression;
-  expression.A = Eigen::MatrixXd(A.rows(), solver->N);
-  expression.A.setZero();
-  expression.A.block(0, 6, A_no_fbase.rows(), ndof) = A_no_fbase;
-
-  expression.b = Eigen::VectorXd(A.rows());
-  expression.b.setZero();
-  expression.b = A_no_fbase * solver->robot.state.q.block(7, 0, ndof, 1);
-
-  problem.add_constraint(expression <= b)
-      .configure(priority == Prioritized::Priority::Hard ? problem::ProblemConstraint::Hard :
-                                                           problem::ProblemConstraint::Soft,
-                 weight);
-  ;
+  // So A(q0 + dq) <= b, the constraint only depends on the joints (not the floating base)
+  problem::ProblemConstraint& constraint = problem.add_constraint();
+  constraint.type = problem::ProblemConstraint::Inequality;
+  constraint.columns.resize(ndof);
+  for (int k = 0; k < ndof; k++)
+  {
+    constraint.columns[k] = 6 + k;
+  }
+  constraint.expression.A = -A_no_fbase;
+  constraint.expression.b = b - A_no_fbase * solver->robot.state.q.bottomRows(ndof);
+  constraint.configure(priority == Prioritized::Priority::Hard ? problem::ProblemConstraint::Hard : problem::ProblemConstraint::Soft, weight);
 }
 
 }  // namespace placo::kinematics

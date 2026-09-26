@@ -7,6 +7,7 @@
 #include "placo/problem/variable.h"
 #include "placo/problem/constraint.h"
 #include "placo/problem/qp_error.h"
+#include "placo/problem/sparse_elimination.h"
 #include <qpmad/solver.h>
 
 namespace placo::problem
@@ -43,6 +44,14 @@ public:
   ProblemConstraint& add_constraint(const ProblemConstraint& constraint);
 
   /**
+   * @brief Adds a constraint to be filled in place by the caller (hard equality by default). This avoids building
+   * an expression and copying it, and allows compact constraints (see ProblemConstraint::columns). The constraint
+   * objects (and the memory of their matrices) are reused from a solve to another (see \ref clear_constraints).
+   * @return The constraint
+   */
+  ProblemConstraint& add_constraint();
+
+  /**
    * @brief Adds bounds lower <= x <= upper on some values x of a variable (variable[start], ..., variable[start + n -
    * 1]). This is equivalent to hard inequality constraints, but bounds are handled more efficiently, and bounds on
    * the same values are merged (the tightest are kept). Infinite values can be used for one-sided bounds. Values with
@@ -56,7 +65,8 @@ public:
   void add_bounds(const Variable& variable, int start, const Eigen::VectorXd& lower, const Eigen::VectorXd& upper);
 
   /**
-   * @brief Clear all the constraints
+   * @brief Clear all the constraints (and bounds). The constraint objects are kept to be reused by the next calls
+   * to \ref add_constraint.
    */
   void clear_constraints();
 
@@ -126,19 +136,33 @@ public:
   Eigen::VectorXd slacks;
 
   /**
-   * @brief If set to true, some sparsity optimizations will be performed when building the problem Hessian.
-   * This optimization is generally not useful for small problems.
+   * @brief If set to true, the columns of dense constraints that are entirely zero are detected, and skipped when
+   * building the problem Hessian. Compact constraints (see ProblemConstraint::columns) don't need this detection.
    */
   bool use_sparsity = true;
 
   /**
-   * @brief If set to true, a QR factorization will be performed on the equality constraints, and the QP will be
-   * called with free variables only.
+   * @brief If set to true, the hard equality constraints are eliminated before calling the QP solver (with a QR
+   * factorization, or with a sparse elimination if \ref sparse_elimination is set), and the QP is called with free
+   * variables only. Else, they are passed to the QP solver.
    *
    * The number of free variables will be available in \ref free_variables, and the number of determined variables
    * in \ref determined_variables.
    */
   bool rewrite_equalities = true;
+
+  /**
+   * @brief If set to true (and \ref rewrite_equalities is set), the hard equality constraints are eliminated
+   * exploiting their structure (the variables each of them depends on, see SparseElimination) instead of a dense QR
+   * factorization. This is useful when equalities are independent of each other (for instance loop closures on
+   * different parts of a robot). It falls back to the QR factorization when the equalities have no such structure.
+   */
+  bool sparse_elimination = false;
+
+  /**
+   * @brief True if the sparse elimination was used for the last solve (see \ref sparse_elimination)
+   */
+  bool sparse_elimination_used = false;
 
   void dump_status();
 
@@ -149,14 +173,16 @@ protected:
   Eigen::VectorXd lower_bounds, upper_bounds;
 
   /**
-   * @brief Indices of the variables that are not fixed, and values of the fixed variables (zero for the others), see
-   * \ref fixed_variables
+   * @brief Indices of the variables that are not fixed, index of each variable among them (-1 for fixed variables),
+   * and values of the fixed variables (zero for the others), see \ref fixed_variables
    */
   Eigen::VectorXi unfixed_indices;
+  std::vector<int> unfixed_index;
   Eigen::VectorXd fixed_values;
 
   /**
-   * @brief Updates \ref fixed_variables, \ref unfixed_indices and \ref fixed_values from the bounds
+   * @brief Updates \ref fixed_variables, \ref unfixed_indices, \ref unfixed_index and \ref fixed_values from the
+   * bounds
    */
   void detect_fixed_variables();
 
@@ -164,12 +190,6 @@ protected:
    * @brief Number of finite bounds (lower and upper), counted as inequalities in \ref n_inequalities
    */
   int bounds_inequalities() const;
-
-  /**
-   * @brief Values of the bounded variables that are not fixed (indices in bounded, among the unfixed variables) as
-   * a function of the QP variables z (the variables that are not eliminated by the equalities): x[bounded] = A z + b
-   */
-  void bounded_values(std::vector<int>& bounded, Eigen::MatrixXd& A, Eigen::MatrixXd& b);
 
   /**
    * @brief QP solver
@@ -187,6 +207,17 @@ protected:
   Eigen::MatrixXd y;
 
   /**
+   * @brief Sparse elimination of the equalities, see \ref sparse_elimination
+   */
+  SparseElimination elimination;
+
+  /**
+   * @brief Index of each unfixed variable among the free variables of the sparse elimination (-1 if eliminated), and
+   * row of the eliminated ones in SparseElimination::Z
+   */
+  std::vector<int> free_column, eliminated_row;
+
+  /**
    * @brief Problem variables
    */
   std::vector<Variable*> variables;
@@ -197,13 +228,72 @@ protected:
   std::vector<ProblemConstraint*> constraints;
 
   /**
-   * @brief Used internally to access a constraint expression, substituting the fixed variables (see
-   * \ref fixed_variables) and optionally applying the change of basis imposed by the QR decomposition, see
-   * \ref rewrite_equalities.
-   * @param constraint constraint
-   * @param A output matrix A
-   * @param b output vector b
+   * @brief Constraints objects that were cleared, reused by \ref add_constraint
    */
-  void get_constraint_expressions(ProblemConstraint* constraint, Eigen::MatrixXd& A, Eigen::MatrixXd& b);
+  std::vector<ProblemConstraint*> constraints_pool;
+
+  /**
+   * @brief A constraint expression A x[columns] + b after the substitution of the fixed variables (in the space of the
+   * unfixed variables), and then after the elimination of the equalities (in the space of the QP variables)
+   */
+  struct Reduced
+  {
+    Eigen::Map<const Eigen::MatrixXd> A{ nullptr, 0, 0 };
+
+    /**
+     * @brief Variables of the columns of A (nullptr if A is dense: its k-th column is the variable k)
+     */
+    const std::vector<int>* columns = nullptr;
+
+    Eigen::VectorXd b;
+
+    // Storages for A and columns, when they are not the ones of the constraint
+    Eigen::MatrixXd A_fixed, A_eliminated;
+    std::vector<int> columns_fixed, columns_eliminated;
+  };
+
+  /**
+   * @brief Reduced expressions, in the order of the constraints (kept from a solve to another to reuse the memory)
+   */
+  std::vector<Reduced> reduced;
+
+  /**
+   * @brief Substitutes the fixed variables in the constraint expression
+   */
+  void reduce_fixed(const ProblemConstraint& constraint, Reduced& r);
+
+  /**
+   * @brief Expresses the (reduced) expression as a function of the QP variables, according to the elimination of the
+   * equalities
+   */
+  void reduce_eliminated(Reduced& r);
+
+  /**
+   * @brief Consecutive variables var, ..., var + size - 1 in consecutive columns col, ..., col + size - 1 of a matrix
+   */
+  struct Run
+  {
+    int var;
+    int col;
+    int size;
+  };
+
+  /**
+   * @brief Computes the runs of a reduced expression. For dense expressions, zero columns are skipped if
+   * \ref use_sparsity is set
+   */
+  void compute_runs(const Reduced& r, std::vector<Run>& runs, bool detect_zeros);
+
+  /**
+   * @brief Adds weight * ||A x + b||^2 to the objective (lower triangle of P)
+   */
+  void add_squared_norm(const Reduced& r, const std::vector<Run>& runs, double weight);
+
+  // Workspaces (kept from a solve to another to reuse the memory)
+  Eigen::MatrixXd P, C, Aeq, gram, bounds_full;
+  Eigen::VectorXd q, lower, upper, lb, ub, qp_x, beq, unfixed_x;
+  std::vector<Run> runs;
+  std::vector<int> stamp, gathered;
+  std::vector<ProblemConstraint*> hard_inequalities_mapping, soft_inequalities_mapping;
 };
 }  // namespace placo::problem

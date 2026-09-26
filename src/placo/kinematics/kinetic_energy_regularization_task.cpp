@@ -5,7 +5,7 @@
 
 namespace placo::kinematics
 {
-void KineticEnergyRegularizationTask::update()
+void KineticEnergyRegularizationTask::fill()
 {
   // Computing the mass matrix
   Eigen::MatrixXd M = solver->robot.mass_matrix();
