@@ -1,8 +1,7 @@
-#include <map>
+#include <iostream>
 #include <chrono>
 #include "placo/problem/problem.h"
 #include "placo/problem/qp_error.h"
-#include "eiquadprog/eiquadprog.hpp"
 
 namespace placo::problem
 {
@@ -70,6 +69,69 @@ ProblemConstraint& Problem::add_constraint(const ProblemConstraint& constraint_)
   return *constraint;
 }
 
+void Problem::add_bounds(const Variable& variable, int start, const Eigen::VectorXd& lower,
+                         const Eigen::VectorXd& upper)
+{
+  if (lower.rows() != upper.rows() || start < 0 || variable.k_start + start + lower.rows() > variable.k_end)
+  {
+    throw QPError("Problem: invalid bounds size");
+  }
+
+  // Unbounded by default
+  int bounded = lower_bounds.rows();
+  if (bounded < n_variables)
+  {
+    lower_bounds.conservativeResize(n_variables);
+    upper_bounds.conservativeResize(n_variables);
+    lower_bounds.tail(n_variables - bounded).setConstant(-std::numeric_limits<double>::infinity());
+    upper_bounds.tail(n_variables - bounded).setConstant(std::numeric_limits<double>::infinity());
+  }
+
+  auto lower_segment = lower_bounds.segment(variable.k_start + start, lower.rows());
+  auto upper_segment = upper_bounds.segment(variable.k_start + start, upper.rows());
+  lower_segment = lower_segment.cwiseMax(lower);
+  upper_segment = upper_segment.cwiseMin(upper);
+}
+
+int Problem::bounds_inequalities() const
+{
+  return lower_bounds.array().isFinite().count() + upper_bounds.array().isFinite().count();
+}
+
+void Problem::bounded_values(std::vector<int>& bounded, Eigen::MatrixXd& A, Eigen::MatrixXd& b)
+{
+  bounded.clear();
+  for (int k = 0; k < lower_bounds.rows(); k++)
+  {
+    if (std::isfinite(lower_bounds[k]) || std::isfinite(upper_bounds[k]))
+    {
+      bounded.push_back(k);
+    }
+  }
+
+  if (determined_variables)
+  {
+    // With the QR elimination, x = Q [y; z]
+    Eigen::MatrixXd full_A = Eigen::MatrixXd::Zero(bounded.size(), n_variables);
+    for (int k = 0; k < (int)bounded.size(); k++)
+    {
+      full_A(k, bounded[k]) = 1;
+    }
+    QR.matrixQ().applyThisOnTheRight(full_A);
+    A = full_A.rightCols(free_variables);
+    b = full_A.leftCols(determined_variables) * y;
+  }
+  else
+  {
+    A = Eigen::MatrixXd::Zero(bounded.size(), free_variables);
+    b = Eigen::MatrixXd::Zero(bounded.size(), 1);
+    for (int k = 0; k < (int)bounded.size(); k++)
+    {
+      A(k, bounded[k]) = 1;
+    }
+  }
+}
+
 void Problem::clear_constraints()
 {
   for (auto constraint : constraints)
@@ -78,6 +140,8 @@ void Problem::clear_constraints()
   }
 
   constraints.clear();
+  lower_bounds.resize(0);
+  upper_bounds.resize(0);
 }
 
 void Problem::clear_variables()
@@ -89,6 +153,8 @@ void Problem::clear_variables()
 
   variables.clear();
   n_variables = 0;
+  lower_bounds.resize(0);
+  upper_bounds.resize(0);
 }
 
 void Problem::get_constraint_expressions(ProblemConstraint* constraint, Eigen::MatrixXd& A, Eigen::MatrixXd& b)
@@ -195,6 +261,7 @@ void Problem::solve()
   P.block(0, 0, free_variables, free_variables) *= regularization;
 
   // Scanning the constraints (counting inequalities and equalities, building objectif function)
+  int hard_inequalities = 0;
   for (auto constraint : constraints)
   {
     if (constraint->expression.cols() > n_variables)
@@ -215,6 +282,10 @@ void Problem::solve()
       // If the constraint is hard, this will be the true inequality, else, this will be the inequality
       // enforcing the slack variable to be >= 0
       n_inequalities += constraint->expression.rows();
+      if (constraint->priority == ProblemConstraint::Hard)
+      {
+        hard_inequalities += constraint->expression.rows();
+      }
     }
     else if (constraint->priority == ProblemConstraint::Soft)
     {
@@ -253,28 +324,48 @@ void Problem::solve()
     }
   }
 
-  // Inequality constraints
-  Eigen::MatrixXd G(n_inequalities, free_variables + slack_variables);
-  Eigen::VectorXd h(n_inequalities);
-  G.setZero();
-  h.setZero();
+  n_inequalities += bounds_inequalities();
+
+  // The QP is solved with qpmad, in the variables z = [free variables, slack variables]:
+  //   min 1/2 z^T P z + q^T z   subject to   lb <= z <= ub (simple bounds)   and   lower <= C z <= upper
+  const double infinity = std::numeric_limits<double>::infinity();
+  int n_qp = free_variables + slack_variables;
+
+  // Bounds (see add_bounds), as a function of the QP variables. When no variable is eliminated, they are simple
+  // bounds on the QP variables, else they are two-sided constraints (only one side can be active)
+  std::vector<int> bounded;
+  Eigen::MatrixXd bounded_A, bounded_b;
+  bounded_values(bounded, bounded_A, bounded_b);
+  bool simple_bounds = (determined_variables == 0);
+
+  // Simple bounds, including the positivity of slack variables
+  Eigen::VectorXd lb, ub;
+  if (slack_variables > 0 || (simple_bounds && !bounded.empty()))
+  {
+    lb = Eigen::VectorXd::Constant(n_qp, -infinity);
+    ub = Eigen::VectorXd::Constant(n_qp, infinity);
+    lb.tail(slack_variables).setZero();
+  }
+
+  // General constraints: equalities (if they are not eliminated), hard inequalities and bounds that are not simple
+  int n_bound_rows = simple_bounds ? 0 : bounded.size();
+  Eigen::MatrixXd C = Eigen::MatrixXd::Zero(A.rows() + hard_inequalities + n_bound_rows, n_qp);
+  Eigen::VectorXd lower(C.rows());
+  Eigen::VectorXd upper(C.rows());
+
+  // Ax + b = 0
+  C.topLeftCorner(A.rows(), A.cols()) = A;
+  lower.head(A.rows()) = -b;
+  upper.head(A.rows()) = -b;
 
   // Used to keep track of the hard/soft inequalities constraints
-  // The hard mapping maps index from inequality row to constraint, and the soft
+  // The hard mapping maps index from general constraint row to constraint, and the soft
   // mapping maps index from slack variables to the constraint.
-  std::map<int, ProblemConstraint*> hard_inequalities_mapping;
-  std::map<int, ProblemConstraint*> soft_inequalities_mapping;
+  std::vector<ProblemConstraint*> hard_inequalities_mapping(C.rows(), nullptr);
+  std::vector<ProblemConstraint*> soft_inequalities_mapping(slack_variables, nullptr);
 
-  int k_inequality = 0;
+  int row = A.rows();
   int k_slack = 0;
-
-  // Slack variables should be positive
-  for (int slack = 0; slack < slack_variables; slack += 1)
-  {
-    // s_i >= 0
-    G(k_inequality, free_variables + slack) = 1;
-    k_inequality += 1;
-  }
 
   for (auto constraint : constraints)
   {
@@ -287,18 +378,19 @@ void Problem::solve()
       if (constraint->priority == ProblemConstraint::Hard)
       {
         // Ax + b >= 0
-        G.block(k_inequality, 0, expression_A.rows(), expression_A.cols()) = expression_A;
-        h.block(k_inequality, 0, expression_b.rows(), 1) = expression_b;
+        C.block(row, 0, expression_A.rows(), expression_A.cols()) = expression_A;
+        lower.segment(row, expression_b.rows()) = -expression_b;
+        upper.segment(row, expression_b.rows()).setConstant(infinity);
 
-        for (int k = k_inequality; k < k_inequality + expression_A.rows(); k++)
+        for (int k = row; k < row + expression_A.rows(); k++)
         {
           hard_inequalities_mapping[k] = constraint;
         }
-        k_inequality += expression_A.rows();
+        row += expression_A.rows();
       }
       else
       {
-        // min ||Ax + b - s||^2, with a slack variable s assigned to each row of the soft inequality.
+        // min ||Ax + b - s||^2, with a slack variable s >= 0 assigned to each row of the soft inequality.
         // With As = [A, -I] (I on this constraint's own slack columns), As^T As only has three non-zero blocks, which
         // are updated directly instead of building the full-width As (that would cost O(rows (n + slacks)^2)).
         int rows = expression_A.rows(), cols = expression_A.cols();
@@ -322,17 +414,58 @@ void Problem::solve()
     }
   }
 
-  Eigen::VectorXi active_set;
-  size_t active_set_size;
+  // lower <= x <= upper, with x = bounded_A z + bounded_b
+  for (int k = 0; k < (int)bounded.size(); k++)
+  {
+    double lower_k = lower_bounds[bounded[k]] - bounded_b(k, 0);
+    double upper_k = upper_bounds[bounded[k]] - bounded_b(k, 0);
+    if (simple_bounds)
+    {
+      lb[bounded[k]] = lower_k;
+      ub[bounded[k]] = upper_k;
+    }
+    else
+    {
+      C.block(row, 0, 1, free_variables) = bounded_A.row(k);
+      lower[row] = lower_k;
+      upper[row] = upper_k;
+      row += 1;
+    }
+  }
 
-  Eigen::VectorXd qp_x(free_variables + slack_variables);
-  qp_x.setZero();
-  // Equality constraints (only present if they are not rewritten) are padded with zeros for the slack variables
-  Eigen::MatrixXd CE = Eigen::MatrixXd::Zero(free_variables + slack_variables, A.rows());
-  CE.topRows(A.cols()) = A.transpose();
+  // Constraint rows are normalized: qpmad uses absolute tolerances, which would else depend on the scale of each
+  // constraint (the feasible set is unchanged)
+  for (int k = 0; k < C.rows(); k++)
+  {
+    double norm = C.row(k).norm();
+    if (norm > 0)
+    {
+      C.row(k) /= norm;
+      lower[k] /= norm;
+      upper[k] /= norm;
+    }
+  }
 
-  double result =
-      eiquadprog::solvers::solve_quadprog(P, q, CE, b, G.transpose(), h, qp_x, active_set, active_set_size);
+  // Solving the QP (P is factorized in place)
+  Eigen::VectorXd qp_x(n_qp);
+  bool feasible;
+  if (n_qp == 0)
+  {
+    // All the variables are determined by the equalities, the remaining constraints are constants (0 <= upper and
+    // lower <= 0)
+    feasible = (lower.array() <= 1e-9).all() && (upper.array() >= -1e-9).all();
+  }
+  else
+  {
+    try
+    {
+      feasible = (qp_solver.solve(qp_x, P, q, lb, ub, C, lower, upper) == qpmad::Solver::OK);
+    }
+    catch (const std::exception& e)
+    {
+      feasible = false;
+    }
+  }
 
   if (determined_variables)
   {
@@ -349,7 +482,7 @@ void Problem::solve()
   }
 
   // Checking that the problem is indeed feasible
-  if (result == std::numeric_limits<double>::infinity())
+  if (!feasible)
   {
     throw QPError("Problem: Infeasible QP (check your hard inequality constraints)");
   }
@@ -373,21 +506,28 @@ void Problem::solve()
     throw QPError("Problem: NaN in the QP solution");
   }
 
-  // Reporting on the active constraints
-  for (int k = 0; k < active_set_size; k++)
+  // Reporting on the active constraints (indices of the active inequalities are the simple bounds, then the
+  // general constraints rows)
+  Eigen::VectorXd dual;
+  Eigen::Matrix<qpmad::MatrixIndex, Eigen::Dynamic, 1> active_indices;
+  Eigen::Matrix<bool, Eigen::Dynamic, 1> active_is_lower;
+  if (n_qp > 0)
   {
-    int active_constraint = active_set[k];
-
-    if (active_constraint >= 0 && hard_inequalities_mapping.count(active_constraint))
+    qp_solver.getInequalityDual(dual, active_indices, active_is_lower);
+  }
+  for (int k = 0; k < active_indices.rows(); k++)
+  {
+    int row = active_indices[k] - lb.rows();
+    if (row >= 0 && hard_inequalities_mapping[row] != nullptr)
     {
-      hard_inequalities_mapping[active_constraint]->is_active = true;
+      hard_inequalities_mapping[row]->is_active = true;
     }
   }
 
   slacks = qp_x.block(free_variables, 0, slack_variables, 1);
   for (int k = 0; k < slacks.rows(); k++)
   {
-    if (slacks[k] <= 1e-6 && soft_inequalities_mapping.count(k))
+    if (slacks[k] <= 1e-6 && soft_inequalities_mapping[k] != nullptr)
     {
       soft_inequalities_mapping[k]->is_active = true;
     }

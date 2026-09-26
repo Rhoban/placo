@@ -1,5 +1,4 @@
 #include "placo/humanoid/swing_foot.h"
-#include "eiquadprog/eiquadprog.hpp"
 
 namespace placo::humanoid
 {
