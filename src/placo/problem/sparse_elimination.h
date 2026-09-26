@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <vector>
 #include <Eigen/Dense>
 
@@ -68,6 +69,11 @@ public:
   std::vector<std::vector<int>> Z_columns;
 
   /**
+   * @brief Number of elimination steps (blocks) of the last analysis
+   */
+  int steps_count() const;
+
+  /**
    * @brief Blocks are merged with the block they are eliminated into while they have at most this number of
    * variables (fewer, larger dense factorizations)
    */
@@ -77,6 +83,26 @@ public:
    * @brief Blocks whose pivots (smallest over largest) are below this ratio are considered poorly conditioned
    */
   double min_pivot_ratio = 1e-6;
+
+  /**
+   * @brief The elimination is declined when the Frobenius norm of \ref Z is above this value. The solutions are
+   * parametrized as x = N x_free + [x0], N stacking the identity (free variables) and Z (eliminated variables): since
+   * N^T N = I + Z^T Z, the condition number of N is at most sqrt(1 + ||Z||^2). A large Z (typically growing along a
+   * chain of substitutions) would make the reduced problem poorly conditioned, compared to the orthonormal basis of the
+   * QR elimination.
+   */
+  double max_Z_norm = 100.;
+
+  /**
+   * @brief Frobenius norm of \ref Z for the last elimination (see \ref max_Z_norm)
+   */
+  double Z_norm = 0.;
+
+  /**
+   * @brief Outcome of the last elimination: "eliminated", or the reason why it was declined: "no_structure" (a single
+   * block), "poorly_conditioned_block" (see \ref min_pivot_ratio) or "large_Z" (see \ref max_Z_norm)
+   */
+  std::string status;
 
 protected:
   /**

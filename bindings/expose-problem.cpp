@@ -15,6 +15,7 @@
 #include "placo/problem/problem_polynom.h"
 #include "placo/problem/sparsity.h"
 #include "placo/problem/qp_error.h"
+#include "placo/problem/sparse_elimination.h"
 #include <Eigen/Dense>
 #include <boost/python.hpp>
 #include <eigenpy/eigen-to-python.hpp>
@@ -113,6 +114,72 @@ void exposeProblem()
   class__<Integrator::Trajectory>("IntegratorTrajectory")
       .def("value", &Integrator::Trajectory::value)
       .def("duration", &Integrator::Trajectory::duration);
+
+  class__<SparseElimination>("SparseElimination")
+      .def(
+          "eliminate",
+          +[](SparseElimination& elimination, int n_variables, const boost::python::list& As,
+              const boost::python::list& bs, const boost::python::list& columns) {
+            // Equalities A x[columns] + b = 0, the storage being kept during the elimination
+            int n = len(As);
+            if (len(bs) != n || len(columns) != n)
+            {
+              throw std::runtime_error("SparseElimination: As, bs and columns should have the same length");
+            }
+            std::vector<Eigen::MatrixXd> A_storage(n);
+            std::vector<Eigen::VectorXd> b_storage(n);
+            std::vector<std::vector<int>> columns_storage(n);
+            std::vector<Eigen::Map<const Eigen::MatrixXd>> maps;
+            maps.reserve(n);
+            std::vector<SparseElimination::Equality> equalities;
+            for (int k = 0; k < n; k++)
+            {
+              A_storage[k] = boost::python::extract<Eigen::MatrixXd>(As[k]);
+              b_storage[k] = boost::python::extract<Eigen::VectorXd>(bs[k]);
+              Eigen::VectorXi c = boost::python::extract<Eigen::VectorXi>(columns[k]);
+              columns_storage[k].assign(c.data(), c.data() + c.size());
+              if (A_storage[k].cols() != c.size() || A_storage[k].rows() != b_storage[k].size())
+              {
+                throw std::runtime_error("SparseElimination: inconsistent equality sizes");
+              }
+              maps.emplace_back(A_storage[k].data(), A_storage[k].rows(), A_storage[k].cols());
+            }
+            for (int k = 0; k < n; k++)
+            {
+              equalities.push_back(SparseElimination::Equality{ &maps[k], &b_storage[k], &columns_storage[k] });
+            }
+            return elimination.eliminate(n_variables, equalities);
+          })
+      .add_property(
+          "pivots",
+          +[](const SparseElimination& e) {
+            return Eigen::VectorXi(Eigen::Map<const Eigen::VectorXi>(e.pivots.data(), e.pivots.size()));
+          })
+      .add_property(
+          "free",
+          +[](const SparseElimination& e) {
+            return Eigen::VectorXi(Eigen::Map<const Eigen::VectorXi>(e.free.data(), e.free.size()));
+          })
+      .add_property(
+          "Z_columns",
+          +[](const SparseElimination& e) {
+            boost::python::list result;
+            for (auto& columns : e.Z_columns)
+            {
+              result.append(Eigen::VectorXi(Eigen::Map<const Eigen::VectorXi>(columns.data(), columns.size())));
+            }
+            return result;
+          })
+      .add_property(
+          "Z", +[](const SparseElimination& e) { return e.Z; })
+      .add_property(
+          "x0", +[](const SparseElimination& e) { return e.x0; })
+      .def("steps_count", &SparseElimination::steps_count)
+      .def_readwrite("max_block_size", &SparseElimination::max_block_size)
+      .def_readwrite("min_pivot_ratio", &SparseElimination::min_pivot_ratio)
+      .def_readwrite("max_Z_norm", &SparseElimination::max_Z_norm)
+      .def_readonly("Z_norm", &SparseElimination::Z_norm)
+      .def_readonly("status", &SparseElimination::status);
 
   class__<Problem>("Problem")
       .def("add_variable", &Problem::add_variable, return_internal_reference<>())

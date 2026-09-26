@@ -50,7 +50,7 @@ public:
   Expression expression;
 
   /**
-   * @brief Variables the columns of the expression correspond to (sorted), for compact constraints: the k-th column
+   * @brief Variables the columns of the expression correspond to (strictly increasing), for compact constraints: the k-th column
    * of expression.A is the variable columns[k], the other variables have zero coefficients. When empty (default), the
    * expression is dense: its k-th column is the variable k.
    */

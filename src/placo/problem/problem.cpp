@@ -1,6 +1,7 @@
 #include <iostream>
 #include <chrono>
 #include <algorithm>
+#include <functional>
 #include "placo/problem/problem.h"
 #include "placo/problem/qp_error.h"
 
@@ -487,7 +488,8 @@ void Problem::solve()
     }
     else if ((int)constraint->columns.size() != e.A.cols() || constraint->columns.back() >= n_variables ||
              constraint->columns.front() < 0 ||
-             !std::is_sorted(constraint->columns.begin(), constraint->columns.end()))
+             std::adjacent_find(constraint->columns.begin(), constraint->columns.end(),
+                                std::greater_equal<int>()) != constraint->columns.end())
     {
       throw QPError("Problem: Inconsistent compact constraint columns");
     }
