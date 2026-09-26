@@ -861,6 +861,24 @@ void Problem::solve()
     {
       feasible = false;
     }
+
+    // The solution is checked against the constraints: on some infeasible problems, the iterations of the solver
+    // diverge to huge values, where rounding errors exceed its (absolute) tolerances, and it can then report a success
+    if (feasible)
+    {
+      auto violated = [](double value, double lower_value, double upper_value) {
+        return value < lower_value - 1e-6 * (1 + fabs(lower_value)) || value > upper_value + 1e-6 * (1 + fabs(upper_value));
+      };
+      Eigen::VectorXd Cz = C * qp_x;
+      for (int k = 0; k < C.rows() && feasible; k++)
+      {
+        feasible = !violated(Cz[k], lower[k], upper[k]);
+      }
+      for (int k = 0; k < lb.rows() && feasible; k++)
+      {
+        feasible = !violated(qp_x[k], lb[k], ub[k]);
+      }
+    }
   }
 
   // Values of the unfixed variables
