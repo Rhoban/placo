@@ -29,7 +29,7 @@ class TestKinematicsSolver(unittest.TestCase):
 
     def test_compact_tasks(self):
         """
-        Tasks matrices (compact internally) are the expected Jacobians, and solutions with hard tasks are the same
+        Task matrices (compact internally) are the expected Jacobians, and solutions with hard tasks are the same
         with or without elimination of the equalities (QR or sparse elimination)
         """
         robot = self.robot

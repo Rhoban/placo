@@ -35,8 +35,8 @@ public:
   Eigen::MatrixXd b;
 
   /**
-   * @brief Degrees of freedom (sorted) the task depends on, which are the columns of \ref A (empty if A is the full
-   * matrix)
+   * @brief Degrees of freedom (sorted) the task depends on, which are the columns of \ref A. When empty, A is either the
+   * full matrix, or has no column (a task on a frame attached to the world)
    */
   std::vector<int> columns;
 

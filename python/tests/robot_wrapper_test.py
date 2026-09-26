@@ -165,7 +165,11 @@ class TestWrapper(unittest.TestCase):
         for joint in robot.joint_names():
             robot.set_joint(joint, rng.uniform(-1.0, 1.0))
             robot.set_joint_velocity(joint, rng.uniform(-1.0, 1.0))
-        robot.state.qd[:6] = rng.uniform(-1.0, 1.0, 6)
+        # Floating base velocity too (the time variations depend on the velocity of the frames)
+        qd = robot.state.qd.copy()
+        qd[:6] = rng.uniform(-1.0, 1.0, 6)
+        robot.state.qd = qd
+        self.assertTrue(np.all(robot.state.qd[:6] != 0))
         robot.update_kinematics()
         all_columns = np.arange(robot.model.nv, dtype=np.int32)
 

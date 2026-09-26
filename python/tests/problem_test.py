@@ -669,7 +669,9 @@ class TestProblem(unittest.TestCase):
                 ([2, 7, 10], "ineq", "soft", 10.0, 1),
                 ([6, 8], "eq", "soft", 0.5, 2),
             ]
-            data = [(cols, t, p, w, rng.normal(size=(r, len(cols))), rng.normal(size=r) * 3) for cols, t, p, w, r in specs]
+            data = [
+                (cols, t, p, w, rng.normal(size=(r, len(cols))), rng.normal(size=r) * 3) for cols, t, p, w, r in specs
+            ]
 
             solutions = []
             for compact in [False, True]:
