@@ -45,8 +45,9 @@ public:
   /**
    * @brief Adds bounds lower <= x <= upper on some values x of a variable (variable[start], ..., variable[start + n -
    * 1]). This is equivalent to hard inequality constraints, but bounds are handled more efficiently, and bounds on
-   * the same values are merged (the tightest are kept). Infinite values can be used for one-sided bounds. Bounds are
-   * removed with the constraints (see \ref clear_constraints).
+   * the same values are merged (the tightest are kept). Infinite values can be used for one-sided bounds. Values with
+   * equal lower and upper bounds are fixed, and removed from the QP (see \ref fixed_variables). Bounds are removed
+   * with the constraints (see \ref clear_constraints).
    * @param variable variable
    * @param start index of the first bounded value in the variable
    * @param lower lower bounds
@@ -90,6 +91,12 @@ public:
    * If \ref rewrite_equalities is true, this should be equals to \ref n_variable.
    */
   int free_variables = 0;
+
+  /**
+   * @brief Number of fixed variables (values with equal lower and upper bounds, see \ref add_bounds). They are
+   * substituted in the constraints, and are not variables of the QP.
+   */
+  int fixed_variables = 0;
 
   /**
    * @brief Number of slack variables in the solver.
@@ -142,13 +149,25 @@ protected:
   Eigen::VectorXd lower_bounds, upper_bounds;
 
   /**
+   * @brief Indices of the variables that are not fixed, and values of the fixed variables (zero for the others), see
+   * \ref fixed_variables
+   */
+  Eigen::VectorXi unfixed_indices;
+  Eigen::VectorXd fixed_values;
+
+  /**
+   * @brief Updates \ref fixed_variables, \ref unfixed_indices and \ref fixed_values from the bounds
+   */
+  void detect_fixed_variables();
+
+  /**
    * @brief Number of finite bounds (lower and upper), counted as inequalities in \ref n_inequalities
    */
   int bounds_inequalities() const;
 
   /**
-   * @brief Values of the bounded variables (indices in bounded) as a function of the QP variables z (the variables
-   * that are not eliminated by the equalities): x[bounded] = A z + b
+   * @brief Values of the bounded variables that are not fixed (indices in bounded, among the unfixed variables) as
+   * a function of the QP variables z (the variables that are not eliminated by the equalities): x[bounded] = A z + b
    */
   void bounded_values(std::vector<int>& bounded, Eigen::MatrixXd& A, Eigen::MatrixXd& b);
 
@@ -178,8 +197,9 @@ protected:
   std::vector<ProblemConstraint*> constraints;
 
   /**
-   * @brief Used internally to access a constraint expression, optionally applying the change of basis imposed by
-   * the QR decomposition, see \ref rewrite_equalities.
+   * @brief Used internally to access a constraint expression, substituting the fixed variables (see
+   * \ref fixed_variables) and optionally applying the change of basis imposed by the QR decomposition, see
+   * \ref rewrite_equalities.
    * @param constraint constraint
    * @param A output matrix A
    * @param b output vector b

@@ -1,5 +1,6 @@
 #include <iostream>
 #include <chrono>
+#include <algorithm>
 #include "placo/problem/problem.h"
 #include "placo/problem/qp_error.h"
 
@@ -93,17 +94,38 @@ void Problem::add_bounds(const Variable& variable, int start, const Eigen::Vecto
   upper_segment = upper_segment.cwiseMin(upper);
 }
 
+void Problem::detect_fixed_variables()
+{
+  fixed_variables = 0;
+  fixed_values = Eigen::VectorXd::Zero(n_variables);
+  unfixed_indices.resize(n_variables);
+  for (int k = 0; k < n_variables; k++)
+  {
+    if (k < lower_bounds.rows() && std::isfinite(lower_bounds[k]) && lower_bounds[k] == upper_bounds[k])
+    {
+      fixed_values[k] = lower_bounds[k];
+      fixed_variables += 1;
+    }
+    else
+    {
+      unfixed_indices[k - fixed_variables] = k;
+    }
+  }
+  unfixed_indices.conservativeResize(n_variables - fixed_variables);
+}
+
 int Problem::bounds_inequalities() const
 {
-  return lower_bounds.array().isFinite().count() + upper_bounds.array().isFinite().count();
+  return lower_bounds.array().isFinite().count() + upper_bounds.array().isFinite().count() - 2 * fixed_variables;
 }
 
 void Problem::bounded_values(std::vector<int>& bounded, Eigen::MatrixXd& A, Eigen::MatrixXd& b)
 {
   bounded.clear();
-  for (int k = 0; k < lower_bounds.rows(); k++)
+  for (int k = 0; k < unfixed_indices.rows(); k++)
   {
-    if (std::isfinite(lower_bounds[k]) || std::isfinite(upper_bounds[k]))
+    int index = unfixed_indices[k];
+    if (index < lower_bounds.rows() && (std::isfinite(lower_bounds[index]) || std::isfinite(upper_bounds[index])))
     {
       bounded.push_back(k);
     }
@@ -112,7 +134,7 @@ void Problem::bounded_values(std::vector<int>& bounded, Eigen::MatrixXd& A, Eige
   if (determined_variables)
   {
     // With the QR elimination, x = Q [y; z]
-    Eigen::MatrixXd full_A = Eigen::MatrixXd::Zero(bounded.size(), n_variables);
+    Eigen::MatrixXd full_A = Eigen::MatrixXd::Zero(bounded.size(), unfixed_indices.rows());
     for (int k = 0; k < (int)bounded.size(); k++)
     {
       full_A(k, bounded[k]) = 1;
@@ -159,20 +181,48 @@ void Problem::clear_variables()
 
 void Problem::get_constraint_expressions(ProblemConstraint* constraint, Eigen::MatrixXd& A, Eigen::MatrixXd& b)
 {
+  const Eigen::MatrixXd* expression_A = &constraint->expression.A;
+  b = constraint->expression.b;
+
+  // Substituting the fixed variables: A x + b = A_unfixed x_unfixed + (b + A_fixed x_fixed)
+  Eigen::MatrixXd unfixed_A;
+  if (fixed_variables)
+  {
+    int cols = constraint->expression.A.cols();
+    int unfixed_cols = std::lower_bound(unfixed_indices.data(), unfixed_indices.data() + unfixed_indices.rows(), cols) -
+                       unfixed_indices.data();
+    unfixed_A.resize(constraint->expression.A.rows(), unfixed_cols);
+    for (int k = 0; k < unfixed_cols; k++)
+    {
+      unfixed_A.col(k) = constraint->expression.A.col(unfixed_indices[k]);
+    }
+    for (int k = 0; k < cols; k++)
+    {
+      if (fixed_values[k] != 0)
+      {
+        b += constraint->expression.A.col(k) * fixed_values[k];
+      }
+    }
+    expression_A = &unfixed_A;
+  }
+
   if (determined_variables)
   {
-    Eigen::MatrixXd full_A(constraint->expression.A.rows(), n_variables);
+    Eigen::MatrixXd full_A(expression_A->rows(), unfixed_indices.rows());
     full_A.setZero();
-    full_A.block(0, 0, constraint->expression.A.rows(), constraint->expression.A.cols()) = constraint->expression.A;
+    full_A.leftCols(expression_A->cols()) = *expression_A;
     QR.matrixQ().applyThisOnTheRight(full_A);
 
     A = full_A.rightCols(free_variables);
-    b = constraint->expression.b + full_A.leftCols(determined_variables) * y;
+    b += full_A.leftCols(determined_variables) * y;
+  }
+  else if (fixed_variables)
+  {
+    A.swap(unfixed_A);
   }
   else
   {
     A = constraint->expression.A;
-    b = constraint->expression.b;
   }
 }
 
@@ -181,6 +231,9 @@ void Problem::solve()
   n_equalities = 0;
   n_inequalities = 0;
   slack_variables = 0;
+  determined_variables = 0;
+  detect_fixed_variables();
+  int unfixed_variables = unfixed_indices.rows();
 
   for (auto constraint : constraints)
   {
@@ -202,8 +255,8 @@ void Problem::solve()
     }
   }
 
-  // Equality constraints
-  Eigen::MatrixXd A(n_equalities, n_variables);
+  // Equality constraints (on the unfixed variables)
+  Eigen::MatrixXd A(n_equalities, unfixed_variables);
   Eigen::VectorXd b(n_equalities);
   A.setZero();
   b.setZero();
@@ -214,14 +267,15 @@ void Problem::solve()
     if (constraint->type == ProblemConstraint::Equality && constraint->priority == ProblemConstraint::Hard)
     {
       // Ax + b = 0
-      A.block(k_equality, 0, constraint->expression.rows(), constraint->expression.cols()) = constraint->expression.A;
-      b.block(k_equality, 0, constraint->expression.rows(), 1) = constraint->expression.b;
-      k_equality += constraint->expression.rows();
+      Eigen::MatrixXd expression_A, expression_b;
+      get_constraint_expressions(constraint, expression_A, expression_b);
+      A.block(k_equality, 0, expression_A.rows(), expression_A.cols()) = expression_A;
+      b.segment(k_equality, expression_b.rows()) = expression_b;
+      k_equality += expression_b.rows();
     }
   }
 
-  free_variables = n_variables;
-  determined_variables = 0;
+  free_variables = unfixed_variables;
 
   if (rewrite_equalities && A.rows() > 0)
   {
@@ -242,7 +296,7 @@ void Problem::solve()
 
     y = R.triangularView<Eigen::Lower>().solve(-b2);
 
-    free_variables = n_variables - determined_variables;
+    free_variables = unfixed_variables - determined_variables;
 
     // Removing equality constraints
     n_equalities = 0.;
@@ -417,8 +471,8 @@ void Problem::solve()
   // lower <= x <= upper, with x = bounded_A z + bounded_b
   for (int k = 0; k < (int)bounded.size(); k++)
   {
-    double lower_k = lower_bounds[bounded[k]] - bounded_b(k, 0);
-    double upper_k = upper_bounds[bounded[k]] - bounded_b(k, 0);
+    double lower_k = lower_bounds[unfixed_indices[bounded[k]]] - bounded_b(k, 0);
+    double upper_k = upper_bounds[unfixed_indices[bounded[k]]] - bounded_b(k, 0);
     if (simple_bounds)
     {
       lb[bounded[k]] = lower_k;
@@ -467,18 +521,23 @@ void Problem::solve()
     }
   }
 
+  Eigen::VectorXd unfixed_x;
   if (determined_variables)
   {
-    Eigen::VectorXd u(n_variables, 1);
-    u.setZero();
-    u.topRows(determined_variables) = y;
-    u.bottomRows(free_variables) = qp_x.topRows(free_variables);
-    QR.matrixQ().applyThisOnTheLeft(u);
-    x = u;
+    unfixed_x = Eigen::VectorXd::Zero(unfixed_variables);
+    unfixed_x.topRows(determined_variables) = y;
+    unfixed_x.bottomRows(free_variables) = qp_x.topRows(free_variables);
+    QR.matrixQ().applyThisOnTheLeft(unfixed_x);
   }
   else
   {
-    x = qp_x;
+    unfixed_x = qp_x.topRows(free_variables);
+  }
+
+  x = fixed_values;
+  for (int k = 0; k < unfixed_variables; k++)
+  {
+    x[unfixed_indices[k]] = unfixed_x[k];
   }
 
   // Checking that the problem is indeed feasible
@@ -490,7 +549,7 @@ void Problem::solve()
   // Checking that equality constraints were enforced, since this is not covered by above result
   if (A.rows() > 0)
   {
-    Eigen::VectorXd equality_constraints = A * x.topRows(A.cols()) + b;
+    Eigen::VectorXd equality_constraints = A * unfixed_x + b;
     for (int k = 0; k < A.rows(); k++)
     {
       if (fabs(equality_constraints[k]) > 1e-6)
@@ -547,6 +606,7 @@ void Problem::dump_status()
   std::cout << "  - Variables: " << n_variables << std::endl;
   std::cout << "  - Inequalities: " << n_inequalities << std::endl;
   std::cout << "  - Equalities: " << n_equalities << std::endl;
+  std::cout << "  - Fixed variables: " << fixed_variables << std::endl;
   std::cout << "  - Slack variables: " << slack_variables << std::endl;
   if (rewrite_equalities)
   {

@@ -404,7 +404,7 @@ DynamicsSolver::Result DynamicsSolver::solve(bool integrate)
 
   if (masked_fbase)
   {
-    problem.add_constraint(qdd_variable.expr(0, 6) == 0.);
+    problem.add_bounds(qdd_variable, 0, Eigen::VectorXd::Zero(6), Eigen::VectorXd::Zero(6));
   }
 
   // Updating tasks

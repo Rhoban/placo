@@ -376,15 +376,15 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
     problem.add_constraint(e == 0).configure(task_priority, task->weight);
   }
 
-  // Masked DoFs are hard equality constraints enforcing no deltas
+  // Masked DoFs are bounded to zero deltas
   for (auto& joint : masked_dof)
   {
-    problem.add_constraint(qd->expr(joint, 1) == 0);
+    problem.add_bounds(*qd, joint, Eigen::VectorXd::Zero(1), Eigen::VectorXd::Zero(1));
   }
 
   if (masked_fbase)
   {
-    problem.add_constraint(qd->expr(0, 6) == 0.);
+    problem.add_bounds(*qd, 0, Eigen::VectorXd::Zero(6), Eigen::VectorXd::Zero(6));
   }
 
   compute_limits_inequalities();
