@@ -615,5 +615,41 @@ class TestProblem(unittest.TestCase):
         problem.solve()
         self.assertNumpyEqual(x.value, np.zeros(3))
 
+    def test_fixed_variables(self):
+        """
+        Values with equal bounds are fixed and removed from the QP, giving the same solution as equality constraints
+        """
+        for rewrite in [True, False]:
+            for seed in range(3):
+                solutions = []
+                for use_bounds in [False, True]:
+                    rng = np.random.default_rng(seed)
+                    problem = placo.Problem()
+                    problem.rewrite_equalities = rewrite
+                    x = problem.add_variable(5)
+                    y = problem.add_variable(3)
+                    problem.add_constraint(x.expr(0, 3).left_multiply(rng.normal(size=(1, 3))) == rng.normal())
+                    mixed = x.expr().left_multiply(rng.normal(size=(2, 5)))
+                    mixed = mixed + y.expr(0, 2).left_multiply(rng.normal(size=(2, 2)))
+                    problem.add_constraint(mixed <= 0.1)
+                    problem.add_constraint(y.expr(1, 2) >= -0.2).configure("soft", 10.0)
+                    problem.add_constraint(x.expr() == 3.0 * rng.normal(size=5)).configure("soft", 1.0)
+                    problem.add_constraint(y.expr() == 3.0 * rng.normal(size=3)).configure("soft", 1.0)
+                    problem.add_bounds(y, 0, np.array([-0.5]), np.array([0.5]))
+
+                    fixed = np.array([0.3, -0.2])
+                    if use_bounds:
+                        problem.add_bounds(x, 1, fixed, fixed)
+                        problem.add_bounds(y, 2, np.zeros(1), np.zeros(1))
+                    else:
+                        problem.add_constraint(x.expr(1, 2) == fixed)
+                        problem.add_constraint(y.expr(2, 1) == 0.0)
+                    problem.solve()
+                    self.assertEqual(problem.fixed_variables, 3 if use_bounds else 0)
+                    solutions.append(problem.x.copy())
+                msg = f"rewrite={rewrite} seed={seed}"
+                self.assertNumpyEqual(solutions[0], solutions[1], msg=msg)
+                self.assertNumpyEqual(solutions[1][1:3], fixed, msg=msg)
+
 if __name__ == "__main__":
     unittest.main()
