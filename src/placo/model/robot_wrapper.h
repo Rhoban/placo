@@ -246,6 +246,13 @@ public:
   void update_kinematics();
 
   /**
+   * @brief If true, \ref update_kinematics also computes the time variation of the jacobians (needed by
+   * \ref frame_jacobian_time_variation and \ref joint_jacobian_time_variation). It is enabled by the dynamics
+   * solver.
+   */
+  bool compute_jacobian_time_variation = false;
+
+  /**
    * @brief Compute kinematics hessians
    */
   void compute_hessians();

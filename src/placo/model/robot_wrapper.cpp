@@ -314,9 +314,15 @@ Eigen::Vector3d RobotWrapper::com_world()
 
 void RobotWrapper::update_kinematics()
 {
-  pinocchio::framesForwardKinematics(model, *data, state.q);
-  pinocchio::computeJointJacobians(model, *data, state.q);
-  pinocchio::computeJointJacobiansTimeVariation(model, *data, state.q, state.qd);
+  // A single forward pass: joint placements and jacobians (and their time variation if needed), then frames
+  if (compute_jacobian_time_variation)
+  {
+    pinocchio::computeJointJacobiansTimeVariation(model, *data, state.q, state.qd);
+  }
+  else
+  {
+    pinocchio::computeJointJacobians(model, *data, state.q);
+  }
   pinocchio::updateFramePlacements(model, *data);
 }
 

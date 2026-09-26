@@ -174,6 +174,11 @@ FrameTask DynamicsSolver::add_frame_task(std::string frame_name, Eigen::Affine3d
 
 DynamicsSolver::DynamicsSolver(model::RobotWrapper& robot) : robot(robot)
 {
+  // Dynamics tasks need the time variation of the jacobians (computed right away, in case the kinematics was
+  // already updated)
+  robot.compute_jacobian_time_variation = true;
+  robot.update_kinematics();
+
   N = robot.model.nv;
   masked_fbase = false;
   problem.use_sparsity = false;

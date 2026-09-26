@@ -110,5 +110,49 @@ class TestWrapper(unittest.TestCase):
         )
 
 
+    def test_jacobian_time_variation(self):
+        """
+        update_kinematics gives the same placements and jacobians with or without the time variation of the jacobians,
+        which is computed when enabled (and is enabled by the dynamics solver)
+        """
+        rng = np.random.default_rng(0)
+        robot = self.robot
+        for joint in robot.joint_names():
+            robot.set_joint(joint, rng.uniform(-1.0, 1.0))
+            robot.set_joint_velocity(joint, rng.uniform(-1.0, 1.0))
+        frames = ["body", "trunk", "tip", "leg", "leg_2"]
+
+        results = []
+        for flag in [False, True]:
+            robot.compute_jacobian_time_variation = flag
+            robot.update_kinematics()
+            results.append(
+                [robot.get_T_world_frame(f) for f in frames]
+                + [robot.frame_jacobian(f, "world") for f in frames]
+                + [robot.com_world()]
+            )
+        for a, b in zip(*results):
+            self.assertTrue(np.allclose(a, b, atol=0, rtol=0))
+
+        # Time variation vs finite differences: dJ/dt ~ (J(q + dt qd) - J(q)) / dt
+        dt = 1e-7
+        q, qd = robot.state.q.copy(), robot.state.qd.copy()
+        for frame in frames:
+            robot.state.q = q
+            robot.update_kinematics()
+            J = robot.frame_jacobian(frame, "world")
+            dJ = robot.frame_jacobian_time_variation(frame, "world")
+            robot.integrate(dt)
+            robot.update_kinematics()
+            J2 = robot.frame_jacobian(frame, "world")
+            self.assertTrue(np.allclose((J2 - J) / dt, dJ, atol=1e-5), msg=frame)
+        robot.state.q = q
+
+        # The dynamics solver enables it
+        other = placo.RobotWrapper(f"{this_dir}/quadruped/robot.urdf", placo.Flags.ignore_collisions)
+        self.assertFalse(other.compute_jacobian_time_variation)
+        placo.DynamicsSolver(other)
+        self.assertTrue(other.compute_jacobian_time_variation)
+
 if __name__ == "__main__":
     unittest.main()
