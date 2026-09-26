@@ -77,7 +77,8 @@ void exposeProblem()
       .add_property(
           "columns",
           +[](const ProblemConstraint& constraint) {
-            return Eigen::VectorXi(Eigen::Map<const Eigen::VectorXi>(constraint.columns.data(), constraint.columns.size()));
+            return Eigen::VectorXi(
+                Eigen::Map<const Eigen::VectorXi>(constraint.columns.data(), constraint.columns.size()));
           },
           +[](ProblemConstraint& constraint, const Eigen::VectorXi& columns) {
             constraint.columns.assign(columns.data(), columns.data() + columns.size());

@@ -229,7 +229,7 @@ protected:
   std::vector<ProblemConstraint*> constraints;
 
   /**
-   * @brief Constraints objects that were cleared, reused by \ref add_constraint
+   * @brief Constraint objects that were cleared, reused by \ref add_constraint
    */
   std::vector<ProblemConstraint*> constraints_pool;
 

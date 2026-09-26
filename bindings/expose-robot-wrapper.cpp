@@ -142,13 +142,15 @@ void exposeRobotType(class_<RobotType, W1>& type)
           })
       .def(
           "compact_frame_jacobian",
-          +[](RobotType& robot, const std::string& frame, const std::string& reference, const Eigen::VectorXi& columns) {
+          +[](RobotType& robot, const std::string& frame, const std::string& reference,
+              const Eigen::VectorXi& columns) {
             return robot.compact_frame_jacobian(frame, reference,
                                                 std::vector<int>(columns.data(), columns.data() + columns.size()));
           })
       .def(
           "compact_frame_jacobian_time_variation",
-          +[](RobotType& robot, const std::string& frame, const std::string& reference, const Eigen::VectorXi& columns) {
+          +[](RobotType& robot, const std::string& frame, const std::string& reference,
+              const Eigen::VectorXi& columns) {
             return robot.compact_frame_jacobian_time_variation(
                 frame, reference, std::vector<int>(columns.data(), columns.data() + columns.size()));
           })

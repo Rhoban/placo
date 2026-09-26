@@ -21,11 +21,12 @@ void Task::update()
 
 Eigen::MatrixXd Task::dense_A() const
 {
-  if (columns.empty())
+  if (columns.empty() && A.cols() == solver->N)
   {
     return A;
   }
 
+  // Compact matrix (possibly without any column, for instance for a frame attached to the world)
   Eigen::MatrixXd full = Eigen::MatrixXd::Zero(A.rows(), solver->N);
   for (int k = 0; k < (int)columns.size(); k++)
   {

@@ -33,7 +33,9 @@ void JointSpaceHalfSpacesConstraint::add_constraint(placo::problem::Problem& pro
   }
   constraint.expression.A = -A_no_fbase;
   constraint.expression.b = b - A_no_fbase * solver->robot.state.q.bottomRows(ndof);
-  constraint.configure(priority == Prioritized::Priority::Hard ? problem::ProblemConstraint::Hard : problem::ProblemConstraint::Soft, weight);
+  constraint.configure(priority == Prioritized::Priority::Hard ? problem::ProblemConstraint::Hard :
+                                                                 problem::ProblemConstraint::Soft,
+                       weight);
 }
 
 }  // namespace placo::kinematics

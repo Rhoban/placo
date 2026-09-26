@@ -637,6 +637,13 @@ const std::vector<int>& RobotWrapper::joint_support(pinocchio::JointIndex joint)
 {
   if ((int)joint_supports.size() != model.njoints)
   {
+    // With mimic joints (that are not used by the loaded models), the columns of the joint Jacobians don't match the
+    // degrees of freedom
+    if (model.nvExtended != model.nv)
+    {
+      throw std::runtime_error("RobotWrapper: mimic joints are not supported");
+    }
+
     // Supports are the joints from the universe (index 0, without degrees of freedom) to the given one
     joint_supports.assign(model.njoints, {});
     for (int j = 0; j < model.njoints; j++)
@@ -676,16 +683,6 @@ void RobotWrapper::compact_jacobian(pinocchio::JointIndex joint, const pinocchio
                                     pinocchio::ReferenceFrame ref, const std::vector<int>& columns, Eigen::MatrixXd& J)
 {
   J.resize(6, columns.size());
-
-  if (model.nvExtended != model.nv)
-  {
-    // With mimic joints, the joint Jacobians columns don't match the degrees of freedom: using the full Jacobian
-    pinocchio::Data::Matrix6x J_full = pinocchio::Data::Matrix6x::Zero(6, model.nv);
-    pinocchio::getJointJacobian(model, *data, joint, pinocchio::WORLD, J_full);
-    compact_from_world(joint, J_full, J_full, T_world_point, ref, columns, J, false);
-    return;
-  }
-
   compact_from_world(joint, data->J, data->J, T_world_point, ref, columns, J, false);
 }
 
@@ -694,11 +691,6 @@ void RobotWrapper::compact_jacobian_time_variation(pinocchio::JointIndex joint, 
                                                    Eigen::MatrixXd& dJ)
 {
   dJ.resize(6, columns.size());
-
-  if (model.nvExtended != model.nv)
-  {
-    throw std::runtime_error("RobotWrapper: compact Jacobian time variations are not supported with mimic joints");
-  }
 
   // Columns of the support: world time variations, then the terms depending on the velocity of the point
   compact_from_world(joint, data->dJ, data->J, T_world_point, ref, columns, dJ, true, &data->ov[joint]);

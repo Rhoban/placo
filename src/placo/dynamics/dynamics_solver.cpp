@@ -490,10 +490,10 @@ DynamicsSolver::Result DynamicsSolver::solve(bool integrate)
       {
         constraint.expression.A.setZero(task->A.rows(), tau.A.cols());
         constraint.expression.b.setZero(task->A.rows());
-        for (int k = 0; k < (int)task->columns.size(); k++)
+        for (int column = 0; column < (int)task->columns.size(); column++)
         {
-          constraint.expression.A.noalias() += task->A.col(k) * tau.A.row(task->columns[k]);
-          constraint.expression.b.noalias() += task->A.col(k) * tau.b[task->columns[k]];
+          constraint.expression.A.noalias() += task->A.col(column) * tau.A.row(task->columns[column]);
+          constraint.expression.b.noalias() += task->A.col(column) * tau.b[task->columns[column]];
         }
       }
       constraint.expression.b -= task->b;

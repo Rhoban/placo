@@ -31,7 +31,9 @@ void DistanceConstraint::add_constraint(placo::problem::Problem& problem)
   constraint.columns = columns;
   constraint.expression.A.noalias() = -direction.transpose() * (J_b.topRows(3) - J_a.topRows(3));
   constraint.expression.b.setConstant(1, distance_max - distance);
-  constraint.configure(priority == Prioritized::Priority::Hard ? problem::ProblemConstraint::Hard : problem::ProblemConstraint::Soft, weight);
+  constraint.configure(priority == Prioritized::Priority::Hard ? problem::ProblemConstraint::Hard :
+                                                                 problem::ProblemConstraint::Soft,
+                       weight);
 }
 
 }  // namespace placo::kinematics

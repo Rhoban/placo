@@ -39,7 +39,9 @@ void YawConstraint::add_constraint(placo::problem::Problem& problem)
   constraint.expression.A.row(1) = -constraint.expression.A.row(0);
   constraint.expression.b.resize(2);
   constraint.expression.b << angle_max - alpha, angle_max + alpha;
-  constraint.configure(priority == Prioritized::Priority::Hard ? problem::ProblemConstraint::Hard : problem::ProblemConstraint::Soft, weight);
+  constraint.configure(priority == Prioritized::Priority::Hard ? problem::ProblemConstraint::Hard :
+                                                                 problem::ProblemConstraint::Soft,
+                       weight);
 }
 
 }  // namespace placo::kinematics

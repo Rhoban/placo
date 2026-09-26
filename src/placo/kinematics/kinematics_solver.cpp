@@ -353,7 +353,8 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
         {
           scale_variable = &problem.add_variable(1);
         }
-        problem.add_bounds(*scale_variable, 0, Eigen::Matrix<double, 1, 1>::Zero(), Eigen::Matrix<double, 1, 1>::Ones());
+        problem.add_bounds(*scale_variable, 0, Eigen::Matrix<double, 1, 1>::Zero(),
+                           Eigen::Matrix<double, 1, 1>::Ones());
         ProblemConstraint& scale_objective = problem.add_constraint();
         scale_objective.columns.assign(1, scale_variable->k_start);
         scale_objective.expression.A.setOnes(1, 1);

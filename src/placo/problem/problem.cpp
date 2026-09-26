@@ -421,7 +421,8 @@ void Problem::add_squared_norm(const Reduced& r, const std::vector<Run>& runs, d
       for (int j = 0; j <= i; j++)
       {
         const Run& run_j = runs[j];
-        P.block(run_i.var, run_j.var, run_i.size, run_j.size) += gram.block(run_i.col, run_j.col, run_i.size, run_j.size);
+        P.block(run_i.var, run_j.var, run_i.size, run_j.size) +=
+            gram.block(run_i.col, run_j.col, run_i.size, run_j.size);
       }
     }
   }
@@ -704,7 +705,8 @@ void Problem::solve()
   {
     ProblemConstraint* constraint = constraints[i];
     Reduced& r = reduced[i];
-    bool hard_equality = constraint->type == ProblemConstraint::Equality && constraint->priority == ProblemConstraint::Hard;
+    bool hard_equality =
+        constraint->type == ProblemConstraint::Equality && constraint->priority == ProblemConstraint::Hard;
 
     if (hard_equality && eliminate)
     {

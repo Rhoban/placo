@@ -50,7 +50,9 @@ void ConeConstraint::add_constraint(placo::problem::Problem& problem)
     constraint.expression.b(k) = angle_max - alpha;
   }
 
-  constraint.configure(priority == Prioritized::Priority::Hard ? problem::ProblemConstraint::Hard : problem::ProblemConstraint::Soft, weight);
+  constraint.configure(priority == Prioritized::Priority::Hard ? problem::ProblemConstraint::Hard :
+                                                                 problem::ProblemConstraint::Soft,
+                       weight);
 }
 
 }  // namespace placo::kinematics
