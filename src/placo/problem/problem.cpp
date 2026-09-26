@@ -98,8 +98,8 @@ ProblemConstraint& Problem::add_constraint(const ProblemConstraint& constraint_)
   return constraint;
 }
 
-void Problem::add_bounds(const Variable& variable, int start, const Eigen::VectorXd& lower,
-                         const Eigen::VectorXd& upper)
+void Problem::add_bounds(const Variable& variable, int start, const Eigen::Ref<const Eigen::VectorXd>& lower,
+                         const Eigen::Ref<const Eigen::VectorXd>& upper)
 {
   if (lower.rows() != upper.rows() || start < 0 || variable.k_start + start + lower.rows() > variable.k_end)
   {
@@ -126,7 +126,7 @@ void Problem::detect_fixed_variables()
 {
   fixed_variables = 0;
   fixed_values.setZero(n_variables);
-  unfixed_indices.resize(n_variables);
+  unfixed_indices.clear();
   unfixed_index.resize(n_variables);
   for (int k = 0; k < n_variables; k++)
   {
@@ -139,10 +139,9 @@ void Problem::detect_fixed_variables()
     else
     {
       unfixed_index[k] = k - fixed_variables;
-      unfixed_indices[k - fixed_variables] = k;
+      unfixed_indices.push_back(k);
     }
   }
-  unfixed_indices.conservativeResize(n_variables - fixed_variables);
 }
 
 int Problem::bounds_inequalities() const
@@ -183,8 +182,7 @@ void Problem::reduce_fixed(const ProblemConstraint& constraint, Reduced& r)
   if (constraint.columns.empty())
   {
     // Dense expression: unfixed variables keep their order, the reduced expression is dense as well
-    int unfixed_cols = std::lower_bound(unfixed_indices.data(), unfixed_indices.data() + unfixed_indices.rows(), cols) -
-                       unfixed_indices.data();
+    int unfixed_cols = std::lower_bound(unfixed_indices.begin(), unfixed_indices.end(), cols) - unfixed_indices.begin();
     r.columns = nullptr;
     if (unfixed_cols == cols)
     {
@@ -264,7 +262,7 @@ void Problem::reduce_eliminated(Reduced& r)
   if (!sparse_elimination_used)
   {
     // Dense QR elimination: x = Q [y; z], z being the QP variables
-    int n = unfixed_indices.rows();
+    int n = (int)unfixed_indices.size();
     r.A_eliminated.setZero(rows, n);
     if (r.columns == nullptr)
     {
@@ -460,7 +458,7 @@ void Problem::solve()
   determined_variables = 0;
   sparse_elimination_used = false;
   detect_fixed_variables();
-  int unfixed_variables = unfixed_indices.rows();
+  int unfixed_variables = (int)unfixed_indices.size();
   const double infinity = std::numeric_limits<double>::infinity();
 
   // Checking and counting the constraints, substituting the fixed variables
@@ -533,13 +531,24 @@ void Problem::solve()
         Reduced& r = reduced[i];
         if (r.columns == nullptr)
         {
-          // Dense equalities are passed with their columns
-          r.columns_fixed.resize(r.A.cols());
+          // Dense equalities are passed as compact on their non-zero columns (all the columns if use_sparsity is not
+          // set), the storage for eliminated expressions being unused for equalities
+          r.columns_eliminated.clear();
           for (int k = 0; k < r.A.cols(); k++)
           {
-            r.columns_fixed[k] = k;
+            if (!use_sparsity || !r.A.col(k).isZero(0))
+            {
+              r.columns_eliminated.push_back(k);
+            }
           }
-          r.columns = &r.columns_fixed;
+          r.A_eliminated.resize(r.A.rows(), r.columns_eliminated.size());
+          for (int k = 0; k < (int)r.columns_eliminated.size(); k++)
+          {
+            r.A_eliminated.col(k) = r.A.col(r.columns_eliminated[k]);
+          }
+          new (&r.A) Eigen::Map<const Eigen::MatrixXd>(r.A_eliminated.data(), r.A_eliminated.rows(),
+                                                       r.A_eliminated.cols());
+          r.columns = &r.columns_eliminated;
         }
         equalities.push_back(SparseElimination::Equality{ &r.A, &r.b, r.columns });
       }
@@ -605,8 +614,8 @@ void Problem::solve()
       throw QPError("QR decomposition failed to find a full rank matrix for equality constraints");
     }
 
-    Eigen::MatrixXd R = QR.matrixR().transpose().block(0, 0, determined_variables, determined_variables);
-    Eigen::MatrixXd b2 = beq.transpose();
+    R = QR.matrixR().transpose().block(0, 0, determined_variables, determined_variables);
+    b2 = beq.transpose();
     QR.colsPermutation().applyThisOnTheRight(b2);
     b2.transposeInPlace();
 

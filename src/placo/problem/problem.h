@@ -62,7 +62,8 @@ public:
    * @param lower lower bounds
    * @param upper upper bounds
    */
-  void add_bounds(const Variable& variable, int start, const Eigen::VectorXd& lower, const Eigen::VectorXd& upper);
+  void add_bounds(const Variable& variable, int start, const Eigen::Ref<const Eigen::VectorXd>& lower,
+                  const Eigen::Ref<const Eigen::VectorXd>& upper);
 
   /**
    * @brief Clear all the constraints (and bounds). The constraint objects are kept to be reused by the next calls
@@ -176,7 +177,7 @@ protected:
    * @brief Indices of the variables that are not fixed, index of each variable among them (-1 for fixed variables),
    * and values of the fixed variables (zero for the others), see \ref fixed_variables
    */
-  Eigen::VectorXi unfixed_indices;
+  std::vector<int> unfixed_indices;
   std::vector<int> unfixed_index;
   Eigen::VectorXd fixed_values;
 
@@ -290,7 +291,7 @@ protected:
   void add_squared_norm(const Reduced& r, const std::vector<Run>& runs, double weight);
 
   // Workspaces (kept from a solve to another to reuse the memory)
-  Eigen::MatrixXd P, C, Aeq, gram, bounds_full;
+  Eigen::MatrixXd P, C, Aeq, gram, bounds_full, R, b2;
   Eigen::VectorXd q, lower, upper, lb, ub, qp_x, beq, unfixed_x;
   std::vector<Run> runs;
   std::vector<int> stamp, gathered;

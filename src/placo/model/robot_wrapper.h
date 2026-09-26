@@ -633,6 +633,26 @@ public:
                                              const std::vector<int>& columns, Eigen::MatrixXd& dJ);
 
   /**
+   * @brief Compact frame Jacobian, see \ref compact_jacobian
+   * @param frame frame name
+   * @param reference reference frame ("local", "world" or "local_world_aligned")
+   * @param columns columns to compute (sorted), a superset of the frame support (see \ref frame_support)
+   * @return compact Jacobian (6 x columns.size())
+   */
+  Eigen::MatrixXd compact_frame_jacobian(const std::string& frame, const std::string& reference,
+                                         const std::vector<int>& columns);
+
+  /**
+   * @brief Compact frame Jacobian time variation, see \ref compact_jacobian_time_variation
+   * @param frame frame name
+   * @param reference reference frame ("local", "world" or "local_world_aligned")
+   * @param columns columns to compute (sorted), a superset of the frame support (see \ref frame_support)
+   * @return compact Jacobian time variation (6 x columns.size())
+   */
+  Eigen::MatrixXd compact_frame_jacobian_time_variation(const std::string& frame, const std::string& reference,
+                                                        const std::vector<int>& columns);
+
+  /**
    * @brief Jacobian of the CoM position expressed in the world
    *
    * Be sure you called \ref update_kinematics before calling this method if your state has changed

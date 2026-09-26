@@ -298,16 +298,17 @@ void KinematicsSolver::compute_limits_inequalities()
   if (joint_limits)
   {
     // q_min <= q + qd <= q_max
-    Eigen::VectorXd q = robot.state.q.bottomRows(N - 6);
-    problem.add_bounds(*qd, 6, robot.model.lowerPositionLimit.bottomRows(N - 6) - q,
-                       robot.model.upperPositionLimit.bottomRows(N - 6) - q);
+    limits_lower = robot.model.lowerPositionLimit.bottomRows(N - 6) - robot.state.q.bottomRows(N - 6);
+    limits_upper = robot.model.upperPositionLimit.bottomRows(N - 6) - robot.state.q.bottomRows(N - 6);
+    problem.add_bounds(*qd, 6, limits_lower, limits_upper);
   }
 
   if (velocity_limits)
   {
     // -dt v_max <= qd <= dt v_max
-    Eigen::VectorXd max_delta = dt * robot.model.velocityLimit.bottomRows(N - 6);
-    problem.add_bounds(*qd, 6, -max_delta, max_delta);
+    limits_upper = dt * robot.model.velocityLimit.bottomRows(N - 6);
+    limits_lower = -limits_upper;
+    problem.add_bounds(*qd, 6, limits_lower, limits_upper);
   }
 }
 
@@ -352,7 +353,7 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
         {
           scale_variable = &problem.add_variable(1);
         }
-        problem.add_bounds(*scale_variable, 0, Eigen::VectorXd::Zero(1), Eigen::VectorXd::Ones(1));
+        problem.add_bounds(*scale_variable, 0, Eigen::Matrix<double, 1, 1>::Zero(), Eigen::Matrix<double, 1, 1>::Ones());
         ProblemConstraint& scale_objective = problem.add_constraint();
         scale_objective.columns.assign(1, scale_variable->k_start);
         scale_objective.expression.A.setOnes(1, 1);
@@ -391,12 +392,12 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
   // Masked DoFs are bounded to zero deltas
   for (auto& joint : masked_dof)
   {
-    problem.add_bounds(*qd, joint, Eigen::VectorXd::Zero(1), Eigen::VectorXd::Zero(1));
+    problem.add_bounds(*qd, joint, Eigen::Matrix<double, 1, 1>::Zero(), Eigen::Matrix<double, 1, 1>::Zero());
   }
 
   if (masked_fbase)
   {
-    problem.add_bounds(*qd, 0, Eigen::VectorXd::Zero(6), Eigen::VectorXd::Zero(6));
+    problem.add_bounds(*qd, 0, Eigen::Matrix<double, 6, 1>::Zero(), Eigen::Matrix<double, 6, 1>::Zero());
   }
 
   compute_limits_inequalities();

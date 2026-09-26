@@ -651,5 +651,67 @@ class TestProblem(unittest.TestCase):
                 self.assertNumpyEqual(solutions[0], solutions[1], msg=msg)
                 self.assertNumpyEqual(solutions[1][1:3], fixed, msg=msg)
 
+    def test_compact_constraints(self):
+        """
+        Compact constraints (on some columns) give the same solution as the equivalent dense constraints, with or
+        without elimination of the equalities (QR or sparse elimination)
+        """
+        n = 11
+        for seed in range(4):
+            rng = np.random.default_rng(seed)
+            # (columns, type, priority, weight, rows): two independent equalities blocks (structure for the sparse
+            # elimination), soft objectives, hard and soft inequalities
+            specs = [
+                ([0, 1, 4], "eq", "hard", 1.0, 1),
+                ([2, 3, 7], "eq", "hard", 1.0, 2),
+                (list(range(n)), "eq", "soft", 1.0, n),
+                ([1, 5, 9], "ineq", "hard", 1.0, 2),
+                ([2, 7, 10], "ineq", "soft", 10.0, 1),
+                ([6, 8], "eq", "soft", 0.5, 2),
+            ]
+            data = [(cols, t, p, w, rng.normal(size=(r, len(cols))), rng.normal(size=r) * 3) for cols, t, p, w, r in specs]
+
+            solutions = []
+            for compact in [False, True]:
+                for mode in ["qr", "none", "sparse"]:
+                    problem = placo.Problem()
+                    problem.rewrite_equalities = mode != "none"
+                    problem.sparse_elimination = mode == "sparse"
+                    x = problem.add_variable(n)
+                    for cols, t, p, w, A, b in data:
+                        e = placo.Expression()
+                        if compact:
+                            e.A, e.b = A, b
+                        else:
+                            A_full = np.zeros((A.shape[0], n))
+                            A_full[:, cols] = A
+                            e.A, e.b = A_full, b
+                        constraint = problem.add_constraint(e == 0 if t == "eq" else e >= 0)
+                        constraint.configure(p, w)
+                        if compact:
+                            constraint.columns = np.array(cols, dtype=np.int32)
+                    problem.add_bounds(x, 0, np.array([-0.5, -1.0]), np.array([0.5, 1.0]))
+                    # Fixed variable
+                    problem.add_bounds(x, 6, np.array([0.2]), np.array([0.2]))
+                    problem.solve()
+                    if mode == "sparse":
+                        self.assertTrue(problem.sparse_elimination_used)
+                    self.assertEqual(problem.fixed_variables, 1)
+                    solutions.append(x.value.copy())
+
+            for solution in solutions[1:]:
+                self.assertNumpyEqual(solution, solutions[0], msg=f"seed={seed}", epsilon=1e-7)
+            self.assertAlmostEqual(solutions[0][6], 0.2)
+
+        # Inconsistent columns are refused
+        problem = placo.Problem()
+        x = problem.add_variable(3)
+        e = placo.Expression()
+        e.A, e.b = np.ones((1, 2)), np.zeros(1)
+        constraint = problem.add_constraint(e == 0)
+        constraint.columns = np.array([0, 1, 2], dtype=np.int32)
+        with self.assertRaises(RuntimeError):
+            problem.solve()
+
 if __name__ == "__main__":
     unittest.main()

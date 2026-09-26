@@ -230,8 +230,16 @@ void DynamicsSolver::compute_limits_inequalities(Variable& qdd, Expression& tau)
       effort_limit[entry.first] = entry.second;
     }
 
-    problem.add_constraint(tau.slice(6) <= effort_limit.bottomRows(N - 6));
-    problem.add_constraint(tau.slice(6) >= -effort_limit.bottomRows(N - 6));
+    // -effort_limit <= tau <= effort_limit, for the actuated joints
+    ProblemConstraint& upper_limit = problem.add_constraint();
+    upper_limit.type = ProblemConstraint::Inequality;
+    upper_limit.expression.A = -tau.A.bottomRows(N - 6);
+    upper_limit.expression.b = effort_limit.bottomRows(N - 6) - tau.b.tail(N - 6);
+
+    ProblemConstraint& lower_limit = problem.add_constraint();
+    lower_limit.type = ProblemConstraint::Inequality;
+    lower_limit.expression.A = tau.A.bottomRows(N - 6);
+    lower_limit.expression.b = effort_limit.bottomRows(N - 6) + tau.b.tail(N - 6);
   }
 
   // Joint limits and velocity limits (without the dependency on torques) are bounds on the joints accelerations
@@ -391,7 +399,7 @@ DynamicsSolver::Result DynamicsSolver::solve(bool integrate)
 
   if (masked_fbase)
   {
-    problem.add_bounds(qdd_variable, 0, Eigen::VectorXd::Zero(6), Eigen::VectorXd::Zero(6));
+    problem.add_bounds(qdd_variable, 0, Eigen::Matrix<double, 6, 1>::Zero(), Eigen::Matrix<double, 6, 1>::Zero());
   }
 
   // Updating tasks

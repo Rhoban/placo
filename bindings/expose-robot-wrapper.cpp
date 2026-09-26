@@ -135,6 +135,24 @@ void exposeRobotType(class_<RobotType, W1>& type)
             return robot.relative_position_jacobian(frameA, frameB);
           })
       .def(
+          "frame_support",
+          +[](RobotType& robot, const std::string& frame) {
+            const std::vector<int>& support = robot.frame_support(robot.get_frame_index(frame));
+            return Eigen::VectorXi(Eigen::Map<const Eigen::VectorXi>(support.data(), support.size()));
+          })
+      .def(
+          "compact_frame_jacobian",
+          +[](RobotType& robot, const std::string& frame, const std::string& reference, const Eigen::VectorXi& columns) {
+            return robot.compact_frame_jacobian(frame, reference,
+                                                std::vector<int>(columns.data(), columns.data() + columns.size()));
+          })
+      .def(
+          "compact_frame_jacobian_time_variation",
+          +[](RobotType& robot, const std::string& frame, const std::string& reference, const Eigen::VectorXi& columns) {
+            return robot.compact_frame_jacobian_time_variation(
+                frame, reference, std::vector<int>(columns.data(), columns.data() + columns.size()));
+          })
+      .def(
           "joint_jacobian", +[](RobotType& robot, const std::string& joint,
                                 const std::string& reference) { return robot.joint_jacobian(joint, reference); })
       .def(

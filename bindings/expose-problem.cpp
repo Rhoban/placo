@@ -74,6 +74,14 @@ void exposeProblem()
           })
       .add_property("weight", &ProblemConstraint::weight)
       .add_property("is_active", &ProblemConstraint::is_active)
+      .add_property(
+          "columns",
+          +[](const ProblemConstraint& constraint) {
+            return Eigen::VectorXi(Eigen::Map<const Eigen::VectorXi>(constraint.columns.data(), constraint.columns.size()));
+          },
+          +[](ProblemConstraint& constraint, const Eigen::VectorXi& columns) {
+            constraint.columns.assign(columns.data(), columns.data() + columns.size());
+          })
       .def<void (ProblemConstraint::*)(std::string, double)>("configure", &ProblemConstraint::configure,
                                                              configure_overloads());
 

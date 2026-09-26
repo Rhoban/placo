@@ -779,6 +779,23 @@ void RobotWrapper::compact_frame_jacobian(FrameIndex frame, pinocchio::Reference
   compact_jacobian(frame_model.parentJoint, data->oMf[frame], ref, columns, J);
 }
 
+Eigen::MatrixXd RobotWrapper::compact_frame_jacobian(const std::string& frame, const std::string& reference,
+                                                     const std::vector<int>& columns)
+{
+  Eigen::MatrixXd J;
+  compact_frame_jacobian(get_frame_index(frame), string_to_reference(reference), columns, J);
+  return J;
+}
+
+Eigen::MatrixXd RobotWrapper::compact_frame_jacobian_time_variation(const std::string& frame,
+                                                                    const std::string& reference,
+                                                                    const std::vector<int>& columns)
+{
+  Eigen::MatrixXd dJ;
+  compact_frame_jacobian_time_variation(get_frame_index(frame), string_to_reference(reference), columns, dJ);
+  return dJ;
+}
+
 void RobotWrapper::compact_frame_jacobian_time_variation(FrameIndex frame, pinocchio::ReferenceFrame ref,
                                                          const std::vector<int>& columns, Eigen::MatrixXd& dJ)
 {

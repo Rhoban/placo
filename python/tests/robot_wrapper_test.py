@@ -154,5 +154,36 @@ class TestWrapper(unittest.TestCase):
         placo.DynamicsSolver(other)
         self.assertTrue(other.compute_jacobian_time_variation)
 
+    def test_compact_jacobians(self):
+        """
+        Compact Jacobians (and their time variations) are the full ones restricted to the given columns, which can be
+        the frame support (outside of which the full Jacobian is zero) or any superset of it
+        """
+        rng = np.random.default_rng(1)
+        robot = self.robot
+        robot.compute_jacobian_time_variation = True
+        for joint in robot.joint_names():
+            robot.set_joint(joint, rng.uniform(-1.0, 1.0))
+            robot.set_joint_velocity(joint, rng.uniform(-1.0, 1.0))
+        robot.state.qd[:6] = rng.uniform(-1.0, 1.0, 6)
+        robot.update_kinematics()
+        all_columns = np.arange(robot.model.nv, dtype=np.int32)
+
+        for frame in ["body", "trunk", "tip", "leg", "leg_2"]:
+            support = robot.frame_support(frame)
+            J = robot.frame_jacobian(frame, "world")
+            outside = np.setdiff1d(all_columns, support)
+            self.assertTrue(np.all(J[:, outside] == 0), msg=frame)
+
+            for reference in ["world", "local", "local_world_aligned"]:
+                J = robot.frame_jacobian(frame, reference)
+                dJ = robot.frame_jacobian_time_variation(frame, reference)
+                for columns in [support, all_columns]:
+                    msg = f"{frame} {reference} {len(columns)} columns"
+                    self.assertTrue(np.allclose(robot.compact_frame_jacobian(frame, reference, columns), J[:, columns],
+                                                atol=1e-12), msg=msg)
+                    self.assertTrue(np.allclose(robot.compact_frame_jacobian_time_variation(frame, reference, columns),
+                                                dJ[:, columns], atol=1e-12), msg=msg)
+
 if __name__ == "__main__":
     unittest.main()
