@@ -52,6 +52,7 @@ void exposeRobotType(class_<RobotType, W1>& type)
             return Eigen::Vector2d(limits.first, limits.second);
           })
       .def("update_kinematics", &RobotType::update_kinematics)
+      .def_readwrite("compute_jacobian_time_variation", &RobotType::compute_jacobian_time_variation)
       .def("compute_hessians", &RobotType::compute_hessians)
       .def(
           "get_frame_hessian",
