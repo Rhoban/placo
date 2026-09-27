@@ -235,7 +235,7 @@ void exposeKinematics()
       .def_readwrite("minimize", &ManipulabilityTask::minimize)
       .def_readonly("manipulability", &ManipulabilityTask::manipulability);
 
-  class__<KineticEnergyRegularizationTask, bases<RegularizationTask>>("KineticEnergyRegularizationTask");
+  class__<KineticEnergyRegularizationTask, bases<Task>>("KineticEnergyRegularizationTask");
 
   class__<Constraint, bases<tools::Prioritized>, boost::noncopyable>("KinematicsConstraint", no_init);
 
