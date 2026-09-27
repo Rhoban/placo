@@ -26,6 +26,20 @@ class TestKinematicsSolver(unittest.TestCase):
         self.solver.remove_task(frame_task)
         self.assertEqual(self.solver.tasks_count(), 0, msg="There should be no more task")
 
+    def test_kinetic_energy_regularization_task(self):
+        """
+        The kinetic energy regularization task can be configured and removed from Python
+        """
+        self.solver.dt = 0.01
+        task = self.solver.add_kinetic_energy_regularization_task(1e-4)
+        self.assertIsInstance(task, placo.Task)
+        task.configure("kinetic_energy", "soft", 1e-3)
+        self.solver.solve(False)
+        self.assertEqual(self.solver.tasks_count(), 1)
+
+        self.solver.remove_task(task)
+        self.assertEqual(self.solver.tasks_count(), 0)
+
 
 if __name__ == "__main__":
     unittest.main()
