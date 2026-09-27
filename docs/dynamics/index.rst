@@ -12,6 +12,7 @@ Dynamics
     regularization
     solver_status
     loop_closures
+    equalities_elimination
 
 .. toctree::
    :caption: Tasks
