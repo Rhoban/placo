@@ -74,18 +74,6 @@ Finally, the following lines:
 Ensure that the passive degrees of freedom have zero-torque constraint. This is done with a
 :doc:`torque task <torque_task>`, which is configured as a hard constraint.
 
-Performances
-------------
-
-For robots with several independent loop closures (like Megabot below), the *sparse elimination* of the hard
-equalities can make the solver faster:
-
-.. code-block:: python
-
-    solver.problem.sparse_elimination = True
-
-See :doc:`hard equalities elimination <equalities_elimination>` for more details.
-
 Examples
 --------
 

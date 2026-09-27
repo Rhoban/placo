@@ -51,6 +51,8 @@ Which one should I use?
   grows with the size of the whole robot, while the cost of the sparse elimination grows with the size of each loop.
   It doesn't help when there are few hard equalities, or when they all involve the same joints (for instance a
   single closure spanning the whole robot). Since it falls back to QR elimination, it is safe to enable.
+  It currently only helps with the kinematics solver: with the dynamics solver, the equations of motion and the
+  zero-torque constraints involve variables of the whole robot, and it falls back to QR elimination.
 * **No elimination** is faster on some problems, for instance some of the dynamics examples below, and much
   slower on others.
 
@@ -67,7 +69,7 @@ Here are some solve times measured on the examples:
 +-------------------------------------------+--------+----------------+-----------+
 | Dynamics, quadruped                       | 44 µs  | **31 µs**      | 43 µs     |
 +-------------------------------------------+--------+----------------+-----------+
-| Dynamics, Megabot                         | 405 µs | 985 µs         | 406 µs    |
+| Dynamics, Megabot (fallback to QR)        | 405 µs | 985 µs         | 406 µs    |
 +-------------------------------------------+--------+----------------+-----------+
 
 .. note::
