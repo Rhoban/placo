@@ -65,7 +65,7 @@ Inspecting the elimination
 
 After a solve, the following attributes of ``solver.problem`` can be checked:
 
-* ``n_equalities``: the number of equality constraints,
+* ``n_equalities``: the number of equality constraints passed to the QP solver (0 when they are eliminated),
 * ``free_variables``: the number of variables that remained after the elimination,
 * ``determined_variables``: the number of variables that were determined by the equalities,
 * ``sparse_elimination_used``: whether the sparse elimination was actually used (else it fell back to the QR
