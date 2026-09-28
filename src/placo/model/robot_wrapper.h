@@ -561,6 +561,98 @@ public:
   Eigen::MatrixXd relative_position_jacobian(const std::string& frame_a, const std::string& frame_b);
 
   /**
+   * @brief Degrees of freedom (columns in the velocity space, sorted) a joint depends on: the ones of the joints
+   * between the root and this joint. Jacobians of frames attached to this joint are zero outside of these columns.
+   * @param joint joint index
+   * @return columns
+   */
+  const std::vector<int>& joint_support(pinocchio::JointIndex joint);
+
+  /**
+   * @brief Degrees of freedom (columns in the velocity space, sorted) a frame depends on, see \ref joint_support
+   * @param frame frame index
+   * @return columns
+   */
+  const std::vector<int>& frame_support(FrameIndex frame);
+
+  /**
+   * @brief Sorted union of two supports (see \ref joint_support)
+   * @param a first support
+   * @param b second support
+   * @param result union
+   */
+  static void merge_supports(const std::vector<int>& a, const std::vector<int>& b, std::vector<int>& result);
+
+  /**
+   * @brief Jacobian of a point rigidly attached to a joint, restricted to some columns (compact Jacobian): the k-th
+   * column of J is the column columns[k] of the full Jacobian. The columns can be any (sorted) superset of the joint
+   * support (see \ref joint_support), the Jacobian being zero for the other columns.
+   *
+   * The Jacobian is computed from the joint Jacobians computed by \ref update_kinematics, which should be called
+   * before if the state has changed.
+   * @param joint joint the point is attached to
+   * @param T_world_point placement of the point (its frame is used for the LOCAL reference)
+   * @param ref reference frame of the Jacobian
+   * @param columns columns to compute (sorted)
+   * @param J output compact Jacobian (6 x columns.size())
+   */
+  void compact_jacobian(pinocchio::JointIndex joint, const pinocchio::SE3& T_world_point, pinocchio::ReferenceFrame ref,
+                        const std::vector<int>& columns, Eigen::MatrixXd& J);
+
+  /**
+   * @brief Compact frame Jacobian, see \ref compact_jacobian
+   * @param frame frame index
+   * @param ref reference frame of the Jacobian
+   * @param columns columns to compute (sorted), a superset of the frame support
+   * @param J output compact Jacobian (6 x columns.size())
+   */
+  void compact_frame_jacobian(FrameIndex frame, pinocchio::ReferenceFrame ref, const std::vector<int>& columns,
+                              Eigen::MatrixXd& J);
+
+  /**
+   * @brief Time variation of a compact Jacobian (see \ref compact_jacobian), computed from the joint Jacobians time
+   * variations (requires \ref compute_jacobian_time_variation, see \ref update_kinematics)
+   * @param joint joint the point is attached to
+   * @param T_world_point placement of the point (its frame is used for the LOCAL reference)
+   * @param ref reference frame of the Jacobian
+   * @param columns columns to compute (sorted)
+   * @param dJ output compact Jacobian time variation (6 x columns.size())
+   */
+  void compact_jacobian_time_variation(pinocchio::JointIndex joint, const pinocchio::SE3& T_world_point,
+                                       pinocchio::ReferenceFrame ref, const std::vector<int>& columns,
+                                       Eigen::MatrixXd& dJ);
+
+  /**
+   * @brief Compact frame Jacobian time variation, see \ref compact_jacobian_time_variation
+   * @param frame frame index
+   * @param ref reference frame of the Jacobian
+   * @param columns columns to compute (sorted), a superset of the frame support
+   * @param dJ output compact Jacobian time variation (6 x columns.size())
+   */
+  void compact_frame_jacobian_time_variation(FrameIndex frame, pinocchio::ReferenceFrame ref,
+                                             const std::vector<int>& columns, Eigen::MatrixXd& dJ);
+
+  /**
+   * @brief Compact frame Jacobian, see \ref compact_jacobian
+   * @param frame frame name
+   * @param reference reference frame ("local", "world" or "local_world_aligned")
+   * @param columns columns to compute (sorted), a superset of the frame support (see \ref frame_support)
+   * @return compact Jacobian (6 x columns.size())
+   */
+  Eigen::MatrixXd compact_frame_jacobian(const std::string& frame, const std::string& reference,
+                                         const std::vector<int>& columns);
+
+  /**
+   * @brief Compact frame Jacobian time variation, see \ref compact_jacobian_time_variation
+   * @param frame frame name
+   * @param reference reference frame ("local", "world" or "local_world_aligned")
+   * @param columns columns to compute (sorted), a superset of the frame support (see \ref frame_support)
+   * @return compact Jacobian time variation (6 x columns.size())
+   */
+  Eigen::MatrixXd compact_frame_jacobian_time_variation(const std::string& frame, const std::string& reference,
+                                                        const std::vector<int>& columns);
+
+  /**
    * @brief Jacobian of the CoM position expressed in the world
    *
    * Be sure you called \ref update_kinematics before calling this method if your state has changed
@@ -712,5 +804,19 @@ protected:
    * @brief Free flyer joint
    */
   pinocchio::JointModelFreeFlyer root_joint;
+
+  /**
+   * @brief Computes the given columns of a Jacobian (or of its time variation) of a point attached to a joint, from
+   * the joint Jacobians in the world (J_world, and J_velocity for the velocity terms of the time variation)
+   */
+  void compact_from_world(pinocchio::JointIndex joint, const pinocchio::Data::Matrix6x& J_world,
+                          const pinocchio::Data::Matrix6x& J_velocity, const pinocchio::SE3& T_world_point,
+                          pinocchio::ReferenceFrame ref, const std::vector<int>& columns, Eigen::MatrixXd& J,
+                          bool time_variation, const pinocchio::Motion* ov_joint = nullptr);
+
+  /**
+   * @brief Cache for \ref joint_support (computed on first use)
+   */
+  std::vector<std::vector<int>> joint_supports;
 };
 }  // namespace placo::model

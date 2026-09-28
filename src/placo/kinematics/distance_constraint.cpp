@@ -20,22 +20,20 @@ void DistanceConstraint::add_constraint(placo::problem::Problem& problem)
   double distance = ab_world.norm();
   Eigen::Vector3d direction = ab_world.normalized();
 
-  Eigen::MatrixXd J_a = solver->robot.frame_jacobian(frame_a, pinocchio::LOCAL_WORLD_ALIGNED);
-  Eigen::MatrixXd J_b = solver->robot.frame_jacobian(frame_b, pinocchio::LOCAL_WORLD_ALIGNED);
-  Eigen::MatrixXd J_distance = direction.transpose() * (J_b - J_a).block(0, 0, 3, solver->N);
+  model::RobotWrapper::merge_supports(solver->robot.frame_support(frame_a), solver->robot.frame_support(frame_b),
+                                      columns);
+  solver->robot.compact_frame_jacobian(frame_a, pinocchio::LOCAL_WORLD_ALIGNED, columns, J_a);
+  solver->robot.compact_frame_jacobian(frame_b, pinocchio::LOCAL_WORLD_ALIGNED, columns, J_b);
 
-  // Expression for the angle
-  problem::Expression e;
-  e.A.resize(1, solver->N);
-  e.b.resize(1);
-
-  e.A.row(0) = J_distance;
-  e.b(0) = distance;
-
-  problem.add_constraint(e <= distance_max)
-      .configure(priority == Prioritized::Priority::Hard ? problem::ProblemConstraint::Hard :
-                                                           problem::ProblemConstraint::Soft,
-                 weight);
+  // distance + J_distance dq <= distance_max
+  problem::ProblemConstraint& constraint = problem.add_constraint();
+  constraint.type = problem::ProblemConstraint::Inequality;
+  constraint.columns = columns;
+  constraint.expression.A.noalias() = -direction.transpose() * (J_b.topRows(3) - J_a.topRows(3));
+  constraint.expression.b.setConstant(1, distance_max - distance);
+  constraint.configure(priority == Prioritized::Priority::Hard ? problem::ProblemConstraint::Hard :
+                                                                 problem::ProblemConstraint::Soft,
+                       weight);
 }
 
 }  // namespace placo::kinematics

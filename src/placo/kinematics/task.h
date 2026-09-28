@@ -34,7 +34,9 @@ public:
   bool solver_memory = false;
 
   /**
-   * @brief Matrix A in the task Ax = b, where x are the joint delta positions
+   * @brief Matrix A in the task Ax = b, where x are the joint delta positions. When \ref columns is not empty, A is
+   * compact: its k-th column is the column columns[k] of the full matrix, the other columns being zero (see
+   * \ref dense_A). Else, A is the full matrix.
    */
   Eigen::MatrixXd A;
 
@@ -44,9 +46,34 @@ public:
   Eigen::MatrixXd b;
 
   /**
-   * @brief Update the task A and b matrices from the robot state and targets
+   * @brief Degrees of freedom (sorted) the task depends on, which are the columns of \ref A. When empty, A is either the
+   * full matrix, or has no column (a task on a frame attached to the world)
    */
-  virtual void update() = 0;
+  std::vector<int> columns;
+
+  /**
+   * @brief Computes the structure of the task: the degrees of freedom it depends on (\ref columns). By default,
+   * the task depends on all of them (A is the full matrix).
+   */
+  virtual void support();
+
+  /**
+   * @brief Fills the task A and b matrices from the robot state and targets, A having the \ref columns computed
+   * by \ref support
+   */
+  virtual void fill();
+
+  /**
+   * @brief Update the task A and b matrices from the robot state and targets (\ref support, then \ref fill). Tasks
+   * can either implement \ref support and \ref fill, or this method (A then being the full matrix)
+   */
+  virtual void update();
+
+  /**
+   * @brief The full matrix A (with all the degrees of freedom as columns)
+   * @return full matrix A
+   */
+  Eigen::MatrixXd dense_A() const;
 
   /**
    * @brief Name of the task type
@@ -71,5 +98,11 @@ public:
    * @return task error norm
    */
   virtual double error_norm();
+
+protected:
+  /**
+   * @brief Buffers for compact Jacobians (their memory is reused)
+   */
+  Eigen::MatrixXd J_a, J_b;
 };
 }  // namespace placo::kinematics

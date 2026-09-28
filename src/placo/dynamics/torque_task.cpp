@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "placo/dynamics/torque_task.h"
 #include "placo/dynamics/dynamics_solver.h"
 
@@ -20,22 +21,31 @@ void TorqueTask::reset_torque(std::string joint)
   torques.erase(joint);
 }
 
-void TorqueTask::update()
+void TorqueTask::support()
 {
-  A = Eigen::MatrixXd(torques.size(), solver->N);
-  b = Eigen::MatrixXd(torques.size(), 1);
-  error = Eigen::MatrixXd(torques.size(), 1);
-  derror = Eigen::MatrixXd(torques.size(), 1);
-  error.setZero();
-  derror.setZero();
-  A.setZero();
-  b.setZero();
+  // This task is on the torques (the columns are the rows of tau it selects)
+  columns.clear();
+  for (auto& entry : torques)
+  {
+    columns.push_back(solver->robot.get_joint_v_offset(entry.first));
+  }
+  std::sort(columns.begin(), columns.end());
+  columns.erase(std::unique(columns.begin(), columns.end()), columns.end());
+}
+
+void TorqueTask::fill()
+{
+  A.setZero(torques.size(), columns.size());
+  b.setZero(torques.size(), 1);
+  error.setZero(torques.size(), 1);
+  derror.setZero(torques.size(), 1);
 
   int k = 0;
   for (auto& entry : torques)
   {
     TargetTau target = entry.second;
-    A(k, solver->robot.get_joint_v_offset(entry.first)) = 1;
+    int offset = solver->robot.get_joint_v_offset(entry.first);
+    A(k, std::lower_bound(columns.begin(), columns.end(), offset) - columns.begin()) = 1;
     b(k, 0) = target.torque + target.kp * solver->robot.get_joint(entry.first) -
               target.kd * solver->robot.get_joint_velocity(entry.first);
     k++;

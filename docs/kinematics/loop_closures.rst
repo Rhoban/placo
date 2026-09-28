@@ -78,6 +78,18 @@ with different tasks sets. In the :doc:`examples gallery <examples_gallery>`, yo
 control for the *planar 2 dof* and *3-axis parallel rotation* robots.
 
 
+Performances
+------------
+
+For robots with several independent loop closures, the *sparse elimination* of the hard equalities can make the
+solver much faster:
+
+.. code-block:: python
+
+    solver.problem.sparse_elimination = True
+
+See :doc:`hard equalities elimination <equalities_elimination>` for more details.
+
 Example
 -------
 

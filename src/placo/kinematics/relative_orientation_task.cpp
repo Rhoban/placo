@@ -9,7 +9,13 @@ RelativeOrientationTask::RelativeOrientationTask(model::RobotWrapper::FrameIndex
 {
 }
 
-void RelativeOrientationTask::update()
+void RelativeOrientationTask::support()
+{
+  model::RobotWrapper::merge_supports(solver->robot.frame_support(frame_a), solver->robot.frame_support(frame_b),
+                                      columns);
+}
+
+void RelativeOrientationTask::fill()
 {
   Eigen::Affine3d T_world_a = solver->robot.get_T_world_frame(frame_a);
   Eigen::Affine3d T_world_b = solver->robot.get_T_world_frame(frame_b);
@@ -17,14 +23,15 @@ void RelativeOrientationTask::update()
 
   Eigen::Vector3d error = pinocchio::log3(R_a_b * T_a_b.linear().transpose());
 
-  Eigen::MatrixXd J_a = solver->robot.frame_jacobian(frame_a, pinocchio::WORLD);
-  Eigen::MatrixXd J_b = solver->robot.frame_jacobian(frame_b, pinocchio::WORLD);
-  Eigen::MatrixXd J_ab = T_world_a.linear().transpose() * (J_b - J_a).block(3, 0, 3, solver->N);
-  Eigen::Matrix3d Jlog;
-  pinocchio::Jlog3(R_a_b * T_a_b.linear().transpose(), Jlog);
+  solver->robot.compact_frame_jacobian(frame_a, pinocchio::WORLD, columns, J_a);
+  solver->robot.compact_frame_jacobian(frame_b, pinocchio::WORLD, columns, J_b);
+  Eigen::Matrix<double, 3, Eigen::Dynamic> J_ab =
+      T_world_a.linear().transpose() * (J_b.bottomRows(3) - J_a.bottomRows(3));
 
-  A = mask.apply(J_ab);
-  b = mask.apply(error);
+  A.resize(mask.rows(), columns.size());
+  b.resize(mask.rows(), 1);
+  mask.apply(J_ab, A);
+  mask.apply(error, b);
 }
 
 std::string RelativeOrientationTask::type_name()

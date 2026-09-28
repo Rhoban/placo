@@ -7,13 +7,16 @@ void AvoidSelfCollisionsConstraint::add_constraint(placo::problem::Problem& prob
 {
   std::vector<model::RobotWrapper::Distance> distances = solver->robot.distances();
 
+  // The constraint depends on the union of the supports of the joints involved in close pairs
   int constraints = 0;
-
+  columns.clear();
   for (auto& distance : distances)
   {
     if (distance.min_distance < self_collisions_trigger)
     {
       constraints += 1;
+      model::RobotWrapper::merge_supports(columns, solver->robot.joint_support(distance.parentA), J_columns);
+      model::RobotWrapper::merge_supports(J_columns, solver->robot.joint_support(distance.parentB), columns);
     }
   }
 
@@ -22,10 +25,12 @@ void AvoidSelfCollisionsConstraint::add_constraint(placo::problem::Problem& prob
     return;
   }
 
-  problem::Expression e;
-  e.A = Eigen::MatrixXd(constraints, solver->N);
-  e.b = Eigen::VectorXd(constraints);
-  int constraint = 0;
+  problem::ProblemConstraint& constraint = problem.add_constraint();
+  constraint.type = problem::ProblemConstraint::Inequality;
+  constraint.columns = columns;
+  constraint.expression.A.resize(constraints, columns.size());
+  constraint.expression.b.resize(constraints);
+  int row = 0;
 
   for (auto& distance : distances)
   {
@@ -40,21 +45,21 @@ void AvoidSelfCollisionsConstraint::add_constraint(placo::problem::Problem& prob
         n = -n;
       }
 
-      Eigen::MatrixXd X_A_world = pinocchio::SE3(Eigen::Matrix3d::Identity(), -distance.pointA).toActionMatrix();
-      Eigen::MatrixXd JA = X_A_world * solver->robot.joint_jacobian(distance.parentA, pinocchio::ReferenceFrame::WORLD);
-
-      Eigen::MatrixXd X_B_world = pinocchio::SE3(Eigen::Matrix3d::Identity(), -distance.pointB).toActionMatrix();
-      Eigen::MatrixXd JB = X_B_world * solver->robot.joint_jacobian(distance.parentB, pinocchio::ReferenceFrame::WORLD);
+      // Jacobians of the witness points (world axes)
+      pinocchio::SE3 T_world_A(Eigen::Matrix3d::Identity(), distance.pointA);
+      pinocchio::SE3 T_world_B(Eigen::Matrix3d::Identity(), distance.pointB);
+      solver->robot.compact_jacobian(distance.parentA, T_world_A, pinocchio::LOCAL_WORLD_ALIGNED, columns, J_a);
+      solver->robot.compact_jacobian(distance.parentB, T_world_B, pinocchio::LOCAL_WORLD_ALIGNED, columns, J_b);
 
       // We want: current_distance + J dq >= margin
-      e.A.block(constraint, 0, 1, solver->N) = n.transpose() * (JB - JA).block(0, 0, 3, solver->N);
-      e.b[constraint] = distance.min_distance - self_collisions_margin;
+      constraint.expression.A.row(row).noalias() = n.transpose() * (J_b.topRows(3) - J_a.topRows(3));
+      constraint.expression.b[row] = distance.min_distance - self_collisions_margin;
 
-      constraint += 1;
+      row += 1;
     }
   }
 
-  problem.add_constraint(e >= 0).configure(
+  constraint.configure(
       priority == Priority::Soft ? problem::ProblemConstraint::Soft : problem::ProblemConstraint::Hard, weight);
 }
 };  // namespace placo::kinematics

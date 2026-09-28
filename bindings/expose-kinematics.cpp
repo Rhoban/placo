@@ -132,7 +132,7 @@ void exposeKinematics()
           .def("solve", &KinematicsSolver::solve);
 
   class__<Task, bases<tools::Prioritized>, boost::noncopyable>("Task", no_init)
-      .def_readonly("A", &Task::A)
+      .add_property("A", &Task::dense_A)
       .def_readonly("b", &Task::b)
       .def("error", &Task::error)
       .def("error_norm", &Task::error_norm)

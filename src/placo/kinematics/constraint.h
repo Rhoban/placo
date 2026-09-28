@@ -20,5 +20,12 @@ public:
   bool solver_memory = false;
 
   virtual void add_constraint(placo::problem::Problem& problem) = 0;
+
+protected:
+  /**
+   * @brief Buffers for compact Jacobians and their columns (their memory is reused)
+   */
+  Eigen::MatrixXd J_a, J_b;
+  std::vector<int> columns;
 };
 }  // namespace placo::kinematics

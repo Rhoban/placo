@@ -14,6 +14,7 @@
 #include <json/json.h>
 #include <filesystem>
 #include <algorithm>
+#include <iterator>
 
 namespace fs = boost::filesystem;
 
@@ -630,6 +631,170 @@ Eigen::MatrixXd RobotWrapper::relative_position_jacobian(pinocchio::FrameIndex f
 
   return (R_world_a.transpose() * (J_b.topRows(3) - J_a.topRows(3)) +
           pinocchio::skew(T_a_b.translation()) * R_world_a.transpose() * J_a.bottomRows(3));
+}
+
+const std::vector<int>& RobotWrapper::joint_support(pinocchio::JointIndex joint)
+{
+  if ((int)joint_supports.size() != model.njoints)
+  {
+    // With mimic joints (that are not used by the loaded models), the columns of the joint Jacobians don't match the
+    // degrees of freedom
+    if (model.nvExtended != model.nv)
+    {
+      throw std::runtime_error("RobotWrapper: mimic joints are not supported");
+    }
+
+    // Supports are the joints from the universe (index 0, without degrees of freedom) to the given one
+    joint_supports.assign(model.njoints, {});
+    for (int j = 0; j < model.njoints; j++)
+    {
+      for (auto support : model.supports[j])
+      {
+        // The universe joint has no degree of freedom (but reports a size of 1)
+        if (support == 0 || model.joints[support].idx_v() < 0)
+        {
+          continue;
+        }
+        int nv = model.joints[support].nv();
+        for (int k = 0; k < nv; k++)
+        {
+          joint_supports[j].push_back(model.joints[support].idx_v() + k);
+        }
+      }
+      std::sort(joint_supports[j].begin(), joint_supports[j].end());
+    }
+  }
+
+  return joint_supports[joint];
+}
+
+const std::vector<int>& RobotWrapper::frame_support(FrameIndex frame)
+{
+  return joint_support(model.frames[frame].parentJoint);
+}
+
+void RobotWrapper::merge_supports(const std::vector<int>& a, const std::vector<int>& b, std::vector<int>& result)
+{
+  result.clear();
+  std::set_union(a.begin(), a.end(), b.begin(), b.end(), std::back_inserter(result));
+}
+
+void RobotWrapper::compact_jacobian(pinocchio::JointIndex joint, const pinocchio::SE3& T_world_point,
+                                    pinocchio::ReferenceFrame ref, const std::vector<int>& columns, Eigen::MatrixXd& J)
+{
+  J.resize(6, columns.size());
+  compact_from_world(joint, data->J, data->J, T_world_point, ref, columns, J, false);
+}
+
+void RobotWrapper::compact_jacobian_time_variation(pinocchio::JointIndex joint, const pinocchio::SE3& T_world_point,
+                                                   pinocchio::ReferenceFrame ref, const std::vector<int>& columns,
+                                                   Eigen::MatrixXd& dJ)
+{
+  dJ.resize(6, columns.size());
+
+  // Columns of the support: world time variations, then the terms depending on the velocity of the point
+  compact_from_world(joint, data->dJ, data->J, T_world_point, ref, columns, dJ, true, &data->ov[joint]);
+}
+
+void RobotWrapper::compact_from_world(pinocchio::JointIndex joint, const pinocchio::Data::Matrix6x& J_world,
+                                      const pinocchio::Data::Matrix6x& J_velocity,
+                                      const pinocchio::SE3& T_world_point, pinocchio::ReferenceFrame ref,
+                                      const std::vector<int>& columns, Eigen::MatrixXd& J, bool time_variation,
+                                      const pinocchio::Motion* ov_joint)
+{
+  // The joint Jacobians (see update_kinematics) are the spatial velocities of the world origin, in world axes, for
+  // each degree of freedom of the support (the other columns are zero, see joint_support). The formulas are the ones
+  // of pinocchio::getJointJacobian and pinocchio::getFrameJacobianTimeVariation.
+  const std::vector<int>& support = joint_support(joint);
+  const Eigen::Vector3d& p = T_world_point.translation();
+  const Eigen::Matrix3d& R = T_world_point.rotation();
+
+  // Velocity of the point (world axes), and in the point frame
+  pinocchio::Motion v_point_local = pinocchio::Motion::Zero();
+  Eigen::Vector3d v_point_world = Eigen::Vector3d::Zero();
+  if (time_variation)
+  {
+    v_point_world = ov_joint->linear() + ov_joint->angular().cross(p);
+    v_point_local = T_world_point.actInv(*ov_joint);
+  }
+
+  int k_support = 0;
+  for (int k = 0; k < (int)columns.size(); k++)
+  {
+    int column = columns[k];
+    while (k_support < (int)support.size() && support[k_support] < column)
+    {
+      k_support += 1;
+    }
+    if (k_support == (int)support.size() || support[k_support] != column)
+    {
+      J.col(k).setZero();
+      continue;
+    }
+
+    Eigen::Vector3d linear = J_world.col(column).head<3>();
+    Eigen::Vector3d angular = J_world.col(column).tail<3>();
+
+    if (ref == pinocchio::LOCAL_WORLD_ALIGNED)
+    {
+      // Velocity of the point
+      linear += angular.cross(p);
+      if (time_variation)
+      {
+        linear -= v_point_world.cross(J_velocity.col(column).tail<3>());
+      }
+    }
+    else if (ref == pinocchio::LOCAL)
+    {
+      linear = R.transpose() * (linear + angular.cross(p));
+      angular = R.transpose() * angular;
+      if (time_variation)
+      {
+        pinocchio::Motion v_in(J_velocity.col(column));
+        pinocchio::Motion correction = v_point_local.cross(T_world_point.actInv(v_in));
+        linear -= correction.linear();
+        angular -= correction.angular();
+      }
+    }
+
+    J.col(k).head<3>() = linear;
+    J.col(k).tail<3>() = angular;
+  }
+}
+
+void RobotWrapper::compact_frame_jacobian(FrameIndex frame, pinocchio::ReferenceFrame ref,
+                                          const std::vector<int>& columns, Eigen::MatrixXd& J)
+{
+  // As pinocchio::getFrameJacobian, the frame placement is updated from the placement of its joint
+  const pinocchio::Frame& frame_model = model.frames[frame];
+  data->oMf[frame] = data->oMi[frame_model.parentJoint] * frame_model.placement;
+  compact_jacobian(frame_model.parentJoint, data->oMf[frame], ref, columns, J);
+}
+
+Eigen::MatrixXd RobotWrapper::compact_frame_jacobian(const std::string& frame, const std::string& reference,
+                                                     const std::vector<int>& columns)
+{
+  Eigen::MatrixXd J;
+  compact_frame_jacobian(get_frame_index(frame), string_to_reference(reference), columns, J);
+  return J;
+}
+
+Eigen::MatrixXd RobotWrapper::compact_frame_jacobian_time_variation(const std::string& frame,
+                                                                    const std::string& reference,
+                                                                    const std::vector<int>& columns)
+{
+  Eigen::MatrixXd dJ;
+  compact_frame_jacobian_time_variation(get_frame_index(frame), string_to_reference(reference), columns, dJ);
+  return dJ;
+}
+
+void RobotWrapper::compact_frame_jacobian_time_variation(FrameIndex frame, pinocchio::ReferenceFrame ref,
+                                                         const std::vector<int>& columns, Eigen::MatrixXd& dJ)
+{
+  // As pinocchio::getFrameJacobianTimeVariation, the frame placement is updated from the placement of its joint
+  const pinocchio::Frame& frame_model = model.frames[frame];
+  data->oMf[frame] = data->oMi[frame_model.parentJoint] * frame_model.placement;
+  compact_jacobian_time_variation(frame_model.parentJoint, data->oMf[frame], ref, columns, dJ);
 }
 
 Eigen::MatrixXd RobotWrapper::relative_position_jacobian(const std::string& frame_a, const std::string& frame_b)

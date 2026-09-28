@@ -69,6 +69,18 @@ struct AxisesMask
   Eigen::MatrixXd apply(Eigen::MatrixXd M);
 
   /**
+   * @brief Apply the masking to a given matrix, writing the result in out (whose memory is reused)
+   * @param M the matrix to be masked (3xn)
+   * @param out the masked matrix (rows of the kept axises)
+   */
+  void apply(const Eigen::Ref<const Eigen::MatrixXd>& M, Eigen::Ref<Eigen::MatrixXd> out) const;
+
+  /**
+   * @brief Number of kept axises
+   */
+  int rows() const;
+
+  /**
    * @brief Rotation from world to local frame (provided by task)
    */
   Eigen::Matrix3d R_local_world;

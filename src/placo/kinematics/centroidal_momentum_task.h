@@ -20,7 +20,7 @@ struct CentroidalMomentumTask : public Task
    */
   Eigen::Vector3d L_world;
 
-  virtual void update();
+  virtual void fill();
   virtual std::string type_name();
   virtual std::string error_unit();
 

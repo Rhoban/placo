@@ -8,7 +8,7 @@ CoMTask::CoMTask(Eigen::Vector3d target_world)
   this->target_world = target_world;
 }
 
-void CoMTask::update()
+void CoMTask::fill()
 {
   // Computing J and dJ
   Eigen::MatrixXd J = solver->robot.com_jacobian();
@@ -25,10 +25,15 @@ void CoMTask::update()
   Eigen::Vector3d desired_acceleration = kp * position_error + get_kd() * velocity_error + ddtarget_world;
 
   // Acceleration is: J * qdd + dJ * qd
-  A = mask.apply(J);
-  b = mask.apply(desired_acceleration - dJ * solver->robot.state.qd);
-  error = mask.apply(position_error);
-  derror = mask.apply(velocity_error);
+  int rows = mask.rows();
+  A.resize(rows, solver->N);
+  b.resize(rows, 1);
+  error.resize(rows, 1);
+  derror.resize(rows, 1);
+  mask.apply(J, A);
+  mask.apply(desired_acceleration - dJ * solver->robot.state.qd, b);
+  mask.apply(position_error, error);
+  mask.apply(velocity_error, derror);
 }
 
 std::string CoMTask::type_name()

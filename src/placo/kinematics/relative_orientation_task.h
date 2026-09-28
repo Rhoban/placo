@@ -30,7 +30,8 @@ struct RelativeOrientationTask : public Task
    */
   Eigen::Matrix3d R_a_b;
 
-  virtual void update();
+  virtual void support();
+  virtual void fill();
   virtual std::string type_name();
   virtual std::string error_unit();
 

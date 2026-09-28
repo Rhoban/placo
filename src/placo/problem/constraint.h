@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vector>
 #include <Eigen/Dense>
 #include "placo/problem/expression.h"
 
@@ -47,6 +48,13 @@ public:
    * @brief The constraint expression (Ax + b)
    */
   Expression expression;
+
+  /**
+   * @brief Variables the columns of the expression correspond to (strictly increasing), for compact constraints: the k-th column
+   * of expression.A is the variable columns[k], the other variables have zero coefficients. When empty (default), the
+   * expression is dense: its k-th column is the variable k.
+   */
+  std::vector<int> columns;
 
   /**
    * @brief Constraint type

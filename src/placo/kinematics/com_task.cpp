@@ -7,10 +7,12 @@ CoMTask::CoMTask(Eigen::Vector3d target_world) : target_world(target_world)
 {
 }
 
-void CoMTask::update()
+void CoMTask::fill()
 {
-  A = mask.apply(solver->robot.com_jacobian());
-  b = mask.apply(target_world - solver->robot.com_world());
+  A.resize(mask.rows(), solver->N);
+  b.resize(mask.rows(), 1);
+  mask.apply(solver->robot.com_jacobian(), A);
+  mask.apply(target_world - solver->robot.com_world(), b);
 }
 
 std::string CoMTask::type_name()

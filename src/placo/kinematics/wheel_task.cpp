@@ -9,7 +9,12 @@ WheelTask::WheelTask(std::string joint, double radius, bool omniwheel)
   T_world_surface = Eigen::Affine3d::Identity();
 }
 
-void WheelTask::update()
+void WheelTask::support()
+{
+  columns = solver->robot.joint_support(solver->robot.model.getJointId(joint));
+}
+
+void WheelTask::fill()
 {
   Eigen::Affine3d T_world_wheel = solver->robot.get_T_world_frame(joint);
   Eigen::Affine3d T_surface_wheel = T_world_surface.inverse() * T_world_wheel;
@@ -30,19 +35,25 @@ void WheelTask::update()
 
   Eigen::Affine3d T_contact_wheel = T_surface_contact.inverse() * T_surface_wheel;
 
-  // Computing contact jacobian
-  A = (pinocchio::SE3(T_contact_wheel.matrix()).toActionMatrix() * solver->robot.joint_jacobian(joint, "local"))
-          .topRows(3);
-  b = Eigen::Vector3d::Zero();
-  b(2, 0) = -T_surface_contact.translation().z();
+  // Computing contact jacobian (the joint Jacobian in the joint frame)
+  pinocchio::JointIndex joint_index = solver->robot.model.getJointId(joint);
+  solver->robot.compact_jacobian(joint_index, solver->robot.data->oMi[joint_index], pinocchio::LOCAL, columns, J_a);
+  Eigen::Matrix<double, 6, Eigen::Dynamic> J_contact =
+      pinocchio::SE3(T_contact_wheel.matrix()).toActionMatrix() * J_a;
+  double z_error = -T_surface_contact.translation().z();
 
   // With an omniwheel, we remove the lateral sliding constraint (along contact y axis)
   if (omniwheel)
   {
-    Eigen::MatrixXd new_A = A({ 0, 2 }, Eigen::all);
-    Eigen::MatrixXd new_b = b({ 0, 2 }, Eigen::all);
-    A = new_A;
-    b = new_b;
+    A.resize(2, columns.size());
+    A.row(0) = J_contact.row(0);
+    A.row(1) = J_contact.row(2);
+    b = Eigen::Vector2d(0., z_error);
+  }
+  else
+  {
+    A = J_contact.topRows(3);
+    b = Eigen::Vector3d(0., 0., z_error);
   }
 }
 

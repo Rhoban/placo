@@ -25,7 +25,8 @@ struct AxisAlignTask : public Task
    */
   Eigen::Vector3d targetAxis_world;
 
-  virtual void update();
+  virtual void support();
+  virtual void fill();
   virtual std::string type_name();
   virtual std::string error_unit();
 };

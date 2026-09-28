@@ -511,6 +511,11 @@ protected:
 
   std::set<int> masked_dof;
   bool masked_fbase;
+
+  /**
+   * @brief Buffers for the limits bounds (their memory is reused)
+   */
+  Eigen::VectorXd limits_lower, limits_upper;
   // Tasks and constraints are stored in vectors, so that they are iterated (and hence the QP is built) in
   // the order they were added, and not in an order depending on memory addresses
   std::vector<Task*> tasks;

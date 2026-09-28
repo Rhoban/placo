@@ -47,7 +47,8 @@ public:
    */
   double get_joint(std::string joint);
 
-  void update() override;
+  void support() override;
+  void fill() override;
   std::string type_name() override;
   std::string error_unit() override;
 };

@@ -298,16 +298,17 @@ void KinematicsSolver::compute_limits_inequalities()
   if (joint_limits)
   {
     // q_min <= q + qd <= q_max
-    Eigen::VectorXd q = robot.state.q.bottomRows(N - 6);
-    problem.add_bounds(*qd, 6, robot.model.lowerPositionLimit.bottomRows(N - 6) - q,
-                       robot.model.upperPositionLimit.bottomRows(N - 6) - q);
+    limits_lower = robot.model.lowerPositionLimit.bottomRows(N - 6) - robot.state.q.bottomRows(N - 6);
+    limits_upper = robot.model.upperPositionLimit.bottomRows(N - 6) - robot.state.q.bottomRows(N - 6);
+    problem.add_bounds(*qd, 6, limits_lower, limits_upper);
   }
 
   if (velocity_limits)
   {
     // -dt v_max <= qd <= dt v_max
-    Eigen::VectorXd max_delta = dt * robot.model.velocityLimit.bottomRows(N - 6);
-    problem.add_bounds(*qd, 6, -max_delta, max_delta);
+    limits_upper = dt * robot.model.velocityLimit.bottomRows(N - 6);
+    limits_lower = -limits_upper;
+    problem.add_bounds(*qd, 6, limits_lower, limits_upper);
   }
 }
 
@@ -335,11 +336,10 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
       continue;
     }
 
-    // This could be written (task->A * qd->expr() == task->b), but would come with the
-    // significant cost of multiplying A with identity matrix for each task
-    Expression e;
-    e.A = task->A;
-
+    // The task A qd = b is added as the constraint A qd - b = 0, filled in place (compact if the task is, see
+    // Task::columns)
+    ProblemConstraint& constraint = problem.add_constraint();
+    constraint.columns = task->columns;
     ProblemConstraint::Priority task_priority = ProblemConstraint::Hard;
 
     if (task->priority == Task::Priority::Scaled)
@@ -353,38 +353,52 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
         {
           scale_variable = &problem.add_variable(1);
         }
-        problem.add_constraint(scale_variable->expr() >= 0);
-        problem.add_constraint(scale_variable->expr() <= 1);
-        problem.add_constraint(scale_variable->expr() == 1).configure(ProblemConstraint::Soft, 1.0);
+        problem.add_bounds(*scale_variable, 0, Eigen::Matrix<double, 1, 1>::Zero(),
+                           Eigen::Matrix<double, 1, 1>::Ones());
+        ProblemConstraint& scale_objective = problem.add_constraint();
+        scale_objective.columns.assign(1, scale_variable->k_start);
+        scale_objective.expression.A.setOnes(1, 1);
+        scale_objective.expression.b.setConstant(1, -1.);
+        scale_objective.configure(ProblemConstraint::Soft, 1.0);
       }
-      Expression scaled_error_minus_A = task->b * scale_variable->expr();
-      scaled_error_minus_A.A.block(0, 0, e.A.rows(), e.A.cols()) -= e.A;
-      e.A = -scaled_error_minus_A.A;
 
-      e.b = Eigen::VectorXd::Zero(task->b.rows());
-    }
-    else if (task->priority == Task::Priority::Soft)
-    {
-      task_priority = ProblemConstraint::Soft;
-      e.b = -task->b;
+      // A qd - b s = 0
+      if (constraint.columns.empty())
+      {
+        for (int k = 0; k < task->A.cols(); k++)
+        {
+          constraint.columns.push_back(k);
+        }
+      }
+      constraint.columns.push_back(scale_variable->k_start);
+      int cols = task->A.cols();
+      constraint.expression.A.resize(task->A.rows(), cols + 1);
+      constraint.expression.A.leftCols(cols) = task->A;
+      constraint.expression.A.col(cols) = -task->b;
+      constraint.expression.b.setZero(task->b.rows());
     }
     else
     {
-      e.b = -task->b;
+      if (task->priority == Task::Priority::Soft)
+      {
+        task_priority = ProblemConstraint::Soft;
+      }
+      constraint.expression.A = task->A;
+      constraint.expression.b = -task->b;
     }
 
-    problem.add_constraint(e == 0).configure(task_priority, task->weight);
+    constraint.configure(task_priority, task->weight);
   }
 
   // Masked DoFs are bounded to zero deltas
   for (auto& joint : masked_dof)
   {
-    problem.add_bounds(*qd, joint, Eigen::VectorXd::Zero(1), Eigen::VectorXd::Zero(1));
+    problem.add_bounds(*qd, joint, Eigen::Matrix<double, 1, 1>::Zero(), Eigen::Matrix<double, 1, 1>::Zero());
   }
 
   if (masked_fbase)
   {
-    problem.add_bounds(*qd, 0, Eigen::VectorXd::Zero(6), Eigen::VectorXd::Zero(6));
+    problem.add_bounds(*qd, 0, Eigen::Matrix<double, 6, 1>::Zero(), Eigen::Matrix<double, 6, 1>::Zero());
   }
 
   compute_limits_inequalities();
