@@ -262,27 +262,7 @@ void Problem::reduce_eliminated(Reduced& r)
 
   if (!sparse_elimination_used)
   {
-    // Dense QR elimination: x = Q [y; z], z being the QP variables
-    int n = (int)unfixed_indices.size();
-    r.A_eliminated.setZero(rows, n);
-    if (r.columns == nullptr)
-    {
-      r.A_eliminated.leftCols(r.A.cols()) = r.A;
-    }
-    else
-    {
-      for (int k = 0; k < (int)r.columns->size(); k++)
-      {
-        r.A_eliminated.col((*r.columns)[k]) = r.A.col(k);
-      }
-    }
-    QR.matrixQ().applyThisOnTheRight(r.A_eliminated);
-    r.b.noalias() += r.A_eliminated.leftCols(determined_variables) * y;
-
-    // The QP variables are the last columns (contiguous in memory)
-    new (&r.A) Eigen::Map<const Eigen::MatrixXd>(r.A_eliminated.data() + rows * determined_variables, rows,
-                                                 free_variables);
-    r.columns = nullptr;
+    // Dense QR elimination, already done for all the constraints by reduce_eliminated_qr
     return;
   }
 
@@ -346,6 +326,68 @@ void Problem::reduce_eliminated(Reduced& r)
 
   new (&r.A) Eigen::Map<const Eigen::MatrixXd>(r.A_eliminated.data(), rows, gathered.size());
   r.columns = &r.columns_eliminated;
+}
+
+void Problem::reduce_eliminated_qr()
+{
+  // Dense QR elimination: x = Q [y; z], z being the QP variables
+  int n = (int)unfixed_indices.size();
+  auto eliminated = [&](int i) {
+    return constraints[i]->type == ProblemConstraint::Equality && constraints[i]->priority == ProblemConstraint::Hard;
+  };
+
+  int total_rows = 0;
+  for (int i = 0; i < (int)constraints.size(); i++)
+  {
+    if (!eliminated(i))
+    {
+      total_rows += reduced[i].A.rows();
+    }
+  }
+
+  stacked.setZero(total_rows, n);
+  int offset = 0;
+  for (int i = 0; i < (int)constraints.size(); i++)
+  {
+    if (eliminated(i))
+    {
+      continue;
+    }
+    Reduced& r = reduced[i];
+    int rows = r.A.rows();
+    if (r.columns == nullptr)
+    {
+      stacked.block(offset, 0, rows, r.A.cols()) = r.A;
+    }
+    else
+    {
+      for (int k = 0; k < (int)r.columns->size(); k++)
+      {
+        stacked.block(offset, (*r.columns)[k], rows, 1) = r.A.col(k);
+      }
+    }
+    offset += rows;
+  }
+
+  QR.matrixQ().applyThisOnTheRight(stacked);
+
+  offset = 0;
+  for (int i = 0; i < (int)constraints.size(); i++)
+  {
+    if (eliminated(i))
+    {
+      continue;
+    }
+    Reduced& r = reduced[i];
+    int rows = r.A.rows();
+    r.b.noalias() += stacked.block(offset, 0, rows, determined_variables) * y;
+
+    // The QP variables are the last columns (copied to be contiguous in memory)
+    r.A_eliminated = stacked.block(offset, determined_variables, rows, free_variables);
+    new (&r.A) Eigen::Map<const Eigen::MatrixXd>(r.A_eliminated.data(), rows, free_variables);
+    r.columns = nullptr;
+    offset += rows;
+  }
 }
 
 void Problem::compute_runs(const Reduced& r, std::vector<Run>& runs, bool detect_zeros)
@@ -699,6 +741,11 @@ void Problem::solve()
   // mapping maps index from slack variables to the constraint.
   hard_inequalities_mapping.assign(n_rows, nullptr);
   soft_inequalities_mapping.assign(slack_variables, nullptr);
+
+  if (eliminate && !sparse_elimination_used && determined_variables > 0)
+  {
+    reduce_eliminated_qr();
+  }
 
   // Filling the objective and the general constraints
   int row = 0;
