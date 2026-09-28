@@ -270,6 +270,13 @@ protected:
   void reduce_eliminated(Reduced& r);
 
   /**
+   * @brief Same as \ref reduce_eliminated for the dense QR elimination, for all the constraints at once (except the
+   * eliminated equalities): their expressions are stacked and multiplied by Q in a single pass, which is much faster
+   * than a pass for each constraint
+   */
+  void reduce_eliminated_qr();
+
+  /**
    * @brief Consecutive variables var, ..., var + size - 1 in consecutive columns col, ..., col + size - 1 of a matrix
    */
   struct Run
@@ -291,7 +298,7 @@ protected:
   void add_squared_norm(const Reduced& r, const std::vector<Run>& runs, double weight);
 
   // Workspaces (kept from a solve to another to reuse the memory)
-  Eigen::MatrixXd P, C, Aeq, gram, bounds_full, R, b2;
+  Eigen::MatrixXd P, C, Aeq, gram, bounds_full, R, b2, stacked;
   Eigen::VectorXd q, lower, upper, lb, ub, qp_x, beq, unfixed_x;
   std::vector<Run> runs;
   std::vector<int> stamp, gathered;
