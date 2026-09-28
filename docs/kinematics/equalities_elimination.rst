@@ -53,24 +53,8 @@ Which one should I use?
   single closure spanning the whole robot). Since it falls back to QR elimination, it is safe to enable.
   It currently only helps with the kinematics solver: with the dynamics solver, the equations of motion and the
   zero-torque constraints involve variables of the whole robot, and it falls back to QR elimination.
-* **No elimination** is faster on some problems, for instance some of the dynamics examples below, and much
-  slower on others.
-
-Here are some solve times measured on the examples:
-
-+-------------------------------------------+--------+----------------+-----------+
-| Example                                   | QR     | No elimination | Sparse    |
-+===========================================+========+================+===========+
-| Kinematics, Megabot (many loop closures)  | 52 µs  | 55 µs          | **16 µs** |
-+-------------------------------------------+--------+----------------+-----------+
-| Kinematics, humanoid                      | 8 µs   | 8 µs           | 8 µs      |
-+-------------------------------------------+--------+----------------+-----------+
-| Dynamics, Sigmaban                        | 167 µs | **126 µs**     | 169 µs    |
-+-------------------------------------------+--------+----------------+-----------+
-| Dynamics, quadruped                       | 44 µs  | **31 µs**      | 43 µs     |
-+-------------------------------------------+--------+----------------+-----------+
-| Dynamics, Megabot (fallback to QR)        | 405 µs | 985 µs         | 406 µs    |
-+-------------------------------------------+--------+----------------+-----------+
+* **No elimination** is usually slower, since the QP solver then has to handle the equalities itself, but it
+  can be worth trying on your problem.
 
 .. note::
 
