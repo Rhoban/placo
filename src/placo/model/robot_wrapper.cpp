@@ -639,9 +639,12 @@ const std::vector<int>& RobotWrapper::joint_support(pinocchio::JointIndex joint)
   {
     // With mimic joints (that are not used by the loaded models), the columns of the joint Jacobians don't match the
     // degrees of freedom
-    if (model.nvExtended != model.nv)
+    for (auto& joint_model : model.joints)
     {
-      throw std::runtime_error("RobotWrapper: mimic joints are not supported");
+      if (joint_model.shortname() == "JointModelMimic")
+      {
+        throw std::runtime_error("RobotWrapper: mimic joints are not supported");
+      }
     }
 
     // Supports are the joints from the universe (index 0, without degrees of freedom) to the given one
