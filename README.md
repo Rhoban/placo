@@ -38,7 +38,7 @@ pip install placo
 
 PlaCo is Rhoban's planning and control library. It is built on top of
 [pinocchio](https://github.com/stack-of-tasks/pinocchio) and the
-[qpmad](https://github.com/asherikov/qpmad) QP solver, and provides a high-level API to express
+[qpmad](https://github.com/asherikov/qpmad) QP solver (with optional [DAQP](https://github.com/darnstrom/daqp) support), and provides a high-level API to express
 whole-body control problems as a set of **tasks** and **constraints**, which are assembled into a quadratic
 program and solved for you.
 

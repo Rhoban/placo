@@ -1,5 +1,11 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.14)
 project(placo)
+
+option(PLACO_WITH_DAQP "Build the optional DAQP QP backend" OFF)
+if(PLACO_WITH_DAQP)
+  list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+  find_package(DAQP REQUIRED)
+endif()
 
 find_package(Threads)
 set(COAL_DISABLE_HPP_FCL_WARNINGS TRUE)
@@ -123,6 +129,11 @@ target_include_directories(libplaco PUBLIC
 
 # qpmad QP solver (header-only, vendored, see thirdparty/qpmad/README.md)
 target_include_directories(libplaco SYSTEM PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/qpmad/include>)
+if(PLACO_WITH_DAQP)
+  target_sources(libplaco PRIVATE src/placo/problem/problem_daqp.cpp)
+  target_compile_definitions(libplaco PRIVATE PLACO_WITH_DAQP)
+  target_link_libraries(libplaco PRIVATE DAQP::DAQP)
+endif()
 
 target_link_libraries(libplaco PUBLIC
     Eigen3::Eigen
