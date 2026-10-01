@@ -181,7 +181,6 @@ void Problem::solve_daqp()
     result.lam = m ? daqp_lambda.data() : nullptr;
     DAQPSettings settings;
     daqp_default_settings(&settings);
-    settings.eq_reduction = DAQP_EQ_REDUCTION_ON;
 
     if (slack_variables > 0)
     {
