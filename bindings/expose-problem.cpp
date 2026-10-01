@@ -181,6 +181,10 @@ void exposeProblem()
       .def_readonly("Z_norm", &SparseElimination::Z_norm)
       .def_readonly("status", &SparseElimination::status);
 
+  enum_<Problem::Backend>("ProblemBackend")
+      .value("qpmad", Problem::Backend::Qpmad)
+      .value("daqp", Problem::Backend::Daqp);
+
   class__<Problem>("Problem")
       .def("add_variable", &Problem::add_variable, return_internal_reference<>())
       .def<ProblemConstraint& (Problem::*)(const ProblemConstraint&)>("add_constraint", &Problem::add_constraint,
@@ -204,6 +208,8 @@ void exposeProblem()
       .add_property("sparse_elimination", &Problem::sparse_elimination, &Problem::sparse_elimination)
       .add_property("sparse_elimination_used", &Problem::sparse_elimination_used)
       .add_property("regularization", &Problem::regularization, &Problem::regularization)
+      .add_property("backend", &Problem::backend, &Problem::backend)
+      .add_property("daqp_soft_l1_weight", &Problem::daqp_soft_l1_weight, &Problem::daqp_soft_l1_weight)
       .add_property(
           "slacks", +[](const Problem& problem) { return problem.slacks; });
 

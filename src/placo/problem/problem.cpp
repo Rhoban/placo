@@ -494,8 +494,21 @@ void Problem::add_squared_norm(const Reduced& r, const std::vector<Run>& runs, d
   }
 }
 
+#ifndef PLACO_WITH_DAQP
+void Problem::solve_daqp()
+{
+  throw QPError("Problem: placo was built without DAQP (PLACO_WITH_DAQP)");
+}
+#endif
+
 void Problem::solve()
 {
+  if (backend == Backend::Daqp)
+  {
+    solve_daqp();
+    return;
+  }
+
   n_equalities = 0;
   n_inequalities = 0;
   slack_variables = 0;

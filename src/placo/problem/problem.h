@@ -165,6 +165,30 @@ public:
    */
   bool sparse_elimination_used = false;
 
+  /**
+   * @brief QP solver used by \ref solve
+   */
+  enum class Backend
+  {
+    Qpmad,
+    Daqp
+  };
+
+  /**
+   * @brief QP solver used by \ref solve. The DAQP backend requires placo to be built with PLACO_WITH_DAQP (else
+   * \ref solve raises \ref QPError). With DAQP, the hard equalities are passed to DAQP, which eliminates them itself
+   * (\ref rewrite_equalities and \ref sparse_elimination are ignored, and \ref determined_variables is 0), and the
+   * soft inequalities are handled natively by DAQP instead of adding slack variables to the QP (\ref slack_variables
+   * and \ref slacks still report one slack per soft inequality row). Soft inequalities need a positive weight.
+   */
+  Backend backend = Backend::Qpmad;
+
+  /**
+   * @brief With the DAQP backend, optional L1 penalty per unit of violation of the soft inequalities, added to the
+   * quadratic one
+   */
+  double daqp_soft_l1_weight = 0;
+
   void dump_status();
 
 protected:
@@ -303,5 +327,17 @@ protected:
   std::vector<Run> runs;
   std::vector<int> stamp, gathered;
   std::vector<ProblemConstraint*> hard_inequalities_mapping, soft_inequalities_mapping;
+
+  /**
+   * @brief Solves the problem with DAQP (see \ref backend)
+   */
+  void solve_daqp();
+
+  // DAQP workspaces: constraint rows (row-major, as expected by DAQP), bounds of the bounds and rows, senses and soft
+  // weights, and the constraint of each row
+  Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> daqp_A;
+  Eigen::VectorXd daqp_lower, daqp_upper, daqp_lambda, daqp_rho, daqp_l1;
+  std::vector<int> daqp_sense;
+  std::vector<ProblemConstraint*> daqp_rows_mapping;
 };
 }  // namespace placo::problem
