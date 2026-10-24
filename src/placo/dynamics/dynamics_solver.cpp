@@ -252,8 +252,8 @@ void DynamicsSolver::compute_limits_inequalities(Variable& qdd, Expression& tau)
     for (int k = 0; k < N - 6; k++)
     {
       // Configuration coordinate of the degree of freedom (-1 if it has no position of its own, see
-      // RobotWrapper::dof_q_index)
-      int q_index = robot.dof_q_index[k + 6];
+      // RobotWrapper::v_to_q)
+      int q_index = robot.v_to_q[k + 6];
       double qd = robot.state.qd[k + 6];
 
       if (velocity_limits && !velocity_vs_torque_limits)

@@ -189,12 +189,12 @@ public:
   int get_joint_v_size(const std::string& name);
 
   /**
-   * @brief Index in the configuration (\ref State.q) of each degree of freedom (indexed like \ref State.qd), or -1
-   * for the degrees of freedom of the joints that don't have one configuration coordinate per degree of freedom
-   * (floating base, continuous joints, whose configuration is a cos and a sin...): those have no position or position
-   * limits of their own
+   * @brief Velocity index to configuration index: v_to_q[v] is the index in \ref State.q of the degree of freedom v
+   * (index in \ref State.qd), or -1 for the degrees of freedom of the joints that don't have one configuration
+   * coordinate per degree of freedom (floating base, continuous joints, whose configuration is a cos and a sin...):
+   * those have no position or position limits of their own
    */
-  std::vector<int> dof_q_index;
+  std::vector<int> v_to_q;
 
   /**
    * @brief Sets the limits for a given joint.

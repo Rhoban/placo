@@ -130,8 +130,8 @@ RobotWrapper::RobotWrapper(std::string model_directory, int flags, std::string u
   // Creating data
   data = new pinocchio::Data(model);
 
-  // Configuration coordinate of each degree of freedom (see dof_q_index)
-  dof_q_index.assign(model.nv, -1);
+  // Configuration coordinate of each degree of freedom (see v_to_q)
+  v_to_q.assign(model.nv, -1);
   for (int j = 1; j < model.njoints; j++)
   {
     const auto& joint = model.joints[j];
@@ -139,7 +139,7 @@ RobotWrapper::RobotWrapper(std::string model_directory, int flags, std::string u
     {
       for (int i = 0; i < joint.nv(); i++)
       {
-        dof_q_index[joint.idx_v() + i] = joint.idx_q() + i;
+        v_to_q[joint.idx_v() + i] = joint.idx_q() + i;
       }
     }
   }

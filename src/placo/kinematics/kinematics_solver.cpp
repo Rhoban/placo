@@ -298,12 +298,12 @@ void KinematicsSolver::compute_limits_inequalities()
   if (joint_limits)
   {
     // q_min <= q + qd <= q_max, for the degrees of freedom that have a configuration coordinate of their own (see
-    // RobotWrapper::dof_q_index)
+    // RobotWrapper::v_to_q)
     limits_lower.setConstant(N - 6, -std::numeric_limits<double>::infinity());
     limits_upper.setConstant(N - 6, std::numeric_limits<double>::infinity());
     for (int k = 0; k < N - 6; k++)
     {
-      int q_index = robot.dof_q_index[k + 6];
+      int q_index = robot.v_to_q[k + 6];
       if (q_index >= 0)
       {
         limits_lower[k] = robot.model.lowerPositionLimit[q_index] - robot.state.q[q_index];
