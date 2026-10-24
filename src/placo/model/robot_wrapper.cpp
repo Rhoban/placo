@@ -130,6 +130,20 @@ RobotWrapper::RobotWrapper(std::string model_directory, int flags, std::string u
   // Creating data
   data = new pinocchio::Data(model);
 
+  // Configuration coordinate of each degree of freedom (see v_to_q)
+  v_to_q.assign(model.nv, -1);
+  for (int j = 1; j < model.njoints; j++)
+  {
+    const auto& joint = model.joints[j];
+    if (joint.nq() == joint.nv() && joint.idx_v() >= 0)
+    {
+      for (int i = 0; i < joint.nv(); i++)
+      {
+        v_to_q[joint.idx_v() + i] = joint.idx_q() + i;
+      }
+    }
+  }
+
   // Assuming that motors with limits both equals to zero are not defined in the
   // URDF, setting them to the maximum possible value
   for (int k = 0; k < model.nq; k++)
