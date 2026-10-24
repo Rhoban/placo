@@ -297,9 +297,19 @@ void KinematicsSolver::compute_limits_inequalities()
   // Limits are bounds on the joints deltas qd (without the floating base)
   if (joint_limits)
   {
-    // q_min <= q + qd <= q_max
-    limits_lower = robot.model.lowerPositionLimit.bottomRows(N - 6) - robot.state.q.bottomRows(N - 6);
-    limits_upper = robot.model.upperPositionLimit.bottomRows(N - 6) - robot.state.q.bottomRows(N - 6);
+    // q_min <= q + qd <= q_max, for the degrees of freedom that have a configuration coordinate of their own (see
+    // RobotWrapper::dof_q_index)
+    limits_lower.setConstant(N - 6, -std::numeric_limits<double>::infinity());
+    limits_upper.setConstant(N - 6, std::numeric_limits<double>::infinity());
+    for (int k = 0; k < N - 6; k++)
+    {
+      int q_index = robot.dof_q_index[k + 6];
+      if (q_index >= 0)
+      {
+        limits_lower[k] = robot.model.lowerPositionLimit[q_index] - robot.state.q[q_index];
+        limits_upper[k] = robot.model.upperPositionLimit[q_index] - robot.state.q[q_index];
+      }
+    }
     problem.add_bounds(*qd, 6, limits_lower, limits_upper);
   }
 

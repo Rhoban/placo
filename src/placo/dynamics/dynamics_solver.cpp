@@ -251,7 +251,9 @@ void DynamicsSolver::compute_limits_inequalities(Variable& qdd, Expression& tau)
 
     for (int k = 0; k < N - 6; k++)
     {
-      double q = robot.state.q[k + 7];
+      // Configuration coordinate of the degree of freedom (-1 if it has no position of its own, see
+      // RobotWrapper::dof_q_index)
+      int q_index = robot.dof_q_index[k + 6];
       double qd = robot.state.qd[k + 6];
 
       if (velocity_limits && !velocity_vs_torque_limits)
@@ -261,9 +263,10 @@ void DynamicsSolver::compute_limits_inequalities(Variable& qdd, Expression& tau)
         lower[k] = std::max(lower[k], (-robot.model.velocityLimit[k + 6] - qd) / dt);
       }
 
-      if (joint_limits)
+      if (joint_limits && q_index >= 0)
       {
-        if (q > robot.model.upperPositionLimit[k + 7])
+        double q = robot.state.q[q_index];
+        if (q > robot.model.upperPositionLimit[q_index])
         {
           // We are in the contact, ensuring at least qdd <= -qdd_safe
           upper[k] = std::min(upper[k], -qdd_safe[k + 6]);
@@ -271,11 +274,11 @@ void DynamicsSolver::compute_limits_inequalities(Variable& qdd, Expression& tau)
         else
         {
           // qdd*dt + qd <= qd_max
-          double qd_max = sqrt(2. * (robot.model.upperPositionLimit[k + 7] - q) * qdd_safe[k + 6]);
+          double qd_max = sqrt(2. * (robot.model.upperPositionLimit[q_index] - q) * qdd_safe[k + 6]);
           upper[k] = std::min(upper[k], (qd_max - qd) / dt);
         }
 
-        if (q < robot.model.lowerPositionLimit[k + 7])
+        if (q < robot.model.lowerPositionLimit[q_index])
         {
           // We are in the contact, ensuring at least qdd >= qdd_safe
           lower[k] = std::max(lower[k], qdd_safe[k + 6]);
@@ -283,7 +286,7 @@ void DynamicsSolver::compute_limits_inequalities(Variable& qdd, Expression& tau)
         else
         {
           // qdd*dt + qd >= -qd_max
-          double qd_max = sqrt(2. * fabs(robot.model.lowerPositionLimit[k + 7] - q) * qdd_safe[k + 6]);
+          double qd_max = sqrt(2. * fabs(robot.model.lowerPositionLimit[q_index] - q) * qdd_safe[k + 6]);
           lower[k] = std::max(lower[k], (-qd - qd_max) / dt);
         }
       }

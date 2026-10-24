@@ -21,6 +21,12 @@ void GearTask::add_gear(std::string target, std::string source, double ratio)
   int target_id = solver->robot.get_joint_v_offset(target);
   int source_id = solver->robot.get_joint_v_offset(source);
 
+  // The positions of the joints are read in the configuration, the joints need one coordinate per degree of freedom
+  if (solver->robot.dof_q_index[target_id] < 0 || solver->robot.dof_q_index[source_id] < 0)
+  {
+    throw std::runtime_error("GearTask: joints without a position of their own (e.g. continuous) are not supported");
+  }
+
   gears[target_id][source_id] = ratio;
 }
 
@@ -50,14 +56,14 @@ void GearTask::fill()
   {
     int target = entry.first;
     A(k, column(target)) = -1;
-    double q_target = solver->robot.state.q[target + 1];
+    double q_target = solver->robot.state.q[solver->robot.dof_q_index[target]];
     b(k, 0) = q_target;
 
     for (auto& gear_source : entry.second)
     {
       int source = gear_source.first;
       double ratio = gear_source.second;
-      double q_source = solver->robot.state.q[source + 1];
+      double q_source = solver->robot.state.q[solver->robot.dof_q_index[source]];
 
       A(k, column(source)) = ratio;
       b(k, 0) -= q_source * ratio;

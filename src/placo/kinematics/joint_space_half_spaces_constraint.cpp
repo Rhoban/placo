@@ -19,20 +19,26 @@ void JointSpaceHalfSpacesConstraint::add_constraint(placo::problem::Problem& pro
     throw std::runtime_error("Matrix A should have ndof cols in joint-space half-spaces constraint");
   }
 
-  int ndof = solver->N - 6;
-  auto A_no_fbase = A.rightCols(ndof);
-
-  // We want Aq <= b
-  // So A(q0 + dq) <= b, the constraint only depends on the joints (not the floating base)
+  // We want Aq <= b, A having a column per configuration coordinate
+  // So A(q0 + dq) <= b, the constraint only depends on the joints (not the floating base), through the degrees of
+  // freedom that have a configuration coordinate of their own (see RobotWrapper::dof_q_index)
+  int n_joints_q = A.cols() - 7;
   problem::ProblemConstraint& constraint = problem.add_constraint();
   constraint.type = problem::ProblemConstraint::Inequality;
-  constraint.columns.resize(ndof);
-  for (int k = 0; k < ndof; k++)
+  constraint.columns.clear();
+  for (int k = 6; k < solver->N; k++)
   {
-    constraint.columns[k] = 6 + k;
+    if (solver->robot.dof_q_index[k] >= 0)
+    {
+      constraint.columns.push_back(k);
+    }
   }
-  constraint.expression.A = -A_no_fbase;
-  constraint.expression.b = b - A_no_fbase * solver->robot.state.q.bottomRows(ndof);
+  constraint.expression.A.resize(A.rows(), constraint.columns.size());
+  for (int k = 0; k < (int)constraint.columns.size(); k++)
+  {
+    constraint.expression.A.col(k) = -A.col(solver->robot.dof_q_index[constraint.columns[k]]);
+  }
+  constraint.expression.b = b - A.rightCols(n_joints_q) * solver->robot.state.q.bottomRows(n_joints_q);
   constraint.configure(priority == Prioritized::Priority::Hard ? problem::ProblemConstraint::Hard :
                                                                  problem::ProblemConstraint::Soft,
                        weight);
