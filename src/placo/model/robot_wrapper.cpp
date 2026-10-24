@@ -198,14 +198,35 @@ pinocchio::FrameIndex RobotWrapper::get_frame_index(const std::string& frame)
   return model.getFrameId(frame);
 }
 
+// A continuous joint (unbounded revolute) has a configuration of two coordinates (cos and sin of its angle) for one
+// degree of freedom
+static bool is_continuous(const pinocchio::JointModel& joint)
+{
+  return joint.nq() == 2 && joint.nv() == 1;
+}
+
 void RobotWrapper::set_joint(const std::string& name, double value)
 {
-  state.q[get_joint_offset(name)] = value;
+  int k = get_joint_offset(name);
+  if (is_continuous(model.joints[model.getJointId(name)]))
+  {
+    state.q[k] = cos(value);
+    state.q[k + 1] = sin(value);
+  }
+  else
+  {
+    state.q[k] = value;
+  }
 }
 
 double RobotWrapper::get_joint(const std::string& name)
 {
-  return state.q[get_joint_offset(name)];
+  int k = get_joint_offset(name);
+  if (is_continuous(model.joints[model.getJointId(name)]))
+  {
+    return atan2(state.q[k + 1], state.q[k]);
+  }
+  return state.q[k];
 }
 
 int RobotWrapper::get_joint_offset(const std::string& name)
@@ -279,6 +300,10 @@ void RobotWrapper::set_velocity_limits(double limit)
 
 void RobotWrapper::set_joint_limits(const std::string& name, double lower, double upper)
 {
+  if (is_continuous(model.joints[model.getJointId(name)]))
+  {
+    throw std::runtime_error("RobotWrapper::set_joint_limits: " + name + " is a continuous joint (no position limits)");
+  }
   int k = get_joint_offset(name);
   model.lowerPositionLimit[k] = lower;
   model.upperPositionLimit[k] = upper;
@@ -286,6 +311,10 @@ void RobotWrapper::set_joint_limits(const std::string& name, double lower, doubl
 
 std::pair<double, double> RobotWrapper::get_joint_limits(const std::string& name)
 {
+  if (is_continuous(model.joints[model.getJointId(name)]))
+  {
+    return std::make_pair(-std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity());
+  }
   int k = get_joint_offset(name);
   return std::make_pair(model.lowerPositionLimit[k], model.upperPositionLimit[k]);
 }
@@ -977,15 +1006,36 @@ void RobotWrapper::add_q_noise(double noise)
   auto q_random = pinocchio::randomConfiguration(model);
 
   // Adding some noise in direction of a random configuration (except floating base)
-  for (int k = 7; k < model.nq; k++)
+  for (int j = 1; j < model.njoints; j++)
   {
-    if (model.lowerPositionLimit(k) == std::numeric_limits<double>::lowest() ||
-        model.upperPositionLimit(k) == std::numeric_limits<double>::max())
+    const auto& joint = model.joints[j];
+    int k = joint.idx_q();
+    if (is_continuous(joint))
     {
+      // The noise is added to the angle, so that the configuration stays on the unit circle
+      double angle = atan2(state.q(k + 1), state.q(k));
+      double random_angle = atan2(q_random(k + 1), q_random(k));
+      double delta = atan2(sin(random_angle - angle), cos(random_angle - angle));
+      angle += delta * noise;
+      state.q(k) = cos(angle);
+      state.q(k + 1) = sin(angle);
       continue;
     }
+    if (joint.nq() != joint.nv() || k < 7)
+    {
+      // Floating base and other joints whose configuration isn't one coordinate per degree of freedom
+      continue;
+    }
+    for (int i = k; i < k + joint.nq(); i++)
+    {
+      if (model.lowerPositionLimit(i) == std::numeric_limits<double>::lowest() ||
+          model.upperPositionLimit(i) == std::numeric_limits<double>::max())
+      {
+        continue;
+      }
 
-    state.q(k) += (q_random(k) - state.q(k)) * noise;
+      state.q(i) += (q_random(i) - state.q(i)) * noise;
+    }
   }
 }
 }  // namespace placo::model

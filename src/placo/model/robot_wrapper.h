@@ -121,14 +121,16 @@ public:
   /**
    * @brief Sets the value of a joint in state.q
    * @param name joint name
-   * @param value joint value (e.g rad for revolute or meters for prismatic)
+   * @param value joint value (e.g rad for revolute or meters for prismatic). For a continuous joint, the angle sets
+   * its two configuration coordinates (cos and sin)
    */
   void set_joint(const std::string& name, double value);
 
   /**
    * @brief Retrieves a joint value from state.q
    * @param name joint name
-   * @return the joint current (inner state) value (e.g rad for revolute or meters for prismatic)
+   * @return the joint current (inner state) value (e.g rad for revolute or meters for prismatic). For a continuous
+   * joint, its angle (in ]-pi, pi]) computed from its two configuration coordinates (cos and sin)
    */
   double get_joint(const std::string& name);
 
@@ -199,7 +201,8 @@ public:
   /**
    * @brief Sets the limits for a given joint.
    *
-   * By default, the joint limits are loaded from the URDF file, this method can be used to override them.
+   * By default, the joint limits are loaded from the URDF file, this method can be used to override them. A
+   * continuous joint has no position limits (an error is raised).
    *
    * @param name joint name
    * @param lower lower limit
@@ -218,7 +221,7 @@ public:
   void set_velocity_limit(const std::string& name, double limit);
 
   /**
-   * @brief Gets the limits for a given joint.
+   * @brief Gets the limits for a given joint (infinite for a continuous joint).
    *
    * @param name joint name
    * @return pair of (lower, upper) limits
@@ -778,7 +781,8 @@ public:
   double total_mass();
 
   /**
-   * @brief Adds some noise to the configuration
+   * @brief Adds some noise to the configuration (in the direction of a random configuration), except for the floating
+   * base. For a continuous joint, the noise is added to its angle
    */
   void add_q_noise(double noise);
 
