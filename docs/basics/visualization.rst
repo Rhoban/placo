@@ -2,8 +2,11 @@ Visualization
 =============
 
 PlaCo comes with some basics visualization tools based on 
-`meshcat <https://github.com/meshcat-dev/meshcat>`_. Those helpers are written in
+`viser <https://viser.studio>`_. Those helpers are written in
 Python and available in the ``placo_utils`` package.
+
+The viewer is served by the Python process itself: open the URL it prints (by default
+``http://localhost:8080``) in a web browser.
 
 Command-line visualization
 --------------------------
