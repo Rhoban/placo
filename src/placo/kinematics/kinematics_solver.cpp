@@ -1,5 +1,4 @@
 #include "placo/kinematics/kinematics_solver.h"
-#include "pinocchio/algorithm/geometry.hpp"
 #include "placo/model/robot_wrapper.h"
 #include "placo/problem/problem.h"
 #include "placo/tools/utils.h"
@@ -306,8 +305,8 @@ void KinematicsSolver::compute_limits_inequalities()
       int q_index = robot.v_to_q[k + 6];
       if (q_index >= 0)
       {
-        limits_lower[k] = robot.model.lowerPositionLimit[q_index] - robot.state.q[q_index];
-        limits_upper[k] = robot.model.upperPositionLimit[q_index] - robot.state.q[q_index];
+        limits_lower[k] = robot.model.lower_position_limit[q_index] - robot.state.q[q_index];
+        limits_upper[k] = robot.model.upper_position_limit[q_index] - robot.state.q[q_index];
       }
     }
     problem.add_bounds(*qd, 6, limits_lower, limits_upper);
@@ -316,7 +315,7 @@ void KinematicsSolver::compute_limits_inequalities()
   if (velocity_limits)
   {
     // -dt v_max <= qd <= dt v_max
-    limits_upper = dt * robot.model.velocityLimit.bottomRows(N - 6);
+    limits_upper = dt * robot.model.velocity_limit.bottomRows(N - 6);
     limits_lower = -limits_upper;
     problem.add_bounds(*qd, 6, limits_lower, limits_upper);
   }
@@ -433,11 +432,11 @@ Eigen::VectorXd KinematicsSolver::solve(bool apply)
     // Initial robot configuration
     auto q_save = robot.state.q;
 
-    robot.state.q = pinocchio::integrate(robot.model, robot.state.q, qd_sol);
+    robot.state.q = robot.model.integrate(robot.state.q, qd_sol);
     if (dt > 0)
     {
       auto qd_save = robot.state.qd;
-      robot.state.qd = pinocchio::difference(robot.model, q_save, robot.state.q) / dt;
+      robot.state.qd = robot.model.difference(q_save, robot.state.q) / dt;
       robot.state.qdd = (robot.state.qd - qd_save) / dt;
     }
   }

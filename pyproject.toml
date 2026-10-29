@@ -2,10 +2,10 @@
 build-backend = "cmeel"
 requires = [
   "cmeel[build]",
-  "pin[build]==4.1.0",
+  "eigenpy[build]==3.13.0",
+  "libcoal[build]==3.0.3",
   "rhoban-cmeel-jsoncpp",
   "doxystub >= 0.1.7",
-  "cmeel-urdfdom==6.0.0",
   "cmeel-tinyxml2==11.0.0",
   "cmake<4"
 ]
@@ -14,9 +14,10 @@ requires = [
 authors = [{ email = "team@rhoban.com", name = "Rhoban team" }]
 classifiers = []
 dependencies = [
-  "pin==4.1.0",
+  "eigenpy==3.13.0",
+  "libcoal==3.0.3",
+  "numpy",
   "rhoban-cmeel-jsoncpp",
-  "cmeel-urdfdom==6.0.0",
   "cmeel-tinyxml2==11.0.0",
   "viser",
   "pycollada",

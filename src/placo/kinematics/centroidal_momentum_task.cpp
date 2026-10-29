@@ -1,6 +1,6 @@
 #include "placo/kinematics/centroidal_momentum_task.h"
 #include "placo/kinematics/kinematics_solver.h"
-#include <pinocchio/spatial/explog.hpp>
+#include "placo/model/spatial.h"
 
 namespace placo::kinematics
 {

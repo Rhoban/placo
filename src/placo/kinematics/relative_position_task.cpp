@@ -22,12 +22,12 @@ void RelativePositionTask::fill()
   Eigen::Affine3d T_a_b = T_world_a.inverse() * T_world_b;
   Eigen::Matrix3d R_a_world = T_world_a.linear().transpose();
 
-  solver->robot.compact_frame_jacobian(frame_a, pinocchio::LOCAL_WORLD_ALIGNED, columns, J_a);
-  solver->robot.compact_frame_jacobian(frame_b, pinocchio::LOCAL_WORLD_ALIGNED, columns, J_b);
+  solver->robot.compact_frame_jacobian(frame_a, placo::model::LOCAL_WORLD_ALIGNED, columns, J_a);
+  solver->robot.compact_frame_jacobian(frame_b, placo::model::LOCAL_WORLD_ALIGNED, columns, J_b);
 
   // Velocity of b relative to a, expressed in a
   Eigen::Matrix<double, 3, Eigen::Dynamic> J = R_a_world * (J_b.topRows(3) - J_a.topRows(3)) +
-                                               pinocchio::skew(T_a_b.translation()) * R_a_world * J_a.bottomRows(3);
+                                               placo::model::skew(T_a_b.translation()) * R_a_world * J_a.bottomRows(3);
   Eigen::Vector3d error = target - T_a_b.translation();
 
   A.resize(mask.rows(), columns.size());

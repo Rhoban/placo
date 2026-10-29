@@ -22,8 +22,8 @@ void DistanceConstraint::add_constraint(placo::problem::Problem& problem)
 
   model::RobotWrapper::merge_supports(solver->robot.frame_support(frame_a), solver->robot.frame_support(frame_b),
                                       columns);
-  solver->robot.compact_frame_jacobian(frame_a, pinocchio::LOCAL_WORLD_ALIGNED, columns, J_a);
-  solver->robot.compact_frame_jacobian(frame_b, pinocchio::LOCAL_WORLD_ALIGNED, columns, J_b);
+  solver->robot.compact_frame_jacobian(frame_a, placo::model::LOCAL_WORLD_ALIGNED, columns, J_a);
+  solver->robot.compact_frame_jacobian(frame_b, placo::model::LOCAL_WORLD_ALIGNED, columns, J_b);
 
   // distance + J_distance dq <= distance_max
   problem::ProblemConstraint& constraint = problem.add_constraint();

@@ -1,4 +1,3 @@
-#include <pinocchio/fwd.hpp>
 
 #include <Eigen/Dense>
 #include <boost/python.hpp>

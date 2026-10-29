@@ -16,7 +16,7 @@ void PositionTask::support()
 
 void PositionTask::fill()
 {
-  pinocchio::ReferenceFrame frame_type = pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED;
+  placo::model::ReferenceFrame frame_type = placo::model::LOCAL_WORLD_ALIGNED;
 
   // Computing J and dJ
   solver->robot.compact_frame_jacobian(frame_index, frame_type, columns, J_a);
@@ -24,8 +24,8 @@ void PositionTask::fill()
   gather_qd();
 
   // Computing error
-  const pinocchio::SE3& T_world_frame = solver->robot.data->oMf[frame_index];
-  mask.R_local_world = T_world_frame.rotation().transpose();
+  const Eigen::Affine3d& T_world_frame = solver->robot.data->oMf[frame_index];
+  mask.R_local_world = T_world_frame.linear().transpose();
   Eigen::Vector3d position_world = T_world_frame.translation();
   Eigen::Vector3d position_error = target_world - position_world;
 

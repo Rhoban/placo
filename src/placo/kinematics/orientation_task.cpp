@@ -1,6 +1,6 @@
 #include "placo/kinematics/orientation_task.h"
 #include "placo/kinematics/kinematics_solver.h"
-#include <pinocchio/spatial/explog.hpp>
+#include "placo/model/spatial.h"
 
 namespace placo::kinematics
 {
@@ -16,10 +16,10 @@ void OrientationTask::support()
 
 void OrientationTask::fill()
 {
-  pinocchio::SE3 T_world_frame = solver->robot.data->oMf[frame_index];
-  Eigen::Matrix3d M = R_world_frame * T_world_frame.rotation().transpose();
-  Eigen::Vector3d error = pinocchio::log3(M);
-  solver->robot.compact_frame_jacobian(frame_index, pinocchio::WORLD, columns, J_a);
+  Eigen::Affine3d T_world_frame = solver->robot.data->oMf[frame_index];
+  Eigen::Matrix3d M = R_world_frame * T_world_frame.linear().transpose();
+  Eigen::Vector3d error = placo::model::log3(M);
+  solver->robot.compact_frame_jacobian(frame_index, placo::model::WORLD, columns, J_a);
 
   mask.R_local_world = R_world_frame.transpose();
   A.resize(mask.rows(), columns.size());

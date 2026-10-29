@@ -37,7 +37,7 @@ LineContact& DynamicsSolver::add_unilateral_line_contact(FrameTask& frame_task)
 }
 
 ExternalWrenchContact& DynamicsSolver::add_external_wrench_contact(model::RobotWrapper::FrameIndex frame_index,
-                                                                   pinocchio::ReferenceFrame reference)
+                                                                   placo::model::ReferenceFrame reference)
 {
   return add_contact(new ExternalWrenchContact(frame_index, reference));
 }
@@ -46,11 +46,11 @@ ExternalWrenchContact& DynamicsSolver::add_external_wrench_contact(std::string f
 {
   if (reference == "world")
   {
-    return add_external_wrench_contact(robot.get_frame_index(frame_name), pinocchio::LOCAL_WORLD_ALIGNED);
+    return add_external_wrench_contact(robot.get_frame_index(frame_name), placo::model::LOCAL_WORLD_ALIGNED);
   }
   else if (reference == "local")
   {
-    return add_external_wrench_contact(robot.get_frame_index(frame_name), pinocchio::LOCAL);
+    return add_external_wrench_contact(robot.get_frame_index(frame_name), placo::model::LOCAL);
   }
   else
   {
@@ -224,7 +224,7 @@ void DynamicsSolver::compute_limits_inequalities(Variable& qdd, Expression& tau)
 
   if (torque_limits)
   {
-    Eigen::VectorXd effort_limit = robot.model.effortLimit;
+    Eigen::VectorXd effort_limit = robot.model.effort_limit;
     for (auto& entry : overriden_torque_limits)
     {
       effort_limit[entry.first] = entry.second;
@@ -259,14 +259,14 @@ void DynamicsSolver::compute_limits_inequalities(Variable& qdd, Expression& tau)
       if (velocity_limits && !velocity_vs_torque_limits)
       {
         // -qd_max <= qd + dt*qdd <= qd_max
-        upper[k] = std::min(upper[k], (robot.model.velocityLimit[k + 6] - qd) / dt);
-        lower[k] = std::max(lower[k], (-robot.model.velocityLimit[k + 6] - qd) / dt);
+        upper[k] = std::min(upper[k], (robot.model.velocity_limit[k + 6] - qd) / dt);
+        lower[k] = std::max(lower[k], (-robot.model.velocity_limit[k + 6] - qd) / dt);
       }
 
       if (joint_limits && q_index >= 0)
       {
         double q = robot.state.q[q_index];
-        if (q > robot.model.upperPositionLimit[q_index])
+        if (q > robot.model.upper_position_limit[q_index])
         {
           // We are in the contact, ensuring at least qdd <= -qdd_safe
           upper[k] = std::min(upper[k], -qdd_safe[k + 6]);
@@ -274,11 +274,11 @@ void DynamicsSolver::compute_limits_inequalities(Variable& qdd, Expression& tau)
         else
         {
           // qdd*dt + qd <= qd_max
-          double qd_max = sqrt(2. * (robot.model.upperPositionLimit[q_index] - q) * qdd_safe[k + 6]);
+          double qd_max = sqrt(2. * (robot.model.upper_position_limit[q_index] - q) * qdd_safe[k + 6]);
           upper[k] = std::min(upper[k], (qd_max - qd) / dt);
         }
 
-        if (q < robot.model.lowerPositionLimit[q_index])
+        if (q < robot.model.lower_position_limit[q_index])
         {
           // We are in the contact, ensuring at least qdd >= qdd_safe
           lower[k] = std::max(lower[k], qdd_safe[k + 6]);
@@ -286,7 +286,7 @@ void DynamicsSolver::compute_limits_inequalities(Variable& qdd, Expression& tau)
         else
         {
           // qdd*dt + qd >= -qd_max
-          double qd_max = sqrt(2. * fabs(robot.model.lowerPositionLimit[q_index] - q) * qdd_safe[k + 6]);
+          double qd_max = sqrt(2. * fabs(robot.model.lower_position_limit[q_index] - q) * qdd_safe[k + 6]);
           lower[k] = std::max(lower[k], (-qd - qd_max) / dt);
         }
       }
@@ -306,14 +306,14 @@ void DynamicsSolver::compute_limits_inequalities(Variable& qdd, Expression& tau)
     for (int k = 0; k < N - 6; k++)
     {
       double qd = robot.state.qd[k + 6];
-      double ratio = robot.model.velocityLimit[k + 6] / robot.model.effortLimit[k + 6];
+      double ratio = robot.model.velocity_limit[k + 6] / robot.model.effort_limit[k + 6];
 
       // qd + dt*qdd <= qd_max - ratio * tau
       // ratio * tau + dt*qdd + qd - qd_max <= 0
       e.A.block(constraint, 0, 1, problem.n_variables) = ratio * tau.A.block(k + 6, 0, 1, problem.n_variables);
       e.b[constraint] = ratio * tau.b[k + 6];
       e.A(constraint, k + 6) += dt;
-      e.b[constraint] += qd - robot.model.velocityLimit[k + 6];
+      e.b[constraint] += qd - robot.model.velocity_limit[k + 6];
       constraint++;
 
       // qd + dt*qdd >= -qd_max - ratio * tau
@@ -321,7 +321,7 @@ void DynamicsSolver::compute_limits_inequalities(Variable& qdd, Expression& tau)
       e.A.block(constraint, 0, 1, problem.n_variables) = -ratio * tau.A.block(k + 6, 0, 1, problem.n_variables);
       e.b[constraint] = -ratio * tau.b[k + 6];
       e.A(constraint, k + 6) -= dt;
-      e.b[constraint] -= qd + robot.model.velocityLimit[k + 6];
+      e.b[constraint] -= qd + robot.model.velocity_limit[k + 6];
       constraint++;
     }
 
