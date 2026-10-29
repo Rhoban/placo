@@ -2,11 +2,11 @@
 build-backend = "cmeel"
 requires = [
   "cmeel[build]",
-  "pin[build]==3.8.0",
+  "pin[build]==4.1.0",
   "rhoban-cmeel-jsoncpp",
   "doxystub >= 0.1.7",
-  "cmeel-urdfdom==4.0.1",
-  "cmeel-tinyxml2==10.0.0",
+  "cmeel-urdfdom==6.0.0",
+  "cmeel-tinyxml2==11.0.0",
   "cmake<4"
 ]
 
@@ -14,10 +14,10 @@ requires = [
 authors = [{ email = "team@rhoban.com", name = "Rhoban team" }]
 classifiers = []
 dependencies = [
-  "pin==3.8.0",
+  "pin==4.1.0",
   "rhoban-cmeel-jsoncpp",
-  "cmeel-urdfdom==4.0.1",
-  "cmeel-tinyxml2==10.0.0",
+  "cmeel-urdfdom==6.0.0",
+  "cmeel-tinyxml2==11.0.0",
   "meshcat",
   "ischedule"
 ]
