@@ -85,3 +85,23 @@ You can use :func:`arrow_viz <placo_utils.visualization.arrow_viz>` to visualize
         :loop:
 
     :example:`visualization/arrow.py`
+
+Editing tasks from the viewer
+-----------------------------
+
+The targets of position tasks and frame tasks (of the kinematics or dynamics solver) can be edited from the viewer
+with :func:`task_controls <placo_utils.visualization.task_controls>`: a gizmo is placed at the target, and dragging
+it (or rotating it, for frame tasks) moves the target.
+
+.. code-block:: python
+
+    effector_task = solver.add_frame_task("effector", robot.get_T_world_frame("effector"))
+    task_controls(effector_task, "effector")
+
+:func:`position_task_controls <placo_utils.visualization.position_task_controls>` and
+:func:`frame_task_controls <placo_utils.visualization.frame_task_controls>` can also be used directly. The targets
+are then updated by the viewer, they should not be changed by the code at the same time.
+
+.. admonition:: Example
+
+    :example:`kinematics/6axis_controls.py`

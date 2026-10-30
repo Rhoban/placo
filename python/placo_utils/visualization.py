@@ -389,3 +389,71 @@ def contacts_viz(solver: placo.DynamicsSolver, ratio=0.1, radius=0.005):
         remove(f"arrows/contact_{k_d}")
         k_d += 1
     previous_contacts = k
+
+
+# Interactive controls of the tasks, by name
+controls: dict = {}
+
+
+def position_task_controls(task, name: str, scale: float = 0.15) -> viser.TransformControlsHandle:
+    """
+    Makes the target of a position task (kinematics or dynamics) editable from the viewer: a gizmo placed at the
+    target can be dragged to move it.
+
+    The target is updated by the viewer, it should not be changed by the code at the same time.
+    """
+    vis = get_viewer()
+    node_name = f"controls/{name}"
+    remove(node_name)
+
+    handle = vis.scene.add_transform_controls(
+        node_name, scale=scale, disable_rotations=True, position=np.array(task.target_world)
+    )
+
+    # Asynchronous callbacks are called in order (unlike the threaded ones)
+    @handle.on_update
+    async def _(event) -> None:
+        task.target_world = np.array(event.target.position)
+
+    nodes[node_name] = (None, handle)
+    controls[name] = handle
+    return handle
+
+
+def frame_task_controls(task, name: str, scale: float = 0.15) -> viser.TransformControlsHandle:
+    """
+    Makes the target of a frame task (kinematics or dynamics) editable from the viewer: a gizmo placed at the target
+    can be dragged and rotated to move it.
+
+    The target is updated by the viewer, it should not be changed by the code at the same time.
+    """
+    vis = get_viewer()
+    node_name = f"controls/{name}"
+    remove(node_name)
+
+    T = np.array(task.T_world_frame)
+    handle = vis.scene.add_transform_controls(
+        node_name, scale=scale, position=T[:3, 3], wxyz=tf.quaternion_from_matrix(T)
+    )
+
+    @handle.on_update
+    async def _(event) -> None:
+        T_world_frame = tf.quaternion_matrix(event.target.wxyz)
+        T_world_frame[:3, 3] = event.target.position
+        task.T_world_frame = T_world_frame
+
+    nodes[node_name] = (None, handle)
+    controls[name] = handle
+    return handle
+
+
+def task_controls(task, name: str, scale: float = 0.15) -> viser.TransformControlsHandle:
+    """
+    Makes the target of a position or frame task editable from the viewer (see position_task_controls and
+    frame_task_controls)
+    """
+    if hasattr(task, "T_world_frame"):
+        return frame_task_controls(task, name, scale)
+    elif hasattr(task, "target_world"):
+        return position_task_controls(task, name, scale)
+    raise ValueError(f"task_controls: {type(task).__name__} is not a position or frame task")
