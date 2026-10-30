@@ -23,7 +23,45 @@ def get_viewer() -> viser.ViserServer:
         viewer.initial_camera.position = (1.5, 1.0, 1.0)
         viewer.initial_camera.look_at = (0.0, 0.0, 0.2)
 
+        ground_viz()
+
     return viewer
+
+
+ground = None
+ground_checkbox = None
+
+
+def ground_viz(z: float = 0.0, visible: bool = True) -> None:
+    """
+    Shows (or hides) the ground: a plane with a grid (10 cm cells, 1 m sections) at the given height. It is shown by
+    default, and can also be hidden from the viewer ("Ground" checkbox)
+    """
+    global ground, ground_checkbox
+    vis = get_viewer()
+
+    if ground is None:
+        ground = vis.scene.add_grid(
+            "ground",
+            infinite_grid=True,
+            cell_size=0.1,
+            section_size=1.0,
+            cell_color=(190, 190, 190),
+            section_color=(120, 120, 120),
+            plane_color=(230, 230, 230),
+            plane_opacity=0.6,
+            shadow_opacity=0.2,
+            fade_distance=30.0,
+        )
+        ground_checkbox = vis.gui.add_checkbox("Ground", initial_value=visible)
+
+        @ground_checkbox.on_update
+        def _(_) -> None:
+            ground.visible = ground_checkbox.value
+
+    ground.position = (0.0, 0.0, z)
+    ground.visible = visible
+    ground_checkbox.value = visible
 
 
 def robot_viz(robot: placo.RobotWrapper, name: str = "robot") -> ViserVisualizer:
