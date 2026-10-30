@@ -1,5 +1,9 @@
 #pragma once
 
+// PlaCo's rigid body model is a lighter, standalone implementation that uses pinocchio
+// (https://github.com/stack-of-tasks/pinocchio) as its reference: it follows its conventions and formulas, so that
+// the results are the same up to rounding errors.
+
 #include <string>
 #include <vector>
 #include "placo/model/model.h"

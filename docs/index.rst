@@ -28,6 +28,14 @@ Outline
   dynamics/index
   placo/summary
 
+Acknowledgements
+----------------
+
+PlaCo's rigid body model (kinematics, dynamics, URDF and MJCF loading) is a lighter, standalone implementation
+written with `pinocchio <https://github.com/stack-of-tasks/pinocchio>`_ as its reference, on top of which PlaCo
+was first built: it follows pinocchio's conventions and formulas, and was validated against it. Collisions and
+distances are computed with `coal <https://github.com/coal-library/coal>`_.
+
 Links
 -----
 
