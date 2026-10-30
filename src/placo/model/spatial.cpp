@@ -325,6 +325,23 @@ Vector6d log6(const Eigen::Quaterniond& quaternion, const Eigen::Vector3d& trans
   return result;
 }
 
+Eigen::Affine3d exp6(const Vector6d& v)
+{
+  Eigen::Vector3d translation;
+  Eigen::Quaterniond quaternion;
+  exp6(v, translation, quaternion);
+
+  Eigen::Affine3d T = Eigen::Affine3d::Identity();
+  T.linear() = quaternion.toRotationMatrix();
+  T.translation() = translation;
+  return T;
+}
+
+Vector6d log6(const Eigen::Affine3d& T)
+{
+  return log6(Eigen::Quaterniond(Eigen::Matrix3d(T.linear())), T.translation());
+}
+
 void first_order_normalize(Eigen::Quaterniond& quaternion)
 {
   const double n2 = quaternion.squaredNorm();

@@ -129,6 +129,21 @@ Eigen::Vector3d quaternion_log3(const Eigen::Quaterniond& quaternion, double& th
 void exp6(const Vector6d& v, Eigen::Vector3d& translation, Eigen::Quaterniond& quaternion);
 
 /**
+ * @brief Exponential map of SE(3): integrates a spatial velocity [linear; angular] (expressed in the moving frame)
+ * over a unit of time
+ * @param v spatial velocity
+ * @return the transformation
+ */
+Eigen::Affine3d exp6(const Vector6d& v);
+
+/**
+ * @brief Logarithm map of SE(3)
+ * @param T transformation
+ * @return the spatial velocity [linear; angular] that, integrated over a unit of time, yields the transformation
+ */
+Vector6d log6(const Eigen::Affine3d& T);
+
+/**
  * @brief Logarithm map of SE(3), from a translation and a unit quaternion
  * @return the spatial velocity [linear; angular] that, integrated over a unit of time, yields the transformation
  */

@@ -11,6 +11,7 @@
 #include "placo/tools/directions.h"
 #include "placo/tools/polynom.h"
 #include "placo/tools/segment.h"
+#include "placo/model/spatial.h"
 #include "expose-utils.hpp"
 #ifdef HAVE_RHOBAN_UTILS
 #include "rhoban_utils/history/history.h"
@@ -39,6 +40,15 @@ void exposeTools()
   def("optimal_transformation", &optimal_transformation);
   def("directions_2d", &directions_2d);
   def("directions_3d", &directions_3d, directions_3d_overloads());
+
+  // Rotations and rigid transformations (exponential and logarithm maps, roll-pitch-yaw)
+  def("exp3", &placo::model::exp3);
+  def("log3", static_cast<Eigen::Vector3d (*)(const Eigen::Matrix3d&)>(&placo::model::log3));
+  def("jlog3", &placo::model::jlog3);
+  def("exp6", static_cast<Eigen::Affine3d (*)(const placo::model::Vector6d&)>(&placo::model::exp6));
+  def("log6", static_cast<placo::model::Vector6d (*)(const Eigen::Affine3d&)>(&placo::model::log6));
+  def("rpy_to_matrix", &placo::model::rpy_to_matrix);
+  def("matrix_to_rpy", &placo::model::matrix_to_rpy);
 
   exposeStdVector<int>("vector_int");
   exposeStdVector<double>("vector_double");

@@ -172,6 +172,17 @@ target_compile_definitions(placo PUBLIC -DBOOST_DISABLE_PRAGMA_MESSAGE)
 target_link_libraries(placo ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} libplaco eigenpy::eigenpy)
 target_include_directories(placo PRIVATE ${PYTHON_INCLUDE_DIRS})
 
+# The numpy headers must be the ones of the numpy used at runtime (the Python include directory can contain the
+# headers of another numpy, e.g. the system one, with a different ABI)
+execute_process(
+    COMMAND ${Python_EXECUTABLE} -c "import numpy; print(numpy.get_include())"
+    OUTPUT_VARIABLE NUMPY_INCLUDE_DIR
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    RESULT_VARIABLE NUMPY_INCLUDE_RESULT)
+if (NUMPY_INCLUDE_RESULT EQUAL 0)
+  target_include_directories(placo BEFORE PRIVATE ${NUMPY_INCLUDE_DIR})
+endif()
+
 add_custom_command(
     TARGET placo POST_BUILD
     COMMAND doxystub
