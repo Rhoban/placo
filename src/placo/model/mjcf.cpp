@@ -1,5 +1,6 @@
 #include "placo/model/mjcf.h"
 #include "placo/model/algorithms.h"
+#include <algorithm>
 #include <cmath>
 #include <filesystem>
 #include <limits>
@@ -226,6 +227,10 @@ protected:
   std::vector<std::string> bodies_order;
   MJCFBody world;
   Eigen::VectorXd reference_configuration;
+
+  // First joints of the bodies with several joints, whose placements don't depend on their reference position (as
+  // pinocchio, which builds a composite joint)
+  std::vector<int> unreferenced_joints;
 
   void parse_compiler(const tinyxml2::XMLElement* element)
   {
@@ -954,70 +959,88 @@ protected:
       return;
     }
 
-    if (body.joints.size() > 1)
+    // The joints of the body are chained: each one is attached to the previous one, and the body to the last one
+    // (pinocchio builds a composite joint, with the same configuration and placements)
+    int parent_joint = parent_frame.parent_joint;
+    int joint_parent_frame = parent_frame_id;
+    Eigen::Affine3d body_in_joint = Eigen::Affine3d::Identity();
+    Eigen::Affine3d previous_joint_in_parent = Eigen::Affine3d::Identity();
+
+    for (size_t k = 0; k < body.joints.size(); k++)
     {
-      throw std::runtime_error("MJCF: body " + name + " has several joints, which is not supported");
+      const MJCFJoint& mjcf_joint = body.joints[k];
+      const Eigen::Affine3d joint_in_parent = body.placement * mjcf_joint.placement;
+      body_in_joint = inverse(mjcf_joint.placement);
+
+      Joint joint;
+      Eigen::VectorXd max_effort, max_velocity, min_config, max_config, armature;
+      if (mjcf_joint.type == "free")
+      {
+        if (body.joints.size() > 1)
+        {
+          throw std::runtime_error("MJCF: body " + name + " has a free joint and other joints");
+        }
+        joint = Joint(Joint::FREE_FLYER);
+        max_effort = max_velocity = Eigen::VectorXd::Constant(6, infinity);
+        min_config = Eigen::VectorXd::Constant(7, -1.01);
+        max_config = Eigen::VectorXd::Constant(7, 1.01);
+        armature = Eigen::VectorXd::Constant(6, mjcf_joint.armature);
+
+        // The free joint configuration is the pose of the body
+        const Eigen::Quaterniond quaternion(body.placement.linear());
+        const Eigen::Quaterniond inverse_quaternion = quaternion.inverse();
+        const Eigen::Vector3d t = -body.placement.translation();
+        Eigen::VectorXd reference(7);
+        reference << t(0), t(1), t(2), inverse_quaternion.x(), inverse_quaternion.y(), inverse_quaternion.z(),
+            inverse_quaternion.w();
+        append_reference(reference);
+      }
+      else if (mjcf_joint.type == "ball")
+      {
+        joint = Joint(Joint::SPHERICAL);
+        max_effort = max_velocity = Eigen::VectorXd::Constant(3, infinity);
+        min_config = Eigen::VectorXd::Constant(4, -1.01);
+        max_config = Eigen::VectorXd::Constant(4, 1.01);
+        armature = Eigen::VectorXd::Constant(3, mjcf_joint.armature);
+        append_reference(Eigen::Vector4d(0, 0, 0, 1));
+      }
+      else if (mjcf_joint.type == "hinge" || mjcf_joint.type == "slide")
+      {
+        joint = Joint(mjcf_joint.type == "hinge" ? Joint::REVOLUTE : Joint::PRISMATIC, mjcf_joint.axis);
+        max_effort = Eigen::VectorXd::Constant(1, mjcf_joint.max_effort);
+        max_velocity = Eigen::VectorXd::Constant(1, infinity);
+        min_config = Eigen::VectorXd::Constant(1, mjcf_joint.min_config);
+        max_config = Eigen::VectorXd::Constant(1, mjcf_joint.max_config);
+        armature = Eigen::VectorXd::Constant(1, mjcf_joint.armature);
+        append_reference(Eigen::VectorXd::Constant(1, -mjcf_joint.ref));
+      }
+      else
+      {
+        throw std::runtime_error("MJCF: unknown joint type " + mjcf_joint.type);
+      }
+
+      // The first joint is placed relative to the parent body, the next ones relative to the previous joint
+      const Eigen::Affine3d placement =
+          k == 0 ? parent_frame.placement * joint_in_parent : inverse(previous_joint_in_parent) * joint_in_parent;
+      previous_joint_in_parent = joint_in_parent;
+
+      parent_joint = model.add_joint(parent_joint, joint, placement, mjcf_joint.name, max_effort, max_velocity,
+                                     min_config, max_config);
+      model.armature.segment(model.joints[parent_joint].idx_v, model.joints[parent_joint].nv) = armature;
+      if (k == 0 && body.joints.size() > 1)
+      {
+        unreferenced_joints.push_back(parent_joint);
+      }
+      joint_parent_frame = model.add_joint_frame(parent_joint, joint_parent_frame);
     }
 
-    const MJCFJoint& mjcf_joint = body.joints[0];
-    const Eigen::Affine3d joint_in_parent = body.placement * mjcf_joint.placement;
-    const Eigen::Affine3d body_in_joint = inverse(mjcf_joint.placement);
-
-    Joint joint;
-    Eigen::VectorXd max_effort, max_velocity, min_config, max_config, armature;
-    if (mjcf_joint.type == "free")
-    {
-      joint = Joint(Joint::FREE_FLYER);
-      max_effort = max_velocity = Eigen::VectorXd::Constant(6, infinity);
-      min_config = Eigen::VectorXd::Constant(7, -1.01);
-      max_config = Eigen::VectorXd::Constant(7, 1.01);
-      armature = Eigen::VectorXd::Constant(6, mjcf_joint.armature);
-
-      // The free joint configuration is the pose of the body
-      const Eigen::Quaterniond quaternion(body.placement.linear());
-      const Eigen::Quaterniond inverse_quaternion = quaternion.inverse();
-      const Eigen::Vector3d t = -body.placement.translation();
-      Eigen::VectorXd reference(7);
-      reference << t(0), t(1), t(2), inverse_quaternion.x(), inverse_quaternion.y(), inverse_quaternion.z(),
-          inverse_quaternion.w();
-      append_reference(reference);
-    }
-    else if (mjcf_joint.type == "ball")
-    {
-      joint = Joint(Joint::SPHERICAL);
-      max_effort = max_velocity = Eigen::VectorXd::Constant(3, infinity);
-      min_config = Eigen::VectorXd::Constant(4, -1.01);
-      max_config = Eigen::VectorXd::Constant(4, 1.01);
-      armature = Eigen::VectorXd::Constant(3, mjcf_joint.armature);
-      append_reference(Eigen::Vector4d(0, 0, 0, 1));
-    }
-    else if (mjcf_joint.type == "hinge" || mjcf_joint.type == "slide")
-    {
-      joint = Joint(mjcf_joint.type == "hinge" ? Joint::REVOLUTE : Joint::PRISMATIC, mjcf_joint.axis);
-      max_effort = Eigen::VectorXd::Constant(1, mjcf_joint.max_effort);
-      max_velocity = Eigen::VectorXd::Constant(1, infinity);
-      min_config = Eigen::VectorXd::Constant(1, mjcf_joint.min_config);
-      max_config = Eigen::VectorXd::Constant(1, mjcf_joint.max_config);
-      armature = Eigen::VectorXd::Constant(1, mjcf_joint.armature);
-      append_reference(Eigen::VectorXd::Constant(1, -mjcf_joint.ref));
-    }
-    else
-    {
-      throw std::runtime_error("MJCF: unknown joint type " + mjcf_joint.type);
-    }
-
-    int joint_id = model.add_joint(parent_frame.parent_joint, joint, parent_frame.placement * joint_in_parent,
-                                   mjcf_joint.name, max_effort, max_velocity, min_config, max_config);
-    model.armature.segment(model.joints[joint_id].idx_v, model.joints[joint_id].nv) = armature;
-    int joint_frame = model.add_joint_frame(joint_id, parent_frame_id);
-
-    // Body attached to the joint
-    const Eigen::Affine3d placement = model.frames[joint_frame].placement * body_in_joint;
+    // Body attached to the last joint
+    const Eigen::Affine3d placement = model.frames[joint_parent_frame].placement * body_in_joint;
     if (!body.inertia.is_zero())
     {
-      model.append_body_to_joint(joint_id, body.inertia, placement);
+      model.append_body_to_joint(parent_joint, body.inertia, placement);
     }
-    int body_frame_id = model.add_body_frame(name, joint_id, placement, joint_frame);
+    int body_frame_id = model.add_body_frame(name, parent_joint, placement, joint_parent_frame);
 
     for (auto& site : body.sites)
     {
@@ -1062,7 +1085,10 @@ protected:
     forward_kinematics(model, data, reference_configuration);
     for (int i = 1; i < model.njoints; i++)
     {
-      model.joint_placements[i] = inverse(data.oMi[model.parents[i]]) * data.oMi[i];
+      if (std::find(unreferenced_joints.begin(), unreferenced_joints.end(), i) == unreferenced_joints.end())
+      {
+        model.joint_placements[i] = inverse(data.oMi[model.parents[i]]) * data.oMi[i];
+      }
     }
   }
 
