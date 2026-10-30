@@ -4,7 +4,7 @@ Module placo_utils
 Visualization
 -------------
 
-The following methods can be used as helpers to render objects in *Meshcat*:
+The following methods can be used as helpers to render objects in *viser*:
 
 .. automodule:: placo_utils.visualization
     :members:
@@ -19,7 +19,7 @@ Importing:
 
     import placo_utils.tf as tf
 
-Actually is an alias to `Meshcat transformations <https://github.com/meshcat-dev/meshcat-python/blob/master/src/meshcat/transformations.py>`_, containing straightforward implementations to handle rigid body transformations.
+It is a copy of Christoph Gohlke's `transformations.py <https://github.com/meshcat-dev/meshcat-python/blob/master/src/meshcat/transformations.py>`_ (as shipped with meshcat-python), containing straightforward implementations to handle rigid body transformations.
 
 The typical two methods you want to use are `rotation_matrix` and `translation_matrix`:
 

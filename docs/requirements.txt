@@ -1,6 +1,6 @@
 pydata-sphinx-theme
 sphinxcontrib-video
 sphinx-copybutton
-meshcat
+viser
 pin
 numpy
