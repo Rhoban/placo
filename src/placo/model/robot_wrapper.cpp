@@ -378,7 +378,7 @@ void RobotWrapper::compute_hessians()
 Eigen::MatrixXd RobotWrapper::get_frame_hessian(FrameIndex frame, int joint_v_index)
 {
   // Frame parent joint index
-  pinocchio::JointIndex joint_id = model.frames[frame].parent;
+  pinocchio::JointIndex joint_id = model.frames[frame].parentJoint;
   pinocchio::SE3 T = model.frames[frame].placement;
 
   pinocchio::Tensor<double, 3, 0> H = pinocchio::getJointKinematicHessian(model, *data, joint_id, pinocchio::LOCAL);
