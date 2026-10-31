@@ -120,3 +120,22 @@ are then updated by the viewer, they should not be changed by the code at the sa
 .. admonition:: Example
 
     :example:`kinematics/6axis_controls.py`
+
+Sliders
+-------
+
+You can use :func:`add_slider <placo_utils.visualization.add_slider>` to add a slider to the viewer panel, and read
+its value with ``slider.value``. :func:`joints_sliders <placo_utils.visualization.joints_sliders>` adds a slider for
+each joint of a robot, within its limits:
+
+.. code-block:: python
+
+    sliders = joints_sliders(robot)
+
+    # In the loop
+    for joint, slider in sliders.items():
+        robot.set_joint(joint, slider.value)
+
+.. admonition:: Example
+
+    :example:`kinematics/6axis_sliders.py`

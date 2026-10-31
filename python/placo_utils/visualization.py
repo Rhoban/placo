@@ -585,3 +585,48 @@ def task_controls(task, name: str, scale: float = 0.15) -> viser.TransformContro
     elif hasattr(task, "target_world"):
         return position_task_controls(task, name, scale)
     raise ValueError(f"task_controls: {type(task).__name__} is not a position or frame task")
+
+
+# Sliders of the viewer panel, by name
+sliders: dict = {}
+
+
+def add_slider(name: str, minimum: float, maximum: float, value: float = None, step: float = 0.01):
+    """
+    Adds a slider to the viewer panel, whose current value is slider.value. If a slider with this name was already
+    added, it is returned (so that this function can be called in a loop)
+
+    :param name: slider name (displayed)
+    :param minimum: minimum value
+    :param maximum: maximum value
+    :param value: initial value (the minimum by default)
+    :param step: step between values
+    :return: the slider (viser.GuiSliderHandle)
+    """
+    if name not in sliders:
+        initial = minimum if value is None else float(np.clip(value, minimum, maximum))
+        sliders[name] = get_viewer().gui.add_slider(name, minimum, maximum, step, initial)
+    return sliders[name]
+
+
+def joints_sliders(robot: placo.RobotWrapper, joints: list = None, step: float = 0.01) -> dict:
+    """
+    Adds a slider for each joint of the robot to the viewer panel (in a "Joints" folder), within the joint limits
+    (unbounded joints are given [-pi, pi]), starting at the current joint value
+
+    :param robot: the robot
+    :param joints: names of the joints (all the joints by default)
+    :param step: step between values
+    :return: the sliders, by joint name (their current values are sliders[joint].value)
+    """
+    if joints is None:
+        joints = list(robot.joint_names())
+
+    result = {}
+    with get_viewer().gui.add_folder("Joints"):
+        for joint in joints:
+            lower, upper = robot.get_joint_limits(joint)
+            if not (np.isfinite(lower) and np.isfinite(upper)) or upper - lower > 1e6:
+                lower, upper = -np.pi, np.pi
+            result[joint] = add_slider(joint, float(lower), float(upper), robot.get_joint(joint), step)
+    return result
