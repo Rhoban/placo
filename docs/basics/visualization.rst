@@ -19,8 +19,12 @@ The following utils is provided to visualize a robot:
 
 You can provide the following arguments:
 
-* ``--frames [frame1 [frame2 [...]]]``: List of frames to visualize
+* ``--frames [frame1 [frame2 [...]]]``: List of frames to visualize (all the frames by default, they can be
+  shown or hidden from the scene tree of the viewer)
 * ``--animate`` to animate the robot (a sinusoïdal motion is applied to the joints)
+* ``--mjcf`` to load a MuJoCo (MJCF) file
+
+The joints can be moved with sliders in the viewer.
 
 Robot visualization
 -------------------
