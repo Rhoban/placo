@@ -120,3 +120,34 @@ are then updated by the viewer, they should not be changed by the code at the sa
 .. admonition:: Example
 
     :example:`kinematics/6axis_controls.py`
+
+Sliders
+-------
+
+You can use :func:`add_slider <placo_utils.visualization.add_slider>` to add a slider to the viewer panel, to change
+or tune any value while the program runs (a target, a gain, a task weight...). Its current value is
+``slider.value``:
+
+.. code-block:: python
+
+    height = add_slider("CoM height", 0.2, 0.4, 0.3, step=0.005)
+    weight = add_slider("posture weight", 0.0, 1.0, 1e-3, step=1e-4)
+
+    # In the loop
+    com_task.target_world = np.array([0.0, 0.0, height.value])
+    posture_task.configure("posture", "soft", weight.value)
+
+:func:`joints_sliders <placo_utils.visualization.joints_sliders>` adds a slider for each joint of a robot, within its
+limits:
+
+.. code-block:: python
+
+    sliders = joints_sliders(robot)
+
+    # In the loop
+    for joint, slider in sliders.items():
+        robot.set_joint(joint, slider.value)
+
+.. admonition:: Example
+
+    :example:`kinematics/6axis_sliders.py`
