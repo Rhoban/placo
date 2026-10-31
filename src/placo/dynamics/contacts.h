@@ -208,11 +208,11 @@ public:
    * @brief see \ref DynamicsSolver::add_external_wrench_contact
    */
   ExternalWrenchContact(model::RobotWrapper::FrameIndex frame_index,
-                        pinocchio::ReferenceFrame reference = pinocchio::LOCAL_WORLD_ALIGNED);
+                        placo::model::ReferenceFrame reference = placo::model::LOCAL_WORLD_ALIGNED);
 
   model::RobotWrapper::FrameIndex frame_index;
   Eigen::VectorXd w_ext = Eigen::VectorXd::Zero(6);
-  pinocchio::ReferenceFrame reference;
+  placo::model::ReferenceFrame reference;
 
   virtual void update();
   virtual void add_constraints(problem::Problem& problem);

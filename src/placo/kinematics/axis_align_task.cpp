@@ -32,7 +32,7 @@ void AxisAlignTask::fill()
   double error_angle = tools::safe_acos(R_world_axisframe.col(0).dot(targetAxis_world_normalized));
 
   // We express the Jacobian in the axisframe
-  solver->robot.compact_frame_jacobian(frame_index, pinocchio::WORLD, columns, J_a);
+  solver->robot.compact_frame_jacobian(frame_index, placo::model::WORLD, columns, J_a);
   Eigen::Matrix3d R_axisframe_world = R_world_axisframe.inverse();
 
   // We only keep y and z in the constraint, since we don't care about rotations about x axis in the axis frame

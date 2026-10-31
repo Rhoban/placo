@@ -1,18 +1,21 @@
 #pragma once
 
+#include <iostream>
+#include <map>
+#include <set>
+#include <string>
+#include <vector>
 #include <Eigen/Dense>
-#include "pinocchio/algorithm/frames.hpp"
-#include "pinocchio/algorithm/joint-configuration.hpp"
-#include "pinocchio/algorithm/kinematics.hpp"
-#include "pinocchio/parsers/urdf.hpp"
-#include "pinocchio/parsers/mjcf.hpp"
-#include <pinocchio/container/boost-container-limits.hpp>
+#include "placo/model/spatial.h"
+#include "placo/model/model.h"
+#include "placo/model/data.h"
+#include "placo/model/geometry.h"
 
 namespace placo::model
 {
 /**
  * @brief This class contains the robot model, state, and all convenient methods. All the rigid body algorithms
- * (namely, based on pinocchio) are wrapped in this object
+ * (see algorithms.h) are wrapped in this object
  */
 class RobotWrapper
 {
@@ -78,9 +81,14 @@ public:
   State state;
 
   /**
-   * @brief The index of a frame (currently directly wrapped to pinocchio's FrameIndex)
+   * @brief The index of a frame (in model.frames)
    */
-  typedef pinocchio::FrameIndex FrameIndex;
+  typedef int FrameIndex;
+
+  /**
+   * @brief The index of a joint (in model.joints)
+   */
+  typedef int JointIndex;
 
   /**
    * @brief Loads collision pairs from a given JSON file.
@@ -371,12 +379,12 @@ public:
     /**
      * @brief The joint parent of body A
      */
-    pinocchio::JointIndex parentA;
+    JointIndex parentA;
 
     /**
      * @brief The joint parent of body B
      */
-    pinocchio::JointIndex parentB;
+    JointIndex parentB;
 
     /**
      * @brief Name of the body A
@@ -422,12 +430,12 @@ public:
     /**
      * @brief Parent joint of body A
      */
-    pinocchio::JointIndex parentA;
+    JointIndex parentA;
 
     /**
      * @brief Parent joint of body B
      */
-    pinocchio::JointIndex parentB;
+    JointIndex parentB;
 
     /**
      * @brief Point of object A considered
@@ -465,8 +473,7 @@ public:
    * @param frame the frame for which we want the jacobian
    * @return jacobian (6 x nv matrix), where nv is the size of ``qd``
    */
-  Eigen::MatrixXd frame_jacobian(FrameIndex frame,
-                                 pinocchio::ReferenceFrame ref = pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED);
+  Eigen::MatrixXd frame_jacobian(FrameIndex frame, ReferenceFrame ref = LOCAL_WORLD_ALIGNED);
 
   /**
    * @brief Frame jacobian, default reference is LOCAL_WORLD_ALIGNED
@@ -487,8 +494,7 @@ public:
    * @param reference the reference frame
    * @return jacobian time variation (6 x nv matrix), where nv is the size of ``qd``
    */
-  Eigen::MatrixXd frame_jacobian_time_variation(
-      FrameIndex frame, pinocchio::ReferenceFrame ref = pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED);
+  Eigen::MatrixXd frame_jacobian_time_variation(FrameIndex frame, ReferenceFrame ref = LOCAL_WORLD_ALIGNED);
 
   /**
    * @brief Jacobian time variation \f$\dot J\f$, default reference is LOCAL_WORLD_ALIGNED
@@ -511,8 +517,7 @@ public:
    * @return jacobian (6xn matrix)
    * @pyignore
    */
-  Eigen::MatrixXd joint_jacobian(pinocchio::JointIndex joint,
-                                 pinocchio::ReferenceFrame ref = pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED);
+  Eigen::MatrixXd joint_jacobian(JointIndex joint, ReferenceFrame ref = LOCAL_WORLD_ALIGNED);
 
   /**
    * @brief Joint jacobian, default reference is LOCAL_WORLD_ALIGNED
@@ -533,8 +538,7 @@ public:
    * @param ref the reference frame
    * @return jacobian time variation (6xn matrix)
    */
-  Eigen::MatrixXd joint_jacobian_time_variation(
-      pinocchio::JointIndex joint, pinocchio::ReferenceFrame ref = pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED);
+  Eigen::MatrixXd joint_jacobian_time_variation(JointIndex joint, ReferenceFrame ref = LOCAL_WORLD_ALIGNED);
 
   /**
    * @brief Joint jacobian time variation \f$\dot J\f$, default reference is LOCAL_WORLD_ALIGNED
@@ -577,7 +581,7 @@ public:
    * @param joint joint index
    * @return columns
    */
-  const std::vector<int>& joint_support(pinocchio::JointIndex joint);
+  const std::vector<int>& joint_support(JointIndex joint);
 
   /**
    * @brief Degrees of freedom (columns in the velocity space, sorted) a frame depends on, see \ref joint_support
@@ -607,7 +611,7 @@ public:
    * @param columns columns to compute (sorted)
    * @param J output compact Jacobian (6 x columns.size())
    */
-  void compact_jacobian(pinocchio::JointIndex joint, const pinocchio::SE3& T_world_point, pinocchio::ReferenceFrame ref,
+  void compact_jacobian(JointIndex joint, const Eigen::Affine3d& T_world_point, ReferenceFrame ref,
                         const std::vector<int>& columns, Eigen::MatrixXd& J);
 
   /**
@@ -617,7 +621,7 @@ public:
    * @param columns columns to compute (sorted), a superset of the frame support
    * @param J output compact Jacobian (6 x columns.size())
    */
-  void compact_frame_jacobian(FrameIndex frame, pinocchio::ReferenceFrame ref, const std::vector<int>& columns,
+  void compact_frame_jacobian(FrameIndex frame, ReferenceFrame ref, const std::vector<int>& columns,
                               Eigen::MatrixXd& J);
 
   /**
@@ -629,9 +633,8 @@ public:
    * @param columns columns to compute (sorted)
    * @param dJ output compact Jacobian time variation (6 x columns.size())
    */
-  void compact_jacobian_time_variation(pinocchio::JointIndex joint, const pinocchio::SE3& T_world_point,
-                                       pinocchio::ReferenceFrame ref, const std::vector<int>& columns,
-                                       Eigen::MatrixXd& dJ);
+  void compact_jacobian_time_variation(JointIndex joint, const Eigen::Affine3d& T_world_point, ReferenceFrame ref,
+                                       const std::vector<int>& columns, Eigen::MatrixXd& dJ);
 
   /**
    * @brief Compact frame Jacobian time variation, see \ref compact_jacobian_time_variation
@@ -640,8 +643,8 @@ public:
    * @param columns columns to compute (sorted), a superset of the frame support
    * @param dJ output compact Jacobian time variation (6 x columns.size())
    */
-  void compact_frame_jacobian_time_variation(FrameIndex frame, pinocchio::ReferenceFrame ref,
-                                             const std::vector<int>& columns, Eigen::MatrixXd& dJ);
+  void compact_frame_jacobian_time_variation(FrameIndex frame, ReferenceFrame ref, const std::vector<int>& columns,
+                                             Eigen::MatrixXd& dJ);
 
   /**
    * @brief Compact frame Jacobian, see \ref compact_jacobian
@@ -792,43 +795,48 @@ public:
   std::string model_directory;
 
   /**
-   * @brief Pinocchio model
+   * @brief Robot model (kinematic tree, inertias, frames and limits)
    */
-  pinocchio::Model model;
+  Model model;
 
   /**
-   * @brief Pinocchio collision model
+   * @brief Collision geometries
    */
-  pinocchio::GeometryModel collision_model;
+  GeometryModel collision_model;
 
   /**
-   * @brief Pinocchio visual model
+   * @brief Visual geometries
    */
-  pinocchio::GeometryModel visual_model;
+  GeometryModel visual_model;
 
   /**
-   * @brief Pinocchio model data
+   * @brief Quantities computed by the rigid body algorithms
    */
-  pinocchio::Data* data;
+  Data* data;
+
+  /**
+   * @brief Placements of the visual geometries in the world for a given configuration (the robot state is not
+   * changed)
+   * @param q configuration
+   */
+  std::vector<Eigen::Affine3d> visual_placements(const Eigen::VectorXd& q);
+
+  /**
+   * @brief Placements of the collision geometries in the world for a given configuration (the robot state is not
+   * changed)
+   * @param q configuration
+   */
+  std::vector<Eigen::Affine3d> collision_placements(const Eigen::VectorXd& q);
 
 protected:
-  /**
-   * @brief Free flyer joint
-   */
-  pinocchio::JointModelFreeFlyer root_joint;
-
-  /**
-   * @brief Computes the given columns of a Jacobian (or of its time variation) of a point attached to a joint, from
-   * the joint Jacobians in the world (J_world, and J_velocity for the velocity terms of the time variation)
-   */
-  void compact_from_world(pinocchio::JointIndex joint, const pinocchio::Data::Matrix6x& J_world,
-                          const pinocchio::Data::Matrix6x& J_velocity, const pinocchio::SE3& T_world_point,
-                          pinocchio::ReferenceFrame ref, const std::vector<int>& columns, Eigen::MatrixXd& J,
-                          bool time_variation, const pinocchio::Motion* ov_joint = nullptr);
-
   /**
    * @brief Cache for \ref joint_support (computed on first use)
    */
   std::vector<std::vector<int>> joint_supports;
+
+  /**
+   * @brief All the columns of a Jacobian (0, 1, ..., nv-1)
+   */
+  std::vector<int> all_columns;
 };
 }  // namespace placo::model

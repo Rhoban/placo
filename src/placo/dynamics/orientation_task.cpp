@@ -16,9 +16,9 @@ void OrientationTask::support()
 
 void OrientationTask::fill()
 {
-  pinocchio::SE3 T_world_frame = solver->robot.data->oMf[frame_index];
+  Eigen::Affine3d T_world_frame = solver->robot.data->oMf[frame_index];
 
-  pinocchio::ReferenceFrame frame_type = pinocchio::ReferenceFrame::WORLD;
+  placo::model::ReferenceFrame frame_type = placo::model::WORLD;
 
   // Computing J and dJ
   solver->robot.compact_frame_jacobian(frame_index, frame_type, columns, J_a);
@@ -26,8 +26,8 @@ void OrientationTask::fill()
   gather_qd();
 
   // Computing error
-  Eigen::Matrix3d M = R_world_frame * T_world_frame.rotation().transpose();
-  Eigen::Vector3d orientation_error = pinocchio::log3(M);
+  Eigen::Matrix3d M = R_world_frame * T_world_frame.linear().transpose();
+  Eigen::Vector3d orientation_error = placo::model::log3(M);
 
   // Computing A and b
   Eigen::Vector3d velocity_world = J_a.bottomRows(3) * qd_columns;

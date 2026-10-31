@@ -1,5 +1,3 @@
-#include <pinocchio/fwd.hpp>
-
 #include "expose-utils.hpp"
 #include "module.h"
 #include "doxystub.h"
@@ -14,6 +12,17 @@ using namespace boost::python;
 using namespace placo;
 using namespace placo::model;
 using namespace placo::humanoid;
+
+// List of 4x4 transformation matrices
+static boost::python::list transformations_list(const std::vector<Eigen::Affine3d>& transformations)
+{
+  boost::python::list list;
+  for (auto& transformation : transformations)
+  {
+    list.append(transformation);
+  }
+  return list;
+}
 
 #ifdef HAVE_RHOBAN_UTILS
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(read_from_histories_overloads, read_from_histories, 2, 5);
@@ -57,7 +66,7 @@ void exposeRobotType(class_<RobotType, W1>& type)
       .def(
           "get_frame_hessian",
           +[](RobotType& robot, const std::string frame, const std::string joint) {
-            return robot.get_frame_hessian(robot.model.getFrameId(frame), robot.get_joint_v_offset(joint));
+            return robot.get_frame_hessian(robot.get_frame_index(frame), robot.get_joint_v_offset(joint));
           })
       .def("get_T_world_fbase", &RobotType::get_T_world_fbase)
       .def("set_T_world_fbase", &RobotType::set_T_world_fbase)
@@ -159,11 +168,61 @@ void exposeRobotType(class_<RobotType, W1>& type)
                                 const std::string& reference) { return robot.joint_jacobian(joint, reference); })
       .def(
           "make_solver", +[](RobotType& robot) { return placo::kinematics::KinematicsSolver(robot); })
-      .def("add_q_noise", &RobotType::add_q_noise);
+      .def("add_q_noise", &RobotType::add_q_noise)
+      .def(
+          "visual_placements",
+          +[](RobotType& robot, const Eigen::VectorXd& q) { return transformations_list(robot.visual_placements(q)); })
+      .def(
+          "collision_placements", +[](RobotType& robot, const Eigen::VectorXd& q) {
+            return transformations_list(robot.collision_placements(q));
+          });
 }
 
 void exposeRobotWrapper()
 {
+  class__<Model>("Model")
+      .def_readonly("name", &Model::name)
+      .def_readonly("nq", &Model::nq)
+      .def_readonly("nv", &Model::nv)
+      .def_readonly("njoints", &Model::njoints)
+      .def_readonly("names", &Model::names)
+      .add_property(
+          "nframes", +[](const Model& model) { return (int)model.frames.size(); })
+      .def_readwrite("lower_position_limit", &Model::lower_position_limit)
+      .def_readwrite("upper_position_limit", &Model::upper_position_limit)
+      .def_readwrite("velocity_limit", &Model::velocity_limit)
+      .def_readwrite("effort_limit", &Model::effort_limit)
+      .def_readwrite("rotor_inertia", &Model::rotor_inertia)
+      .def_readwrite("rotor_gear_ratio", &Model::rotor_gear_ratio)
+      .def_readwrite("gravity", &Model::gravity)
+      .def("total_mass", &Model::total_mass);
+
+  class__<GeometryObject>("GeometryObject")
+      .def_readonly("name", &GeometryObject::name)
+      .def_readonly("parent_joint", &GeometryObject::parent_joint)
+      .def_readonly("parent_frame", &GeometryObject::parent_frame)
+      .add_property(
+          "placement", +[](const GeometryObject& object) { return object.placement; })
+      .add_property("type", &GeometryObject::type_name)
+      .def_readonly("size", &GeometryObject::size)
+      .def_readonly("mesh_path", &GeometryObject::mesh_path)
+      .def_readonly("mesh_scale", &GeometryObject::mesh_scale)
+      .def_readonly("color", &GeometryObject::color)
+      .def_readonly("has_color", &GeometryObject::has_color);
+  exposeStdVector<GeometryObject>("vector_GeometryObject");
+
+  class__<GeometryModel>("GeometryModel")
+      .def_readonly("objects", &GeometryModel::objects)
+      .add_property(
+          "collision_pairs", +[](const GeometryModel& geometry_model) {
+            boost::python::list pairs;
+            for (auto& pair : geometry_model.collision_pairs)
+            {
+              pairs.append(boost::python::make_tuple(pair.first, pair.second));
+            }
+            return pairs;
+          });
+
   enum_<RobotWrapper::Flags>("Flags")
       .value("collision_as_visual", RobotWrapper::Flags::COLLISION_AS_VISUAL)
       .value("ignore_collisions", RobotWrapper::Flags::IGNORE_COLLISIONS)

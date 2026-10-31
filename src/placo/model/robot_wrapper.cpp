@@ -1,22 +1,16 @@
 #include "placo/model/robot_wrapper.h"
-#include "pinocchio/algorithm/center-of-mass-derivatives.hpp"
-#include "pinocchio/algorithm/center-of-mass.hpp"
-#include "pinocchio/algorithm/compute-all-terms.hpp"
-#include "pinocchio/algorithm/geometry.hpp"
-#include "pinocchio/algorithm/kinematics-derivatives.hpp"
-#include "pinocchio/algorithm/rnea.hpp"
-#include "pinocchio/algorithm/crba.hpp"
-#include "pinocchio/algorithm/centroidal.hpp"
-#include "pinocchio/collision/collision.hpp"
-#include "pinocchio/collision/distance.hpp"
+#include "placo/model/algorithms.h"
+#include "placo/model/urdf.h"
+#include "placo/model/mjcf.h"
 #include "placo/tools/utils.h"
-#include <boost/filesystem.hpp>
 #include <json/json.h>
 #include <filesystem>
+#include <fstream>
 #include <algorithm>
 #include <iterator>
+#include <numeric>
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 namespace placo::model
 {
@@ -43,76 +37,31 @@ RobotWrapper::RobotWrapper(std::string model_directory, int flags, std::string u
     }
   }
 
-  if (urdf_content != "")
+  if (flags & Flags::MJCF)
   {
-    if (flags & Flags::MJCF)
+    if (urdf_content != "")
     {
       throw std::runtime_error("Loading MJCF with direct contents is not supported");
     }
-    else
-    {
-      pinocchio::urdf::buildModelFromXML(urdf_content, root_joint, model);
-      std::istringstream stream(urdf_content);
-      pinocchio::urdf::buildGeom(model, stream, pinocchio::COLLISION, collision_model, model_directory);
-    }
+    std::cout << "Loading model: " << urdf_filename << std::endl;
+    load_mjcf(urdf_filename, model, collision_model, visual_model, flags & COLLISION_AS_VISUAL);
   }
   else
   {
-    if (flags & Flags::MJCF)
+    if (urdf_content == "")
     {
-      std::cout << "Loading model: " << urdf_filename << std::endl;
-      pinocchio::mjcf::buildModel(urdf_filename, root_joint, model);
-      pinocchio::mjcf::buildGeom(model, urdf_filename, pinocchio::COLLISION, collision_model);
+      std::ifstream file(urdf_filename);
+      if (!file.is_open())
+      {
+        throw std::runtime_error("Can't open URDF file " + urdf_filename);
+      }
+      std::stringstream buffer;
+      buffer << file.rdbuf();
+      urdf_content = buffer.str();
     }
-    else
-    {
-      pinocchio::urdf::buildModel(urdf_filename, root_joint, model);
-      pinocchio::urdf::buildGeom(model, urdf_filename, pinocchio::COLLISION, collision_model, model_directory);
-    }
+    load_urdf(urdf_content, model, collision_model, visual_model, { model_directory }, flags & COLLISION_AS_VISUAL);
   }
-
-  if (flags & COLLISION_AS_VISUAL)
-  {
-    if (urdf_content != "")
-    {
-      // Should not happen for MJCF
-
-      std::istringstream stream(urdf_content);
-      pinocchio::urdf::buildGeom(model, stream, pinocchio::COLLISION, visual_model, model_directory);
-    }
-    else
-    {
-      if (flags & Flags::MJCF)
-      {
-        pinocchio::mjcf::buildGeom(model, urdf_filename, pinocchio::COLLISION, visual_model);
-      }
-      else
-      {
-        pinocchio::urdf::buildGeom(model, urdf_filename, pinocchio::COLLISION, visual_model, model_directory);
-      }
-    }
-  }
-  else
-  {
-    if (urdf_content != "")
-    {
-      // Should not happen for MJCF
-
-      std::istringstream stream(urdf_content);
-      pinocchio::urdf::buildGeom(model, stream, pinocchio::VISUAL, visual_model, model_directory);
-    }
-    else
-    {
-      if (flags & Flags::MJCF)
-      {
-        pinocchio::mjcf::buildGeom(model, urdf_filename, pinocchio::VISUAL, visual_model);
-      }
-      else
-      {
-        pinocchio::urdf::buildGeom(model, urdf_filename, pinocchio::VISUAL, visual_model, model_directory);
-      }
-    }
-  }
+  collision_model.build_collision_geometries();
 
   // Load collisions pairs
   if (!(flags & IGNORE_COLLISIONS))
@@ -123,23 +72,25 @@ RobotWrapper::RobotWrapper(std::string model_directory, int flags, std::string u
     }
     else
     {
-      collision_model.addAllCollisionPairs();
+      collision_model.add_all_collision_pairs();
     }
   }
 
   // Creating data
-  data = new pinocchio::Data(model);
+  data = new Data(model);
+  all_columns.resize(model.nv);
+  std::iota(all_columns.begin(), all_columns.end(), 0);
 
   // Configuration coordinate of each degree of freedom (see v_to_q)
   v_to_q.assign(model.nv, -1);
   for (int j = 1; j < model.njoints; j++)
   {
     const auto& joint = model.joints[j];
-    if (joint.nq() == joint.nv() && joint.idx_v() >= 0)
+    if (joint.nq == joint.nv && joint.idx_v >= 0)
     {
-      for (int i = 0; i < joint.nv(); i++)
+      for (int i = 0; i < joint.nv; i++)
       {
-        v_to_q[joint.idx_v() + i] = joint.idx_q() + i;
+        v_to_q[joint.idx_v + i] = joint.idx_q + i;
       }
     }
   }
@@ -148,15 +99,14 @@ RobotWrapper::RobotWrapper(std::string model_directory, int flags, std::string u
   // URDF, setting them to the maximum possible value
   for (int k = 0; k < model.nq; k++)
   {
-    if (model.lowerPositionLimit[k] == 0 && model.upperPositionLimit[k] == 0)
+    if (model.lower_position_limit[k] == 0 && model.upper_position_limit[k] == 0)
     {
-      model.lowerPositionLimit[k] = std::numeric_limits<double>::lowest();
-      model.upperPositionLimit[k] = std::numeric_limits<double>::max();
+      model.lower_position_limit[k] = std::numeric_limits<double>::lowest();
+      model.upper_position_limit[k] = std::numeric_limits<double>::max();
     }
   }
 
   reset();
-  pinocchio::computeAllTerms(model, *data, state.q, state.qd);
   update_kinematics();
 
   auto collisions = self_collisions();
@@ -186,29 +136,29 @@ void RobotWrapper::reset()
   state = neutral_state();
 }
 
-pinocchio::FrameIndex RobotWrapper::get_frame_index(const std::string& frame)
+RobotWrapper::FrameIndex RobotWrapper::get_frame_index(const std::string& frame)
 {
-  if (!model.existFrame(frame))
+  if (!model.exist_frame(frame))
   {
     std::ostringstream oss;
     oss << "Frame with name " << frame << " not found in model";
     throw std::runtime_error(oss.str());
   }
 
-  return model.getFrameId(frame);
+  return model.get_frame_id(frame);
 }
 
 // A continuous joint (unbounded revolute) has a configuration of two coordinates (cos and sin of its angle) for one
 // degree of freedom
-static bool is_continuous(const pinocchio::JointModel& joint)
+static bool is_continuous(const Joint& joint)
 {
-  return joint.nq() == 2 && joint.nv() == 1;
+  return joint.nq == 2 && joint.nv == 1;
 }
 
 void RobotWrapper::set_joint(const std::string& name, double value)
 {
   int k = get_joint_offset(name);
-  if (is_continuous(model.joints[model.getJointId(name)]))
+  if (is_continuous(model.joints[model.get_joint_id(name)]))
   {
     state.q[k] = cos(value);
     state.q[k + 1] = sin(value);
@@ -222,7 +172,7 @@ void RobotWrapper::set_joint(const std::string& name, double value)
 double RobotWrapper::get_joint(const std::string& name)
 {
   int k = get_joint_offset(name);
-  if (is_continuous(model.joints[model.getJointId(name)]))
+  if (is_continuous(model.joints[model.get_joint_id(name)]))
   {
     return atan2(state.q[k + 1], state.q[k]);
   }
@@ -231,33 +181,33 @@ double RobotWrapper::get_joint(const std::string& name)
 
 int RobotWrapper::get_joint_offset(const std::string& name)
 {
-  if (!model.existJointName(name))
+  if (!model.exist_joint(name))
   {
     std::ostringstream oss;
     oss << "Joint with name " << name << " not found in model";
     throw std::runtime_error(oss.str());
   }
 
-  auto index = model.getJointId(name);
-  return model.joints[index].idx_q();
+  auto index = model.get_joint_id(name);
+  return model.joints[index].idx_q;
 }
 
 int RobotWrapper::get_joint_size(const std::string& name)
 {
-  auto index = model.getJointId(name);
-  return model.joints[index].nq();
+  auto index = model.get_joint_id(name);
+  return model.joints[index].nq;
 }
 
 int RobotWrapper::get_joint_v_offset(const std::string& name)
 {
-  auto index = model.getJointId(name);
-  return model.joints[index].idx_v();
+  auto index = model.get_joint_id(name);
+  return model.joints[index].idx_v;
 }
 
 int RobotWrapper::get_joint_v_size(const std::string& name)
 {
-  auto index = model.getJointId(name);
-  return model.joints[index].nv();
+  auto index = model.get_joint_id(name);
+  return model.joints[index].nv;
 }
 
 double RobotWrapper::get_joint_velocity(const std::string& name)
@@ -282,12 +232,12 @@ void RobotWrapper::set_joint_velocity(const std::string& name, double value)
 
 void RobotWrapper::set_velocity_limit(const std::string& name, double limit)
 {
-  model.velocityLimit[get_joint_v_offset(name)] = limit;
+  model.velocity_limit[get_joint_v_offset(name)] = limit;
 }
 
 void RobotWrapper::set_torque_limit(const std::string& name, double limit)
 {
-  model.effortLimit[get_joint_v_offset(name)] = limit;
+  model.effort_limit[get_joint_v_offset(name)] = limit;
 }
 
 void RobotWrapper::set_velocity_limits(double limit)
@@ -300,23 +250,23 @@ void RobotWrapper::set_velocity_limits(double limit)
 
 void RobotWrapper::set_joint_limits(const std::string& name, double lower, double upper)
 {
-  if (is_continuous(model.joints[model.getJointId(name)]))
+  if (is_continuous(model.joints[model.get_joint_id(name)]))
   {
     throw std::runtime_error("RobotWrapper::set_joint_limits: " + name + " is a continuous joint (no position limits)");
   }
   int k = get_joint_offset(name);
-  model.lowerPositionLimit[k] = lower;
-  model.upperPositionLimit[k] = upper;
+  model.lower_position_limit[k] = lower;
+  model.upper_position_limit[k] = upper;
 }
 
 std::pair<double, double> RobotWrapper::get_joint_limits(const std::string& name)
 {
-  if (is_continuous(model.joints[model.getJointId(name)]))
+  if (is_continuous(model.joints[model.get_joint_id(name)]))
   {
     return std::make_pair(-std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity());
   }
   int k = get_joint_offset(name);
-  return std::make_pair(model.lowerPositionLimit[k], model.upperPositionLimit[k]);
+  return std::make_pair(model.lower_position_limit[k], model.upper_position_limit[k]);
 }
 
 Eigen::Affine3d RobotWrapper::get_T_world_fbase()
@@ -330,13 +280,13 @@ Eigen::Affine3d RobotWrapper::get_T_world_fbase()
 
   // The free-flyer configuration encodes SE3(q), while the actual base placement is
   // oMi[1] = jointPlacements[1] * SE3(q). Account for a non-identity root joint placement.
-  return tools::pin_se3_to_eigen(model.jointPlacements[1]) * transformation;
+  return model.joint_placements[1] * transformation;
 }
 
 void RobotWrapper::set_T_world_fbase(Eigen::Affine3d transformation)
 {
   // Undo the root joint placement so that oMi[1] == transformation (see get_T_world_fbase)
-  transformation = tools::pin_se3_to_eigen(model.jointPlacements[1]).inverse() * transformation;
+  transformation = inverse(model.joint_placements[1]) * transformation;
 
   state.q[0] = transformation.translation().x();
   state.q[1] = transformation.translation().y();
@@ -351,9 +301,9 @@ void RobotWrapper::set_T_world_fbase(Eigen::Affine3d transformation)
 
 Eigen::Vector3d RobotWrapper::com_world()
 {
-  pinocchio::centerOfMass(model, *data);
+  center_of_mass(model, *data);
 
-  return data->com[0];
+  return data->com;
 }
 
 void RobotWrapper::update_kinematics()
@@ -361,38 +311,29 @@ void RobotWrapper::update_kinematics()
   // A single forward pass: joint placements and jacobians (and their time variation if needed), then frames
   if (compute_jacobian_time_variation)
   {
-    pinocchio::computeJointJacobiansTimeVariation(model, *data, state.q, state.qd);
+    compute_joint_jacobians_time_variation(model, *data, state.q, state.qd);
   }
   else
   {
-    pinocchio::computeJointJacobians(model, *data, state.q);
+    compute_joint_jacobians(model, *data, state.q);
   }
-  pinocchio::updateFramePlacements(model, *data);
+  update_frame_placements(model, *data);
 }
 
 void RobotWrapper::compute_hessians()
 {
-  pinocchio::computeJointKinematicHessians(model, *data);
+  // The hessians are computed on demand from the joint Jacobians (see get_frame_hessian)
 }
 
 Eigen::MatrixXd RobotWrapper::get_frame_hessian(FrameIndex frame, int joint_v_index)
 {
-  // Frame parent joint index
-  pinocchio::JointIndex joint_id = model.frames[frame].parentJoint;
-  pinocchio::SE3 T = model.frames[frame].placement;
-
-  pinocchio::Tensor<double, 3, 0> H = pinocchio::getJointKinematicHessian(model, *data, joint_id, pinocchio::LOCAL);
-  const Eigen::DenseIndex matrix_offset = 6 * model.nv;
-
-  Eigen::Map<Eigen::MatrixXd> hessian(H.data() + joint_v_index * matrix_offset, 6, model.nv);
-
-  return T.inverse().toActionMatrix() * hessian;
+  return frame_hessian(model, *data, frame, joint_v_index);
 }
 
 RobotWrapper::State RobotWrapper::neutral_state()
 {
   State state;
-  state.q = pinocchio::neutral(model);
+  state.q = model.neutral();
   state.qd = Eigen::VectorXd(model.nv);
   state.qd.setZero();
   state.qdd = Eigen::VectorXd(model.nv);
@@ -408,16 +349,13 @@ void RobotWrapper::load_collision_pairs(const std::string& filename)
 
   // Building a look-up to find geometry objects by name
   std::map<std::string, std::vector<size_t>> name_to_objects;
-  for (size_t k = 0; k < collision_model.geometryObjects.size(); k++)
+  for (size_t k = 0; k < collision_model.objects.size(); k++)
   {
-    if (collision_model.geometryObjects[k].parentFrame != std::numeric_limits<FrameIndex>::max())
-    {
-      std::string name = model.frames[collision_model.geometryObjects[k].parentFrame].name;
-      name_to_objects[name].push_back(k);
-    }
+    std::string name = model.frames[collision_model.objects[k].parent_frame].name;
+    name_to_objects[name].push_back(k);
   }
 
-  collision_model.removeAllCollisionPairs();
+  collision_model.remove_all_collision_pairs();
 
   std::ifstream f(filename);
   if (!f.is_open())
@@ -437,7 +375,7 @@ void RobotWrapper::load_collision_pairs(const std::string& filename)
         size_t k1 = entry[0].asInt();
         size_t k2 = entry[1].asInt();
 
-        collision_model.addCollisionPair(pinocchio::CollisionPair(k1, k2));
+        collision_model.add_collision_pair(k1, k2);
       }
       else if (entry[0].isString() && entry[1].isString())
       {
@@ -456,7 +394,7 @@ void RobotWrapper::load_collision_pairs(const std::string& filename)
         {
           for (size_t k2 : name_to_objects[obj2])
           {
-            collision_model.addCollisionPair(pinocchio::CollisionPair(k1, k2));
+            collision_model.add_collision_pair(k1, k2);
           }
         }
       }
@@ -473,9 +411,9 @@ Eigen::Affine3d RobotWrapper::get_T_world_frame(const std::string& frame)
   return get_T_world_frame(get_frame_index(frame));
 }
 
-Eigen::Affine3d RobotWrapper::get_T_world_frame(pinocchio::FrameIndex index)
+Eigen::Affine3d RobotWrapper::get_T_world_frame(FrameIndex index)
 {
-  return tools::pin_se3_to_eigen(data->oMf[index]);
+  return data->oMf[index];
 }
 
 Eigen::Affine3d RobotWrapper::get_T_a_b(const std::string& frame_a, const std::string& frame_b)
@@ -493,7 +431,7 @@ void RobotWrapper::set_T_world_frame(const std::string& frame, Eigen::Affine3d T
   set_T_world_frame(get_frame_index(frame), T_world_frameTarget);
 }
 
-void RobotWrapper::set_T_world_frame(pinocchio::FrameIndex frame, Eigen::Affine3d T_world_frameTarget)
+void RobotWrapper::set_T_world_frame(FrameIndex frame, Eigen::Affine3d T_world_frameTarget)
 {
   Eigen::Affine3d T_world_fbase = get_T_world_fbase();
   Eigen::Affine3d T_world_frame = get_T_world_frame(frame);
@@ -505,45 +443,21 @@ void RobotWrapper::set_T_world_frame(pinocchio::FrameIndex frame, Eigen::Affine3
 std::vector<RobotWrapper::Collision> RobotWrapper::self_collisions(bool stop_at_first)
 {
   std::vector<Collision> collisions;
-  pinocchio::GeometryData geom_data(collision_model);
 
-  // Enabling contact computation
-  for (auto& entry : geom_data.collisionRequests)
+  forward_kinematics(model, *data, state.q);
+  for (auto& result : compute_collisions(collision_model, *data, stop_at_first))
   {
-    entry.enable_contact = true;
-  }
+    const auto& pair = collision_model.collision_pairs[result.pair];
 
-  // And test all the collision pairs
-  pinocchio::computeCollisions(model, *data, collision_model, geom_data, state.q);
-
-  // Print the status of all the collision pairs
-  for (size_t k = 0; k < collision_model.collisionPairs.size(); ++k)
-  {
-    const pinocchio::CollisionPair& cp = collision_model.collisionPairs[k];
-    const coal::CollisionResult& cr = geom_data.collisionResults[k];
-
-    if (cr.isCollision())
-    {
-      Collision collision;
-
-      collision.objA = cp.first;
-      collision.objB = cp.second;
-      collision.bodyA = collision_model.geometryObjects[cp.first].name;
-      collision.parentA = collision_model.geometryObjects[cp.first].parentJoint;
-      collision.bodyB = collision_model.geometryObjects[cp.second].name;
-      collision.parentB = collision_model.geometryObjects[cp.second].parentJoint;
-
-      for (size_t k = 0; k < cr.numContacts(); k++)
-      {
-        collision.contacts.push_back(Eigen::Vector3d(cr.getContact(k).pos));
-      }
-
-      collisions.push_back(collision);
-      if (stop_at_first)
-      {
-        break;
-      }
-    }
+    Collision collision;
+    collision.objA = pair.first;
+    collision.objB = pair.second;
+    collision.bodyA = collision_model.objects[pair.first].name;
+    collision.parentA = collision_model.objects[pair.first].parent_joint;
+    collision.bodyB = collision_model.objects[pair.second].name;
+    collision.parentB = collision_model.objects[pair.second].parent_joint;
+    collision.contacts = result.contacts;
+    collisions.push_back(collision);
   }
 
   return collisions;
@@ -552,49 +466,39 @@ std::vector<RobotWrapper::Collision> RobotWrapper::self_collisions(bool stop_at_
 std::vector<RobotWrapper::Distance> RobotWrapper::distances()
 {
   std::vector<Distance> distances;
-  pinocchio::GeometryData geom_data(collision_model);
 
-  // Enabling contact computation
-  for (auto& entry : geom_data.collisionRequests)
+  forward_kinematics(model, *data, state.q);
+  for (auto& result : compute_distances(collision_model, *data))
   {
-    entry.enable_contact = true;
-  }
-
-  // And test all the collision pairs
-  pinocchio::computeDistances(model, *data, collision_model, geom_data, state.q);
-
-  for (size_t k = 0; k < collision_model.collisionPairs.size(); ++k)
-  {
-    const pinocchio::CollisionPair& cp = collision_model.collisionPairs[k];
-    const coal::DistanceResult& dr = geom_data.distanceResults[k];
+    const auto& pair = collision_model.collision_pairs[result.pair];
 
     Distance distance;
-    distance.objA = cp.first;
-    distance.objB = cp.second;
-    distance.min_distance = dr.min_distance;
-    distance.pointA = dr.nearest_points[0];
-    distance.pointB = dr.nearest_points[1];
-    distance.parentA = collision_model.geometryObjects[cp.first].parentJoint;
-    distance.parentB = collision_model.geometryObjects[cp.second].parentJoint;
+    distance.objA = pair.first;
+    distance.objB = pair.second;
+    distance.min_distance = result.min_distance;
+    distance.pointA = result.point_a;
+    distance.pointB = result.point_b;
+    distance.parentA = collision_model.objects[pair.first].parent_joint;
+    distance.parentB = collision_model.objects[pair.second].parent_joint;
     distances.push_back(distance);
   }
 
   return distances;
 }
 
-static pinocchio::ReferenceFrame string_to_reference(const std::string& reference)
+static ReferenceFrame string_to_reference(const std::string& reference)
 {
   if (reference == "local_world_aligned")
   {
-    return pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED;
+    return LOCAL_WORLD_ALIGNED;
   }
   else if (reference == "local")
   {
-    return pinocchio::ReferenceFrame::LOCAL;
+    return LOCAL;
   }
   else if (reference == "world")
   {
-    return pinocchio::ReferenceFrame::WORLD;
+    return WORLD;
   }
   else
   {
@@ -609,12 +513,10 @@ Eigen::MatrixXd RobotWrapper::frame_jacobian(const std::string& frame, const std
   return frame_jacobian(get_frame_index(frame), string_to_reference(reference));
 }
 
-Eigen::MatrixXd RobotWrapper::frame_jacobian(pinocchio::FrameIndex frame, pinocchio::ReferenceFrame ref)
+Eigen::MatrixXd RobotWrapper::frame_jacobian(FrameIndex frame, ReferenceFrame ref)
 {
-  Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> jacobian(6, model.nv);
-  jacobian.setZero();
-  pinocchio::getFrameJacobian(model, *data, frame, ref, jacobian);
-
+  Eigen::MatrixXd jacobian;
+  compact_frame_jacobian(frame, ref, all_columns, jacobian);
   return jacobian;
 }
 
@@ -623,45 +525,38 @@ Eigen::MatrixXd RobotWrapper::frame_jacobian_time_variation(const std::string& f
   return frame_jacobian_time_variation(get_frame_index(frame), string_to_reference(reference));
 }
 
-Eigen::MatrixXd RobotWrapper::frame_jacobian_time_variation(pinocchio::FrameIndex frame, pinocchio::ReferenceFrame ref)
+Eigen::MatrixXd RobotWrapper::frame_jacobian_time_variation(FrameIndex frame, ReferenceFrame ref)
 {
-  Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> jacobian(6, model.nv);
-  jacobian.setZero();
-
-  pinocchio::getFrameJacobianTimeVariation(model, *data, frame, ref, jacobian);
-
+  Eigen::MatrixXd jacobian;
+  compact_frame_jacobian_time_variation(frame, ref, all_columns, jacobian);
   return jacobian;
 }
 
 Eigen::MatrixXd RobotWrapper::joint_jacobian(const std::string& joint, const std::string& reference)
 {
-  return joint_jacobian(model.getJointId(joint), string_to_reference(reference));
+  return joint_jacobian(model.get_joint_id(joint), string_to_reference(reference));
 }
 
-Eigen::MatrixXd RobotWrapper::joint_jacobian(pinocchio::JointIndex joint, pinocchio::ReferenceFrame ref)
+Eigen::MatrixXd RobotWrapper::joint_jacobian(JointIndex joint, ReferenceFrame ref)
 {
-  Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> jacobian(6, model.nv);
-  jacobian.setZero();
-  pinocchio::getJointJacobian(model, *data, joint, ref, jacobian);
-
+  Eigen::MatrixXd jacobian;
+  compact_jacobian(joint, data->oMi[joint], ref, all_columns, jacobian);
   return jacobian;
 }
 
 Eigen::MatrixXd RobotWrapper::joint_jacobian_time_variation(const std::string& joint, const std::string& reference)
 {
-  return joint_jacobian(model.getJointId(joint), string_to_reference(reference));
+  return joint_jacobian_time_variation(model.get_joint_id(joint), string_to_reference(reference));
 }
 
-Eigen::MatrixXd RobotWrapper::joint_jacobian_time_variation(pinocchio::JointIndex joint, pinocchio::ReferenceFrame ref)
+Eigen::MatrixXd RobotWrapper::joint_jacobian_time_variation(JointIndex joint, ReferenceFrame ref)
 {
-  Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> jacobian(6, model.nv);
-  jacobian.setZero();
-  pinocchio::getJointJacobianTimeVariation(model, *data, joint, ref, jacobian);
-
+  Eigen::MatrixXd jacobian;
+  compact_jacobian_time_variation(joint, data->oMi[joint], ref, all_columns, jacobian);
   return jacobian;
 }
 
-Eigen::MatrixXd RobotWrapper::relative_position_jacobian(pinocchio::FrameIndex frame_a, pinocchio::FrameIndex frame_b)
+Eigen::MatrixXd RobotWrapper::relative_position_jacobian(FrameIndex frame_a, FrameIndex frame_b)
 {
   auto T_world_a = get_T_world_frame(frame_a);
   auto T_world_b = get_T_world_frame(frame_b);
@@ -669,42 +564,27 @@ Eigen::MatrixXd RobotWrapper::relative_position_jacobian(pinocchio::FrameIndex f
 
   Eigen::MatrixXd R_world_a = T_world_a.linear();
 
-  Eigen::MatrixXd J_a = frame_jacobian(frame_a, pinocchio::LOCAL_WORLD_ALIGNED);
-  Eigen::MatrixXd J_b = frame_jacobian(frame_b, pinocchio::LOCAL_WORLD_ALIGNED);
+  Eigen::MatrixXd J_a = frame_jacobian(frame_a, LOCAL_WORLD_ALIGNED);
+  Eigen::MatrixXd J_b = frame_jacobian(frame_b, LOCAL_WORLD_ALIGNED);
 
   return (R_world_a.transpose() * (J_b.topRows(3) - J_a.topRows(3)) +
-          pinocchio::skew(T_a_b.translation()) * R_world_a.transpose() * J_a.bottomRows(3));
+          skew(T_a_b.translation()) * R_world_a.transpose() * J_a.bottomRows(3));
 }
 
-const std::vector<int>& RobotWrapper::joint_support(pinocchio::JointIndex joint)
+const std::vector<int>& RobotWrapper::joint_support(JointIndex joint)
 {
   if ((int)joint_supports.size() != model.njoints)
   {
-    // With mimic joints (that are not used by the loaded models), the columns of the joint Jacobians don't match the
-    // degrees of freedom
-    for (auto& joint_model : model.joints)
-    {
-      if (joint_model.shortname() == "JointModelMimic")
-      {
-        throw std::runtime_error("RobotWrapper: mimic joints are not supported");
-      }
-    }
-
     // Supports are the joints from the universe (index 0, without degrees of freedom) to the given one
     joint_supports.assign(model.njoints, {});
     for (int j = 0; j < model.njoints; j++)
     {
       for (auto support : model.supports[j])
       {
-        // The universe joint has no degree of freedom (but reports a size of 1)
-        if (support == 0 || model.joints[support].idx_v() < 0)
+        const Joint& support_joint = model.joints[support];
+        for (int k = 0; k < support_joint.nv; k++)
         {
-          continue;
-        }
-        int nv = model.joints[support].nv();
-        for (int k = 0; k < nv; k++)
-        {
-          joint_supports[j].push_back(model.joints[support].idx_v() + k);
+          joint_supports[j].push_back(support_joint.idx_v + k);
         }
       }
       std::sort(joint_supports[j].begin(), joint_supports[j].end());
@@ -716,7 +596,7 @@ const std::vector<int>& RobotWrapper::joint_support(pinocchio::JointIndex joint)
 
 const std::vector<int>& RobotWrapper::frame_support(FrameIndex frame)
 {
-  return joint_support(model.frames[frame].parentJoint);
+  return joint_support(model.frames[frame].parent_joint);
 }
 
 void RobotWrapper::merge_supports(const std::vector<int>& a, const std::vector<int>& b, std::vector<int>& result)
@@ -725,96 +605,26 @@ void RobotWrapper::merge_supports(const std::vector<int>& a, const std::vector<i
   std::set_union(a.begin(), a.end(), b.begin(), b.end(), std::back_inserter(result));
 }
 
-void RobotWrapper::compact_jacobian(pinocchio::JointIndex joint, const pinocchio::SE3& T_world_point,
-                                    pinocchio::ReferenceFrame ref, const std::vector<int>& columns, Eigen::MatrixXd& J)
+void RobotWrapper::compact_jacobian(JointIndex joint, const Eigen::Affine3d& T_world_point, ReferenceFrame ref,
+                                    const std::vector<int>& columns, Eigen::MatrixXd& J)
 {
-  J.resize(6, columns.size());
-  compact_from_world(joint, data->J, data->J, T_world_point, ref, columns, J, false);
+  point_jacobian(model, *data, joint, joint_support(joint), T_world_point, ref, columns, J, false);
 }
 
-void RobotWrapper::compact_jacobian_time_variation(pinocchio::JointIndex joint, const pinocchio::SE3& T_world_point,
-                                                   pinocchio::ReferenceFrame ref, const std::vector<int>& columns,
+void RobotWrapper::compact_jacobian_time_variation(JointIndex joint, const Eigen::Affine3d& T_world_point,
+                                                   ReferenceFrame ref, const std::vector<int>& columns,
                                                    Eigen::MatrixXd& dJ)
 {
-  dJ.resize(6, columns.size());
-
-  // Columns of the support: world time variations, then the terms depending on the velocity of the point
-  compact_from_world(joint, data->dJ, data->J, T_world_point, ref, columns, dJ, true, &data->ov[joint]);
+  point_jacobian(model, *data, joint, joint_support(joint), T_world_point, ref, columns, dJ, true);
 }
 
-void RobotWrapper::compact_from_world(pinocchio::JointIndex joint, const pinocchio::Data::Matrix6x& J_world,
-                                      const pinocchio::Data::Matrix6x& J_velocity,
-                                      const pinocchio::SE3& T_world_point, pinocchio::ReferenceFrame ref,
-                                      const std::vector<int>& columns, Eigen::MatrixXd& J, bool time_variation,
-                                      const pinocchio::Motion* ov_joint)
+void RobotWrapper::compact_frame_jacobian(FrameIndex frame, ReferenceFrame ref, const std::vector<int>& columns,
+                                          Eigen::MatrixXd& J)
 {
-  // The joint Jacobians (see update_kinematics) are the spatial velocities of the world origin, in world axes, for
-  // each degree of freedom of the support (the other columns are zero, see joint_support). The formulas are the ones
-  // of pinocchio::getJointJacobian and pinocchio::getFrameJacobianTimeVariation.
-  const std::vector<int>& support = joint_support(joint);
-  const Eigen::Vector3d& p = T_world_point.translation();
-  const Eigen::Matrix3d& R = T_world_point.rotation();
-
-  // Velocity of the point (world axes), and in the point frame
-  pinocchio::Motion v_point_local = pinocchio::Motion::Zero();
-  Eigen::Vector3d v_point_world = Eigen::Vector3d::Zero();
-  if (time_variation)
-  {
-    v_point_world = ov_joint->linear() + ov_joint->angular().cross(p);
-    v_point_local = T_world_point.actInv(*ov_joint);
-  }
-
-  int k_support = 0;
-  for (int k = 0; k < (int)columns.size(); k++)
-  {
-    int column = columns[k];
-    while (k_support < (int)support.size() && support[k_support] < column)
-    {
-      k_support += 1;
-    }
-    if (k_support == (int)support.size() || support[k_support] != column)
-    {
-      J.col(k).setZero();
-      continue;
-    }
-
-    Eigen::Vector3d linear = J_world.col(column).head<3>();
-    Eigen::Vector3d angular = J_world.col(column).tail<3>();
-
-    if (ref == pinocchio::LOCAL_WORLD_ALIGNED)
-    {
-      // Velocity of the point
-      linear += angular.cross(p);
-      if (time_variation)
-      {
-        linear -= v_point_world.cross(J_velocity.col(column).tail<3>());
-      }
-    }
-    else if (ref == pinocchio::LOCAL)
-    {
-      linear = R.transpose() * (linear + angular.cross(p));
-      angular = R.transpose() * angular;
-      if (time_variation)
-      {
-        pinocchio::Motion v_in(J_velocity.col(column));
-        pinocchio::Motion correction = v_point_local.cross(T_world_point.actInv(v_in));
-        linear -= correction.linear();
-        angular -= correction.angular();
-      }
-    }
-
-    J.col(k).head<3>() = linear;
-    J.col(k).tail<3>() = angular;
-  }
-}
-
-void RobotWrapper::compact_frame_jacobian(FrameIndex frame, pinocchio::ReferenceFrame ref,
-                                          const std::vector<int>& columns, Eigen::MatrixXd& J)
-{
-  // As pinocchio::getFrameJacobian, the frame placement is updated from the placement of its joint
-  const pinocchio::Frame& frame_model = model.frames[frame];
-  data->oMf[frame] = data->oMi[frame_model.parentJoint] * frame_model.placement;
-  compact_jacobian(frame_model.parentJoint, data->oMf[frame], ref, columns, J);
+  // The frame placement is updated from the placement of its joint
+  const Frame& frame_model = model.frames[frame];
+  data->oMf[frame] = data->oMi[frame_model.parent_joint] * frame_model.placement;
+  compact_jacobian(frame_model.parent_joint, data->oMf[frame], ref, columns, J);
 }
 
 Eigen::MatrixXd RobotWrapper::compact_frame_jacobian(const std::string& frame, const std::string& reference,
@@ -834,13 +644,13 @@ Eigen::MatrixXd RobotWrapper::compact_frame_jacobian_time_variation(const std::s
   return dJ;
 }
 
-void RobotWrapper::compact_frame_jacobian_time_variation(FrameIndex frame, pinocchio::ReferenceFrame ref,
+void RobotWrapper::compact_frame_jacobian_time_variation(FrameIndex frame, ReferenceFrame ref,
                                                          const std::vector<int>& columns, Eigen::MatrixXd& dJ)
 {
-  // As pinocchio::getFrameJacobianTimeVariation, the frame placement is updated from the placement of its joint
-  const pinocchio::Frame& frame_model = model.frames[frame];
-  data->oMf[frame] = data->oMi[frame_model.parentJoint] * frame_model.placement;
-  compact_jacobian_time_variation(frame_model.parentJoint, data->oMf[frame], ref, columns, dJ);
+  // The frame placement is updated from the placement of its joint
+  const Frame& frame_model = model.frames[frame];
+  data->oMf[frame] = data->oMi[frame_model.parent_joint] * frame_model.placement;
+  compact_jacobian_time_variation(frame_model.parent_joint, data->oMf[frame], ref, columns, dJ);
 }
 
 Eigen::MatrixXd RobotWrapper::relative_position_jacobian(const std::string& frame_a, const std::string& frame_b)
@@ -850,53 +660,53 @@ Eigen::MatrixXd RobotWrapper::relative_position_jacobian(const std::string& fram
 
 Eigen::Matrix3Xd RobotWrapper::com_jacobian()
 {
-  return pinocchio::jacobianCenterOfMass(model, *data, state.q);
+  return model::com_jacobian(model, *data, state.q);
 }
 
 Eigen::Matrix3Xd RobotWrapper::com_jacobian_time_variation()
 {
-  // See https://github.com/stack-of-tasks/pinocchio/issues/1297
-  return pinocchio::computeCentroidalMapTimeVariation(model, *data, state.q, state.qd).topRows(3) / total_mass();
+  return model::com_jacobian_time_variation(model, *data, state.q, state.qd);
 }
 
 Eigen::MatrixXd RobotWrapper::centroidal_map()
 {
-  return pinocchio::computeCentroidalMap(model, *data, state.q);
+  return model::centroidal_map(model, *data, state.q);
 }
 
 Eigen::VectorXd RobotWrapper::generalized_gravity()
 {
-  pinocchio::computeGeneralizedGravity(model, *data, state.q);
+  model::generalized_gravity(model, *data, state.q);
 
   return data->g;
 }
 
 Eigen::VectorXd RobotWrapper::non_linear_effects()
 {
-  return pinocchio::nonLinearEffects(model, *data, state.q, state.qd);
+  model::non_linear_effects(model, *data, state.q, state.qd);
+
+  return data->nle;
 }
 
 void RobotWrapper::set_rotor_inertia(const std::string& joint, double inertia)
 {
-  model.rotorInertia[get_joint_v_offset(joint)] = inertia;
+  model.rotor_inertia[get_joint_v_offset(joint)] = inertia;
 }
 
 void RobotWrapper::set_gear_ratio(const std::string& joint, double ratio)
 {
-  model.rotorGearRatio[get_joint_v_offset(joint)] = ratio;
+  model.rotor_gear_ratio[get_joint_v_offset(joint)] = ratio;
 }
 
 Eigen::MatrixXd RobotWrapper::mass_matrix()
 {
-  pinocchio::crba(model, *data, state.q);
-  data->M.triangularView<Eigen::StrictlyLower>() = data->M.transpose().triangularView<Eigen::StrictlyLower>();
+  crba(model, *data, state.q);
   Eigen::MatrixXd M = data->M;
 
   // We account for inertia by adding the rotor inertia times the squared gear ratio to
   // the diagonal (see Featherstone, Rigid Body Dynamics Algorithm, 2008, end of chapter 9.6)
   for (int k = 0; k < M.rows(); k++)
   {
-    M(k, k) += model.rotorGearRatio[k] * model.rotorGearRatio[k] * model.rotorInertia[k];
+    M(k, k) += model.rotor_gear_ratio[k] * model.rotor_gear_ratio[k] * model.rotor_inertia[k];
   }
 
   return M;
@@ -904,7 +714,7 @@ Eigen::MatrixXd RobotWrapper::mass_matrix()
 
 void RobotWrapper::set_gravity(Eigen::Vector3d gravity)
 {
-  model.gravity.linear() = gravity;
+  model.gravity = gravity;
 }
 
 void RobotWrapper::integrate(double dt)
@@ -922,7 +732,7 @@ void RobotWrapper::integrate(double dt)
   }
 
   // Integrate velocity
-  state.q = pinocchio::integrate(model, state.q, state.qd * dt);
+  state.q = model.integrate(state.q, state.qd * dt);
 }
 
 Eigen::VectorXd RobotWrapper::static_gravity_compensation_torques(RobotWrapper::FrameIndex frameIndex)
@@ -991,25 +801,18 @@ std::vector<std::string> RobotWrapper::frame_names()
 
 double RobotWrapper::total_mass()
 {
-  double mass = 0.0;
-
-  for (auto& body : model.inertias)
-  {
-    mass += body.mass();
-  }
-
-  return mass;
+  return model.total_mass();
 }
 
 void RobotWrapper::add_q_noise(double noise)
 {
-  auto q_random = pinocchio::randomConfiguration(model);
+  auto q_random = model.random_configuration();
 
   // Adding some noise in direction of a random configuration (except floating base)
   for (int j = 1; j < model.njoints; j++)
   {
     const auto& joint = model.joints[j];
-    int k = joint.idx_q();
+    int k = joint.idx_q;
     if (is_continuous(joint))
     {
       // The noise is added to the angle, so that the configuration stays on the unit circle
@@ -1021,15 +824,15 @@ void RobotWrapper::add_q_noise(double noise)
       state.q(k + 1) = sin(angle);
       continue;
     }
-    if (joint.nq() != joint.nv() || k < 7)
+    if (joint.nq != joint.nv || k < 7)
     {
       // Floating base and other joints whose configuration isn't one coordinate per degree of freedom
       continue;
     }
-    for (int i = k; i < k + joint.nq(); i++)
+    for (int i = k; i < k + joint.nq; i++)
     {
-      if (model.lowerPositionLimit(i) == std::numeric_limits<double>::lowest() ||
-          model.upperPositionLimit(i) == std::numeric_limits<double>::max())
+      if (model.lower_position_limit(i) == std::numeric_limits<double>::lowest() ||
+          model.upper_position_limit(i) == std::numeric_limits<double>::max())
       {
         continue;
       }
@@ -1037,5 +840,19 @@ void RobotWrapper::add_q_noise(double noise)
       state.q(i) += (q_random(i) - state.q(i)) * noise;
     }
   }
+}
+
+std::vector<Eigen::Affine3d> RobotWrapper::visual_placements(const Eigen::VectorXd& q)
+{
+  Data placements_data(model);
+  forward_kinematics(model, placements_data, q);
+  return visual_model.placements(placements_data);
+}
+
+std::vector<Eigen::Affine3d> RobotWrapper::collision_placements(const Eigen::VectorXd& q)
+{
+  Data placements_data(model);
+  forward_kinematics(model, placements_data, q);
+  return collision_model.placements(placements_data);
 }
 }  // namespace placo::model

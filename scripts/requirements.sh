@@ -4,7 +4,7 @@
 pip install doxystub
 
 # APT dependencies
-sudo apt install -qqy lsb-release curl libboost-python-dev libjsoncpp-dev doxygen python-is-python3
+sudo apt install -qqy lsb-release curl libboost-python-dev libjsoncpp-dev libtinyxml2-dev doxygen python-is-python3
 
 UNAME_M=`uname -m`
 if [ "$UNAME_M" == "aarch64" ]; then
@@ -15,5 +15,5 @@ else
     bash scripts/robotpkg.sh
 
     # Installing robotpkg dependencies
-    sudo apt install -qqy robotpkg-py3*-pinocchio robotpkg-coal robotpkg-*-eigenpy
+    sudo apt install -qqy robotpkg-coal robotpkg-py3*-eigenpy
 fi

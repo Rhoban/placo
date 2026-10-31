@@ -18,7 +18,7 @@ From the repository.
 
 .. admonition:: Note
 
-  The above script will setup apt-repository for `robotpkg <https://stack-of-tasks.github.io/pinocchio/download.html>`_, and add extra configurations in your ``.bashrc`` file. You might have to reload your bash after.
+  The above script will setup apt-repository for `robotpkg <http://robotpkg.openrobots.org>`_, and add extra configurations in your ``.bashrc`` file. You might have to reload your bash after.
 
 
 .. admonition:: Instaling on older systems
