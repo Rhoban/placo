@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.10)
 project(placo)
 
 find_package(Threads)
-set(COAL_DISABLE_HPP_FCL_WARNINGS TRUE)
-find_package(pinocchio REQUIRED)
+find_package(coal REQUIRED)
+find_package(tinyxml2 REQUIRED)
 find_package(eigenpy REQUIRED)
 find_package(jsoncpp REQUIRED)
 
@@ -27,8 +27,15 @@ endif()
 find_package (Eigen3 3 REQUIRED NO_MODULE)
 
 add_library(libplaco SHARED
-    # Wrappers
+    # Robot model
     src/placo/model/robot_wrapper.cpp
+    src/placo/model/spatial.cpp
+    src/placo/model/joint.cpp
+    src/placo/model/model.cpp
+    src/placo/model/algorithms.cpp
+    src/placo/model/geometry.cpp
+    src/placo/model/urdf.cpp
+    src/placo/model/mjcf.cpp
 
     # Humanoid
     src/placo/humanoid/humanoid_robot.cpp
@@ -127,7 +134,8 @@ target_include_directories(libplaco SYSTEM PUBLIC $<BUILD_INTERFACE:${CMAKE_CURR
 target_link_libraries(libplaco PUBLIC
     Eigen3::Eigen
     Threads::Threads
-    pinocchio::pinocchio
+    coal::coal
+    tinyxml2::tinyxml2
     jsoncpp_lib
     ${PROTOBUF_LIBRARIES}
   ${PROTOBUF_LIBRARIES}
@@ -163,6 +171,17 @@ target_compile_definitions(placo PUBLIC -DBOOST_DISABLE_PRAGMA_MESSAGE)
 
 target_link_libraries(placo ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} libplaco eigenpy::eigenpy)
 target_include_directories(placo PRIVATE ${PYTHON_INCLUDE_DIRS})
+
+# The numpy headers must be the ones of the numpy used at runtime (the Python include directory can contain the
+# headers of another numpy, e.g. the system one, with a different ABI)
+execute_process(
+    COMMAND ${Python_EXECUTABLE} -c "import numpy; print(numpy.get_include())"
+    OUTPUT_VARIABLE NUMPY_INCLUDE_DIR
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    RESULT_VARIABLE NUMPY_INCLUDE_RESULT)
+if (NUMPY_INCLUDE_RESULT EQUAL 0)
+  target_include_directories(placo BEFORE PRIVATE ${NUMPY_INCLUDE_DIR})
+endif()
 
 add_custom_command(
     TARGET placo POST_BUILD

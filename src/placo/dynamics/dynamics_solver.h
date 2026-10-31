@@ -255,7 +255,7 @@ public:
    */
   ExternalWrenchContact&
   add_external_wrench_contact(model::RobotWrapper::FrameIndex frame_index,
-                              pinocchio::ReferenceFrame reference = pinocchio::LOCAL_WORLD_ALIGNED);
+                              placo::model::ReferenceFrame reference = placo::model::LOCAL_WORLD_ALIGNED);
 
   /**
    * @brief Adds an external wrench

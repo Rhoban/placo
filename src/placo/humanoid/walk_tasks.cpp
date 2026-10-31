@@ -1,6 +1,6 @@
 #include "placo/humanoid/walk_tasks.h"
 #include "placo/humanoid/humanoid_robot.h"
-#include "pinocchio/math/rpy.hpp"
+#include "placo/model/spatial.h"
 
 namespace placo::humanoid
 {
@@ -64,8 +64,8 @@ void WalkTasks::reach_initial_pose(Eigen::Affine3d T_world_left, double feet_spa
   Eigen::Vector3d com_world = interpolate_frames(T_world_left, T_world_right, .5).translation();
   com_world.z() = com_height;
 
-  double trunk_yaw = pinocchio::rpy::matrixToRpy(T_world_left.rotation()).z();
-  Eigen::Matrix3d R_world_trunk = pinocchio::rpy::rpyToMatrix(Eigen::Vector3d(0, trunk_pitch, trunk_yaw));
+  double trunk_yaw = placo::model::matrix_to_rpy(T_world_left.rotation()).z();
+  Eigen::Matrix3d R_world_trunk = placo::model::rpy_to_matrix(0, trunk_pitch, trunk_yaw);
   trunk_orientation_task->R_world_frame = R_world_trunk;
 
   update_tasks(T_world_left, T_world_right, com_world, R_world_trunk);

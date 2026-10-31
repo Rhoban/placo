@@ -30,7 +30,7 @@ void RelativePositionTask::fill()
   Eigen::Vector3d a_AB = a_R_w * w_AB;
 
   // Computing J and dJ for frame_a and frame_b
-  pinocchio::ReferenceFrame frame_type = pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED;
+  placo::model::ReferenceFrame frame_type = placo::model::LOCAL_WORLD_ALIGNED;
   solver->robot.compact_frame_jacobian(frame_a_index, frame_type, columns, J_a);
   solver->robot.compact_frame_jacobian_time_variation(frame_a_index, frame_type, columns, dJ_a);
   solver->robot.compact_frame_jacobian(frame_b_index, frame_type, columns, J_b);
@@ -51,13 +51,13 @@ void RelativePositionTask::fill()
   Eigen::Vector3d desired_acceleration = kp * position_error + get_kd() * velocity_error + ddtarget;
 
   // The acceleration of AB in a is expressed as: J * ddq + e
-  Eigen::Matrix<double, 3, Eigen::Dynamic> J = pinocchio::skew(a_AB) * a_R_w * J_a.bottomRows(3);
+  Eigen::Matrix<double, 3, Eigen::Dynamic> J = placo::model::skew(a_AB) * a_R_w * J_a.bottomRows(3);
   J += a_R_w * (J_b.topRows(3) - J_a.topRows(3));
 
-  Eigen::Vector3d e = 2 * pinocchio::skew(a_omega_w) * a_R_w * w_dAB;
-  e += 2 * pinocchio::skew(a_omega_w) * pinocchio::skew(a_omega_w) * a_AB;
+  Eigen::Vector3d e = 2 * placo::model::skew(a_omega_w) * a_R_w * w_dAB;
+  e += 2 * placo::model::skew(a_omega_w) * placo::model::skew(a_omega_w) * a_AB;
   e += a_R_w * (dJ_b.bottomRows(3) - dJ_a.bottomRows(3)) * qd_columns;
-  e += pinocchio::skew(a_AB) * a_R_w * dJ_a.bottomRows(3) * qd_columns;
+  e += placo::model::skew(a_AB) * a_R_w * dJ_a.bottomRows(3) * qd_columns;
 
   int rows = mask.rows();
   A.resize(rows, columns.size());

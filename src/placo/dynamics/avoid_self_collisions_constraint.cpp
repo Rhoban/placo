@@ -58,12 +58,14 @@ void AvoidSelfCollisionsConstraint::add_constraint(problem::Problem& problem, pr
 
       // Jacobians of the witness points (world axes), and their time variations (the world ones, shifted to the
       // points)
-      pinocchio::SE3 T_world_A(Eigen::Matrix3d::Identity(), distance.pointA);
-      pinocchio::SE3 T_world_B(Eigen::Matrix3d::Identity(), distance.pointB);
-      solver->robot.compact_jacobian(distance.parentA, T_world_A, pinocchio::LOCAL_WORLD_ALIGNED, columns, J_a);
-      solver->robot.compact_jacobian(distance.parentB, T_world_B, pinocchio::LOCAL_WORLD_ALIGNED, columns, J_b);
-      solver->robot.compact_jacobian_time_variation(distance.parentA, T_world_A, pinocchio::WORLD, columns, dJ_a);
-      solver->robot.compact_jacobian_time_variation(distance.parentB, T_world_B, pinocchio::WORLD, columns, dJ_b);
+      Eigen::Affine3d T_world_A = Eigen::Affine3d::Identity();
+      T_world_A.translation() = distance.pointA;
+      Eigen::Affine3d T_world_B = Eigen::Affine3d::Identity();
+      T_world_B.translation() = distance.pointB;
+      solver->robot.compact_jacobian(distance.parentA, T_world_A, placo::model::LOCAL_WORLD_ALIGNED, columns, J_a);
+      solver->robot.compact_jacobian(distance.parentB, T_world_B, placo::model::LOCAL_WORLD_ALIGNED, columns, J_b);
+      solver->robot.compact_jacobian_time_variation(distance.parentA, T_world_A, placo::model::WORLD, columns, dJ_a);
+      solver->robot.compact_jacobian_time_variation(distance.parentB, T_world_B, placo::model::WORLD, columns, dJ_b);
       for (int k = 0; k < (int)columns.size(); k++)
       {
         dJ_a.col(k).head<3>() += dJ_a.col(k).tail<3>().cross(distance.pointA);
@@ -106,7 +108,7 @@ void AvoidSelfCollisionsConstraint::add_constraint(problem::Problem& problem, pr
     }
   }
 
-  constraint.configure(
-      priority == Priority::Soft ? problem::ProblemConstraint::Soft : problem::ProblemConstraint::Hard, weight);
+  constraint.configure(priority == Priority::Soft ? problem::ProblemConstraint::Soft : problem::ProblemConstraint::Hard,
+                       weight);
 }
 };  // namespace placo::dynamics

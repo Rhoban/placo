@@ -21,7 +21,7 @@ void RelativeOrientationTask::support()
 void RelativeOrientationTask::fill()
 {
   // Computing J and dJ
-  pinocchio::ReferenceFrame frame_type = pinocchio::ReferenceFrame::WORLD;
+  placo::model::ReferenceFrame frame_type = placo::model::WORLD;
   solver->robot.compact_frame_jacobian(frame_a_index, frame_type, columns, J_a);
   solver->robot.compact_frame_jacobian_time_variation(frame_a_index, frame_type, columns, dJ_a);
   solver->robot.compact_frame_jacobian(frame_b_index, frame_type, columns, J_b);
@@ -34,7 +34,7 @@ void RelativeOrientationTask::fill()
   Eigen::Matrix3d R_world_a = T_world_a.rotation();
   Eigen::Matrix3d R_a_b_real = T_world_a.rotation().transpose() * T_world_b.rotation();
   Eigen::Matrix3d M = (R_a_b * R_a_b_real.transpose()).matrix();
-  Eigen::Vector3d orientation_error_world = R_world_a * pinocchio::log3(M);
+  Eigen::Vector3d orientation_error_world = R_world_a * placo::model::log3(M);
 
   // Computing A and b
   Eigen::Vector3d world_omega_a = J_a.bottomRows(3) * qd_columns;
@@ -44,8 +44,7 @@ void RelativeOrientationTask::fill()
 
   Eigen::Vector3d desired_acceleration = kp * orientation_error_world + get_kd() * velocity_error_world + domega_a_b;
 
-  Eigen::Matrix3d Jlog;
-  pinocchio::Jlog3(M, Jlog);
+  Eigen::Matrix3d Jlog = placo::model::jlog3(M);
 
   // Acceleration is: J * qdd + dJ * qd
   Eigen::Vector3d dJ_qd = dJ_b.bottomRows(3) * qd_columns - dJ_a.bottomRows(3) * qd_columns;

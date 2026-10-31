@@ -15,10 +15,10 @@ void PositionTask::support()
 
 void PositionTask::fill()
 {
-  pinocchio::SE3 T_world_frame = solver->robot.data->oMf[frame_index];
-  mask.R_local_world = T_world_frame.rotation().transpose();
+  Eigen::Affine3d T_world_frame = solver->robot.data->oMf[frame_index];
+  mask.R_local_world = T_world_frame.linear().transpose();
   Eigen::Vector3d error = target_world - T_world_frame.translation();
-  solver->robot.compact_frame_jacobian(frame_index, pinocchio::LOCAL_WORLD_ALIGNED, columns, J_a);
+  solver->robot.compact_frame_jacobian(frame_index, placo::model::LOCAL_WORLD_ALIGNED, columns, J_a);
 
   A.resize(mask.rows(), columns.size());
   b.resize(mask.rows(), 1);

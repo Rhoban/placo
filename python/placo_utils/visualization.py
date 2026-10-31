@@ -1,7 +1,7 @@
+import os
 import viser
 import trimesh
 import numpy as np
-from pinocchio.visualize import ViserVisualizer
 import placo
 from . import tf
 
@@ -26,10 +26,82 @@ def get_viewer() -> viser.ViserServer:
     return viewer
 
 
-def robot_viz(robot: placo.RobotWrapper, name: str = "robot") -> ViserVisualizer:
+# Meshes loaded from files, by path
+meshes: dict = {}
+
+
+def load_mesh(path: str, scene: bool):
     """
-    Builds an instance of pinocchio ViserVisualizer, which allows to push the model to the viser
-    viewer
+    Loads a mesh file (once), as a trimesh Scene (keeping the colors of the file) or as a single Trimesh
+    """
+    key = (path, scene)
+    if key not in meshes:
+        meshes[key] = trimesh.load_scene(path) if scene else trimesh.load_mesh(path, force="mesh")
+    return meshes[key].copy()
+
+
+class RobotViz:
+    """
+    Displays the visual geometries of a robot in the viser viewer
+    """
+
+    def __init__(self, robot: placo.RobotWrapper, name: str):
+        self.robot = robot
+        self.handles = []
+        vis = get_viewer()
+
+        for geometry in robot.visual_model.objects:
+            node_name = f"{name}/visual/{geometry.name}"
+            color = tuple(geometry.color[:3])
+            opacity = float(geometry.color[3])
+            size = geometry.size
+
+            if geometry.type == "box":
+                handle = vis.scene.add_box(node_name, dimensions=tuple(size), color=color, opacity=opacity)
+            elif geometry.type == "sphere":
+                handle = vis.scene.add_icosphere(node_name, radius=size[0], color=color, opacity=opacity)
+            elif geometry.type == "cylinder":
+                handle = vis.scene.add_cylinder(node_name, radius=size[0], height=size[1], color=color, opacity=opacity)
+            elif geometry.type == "ellipsoid":
+                handle = vis.scene.add_icosphere(
+                    node_name, radius=1.0, scale=tuple(size), color=color, opacity=opacity
+                )
+            elif geometry.type == "plane":
+                handle = vis.scene.add_grid(node_name, width=2 * size[0], height=2 * size[1])
+            elif geometry.type == "capsule":
+                capsule = trimesh.creation.capsule(height=size[1], radius=size[0])
+                handle = vis.scene.add_mesh_simple(
+                    node_name, capsule.vertices, capsule.faces, color=color, opacity=opacity
+                )
+            else:
+                # Meshes keep the colors of their files (e.g. Collada), unless a color is given in the model
+                scale = np.array(geometry.mesh_scale)
+                if os.path.splitext(geometry.mesh_path)[1].lower() == ".dae" and not geometry.has_color:
+                    mesh = load_mesh(geometry.mesh_path, True)
+                    mesh.apply_scale(scale)
+                    handle = vis.scene.add_mesh_trimesh(node_name, mesh)
+                else:
+                    mesh = load_mesh(geometry.mesh_path, False)
+                    mesh.apply_scale(scale)
+                    handle = vis.scene.add_mesh_simple(
+                        node_name, mesh.vertices, mesh.faces, color=color, opacity=opacity
+                    )
+
+            self.handles.append(handle)
+
+        self.display(robot.state.q)
+
+    def display(self, q: np.ndarray) -> None:
+        """
+        Displays the robot in the configuration q
+        """
+        for handle, T in zip(self.handles, self.robot.visual_placements(q)):
+            set_pose(handle, T)
+
+
+def robot_viz(robot: placo.RobotWrapper, name: str = "robot") -> RobotViz:
+    """
+    Builds the visualization of a robot in the viser viewer
 
     The robot can further be displayed using:
 
@@ -38,11 +110,7 @@ def robot_viz(robot: placo.RobotWrapper, name: str = "robot") -> ViserVisualizer
     global robot_names
 
     robot_names[robot] = name
-    viz = ViserVisualizer(robot.model, robot.collision_model, robot.visual_model)
-    viz.initViewer(viewer=get_viewer())
-    viz.loadViewerModel(name)
-
-    return viz
+    return RobotViz(robot, name)
 
 
 def rgb(color: int) -> tuple:

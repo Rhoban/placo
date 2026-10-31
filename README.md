@@ -36,8 +36,9 @@ pip install placo
 
 ## What is PlaCo?
 
-PlaCo is Rhoban's planning and control library. It is built on top of
-[pinocchio](https://github.com/stack-of-tasks/pinocchio) and the
+PlaCo is Rhoban's planning and control library. It comes with its own lightweight rigid body algorithms, implemented
+with [pinocchio](https://github.com/stack-of-tasks/pinocchio) as a reference (and
+[coal](https://github.com/coal-library/coal) for collisions), and the
 [qpmad](https://github.com/asherikov/qpmad) QP solver, and provides a high-level API to express
 whole-body control problems as a set of **tasks** and **constraints**, which are assembled into a quadratic
 program and solved for you.
@@ -106,6 +107,14 @@ robots and scenarios.
 * [Examples repository](https://github.com/rhoban/placo-examples) — runnable demos, models and videos
 * [Paper](https://arxiv.org/abs/2511.06141) — *PlaCo: a QP-based robot planning and control framework*
 * [Issues](https://github.com/Rhoban/placo/issues) — bug reports and feature requests
+
+## Acknowledgements
+
+PlaCo was first built on top of [pinocchio](https://github.com/stack-of-tasks/pinocchio). Its rigid body model
+(kinematics, dynamics, URDF and MJCF loading) is now a lighter, standalone implementation, written with pinocchio
+as its reference: it follows pinocchio's conventions and formulas, and was validated against it. We are grateful to
+the pinocchio developers for their work. Collisions and distances are computed with
+[coal](https://github.com/coal-library/coal).
 
 ## Citation
 

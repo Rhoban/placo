@@ -97,9 +97,9 @@ void Contact6D::update()
 {
   J = Eigen::MatrixXd::Zero(6, solver->N);
   J.block(0, 0, 3, solver->N) =
-      solver->robot.frame_jacobian(position_task->frame_index, pinocchio::LOCAL).block(0, 0, 3, solver->N);
+      solver->robot.frame_jacobian(position_task->frame_index, placo::model::LOCAL).block(0, 0, 3, solver->N);
   J.block(3, 0, 3, solver->N) =
-      solver->robot.frame_jacobian(orientation_task->frame_index, pinocchio::LOCAL).block(3, 0, 3, solver->N);
+      solver->robot.frame_jacobian(orientation_task->frame_index, placo::model::LOCAL).block(3, 0, 3, solver->N);
 }
 
 void Contact6D::add_constraints(Problem& problem)
@@ -162,8 +162,9 @@ LineContact::LineContact(FrameTask& frame_task, bool unilateral)
 void LineContact::update()
 {
   J = Eigen::MatrixXd::Zero(5, solver->N);
-  J.block(0, 0, 3, solver->N) = solver->robot.frame_jacobian(position_task->frame_index, pinocchio::LOCAL_WORLD_ALIGNED)
-                                    .block(0, 0, 3, solver->N);
+  J.block(0, 0, 3, solver->N) =
+      solver->robot.frame_jacobian(position_task->frame_index, placo::model::LOCAL_WORLD_ALIGNED)
+          .block(0, 0, 3, solver->N);
 
   if (orientation_task->A.rows() != 2)
   {
@@ -227,7 +228,7 @@ Eigen::Vector3d LineContact::zmp()
 }
 
 ExternalWrenchContact::ExternalWrenchContact(model::RobotWrapper::FrameIndex frame_index,
-                                             pinocchio::ReferenceFrame reference)
+                                             placo::model::ReferenceFrame reference)
   : frame_index(frame_index), reference(reference)
 {
 }
