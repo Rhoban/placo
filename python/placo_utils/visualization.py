@@ -34,7 +34,7 @@ ground_checkbox = None
 
 def ground_viz(z: float = 0.0, visible: bool = True) -> None:
     """
-    Shows (or hides) the ground: a plane with a grid (10 cm cells, 1 m sections) at the given height. It is shown by
+    Shows (or hides) the ground: a grid (10 cm cells, 1 m sections) at the given height. It is shown by
     default, and can also be hidden from the viewer ("Ground" checkbox)
     """
     global ground, ground_checkbox
@@ -48,9 +48,9 @@ def ground_viz(z: float = 0.0, visible: bool = True) -> None:
             section_size=1.0,
             cell_color=(190, 190, 190),
             section_color=(120, 120, 120),
-            plane_color=(230, 230, 230),
-            plane_opacity=0.6,
-            shadow_opacity=0.2,
+            # Only the grid lines: no plane or shadows, so that what is below the ground stays visible
+            plane_opacity=0.0,
+            shadow_opacity=0.0,
             fade_distance=30.0,
         )
         ground_checkbox = vis.gui.add_checkbox("Ground", initial_value=visible)
