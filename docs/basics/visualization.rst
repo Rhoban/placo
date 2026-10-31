@@ -36,6 +36,21 @@ attached to the robot.
 
     :example:`visualization/robot.py`
 
+Ground
+------
+
+The viewer shows the ground: a plane with a grid (10 cm cells, 1 m sections) at :math:`z = 0`. It can be hidden
+from the viewer ("Ground" checkbox), or with :func:`ground_viz <placo_utils.visualization.ground_viz>`, which can
+also move it to another height:
+
+.. code-block:: python
+
+    # Ground at z = -0.1
+    ground_viz(z=-0.1)
+
+    # Hiding the ground
+    ground_viz(visible=False)
+
 Custom frame
 ------------
 
