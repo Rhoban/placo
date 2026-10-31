@@ -68,13 +68,33 @@ def ground_viz(z: float = 0.0, visible: bool = True) -> None:
 meshes: dict = {}
 
 
+# Angle between faces above which an edge is sharp (not smoothed when shading)
+sharp_edge_angle: float = np.radians(30)
+
+
+def smooth_shaded(mesh: trimesh.Trimesh) -> trimesh.Trimesh:
+    """
+    The mesh, with vertices duplicated along its sharp edges. The shading is smooth on curved surfaces, while sharp
+    edges stay sharp (meshes loaded from CAD files would otherwise look blurry and blotchy, their merged vertices being
+    shared by faces with very different orientations)
+    """
+    return trimesh.graph.smooth_shade(mesh, angle=sharp_edge_angle)
+
+
 def load_mesh(path: str, scene: bool):
     """
     Loads a mesh file (once), as a trimesh Scene (keeping the colors of the file) or as a single Trimesh
     """
     key = (path, scene)
     if key not in meshes:
-        meshes[key] = trimesh.load_scene(path) if scene else trimesh.load_mesh(path, force="mesh")
+        if scene:
+            loaded = trimesh.load_scene(path)
+            for name, geometry in list(loaded.geometry.items()):
+                if isinstance(geometry, trimesh.Trimesh):
+                    loaded.geometry[name] = smooth_shaded(geometry)
+        else:
+            loaded = smooth_shaded(trimesh.load_mesh(path, force="mesh"))
+        meshes[key] = loaded
     return meshes[key].copy()
 
 
