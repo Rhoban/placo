@@ -88,12 +88,13 @@ def load_mesh(path: str, scene: bool):
     key = (path, scene)
     if key not in meshes:
         if scene:
-            loaded = trimesh.load_scene(path)
+            # trimesh.load (rather than load_scene / load_mesh, which behave differently before trimesh 5)
+            loaded = trimesh.load(path, force="scene")
             for name, geometry in list(loaded.geometry.items()):
                 if isinstance(geometry, trimesh.Trimesh):
                     loaded.geometry[name] = smooth_shaded(geometry)
         else:
-            loaded = smooth_shaded(trimesh.load_mesh(path, force="mesh"))
+            loaded = smooth_shaded(trimesh.load(path, force="mesh"))
         meshes[key] = loaded
     return meshes[key].copy()
 
