@@ -195,13 +195,14 @@ nodes: dict = {}
 def node(name: str, parameters: tuple, create):
     """
     Gets the node with the given name, created by create() if it doesn't exist or if it was created with other
-    parameters
+    parameters. A node is replaced atomically (the viewer never shows a frame without it, which would make it blink)
     """
     if name in nodes and nodes[name][0] == parameters:
         return nodes[name][1]
 
-    remove(name)
-    nodes[name] = (parameters, create())
+    with get_viewer().atomic():
+        remove(name)
+        nodes[name] = (parameters, create())
     return nodes[name][1]
 
 
@@ -274,16 +275,15 @@ def points_viz(
     """
     vis = get_viewer()
     node_name = f"points/{name}"
-    remove(node_name)
 
     points = np.asarray(points, dtype=float).reshape(-1, 3)
     if len(points) == 0:
+        remove(node_name)
         return
 
-    sphere = trimesh.creation.icosphere(subdivisions=2, radius=radius)
-    nodes[node_name] = (
-        None,
-        vis.scene.add_batched_meshes_simple(
+    def create():
+        sphere = trimesh.creation.icosphere(subdivisions=2, radius=radius)
+        return vis.scene.add_batched_meshes_simple(
             node_name,
             sphere.vertices,
             sphere.faces,
@@ -291,8 +291,10 @@ def points_viz(
             batched_positions=points,
             batched_colors=rgb(color),
             opacity=opacity,
-        ),
-    )
+        )
+
+    # The points are moved when their number doesn't change (the node is replaced otherwise)
+    node(node_name, (radius, color, opacity, len(points)), create).batched_positions = points
 
 
 def robot_frame_viz(robot: placo.RobotWrapper, frame: str, opacity: float = 1.0, scale: float = 1.0) -> None:
@@ -308,14 +310,15 @@ def segments_viz(node_name: str, segments: np.ndarray, color: float) -> None:
     Draws line segments, given as an array of shape (N, 2, 3)
     """
     vis = get_viewer()
-    remove(node_name)
-    if len(segments) > 0:
-        nodes[node_name] = (
-            None,
-            vis.scene.add_line_segments(
-                node_name, segments, rgb(color), thickness=2.0, thickness_units="screen"
-            ),
-        )
+    if len(segments) == 0:
+        remove(node_name)
+        return
+
+    # The segments are moved when their number doesn't change (the node is replaced otherwise)
+    create = lambda: vis.scene.add_line_segments(
+        node_name, segments, rgb(color), thickness=2.0, thickness_units="screen"
+    )
+    node(node_name, (color, len(segments)), create).points = segments
 
 
 def to_3d(points: np.ndarray) -> np.ndarray:
@@ -420,24 +423,22 @@ def arrow_viz(
     """
     vis = get_viewer()
     node_name = f"arrows/{name}"
-    remove(node_name)
 
     point_from = np.asarray(point_from, dtype=float)
     point_to = np.asarray(point_to, dtype=float)
     if np.linalg.norm(point_to - point_from) < 1e-6:
         point_to = point_from + np.array([0.0, 0.0, 1e-3])
+    points = np.array([[point_from, point_to]])
 
-    nodes[node_name] = (
-        None,
-        vis.scene.add_arrows(
-            node_name,
-            np.array([[point_from, point_to]]),
-            rgb(color),
-            shaft_radius=radius,
-            head_radius=2 * radius,
-            head_length=3 * radius,
-        ),
+    create = lambda: vis.scene.add_arrows(
+        node_name,
+        points,
+        rgb(color),
+        shaft_radius=radius,
+        head_radius=2 * radius,
+        head_length=3 * radius,
     )
+    node(node_name, (color, radius), create).points = points
 
 
 previous_contacts: int = 0
