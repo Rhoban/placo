@@ -593,8 +593,9 @@ sliders: dict = {}
 
 def add_slider(name: str, minimum: float, maximum: float, value: float = None, step: float = 0.01):
     """
-    Adds a slider to the viewer panel, whose current value is slider.value. If a slider with this name was already
-    added, it is returned (so that this function can be called in a loop)
+    Adds a slider to the viewer panel, to change or tune any value (a target, a gain, a task weight...) while the
+    program runs. Its current value is slider.value. If a slider with this name was already added, it is returned (so
+    that this function can be called in a loop)
 
     :param name: slider name (displayed)
     :param minimum: minimum value
