@@ -3,7 +3,18 @@ project(placo)
 
 find_package(Threads)
 find_package(coal REQUIRED)
-find_package(tinyxml2 REQUIRED)
+
+# tinyxml2: its CMake package, or pkg-config (some distributions, e.g. Ubuntu 22.04's libtinyxml2-dev, don't provide
+# the CMake package)
+find_package(tinyxml2 CONFIG QUIET)
+if (TARGET tinyxml2::tinyxml2)
+  set(PLACO_TINYXML2_TARGET tinyxml2::tinyxml2)
+else()
+  find_package(PkgConfig REQUIRED)
+  pkg_check_modules(TINYXML2 REQUIRED IMPORTED_TARGET tinyxml2)
+  set(PLACO_TINYXML2_TARGET PkgConfig::TINYXML2)
+endif()
+
 find_package(eigenpy REQUIRED)
 find_package(jsoncpp REQUIRED)
 
@@ -135,7 +146,7 @@ target_link_libraries(libplaco PUBLIC
     Eigen3::Eigen
     Threads::Threads
     coal::coal
-    tinyxml2::tinyxml2
+    ${PLACO_TINYXML2_TARGET}
     jsoncpp_lib
     ${PROTOBUF_LIBRARIES}
   ${PROTOBUF_LIBRARIES}
