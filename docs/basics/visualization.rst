@@ -39,7 +39,7 @@ attached to the robot.
 Ground
 ------
 
-The viewer shows the ground: a plane with a grid (10 cm cells, 1 m sections) at :math:`z = 0`. It can be hidden
+The viewer shows the ground: a grid (10 cm cells, 1 m sections) at :math:`z = 0`. It can be hidden
 from the viewer ("Ground" checkbox), or with :func:`ground_viz <placo_utils.visualization.ground_viz>`, which can
 also move it to another height:
 
