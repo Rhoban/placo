@@ -120,3 +120,21 @@ are then updated by the viewer, they should not be changed by the code at the sa
 .. admonition:: Example
 
     :example:`kinematics/6axis_controls.py`
+
+Plots
+-----
+
+You can use :func:`add_plot <placo_utils.visualization.add_plot>` to add a plot to the viewer panel, showing the last
+values of some series over time (e.g. contact forces, errors or torques). The values are added with ``plot.add``,
+which can be called at each solver step (the viewer is updated periodically):
+
+.. code-block:: python
+
+    plot = add_plot("Feet vertical forces [N]", ["left", "right"], window=5.0)
+
+    # In the loop
+    plot.add(t, [left_contact.wrench[2], right_contact.wrench[2]])
+
+.. admonition:: Example
+
+    :example:`dynamics/sigmaban.py`

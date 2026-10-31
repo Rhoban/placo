@@ -1,3 +1,4 @@
+import time
 import os
 import viser
 import trimesh
@@ -585,3 +586,89 @@ def task_controls(task, name: str, scale: float = 0.15) -> viser.TransformContro
     elif hasattr(task, "target_world"):
         return position_task_controls(task, name, scale)
     raise ValueError(f"task_controls: {type(task).__name__} is not a position or frame task")
+
+
+# Default colors of the plots series
+plot_colors = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22"]
+
+
+class Plot:
+    """
+    A plot in the viewer panel, showing the last values of some series over time (see add_plot)
+    """
+
+    def __init__(self, name: str, series: list, window: float = 5.0, period: float = 0.05, height: int = None):
+        self.series = list(series)
+        self.window = window
+        self.period = period
+        self.times = []
+        self.values = [[] for _ in self.series]
+        self.last_update = 0.0
+
+        self.handle = get_viewer().gui.add_uplot(
+            data=tuple(np.zeros(0) for _ in range(len(self.series) + 1)),
+            series=(
+                {"label": "t"},
+                *[
+                    {"label": label, "stroke": plot_colors[k % len(plot_colors)], "width": 2}
+                    for k, label in enumerate(self.series)
+                ],
+            ),
+            title=name,
+            scales={"x": {"time": False}},
+            aspect=2.0,
+            height=height,
+        )
+
+    def add(self, t: float, values) -> None:
+        """
+        Adds the values of the series at time t. The plot keeps the values of the last window seconds, and is sent to
+        the viewer at most every period seconds (of real time), so that it can be called at each solver step
+        """
+        values = np.atleast_1d(np.asarray(values, dtype=float))
+        if len(values) != len(self.series):
+            raise ValueError(f"Plot.add: expected {len(self.series)} values, got {len(values)}")
+
+        self.times.append(float(t))
+        for k, value in enumerate(values):
+            self.values[k].append(value)
+
+        # Keeping the last window seconds
+        start = 0
+        while start < len(self.times) and self.times[start] < t - self.window:
+            start += 1
+        if start > 0:
+            self.times = self.times[start:]
+            self.values = [series[start:] for series in self.values]
+
+        if time.monotonic() - self.last_update >= self.period:
+            self.refresh()
+
+    def refresh(self) -> None:
+        """
+        Sends the plot to the viewer (add does it periodically)
+        """
+        self.last_update = time.monotonic()
+        self.handle.data = (np.array(self.times), *[np.array(series) for series in self.values])
+
+
+# Plots of the viewer panel, by name
+plots: dict = {}
+
+
+def add_plot(name: str, series: list, window: float = 5.0, period: float = 0.05, height: int = None) -> Plot:
+    """
+    Adds a plot to the viewer panel, showing the last values of some series over time. Values are added with
+    plot.add(t, values). If a plot with this name was already added, it is returned (so that this function can be
+    called in a loop)
+
+    :param name: plot title
+    :param series: names of the series (e.g. ["fx", "fy", "fz"])
+    :param window: duration shown [s]
+    :param period: minimum duration between two updates of the viewer (real time) [s]
+    :param height: height of the plot (pixels), automatic by default
+    :return: the plot
+    """
+    if name not in plots:
+        plots[name] = Plot(name, series, window, period, height)
+    return plots[name]
