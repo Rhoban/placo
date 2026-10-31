@@ -20,8 +20,8 @@ void ConeConstraint::add_constraint(placo::problem::Problem& problem)
   // Jacobian of the rotational velocity expressed in a
   model::RobotWrapper::merge_supports(solver->robot.frame_support(frame_a), solver->robot.frame_support(frame_b),
                                       columns);
-  solver->robot.compact_frame_jacobian(frame_a, pinocchio::LOCAL, columns, J_a);
-  solver->robot.compact_frame_jacobian(frame_b, pinocchio::LOCAL, columns, J_b);
+  solver->robot.compact_frame_jacobian(frame_a, placo::model::LOCAL, columns, J_a);
+  solver->robot.compact_frame_jacobian(frame_b, placo::model::LOCAL, columns, J_b);
   Eigen::Matrix<double, 3, Eigen::Dynamic> J_cone = T_a_b.linear() * J_b.bottomRows(3) - J_a.bottomRows(3);
 
   // Preparing the constraint: alpha + J_slice dq <= angle_max for each slice

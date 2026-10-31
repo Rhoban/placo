@@ -1,7 +1,7 @@
 #include "placo/humanoid/humanoid_robot.h"
 #include "placo/tools/utils.h"
-#include "pinocchio/math/rpy.hpp"
-#include "pinocchio/spatial/explog.hpp"
+#include "placo/model/spatial.h"
+#include "placo/model/spatial.h"
 
 namespace placo::humanoid
 {
@@ -11,7 +11,7 @@ HumanoidRobot::HumanoidRobot(std::string model_directory, int flags, std::string
   initialize();
 
   // Measuring some distances
-  if (model.existFrame("trunk") && model.existFrame("left_hip_yaw"))
+  if (model.exist_frame("trunk") && model.exist_frame("left_hip_yaw"))
   {
     dist_y_trunk_foot = fabs(get_T_a_b("trunk", "left_hip_yaw").translation().y());
   }
@@ -20,7 +20,7 @@ HumanoidRobot::HumanoidRobot(std::string model_directory, int flags, std::string
     std::cerr << "WARNING: Can't find trunk frames in the model, can't measure leg spacing" << std::endl;
   }
 
-  if (model.existFrame("head_base") && model.existFrame("head_pitch") && model.existFrame("camera"))
+  if (model.exist_frame("head_base") && model.exist_frame("head_pitch") && model.exist_frame("camera"))
   {
     dist_z_pan_tilt = get_T_a_b("head_base", "head_pitch").translation().z();
     dist_z_pan_camera = get_T_a_b("head_base", "camera").translation().z();
@@ -143,7 +143,7 @@ Eigen::Vector3d HumanoidRobot::get_com_velocity(Side support, Eigen::Vector3d om
   Eigen::Matrix3Xd J_a_C = J_C.rightCols(20);
 
   // Support foot
-  Eigen::MatrixXd J_contact = frame_jacobian(support_frame, pinocchio::ReferenceFrame::LOCAL);
+  Eigen::MatrixXd J_contact = frame_jacobian(support_frame, placo::model::LOCAL);
 
   // IMU body Jacobian
   Eigen::MatrixXd J_IMU = frame_jacobian("trunk", "local");
@@ -275,7 +275,7 @@ void HumanoidRobot::read_from_histories(rhoban_utils::HistoryCollection& histori
     double imuPitch = histories.angle("imu_pitch")->interpolate(timestamp);
     double imuRoll = histories.angle("imu_roll")->interpolate(timestamp);
 
-    Eigen::Matrix3d R_world_trunk = pinocchio::rpy::rpyToMatrix(imuRoll, imuPitch, imuYaw);
+    Eigen::Matrix3d R_world_trunk = placo::model::rpy_to_matrix(imuRoll, imuPitch, imuYaw);
     update_from_imu(R_world_trunk);
   }
 
@@ -289,8 +289,7 @@ void HumanoidRobot::read_from_histories(rhoban_utils::HistoryCollection& histori
     b << Eigen::Vector3d::Zero(), omega_trunk;
 
     Eigen::MatrixXd J(6, model.nv);
-    J << frame_jacobian(support_frame, pinocchio::ReferenceFrame::LOCAL).topRows(3),
-        frame_jacobian("trunk", "local").bottomRows(3);
+    J << frame_jacobian(support_frame, placo::model::LOCAL).topRows(3), frame_jacobian("trunk", "local").bottomRows(3);
     Eigen::MatrixXd J_bf = J.leftCols(6);
     Eigen::MatrixXd J_a = J.rightCols(model.nv - 6);
 

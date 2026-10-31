@@ -1,5 +1,4 @@
 #include <iostream>
-#include <pinocchio/fwd.hpp>
 #include <sstream>
 #include <eigenpy/eigenpy.hpp>
 

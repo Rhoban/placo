@@ -1,4 +1,3 @@
-#include <pinocchio/fwd.hpp>
 
 #include "expose-utils.hpp"
 #include "module.h"

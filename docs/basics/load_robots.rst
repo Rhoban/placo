@@ -7,6 +7,12 @@ Loading your Robot
 To load a robot, you'll need to use the :func:`RobotWrapper <placo.RobotWrapper>` class. This class is wrapping
 the robot model, state and exposing all convenient methods to interact with your robot model.
 
+.. admonition:: Note
+
+  The URDF and MJCF files are loaded by PlaCo's own parsers, which build the same models as
+  `pinocchio <https://github.com/stack-of-tasks/pinocchio>`_ (the reference used to implement PlaCo's rigid body
+  model): joints order, frames, merged fixed bodies and geometries names are the same.
+
 Using URDF file
 ---------------
 

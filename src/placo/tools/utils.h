@@ -1,6 +1,5 @@
 #pragma once
 
-#include "pinocchio/multibody/geometry.hpp"
 #include <Eigen/Dense>
 
 namespace placo::tools
@@ -41,13 +40,6 @@ Eigen::Matrix3d rotation_from_axis(std::string axis, Eigen::Vector3d vector);
  * @return a 3D transformation that lies on the floor (no pitch/roll and no z)
  */
 Eigen::Affine3d flatten_on_floor(const Eigen::Affine3d& transformation);
-
-/**
- * @brief Converts a pinocchio's SE3 transformation to Eigen Affine3d
- * @param se3 pinocchio SE3 transformation
- * @return Eigen affine3d
- */
-Eigen::Affine3d pin_se3_to_eigen(const pinocchio::GeometryData::SE3& se3);
 
 /**
  * @brief Returns the acos of v, with safety on v values

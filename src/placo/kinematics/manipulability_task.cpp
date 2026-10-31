@@ -37,7 +37,7 @@ void ManipulabilityTask::support()
 void ManipulabilityTask::fill()
 {
   // Computing the Jacobian matrix
-  Eigen::MatrixXd J_unmasked = solver->robot.frame_jacobian(frame_index, pinocchio::LOCAL);
+  Eigen::MatrixXd J_unmasked = solver->robot.frame_jacobian(frame_index, placo::model::LOCAL);
   Eigen::MatrixXd J = mask_matrix(J_unmasked);
   Eigen::MatrixXd JJT_inv = (J * J.transpose()).inverse();
   manipulability = sqrt(fmax(0., (J * J.transpose()).determinant()));

@@ -46,10 +46,12 @@ void AvoidSelfCollisionsConstraint::add_constraint(placo::problem::Problem& prob
       }
 
       // Jacobians of the witness points (world axes)
-      pinocchio::SE3 T_world_A(Eigen::Matrix3d::Identity(), distance.pointA);
-      pinocchio::SE3 T_world_B(Eigen::Matrix3d::Identity(), distance.pointB);
-      solver->robot.compact_jacobian(distance.parentA, T_world_A, pinocchio::LOCAL_WORLD_ALIGNED, columns, J_a);
-      solver->robot.compact_jacobian(distance.parentB, T_world_B, pinocchio::LOCAL_WORLD_ALIGNED, columns, J_b);
+      Eigen::Affine3d T_world_A = Eigen::Affine3d::Identity();
+      T_world_A.translation() = distance.pointA;
+      Eigen::Affine3d T_world_B = Eigen::Affine3d::Identity();
+      T_world_B.translation() = distance.pointB;
+      solver->robot.compact_jacobian(distance.parentA, T_world_A, placo::model::LOCAL_WORLD_ALIGNED, columns, J_a);
+      solver->robot.compact_jacobian(distance.parentB, T_world_B, placo::model::LOCAL_WORLD_ALIGNED, columns, J_b);
 
       // We want: current_distance + J dq >= margin
       constraint.expression.A.row(row).noalias() = n.transpose() * (J_b.topRows(3) - J_a.topRows(3));
@@ -59,7 +61,7 @@ void AvoidSelfCollisionsConstraint::add_constraint(placo::problem::Problem& prob
     }
   }
 
-  constraint.configure(
-      priority == Priority::Soft ? problem::ProblemConstraint::Soft : problem::ProblemConstraint::Hard, weight);
+  constraint.configure(priority == Priority::Soft ? problem::ProblemConstraint::Soft : problem::ProblemConstraint::Hard,
+                       weight);
 }
 };  // namespace placo::kinematics

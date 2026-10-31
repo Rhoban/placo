@@ -26,8 +26,8 @@ void DistanceTask::fill()
   double error = distance - ab_world.norm();
   Eigen::Vector3d direction = ab_world.normalized();
 
-  solver->robot.compact_frame_jacobian(frame_a, pinocchio::LOCAL_WORLD_ALIGNED, columns, J_a);
-  solver->robot.compact_frame_jacobian(frame_b, pinocchio::LOCAL_WORLD_ALIGNED, columns, J_b);
+  solver->robot.compact_frame_jacobian(frame_a, placo::model::LOCAL_WORLD_ALIGNED, columns, J_a);
+  solver->robot.compact_frame_jacobian(frame_b, placo::model::LOCAL_WORLD_ALIGNED, columns, J_b);
   A.noalias() = direction.transpose() * (J_b.topRows(3) - J_a.topRows(3));
   b(0, 0) = error;
 }

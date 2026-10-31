@@ -1,4 +1,5 @@
 #include "placo/tools/utils.h"
+#include "placo/model/spatial.h"
 #include <sys/stat.h>
 #include <iostream>
 
@@ -70,7 +71,7 @@ Eigen::Matrix3d rotation_from_axis(std::string axis, Eigen::Vector3d vector)
     w.normalize();
   }
 
-  return pinocchio::exp3(w * theta);
+  return placo::model::exp3(w * theta);
 }
 
 Eigen::Affine3d flatten_on_floor(const Eigen::Affine3d& transformation)
@@ -85,15 +86,6 @@ Eigen::Affine3d flatten_on_floor(const Eigen::Affine3d& transformation)
       Eigen::AngleAxisd(frame_yaw(transformation.rotation()), Eigen::Vector3d::UnitZ()).toRotationMatrix();
 
   return flattened;
-}
-
-Eigen::Affine3d pin_se3_to_eigen(const pinocchio::GeometryData::SE3& se3)
-{
-  Eigen::Affine3d transformation = Eigen::Affine3d::Identity();
-  transformation.translation() = se3.translation();
-  transformation.linear() = se3.rotation();
-
-  return transformation;
 }
 
 double safe_acos(double v)
