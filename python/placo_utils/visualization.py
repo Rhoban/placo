@@ -105,46 +105,53 @@ class RobotViz:
     Displays the visual geometries of a robot in the viser viewer
     """
 
-    def __init__(self, robot: placo.RobotWrapper, name: str):
+    def __init__(self, robot: placo.RobotWrapper, name: str, color: int | None = None, opacity: float | None = None):
         self.robot = robot
         self.handles = []
         vis = get_viewer()
 
         for geometry in robot.visual_model.objects:
             node_name = f"{name}/visual/{geometry.name}"
-            color = tuple(geometry.color[:3])
-            opacity = float(geometry.color[3])
+            # The color and opacity of the model, unless overridden (e.g. to show a "ghost" of the robot)
+            color_ = rgb(color) if color is not None else tuple(geometry.color[:3])
+            opacity_ = float(opacity) if opacity is not None else float(geometry.color[3])
             size = geometry.size
 
             if geometry.type == "box":
-                handle = vis.scene.add_box(node_name, dimensions=tuple(size), color=color, opacity=opacity)
+                handle = vis.scene.add_box(node_name, dimensions=tuple(size), color=color_, opacity=opacity_)
             elif geometry.type == "sphere":
-                handle = vis.scene.add_icosphere(node_name, radius=size[0], color=color, opacity=opacity)
+                handle = vis.scene.add_icosphere(node_name, radius=size[0], color=color_, opacity=opacity_)
             elif geometry.type == "cylinder":
-                handle = vis.scene.add_cylinder(node_name, radius=size[0], height=size[1], color=color, opacity=opacity)
+                handle = vis.scene.add_cylinder(
+                    node_name, radius=size[0], height=size[1], color=color_, opacity=opacity_
+                )
             elif geometry.type == "ellipsoid":
                 handle = vis.scene.add_icosphere(
-                    node_name, radius=1.0, scale=tuple(size), color=color, opacity=opacity
+                    node_name, radius=1.0, scale=tuple(size), color=color_, opacity=opacity_
                 )
             elif geometry.type == "plane":
                 handle = vis.scene.add_grid(node_name, width=2 * size[0], height=2 * size[1])
             elif geometry.type == "capsule":
                 capsule = trimesh.creation.capsule(height=size[1], radius=size[0])
                 handle = vis.scene.add_mesh_simple(
-                    node_name, capsule.vertices, capsule.faces, color=color, opacity=opacity
+                    node_name, capsule.vertices, capsule.faces, color=color_, opacity=opacity_
                 )
             else:
                 # Meshes keep the colors of their files (e.g. Collada), unless a color is given in the model
                 scale = np.array(geometry.mesh_scale)
-                if os.path.splitext(geometry.mesh_path)[1].lower() == ".dae" and not geometry.has_color:
+                file_colors = os.path.splitext(geometry.mesh_path)[1].lower() == ".dae" and not geometry.has_color
+                if file_colors and color is None and opacity is None:
                     mesh = load_mesh(geometry.mesh_path, True)
                     mesh.apply_scale(scale)
                     handle = vis.scene.add_mesh_trimesh(node_name, mesh)
                 else:
+                    if file_colors and color is None:
+                        # Transparent mesh with the colors of its file: drawn with its main color
+                        color_ = tuple(load_mesh(geometry.mesh_path, False).visual.main_color[:3])
                     mesh = load_mesh(geometry.mesh_path, False)
                     mesh.apply_scale(scale)
                     handle = vis.scene.add_mesh_simple(
-                        node_name, mesh.vertices, mesh.faces, color=color, opacity=opacity
+                        node_name, mesh.vertices, mesh.faces, color=color_, opacity=opacity_
                     )
 
             self.handles.append(handle)
@@ -159,18 +166,27 @@ class RobotViz:
             set_pose(handle, T)
 
 
-def robot_viz(robot: placo.RobotWrapper, name: str = "robot") -> RobotViz:
+def robot_viz(
+    robot: placo.RobotWrapper, name: str = "robot", color: int | None = None, opacity: float | None = None
+) -> RobotViz:
     """
     Builds the visualization of a robot in the viser viewer
 
     The robot can further be displayed using:
 
     > viz.display(q)
+
+    By default, the robot has the colors of its model. A color (0xRRGGBB) and/or an opacity can be given to override
+    them, for example to show a "ghost" of the robot in another configuration (e.g. a target):
+
+    > target_viz = robot_viz(robot, "target", color=0x3399FF, opacity=0.35)
+    > target_viz.display(q_target)
     """
     global robot_names
 
-    robot_names[robot] = name
-    return RobotViz(robot, name)
+    # Name used for the frames of the robot (the one of its first visualization)
+    robot_names.setdefault(robot, name)
+    return RobotViz(robot, name, color, opacity)
 
 
 def rgb(color: int) -> tuple:
