@@ -40,6 +40,25 @@ attached to the robot.
 
     :example:`visualization/robot.py`
 
+By default, the robot has the colors of its model. A ``color`` (``0xRRGGBB``) and/or an ``opacity`` can be passed
+to override them, which is useful to show a "ghost" of the robot in another configuration (e.g. a target). The same
+robot can be visualized several times, under different names:
+
+.. code-block:: python
+
+    viz = robot_viz(robot)
+    target_viz = robot_viz(robot, "target", color=0x3399FF, opacity=0.35)
+
+    viz.display(robot.state.q)
+    target_viz.display(q_target)
+
+.. admonition:: Example
+
+    .. video:: https://github.com/Rhoban/placo-examples/raw/master/visualization/videos/robot_ghost.mp4
+        :loop:
+
+    :example:`visualization/robot_ghost.py`
+
 Ground
 ------
 
