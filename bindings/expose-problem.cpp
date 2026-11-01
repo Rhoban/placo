@@ -185,7 +185,10 @@ void exposeProblem()
       .def<ProblemConstraint& (Problem::*)(const ProblemConstraint&)>("add_constraint", &Problem::add_constraint,
                                                                       return_internal_reference<>())
       .def("add_limit", &Problem::add_limit, return_internal_reference<>())
-      .def("add_bounds", &Problem::add_bounds)
+      .def(
+          "add_bounds",
+          +[](Problem& problem, const Variable& variable, int start, const Eigen::VectorXd& lower,
+              const Eigen::VectorXd& upper) { problem.add_bounds(variable, start, lower, upper); })
       .def("solve", &Problem::solve)
       .def("clear_variables", &Problem::clear_variables)
       .def("clear_constraints", &Problem::clear_constraints)
