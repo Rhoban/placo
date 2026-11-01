@@ -160,6 +160,17 @@ or tune any value while the program runs (a target, a gain, a task weight...). I
     com_task.target_world = np.array([0.0, 0.0, height.value])
     posture_task.configure("posture", "soft", weight.value)
 
+.. admonition:: Example
+
+    .. video:: https://github.com/Rhoban/placo-examples/raw/master/kinematics/videos/6axis_blend.mp4
+        :loop:
+
+    In this example, the 6-axis robot has a joints task (shown as a ghost of the robot) and a frame task (shown as a
+    target frame). An ``alpha`` slider gives them the weights :math:`1 - \alpha` and :math:`\alpha`, so that the
+    robot transitions from one task to the other.
+
+    :example:`kinematics/6axis_blend.py`
+
 :func:`joints_sliders <placo_utils.visualization.joints_sliders>` adds a slider for each joint of a robot, within its
 limits:
 
