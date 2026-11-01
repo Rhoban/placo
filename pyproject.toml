@@ -49,6 +49,8 @@ run-tests = false
 
 [tool.cibuildwheel.macos]
 before-all = "brew install --formula doxygen"
+# std::filesystem (model loading) is available from macOS 10.15 (the default target of x86_64 wheels is older)
+environment = { MACOSX_DEPLOYMENT_TARGET = "10.15" }
 
 [tool.cibuildwheel.linux]
 before-all = "yum install -y doxygen"
