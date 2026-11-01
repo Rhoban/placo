@@ -84,7 +84,7 @@ import numpy as np
 import placo
 
 # Load a robot and create the kinematics solver
-robot = placo.RobotWrapper("models/6axis/")
+robot = placo.RobotWrapper("models/6axis/robot.urdf")
 solver = placo.KinematicsSolver(robot)
 solver.mask_fbase(True)  # the robot is anchored to the ground
 
