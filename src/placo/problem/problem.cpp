@@ -892,6 +892,7 @@ void Problem::solve()
   // Solving the QP (P is factorized in place)
   qp_x.resize(n_qp);
   bool feasible;
+  warm_started = false;
   if (n_qp == 0)
   {
     // All the variables are determined by the equalities, the remaining constraints are constants (0 <= upper and
@@ -902,7 +903,39 @@ void Problem::solve()
   {
     try
     {
-      feasible = (qp_solver.solve(qp_x, P, q, lb, ub, C, lower, upper) == qpmad::Solver::OK);
+      // With an empty previous active set, qpmad stops after the unconstrained solve: there is nothing to gain
+      bool same_size = active_set_n == n_qp && active_set_bounds == lb.rows() && active_set_rows == C.rows();
+      bool try_warm = warm_start && same_size && !active_set.empty();
+      warm_started = try_warm && solve_warm();
+      if (warm_started)
+      {
+        feasible = true;
+      }
+      else if (try_warm && warm_llt.info() == Eigen::Success)
+      {
+        // Reusing the Cholesky factorization computed for the warm start
+        P.triangularView<Eigen::Lower>() = warm_llt.matrixL();
+        qpmad::SolverParameters parameters;
+        parameters.hessian_type_ = qpmad::SolverParameters::HESSIAN_CHOLESKY_FACTOR;
+        feasible = (qp_solver.solve(qp_x, P, q, lb, ub, C, lower, upper, parameters) == qpmad::Solver::OK);
+      }
+      else
+      {
+        feasible = (qp_solver.solve(qp_x, P, q, lb, ub, C, lower, upper) == qpmad::Solver::OK);
+      }
+
+      if (!warm_started)
+      {
+        Eigen::VectorXd dual;
+        Eigen::Matrix<qpmad::MatrixIndex, Eigen::Dynamic, 1> indices;
+        Eigen::Matrix<bool, Eigen::Dynamic, 1> is_lower;
+        qp_solver.getInequalityDual(dual, indices, is_lower);
+        active_set.assign(indices.data(), indices.data() + indices.rows());
+        active_is_lower.assign(is_lower.data(), is_lower.data() + is_lower.rows());
+      }
+      active_set_n = n_qp;
+      active_set_bounds = lb.rows();
+      active_set_rows = C.rows();
     }
     catch (const std::exception& e)
     {
@@ -989,13 +1022,9 @@ void Problem::solve()
   // general constraints rows)
   if (n_qp > 0)
   {
-    Eigen::VectorXd dual;
-    Eigen::Matrix<qpmad::MatrixIndex, Eigen::Dynamic, 1> active_indices;
-    Eigen::Matrix<bool, Eigen::Dynamic, 1> active_is_lower;
-    qp_solver.getInequalityDual(dual, active_indices, active_is_lower);
-    for (int k = 0; k < active_indices.rows(); k++)
+    for (int k = 0; k < (int)active_set.size(); k++)
     {
-      int active_row = active_indices[k] - lb.rows();
+      int active_row = active_set[k] - lb.rows();
       if (active_row >= 0 && hard_inequalities_mapping[active_row] != nullptr)
       {
         hard_inequalities_mapping[active_row]->is_active = true;
@@ -1017,6 +1046,107 @@ void Problem::solve()
     variable->version += 1;
     variable->value = x.segment(variable->k_start, variable->size());
   }
+}
+
+bool Problem::solve_warm()
+{
+  // Rows of A_W z = t: the inequalities of the previous active set, and the equalities (lower == upper)
+  const int n = P.rows();
+  const int nb = lb.rows();
+  int k = active_set.size();
+  for (int j = 0; j < nb; j++)
+  {
+    k += lb[j] == ub[j] ? 1 : 0;
+  }
+  for (int j = 0; j < C.rows(); j++)
+  {
+    k += lower[j] == upper[j] ? 1 : 0;
+  }
+
+  warm_llt.compute(P);
+  if (k > n || warm_llt.info() != Eigen::Success)
+  {
+    return false;
+  }
+
+  // M = L^-1 A_W^T, with P = L L^T
+  warm_M.setZero(n, k);
+  warm_t.resize(k);
+  int c = 0;
+  for (int i = 0; i < (int)active_set.size(); i++, c++)
+  {
+    int index = active_set[i];
+    if (index < nb)
+    {
+      warm_M(index, c) = 1;
+      warm_t[c] = active_is_lower[i] ? lb[index] : ub[index];
+    }
+    else
+    {
+      warm_M.col(c) = C.row(index - nb).transpose();
+      warm_t[c] = active_is_lower[i] ? lower[index - nb] : upper[index - nb];
+    }
+  }
+  for (int j = 0; j < nb; j++)
+  {
+    if (lb[j] == ub[j])
+    {
+      warm_M(j, c) = 1;
+      warm_t[c++] = lb[j];
+    }
+  }
+  for (int j = 0; j < C.rows(); j++)
+  {
+    if (lower[j] == upper[j])
+    {
+      warm_M.col(c) = C.row(j).transpose();
+      warm_t[c++] = lower[j];
+    }
+  }
+  warm_llt.matrixL().solveInPlace(warm_M);
+  warm_v = warm_llt.matrixL().solve(q);
+
+  // P z + q = A_W^T mu and A_W z = t give (A_W P^-1 A_W^T) mu = t + A_W P^-1 q
+  warm_mu.resize(k);
+  if (k > 0)
+  {
+    warm_schur.compute(warm_M.transpose() * warm_M);
+    if (warm_schur.info() != Eigen::Success)
+    {
+      return false;
+    }
+    warm_mu = warm_schur.solve(warm_t + warm_M.transpose() * warm_v);
+  }
+  qp_x = warm_M * warm_mu - warm_v;
+  warm_llt.matrixU().solveInPlace(qp_x);
+
+  // Dual feasibility: mu >= 0 for active lower sides, mu <= 0 for active upper sides
+  for (int i = 0; i < (int)active_set.size(); i++)
+  {
+    if (active_is_lower[i] ? warm_mu[i] < -1e-12 : warm_mu[i] > 1e-12)
+    {
+      return false;
+    }
+  }
+
+  // Primal feasibility of all the constraints
+  const double tolerance = 1e-10;
+  for (int j = 0; j < nb; j++)
+  {
+    if (qp_x[j] < lb[j] - tolerance || qp_x[j] > ub[j] + tolerance)
+    {
+      return false;
+    }
+  }
+  for (int j = 0; j < C.rows(); j++)
+  {
+    double value = C.row(j).dot(qp_x);
+    if (value < lower[j] - tolerance || value > upper[j] + tolerance)
+    {
+      return false;
+    }
+  }
+  return qp_x.allFinite();
 }
 
 void Problem::dump_status()

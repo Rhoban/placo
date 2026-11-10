@@ -41,6 +41,32 @@ class TestKinematicsSolver(unittest.TestCase):
         self.assertEqual(self.solver.tasks_count(), 0)
 
 
+    def test_warm_start(self):
+        """
+        Along a trajectory reaching out of the joint limits, each step gives the same solution with and without the
+        warm start (previous active set tried first), and the warm start is used
+        """
+        robot = placo.RobotWrapper(f"{this_dir}/sigmaban/robot.urdf", placo.Flags.collision_as_visual)
+        solver = placo.KinematicsSolver(robot)
+        solver.mask_fbase(True)
+        solver.enable_joint_limits(True)
+        T_world_foot = robot.get_T_world_frame("left_foot")
+        task = solver.add_position_task("left_foot", T_world_foot[:3, 3])
+        solver.add_regularization_task(1e-4)
+
+        warm_started = 0
+        for step in range(100):
+            task.target_world = T_world_foot[:3, 3] + np.array([0.2, 0.1, 0.05]) * np.sin(step * 0.05)
+            solver.problem.warm_start = True
+            dq_warm = solver.solve(False)
+            warm_started += solver.problem.warm_started
+            solver.problem.warm_start = False
+            dq = solver.solve(True)
+            robot.update_kinematics()
+            np.testing.assert_allclose(dq_warm, dq, atol=1e-9, err_msg=f"The warm start changes the solution (step {step})")
+
+        self.assertGreater(warm_started, 0, msg="The warm start was never used")
+
     def test_compact_tasks(self):
         """
         Task matrices (compact internally) are the expected Jacobians, and solutions with hard tasks are the same
