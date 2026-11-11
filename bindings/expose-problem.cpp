@@ -205,6 +205,8 @@ void exposeProblem()
       .add_property("rewrite_equalities", &Problem::rewrite_equalities, &Problem::rewrite_equalities)
       .add_property("sparse_elimination", &Problem::sparse_elimination, &Problem::sparse_elimination)
       .add_property("sparse_elimination_used", &Problem::sparse_elimination_used)
+      .add_property("warm_start", &Problem::warm_start, &Problem::warm_start)
+      .add_property("warm_started", &Problem::warm_started)
       .add_property("regularization", &Problem::regularization, &Problem::regularization)
       .add_property(
           "slacks", +[](const Problem& problem) { return problem.slacks; });

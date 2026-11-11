@@ -165,6 +165,19 @@ public:
    */
   bool sparse_elimination_used = false;
 
+  /**
+   * @brief If set to true, the active set of the previous solve is tried first: the QP is solved with these
+   * inequalities as equalities, and the solution is kept if it satisfies the optimality conditions (else, the QP
+   * solver is called). This is faster when the active set doesn't change from a solve to the next (for instance
+   * when solving along a trajectory) and the QP has active inequalities.
+   */
+  bool warm_start = true;
+
+  /**
+   * @brief True if the last solution was obtained from the previous active set (see \ref warm_start)
+   */
+  bool warm_started = false;
+
   void dump_status();
 
 protected:
@@ -303,5 +316,23 @@ protected:
   std::vector<Run> runs;
   std::vector<int> stamp, gathered;
   std::vector<ProblemConstraint*> hard_inequalities_mapping, soft_inequalities_mapping;
+
+  /**
+   * @brief Active set of the last solve (indices of simple bounds, then of general constraints, as reported by
+   * qpmad, and whether the lower side is active), and size of the QP it applies to (see \ref warm_start)
+   */
+  std::vector<int> active_set;
+  std::vector<bool> active_is_lower;
+  int active_set_n = -1, active_set_bounds = -1, active_set_rows = -1;
+
+  /**
+   * @brief Solves the QP with the inequalities of \ref active_set as equalities and checks the optimality
+   * conditions. Returns true (with the solution in qp_x) if they are satisfied. The Cholesky factorization of P
+   * is kept in warm_llt
+   */
+  bool solve_warm();
+  Eigen::LLT<Eigen::MatrixXd> warm_llt, warm_schur;
+  Eigen::MatrixXd warm_M;
+  Eigen::VectorXd warm_t, warm_v, warm_mu;
 };
 }  // namespace placo::problem
