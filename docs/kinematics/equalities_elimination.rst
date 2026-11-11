@@ -47,7 +47,8 @@ Which one should I use?
 
 * **QR elimination** is the default and a good choice in most cases.
 * **Sparse elimination** is interesting for robots with several independent
-  :doc:`loop closures <loop_closures>` (for instance, a closed chain in each leg). The cost of the QR elimination
+  :doc:`loop closures <loop_closures>` (for instance, a closed chain in each leg, like the
+  :ref:`Megabot example <megabot_sparse_elimination>`). The cost of the QR elimination
   grows with the size of the whole robot, while the cost of the sparse elimination grows with the size of each loop.
   It doesn't help when there are few hard equalities, or when they all involve the same joints (for instance a
   single closure spanning the whole robot). Since it falls back to QR elimination, it is safe to enable.
@@ -78,3 +79,20 @@ After a solve, the following attributes of ``solver.problem`` can be checked:
 
     if not solver.problem.sparse_elimination_used:
         print("The hard equalities could not be split, QR elimination was used")
+
+.. _megabot_sparse_elimination:
+
+Example
+-------
+
+Megabot is a quadruped with closed chains in each leg: the hard equalities of its loop closures can be split leg by
+leg, and the sparse elimination makes its kinematics solver much faster than the QR elimination.
+
+.. admonition:: Megabot parallel quadruped (sparse elimination)
+
+    .. video:: https://github.com/Rhoban/placo-examples/raw/master/kinematics/videos/megabot.mp4
+        :autoplay:
+        :muted:
+        :loop:
+
+    :example:`kinematics/megabot.py`
