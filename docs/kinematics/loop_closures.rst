@@ -88,7 +88,8 @@ solver much faster:
 
     solver.problem.sparse_elimination = True
 
-See :doc:`hard equalities elimination <equalities_elimination>` for more details.
+See :doc:`hard equalities elimination <equalities_elimination>` for more details, and the
+:example:`kinematics/megabot.py` example, which uses it.
 
 Example
 -------
