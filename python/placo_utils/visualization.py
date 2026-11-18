@@ -24,6 +24,14 @@ def get_viewer() -> viser.ViserServer:
         viewer.initial_camera.position = (1.5, 1.0, 1.0)
         viewer.initial_camera.look_at = (0.0, 0.0, 0.2)
 
+        # Updates of several nodes are made atomic (see set_pose and RobotViz.display), but viser still splits the
+        # messages it sends in windows of at most max_window_size messages, so that a large robot (two messages per
+        # moving mesh) could still be displayed half updated: windows are made larger. This is a private attribute of
+        # viser, it is left as is if it doesn't exist anymore.
+        buffer = getattr(getattr(viewer, "_websock_server", None), "_broadcast_buffer", None)
+        if hasattr(buffer, "max_window_size"):
+            buffer.max_window_size = max(buffer.max_window_size, 4096)
+
         ground_viz()
 
     return viewer
@@ -160,10 +168,18 @@ class RobotViz:
 
     def display(self, q: np.ndarray) -> None:
         """
-        Displays the robot in the configuration q
+        Displays the robot in the configuration q. All the links are updated atomically: the viewer never shows a
+        frame where some links are moved and not the others.
+
+        To also display other elements (e.g. frames) in sync with the robot, the whole update can be made atomic:
+
+        > with get_viewer().atomic():
+        >     viz.display(q)
+        >     robot_frame_viz(robot, "effector")
         """
-        for handle, T in zip(self.handles, self.robot.visual_placements(q)):
-            set_pose(handle, T)
+        with get_viewer().atomic():
+            for handle, T in zip(self.handles, self.robot.visual_placements(q)):
+                set_pose(handle, T)
 
 
 def robot_viz(
@@ -201,8 +217,10 @@ def set_pose(handle, T: np.ndarray) -> None:
     """
     Sets the pose of a viser scene node from a 4x4 transformation matrix
     """
-    handle.position = T[:3, 3]
-    handle.wxyz = tf.quaternion_from_matrix(T)
+    # Atomic: the viewer never shows the new position with the previous orientation
+    with get_viewer().atomic():
+        handle.position = T[:3, 3]
+        handle.wxyz = tf.quaternion_from_matrix(T)
 
 
 # Scene nodes, as (parameters, handle), reused as long as their parameters don't change
